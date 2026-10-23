@@ -2414,6 +2414,134 @@ function circle3(a, b, c) {
   const uy = (A * (c[0] - b[0]) + B * (a[0] - c[0]) + Cc * (b[0] - a[0])) / d;
   return [ux, uy, Math.hypot(a[0] - ux, a[1] - uy)];
 }
+/* 广州塔 in the sky view, after its published shape: 24 inclined steel columns run from an 80×60 m base ellipse to a
+   54×40.5 m top ellipse turned 135° against it (so the waist, about 280 m up, is the slimmest part), 46 rings tie them,
+   a 17×14 m concrete core stands inside, the lattice ends at 454 m and a 146 m mast takes it to 600 m.
+   The viewpoint never moves, so every point of the tower is a fixed direction: worked out once per viewpoint, projected each frame. */
+const CT = { H: 454, M: 146, NC: 24, NR: 46 };
+const hsl2rgb = (h, s, l) => { const k = (n) => (n + h / 30) % 12, a = s * Math.min(l, 1 - l); const f = (n) => 255 * (l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1))); return [f(0), f(8), f(4)]; };
+// the night light show: a few scenes, one after another, each blending into the next. f = height (0 bottom … 1 top), T = seconds
+const CT_SCENES = [
+  (f, T) => [...hsl2rgb((f * 260 + T * 40) % 360, 0.9, 0.63), 1],                                                                  // rainbow climbing the tower
+  (f, T) => { const b = Math.exp(-(((f - (((T / 3.4) % 1) * 1.5 - 0.25)) / 0.08) ** 2)); return [...mixc([88, 182, 255], [236, 248, 255], b), 0.55 + 0.6 * b]; },   // ice blue, a band of light running up
+  (f, T) => [...mixc([255, 88, 168], [146, 108, 255], f), 0.72 + 0.28 * Math.sin(T * 2.4 - f * 6)],                              // rose to violet, breathing
+  (f, T) => { const b = Math.exp(-(((f - (1.25 - ((T / 4.2) % 1) * 1.5)) / 0.12) ** 2)); return [...mixc([255, 178, 84], [255, 244, 214], b), 0.6 + 0.5 * b]; },   // gold, light pouring down
+];
+function towerGeom(view) {
+  if (!view.td) return null;
+  const [tx, ty, tz] = view.td; const td = Math.hypot(tx, ty), ux = tx / td, uy = ty / td;
+  const dir = (x, y, z) => { const X = tx + x, Y = ty + y, Z = tz + z, L = Math.hypot(X, Y, Z); return [X / L, Y / L, Z / L]; };
+  const lat = (q) => q[0] * uy - q[1] * ux, dep = (q) => q[0] * ux + q[1] * uy;   // sideways (to the right) / away from the viewer
+  const rot = (x, y, a) => [x * Math.cos(a) - y * Math.sin(a), x * Math.sin(a) + y * Math.cos(a)];
+  const PH = 28 * D2R, TW = 135 * D2R, SC = 0.675;
+  const at = (th, z) => { const b = rot(40 * Math.cos(th), 30 * Math.sin(th), PH), u = rot(b[0] * SC, b[1] * SC, TW), t = z / CT.H; return [b[0] + (u[0] - b[0]) * t, b[1] + (u[1] - b[1]) * t]; };
+  const ends = (pts) => { let lo = pts[0], hi = pts[0]; for (const q of pts) { if (lat(q) < lat(lo)) lo = q; if (lat(q) > lat(hi)) hi = q; } return [lo, hi]; };
+  const nodes = [], dp = [], lev = [];
+  for (let k = 0; k <= CT.NR; k++) {
+    const z = (k / CT.NR) * CT.H;
+    for (let i = 0; i < CT.NC; i++) { const q = at((i / CT.NC) * Math.PI * 2, z); nodes.push(dir(q[0], q[1], z)); dp.push(dep(q)); }
+    const [lo, hi] = ends(Array.from({ length: 96 }, (_, j) => at((j / 96) * Math.PI * 2, z)));
+    lev.push({ l: dir(lo[0], lo[1], z), r: dir(hi[0], hi[1], z), lo: lat(lo), hi: lat(hi) });
+  }
+  // columns (ring k → k+1) and ring pieces (column i → i+1), split into the half facing the viewer and the half behind
+  const cf = [], cb = [], rf = [], rb = [];
+  for (let k = 0; k <= CT.NR; k++) {
+    const F = [], B = [], RF = [], RB = [];
+    for (let i = 0; i < CT.NC; i++) {
+      const a = k * CT.NC + i, r = k * CT.NC + ((i + 1) % CT.NC);
+      (dp[a] + dp[r] < 0 ? RF : RB).push(a, r);
+      if (k < CT.NR) { const b = a + CT.NC; (dp[a] + dp[b] < 0 ? F : B).push(a, b); }
+    }
+    cf.push(F); cb.push(B); rf.push(RF); rb.push(RB);
+  }
+  const [c0, c1] = ends(Array.from({ length: 48 }, (_, j) => rot(8.5 * Math.cos((j / 48) * Math.PI * 2), 7 * Math.sin((j / 48) * Math.PI * 2), PH)));
+  const core = [];
+  for (let k = 0; k <= 8; k++) { const z = (k / 8) * CT.H; core.push([dir(c0[0], c0[1], z), dir(c1[0], c1[1], z)]); }
+  const mast = [];
+  const mw = (z) => 4.6 - 4.25 * Math.pow((z - CT.H) / CT.M, 0.8);   // the mast: about 9 m across where it leaves the deck, a needle at the top
+  for (let k = 0; k <= 8; k++) { const z = CT.H + (k / 8) * CT.M, w = mw(z); mast.push([dir(-w * uy, w * ux, z), dir(w * uy, -w * ux, z)]); }
+  const tazd = Math.atan2(tx, ty) / D2R;
+  return {
+    nodes, lev, cf, cb, rf, rb, core, mast, dist: Math.hypot(td, tz),
+    base: dir(0, 0, 0), waist: dir(0, 0, 280), top: dir(0, 0, CT.H), tip: dir(0, 0, CT.H + CT.M),
+    beacons: [dir(0, 0, CT.H + CT.M + 1), lev[CT.NR].l, lev[CT.NR].r],
+    // is (az, el) behind the tower, as seen from here?
+    hides(az, el) {
+      const z = td * Math.tan(el * D2R) - tz; if (z < 0 || z > CT.H + CT.M) return false;
+      let lo, hi;
+      if (z <= CT.H) { const f = (z / CT.H) * CT.NR, k = Math.min(CT.NR - 1, Math.floor(f)), t = f - k; lo = lev[k].lo + (lev[k + 1].lo - lev[k].lo) * t; hi = lev[k].hi + (lev[k + 1].hi - lev[k].hi) * t; } else { hi = mw(z); lo = -hi; }
+      const d = ((az - tazd + 540) % 360) - 180;
+      return d > Math.atan2(lo, td) / D2R - 0.03 && d < Math.atan2(hi, td) / D2R + 0.03;
+    },
+  };
+}
+function drawTower(ctx, g, P, W, H, sil, lit, ts) {
+  const pb = P(g.base), pt = P(g.tip); if (!pb || !pt || pb[2] < -0.2 || pt[2] < -0.2) return;
+  const mpx = pb[3] / g.dist;   // pixels per metre at the tower
+  const pad = 60 * mpx + 4;
+  if (Math.max(pb[0], pt[0]) < -pad || Math.min(pb[0], pt[0]) > W + pad || Math.min(pb[1], pt[1]) > H + 4 || Math.max(pb[1], pt[1]) < -4) return;
+  const n = g.nodes.length; const X = g.X || (g.X = new Float32Array(n)), Y = g.Y || (g.Y = new Float32Array(n));
+  for (let i = 0; i < n; i++) { const p = P(g.nodes[i]); if (!p) return; X[i] = p[0]; Y[i] = p[1]; }
+  const strip = (pairs) => { const L = [], R = []; for (const [a, b] of pairs) { const p = P(a), q = P(b); if (!p || !q) return null; L.push(p); R.push(q); } return [L, R]; };
+  const poly = (s) => { const [L, R] = s; ctx.beginPath(); ctx.moveTo(L[0][0], L[0][1]); for (const q of L) ctx.lineTo(q[0], q[1]); for (let k = R.length - 1; k >= 0; k--) ctx.lineTo(R[k][0], R[k][1]); ctx.closePath(); };
+  const body = strip(g.lev.map((l) => [l.l, l.r])), core = strip(g.core), mast = strip(g.mast);
+  if (!body || !core || !mast) return;
+  const seg = (list) => { for (let j = 0; j < list.length; j += 2) { ctx.moveTo(X[list[j]], Y[list[j]]); ctx.lineTo(X[list[j + 1]], Y[list[j + 1]]); } };
+  const lw = Math.min(2.4, Math.max(0.5, mpx * 1.5));
+  const gap = 3 * mpx;   // columns are ~3 m apart at the waist: how crowded the lattice looks on screen
+  const dens = Math.min(1, Math.max(0.3, gap / 2.4));
+  const rs = (CT.H / CT.NR) * mpx, step = rs > 5 ? 1 : rs > 2.6 ? 2 : rs > 1.3 ? 4 : 8;
+  const T = ts / 1000, D = 14, si = Math.floor(T / D), mixK = smooth(D - 2.5, D, T % D);
+  const A = CT_SCENES[si % CT_SCENES.length], B = CT_SCENES[(si + 1) % CT_SCENES.length];
+  const col = []; for (let k = 0; k <= CT.NR + 1; k++) { const f = Math.min(1, k / CT.NR * (CT.H / (CT.H + CT.M)) + (k > CT.NR ? 0.15 : 0)); const a = A(f, T), b = B(f, T); col.push([...mixc(a, b, mixK), (a[3] + (b[3] - a[3]) * mixK) * lit]); }
+  const night = lit > 0.02, struct = 1 - 0.75 * lit;
+  ctx.save(); ctx.lineCap = 'round';
+  // 1. the lattice only half hides what is behind it
+  ctx.fillStyle = rgb(sil, 0.38 + 0.25 * (1 - dens)); poly(body); ctx.fill();
+  const layer = (C, R, a, glow) => {
+    for (let k = 0; k <= CT.NR; k++) {
+      ctx.beginPath(); if (k < CT.NR) seg(C[k]); if (k % step === 0) seg(R[k]);
+      if (night) {
+        const c = col[k]; if (c[3] < 0.01) continue;
+        if (glow) { ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = rgb(c, 0.1 * c[3]); ctx.lineWidth = lw * 4; ctx.stroke(); }
+        ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = rgb(c, Math.min(1, a * c[3] * (0.55 + 0.45 * dens))); ctx.lineWidth = lw; ctx.stroke();
+      }
+      if (struct > 0.05) { ctx.globalCompositeOperation = 'source-over'; ctx.strokeStyle = rgb(sil, a * struct); ctx.lineWidth = lw; ctx.stroke(); }
+    }
+    ctx.globalCompositeOperation = 'source-over';
+  };
+  // 2. the far side of the lattice, then the core in front of it, then the near side
+  layer(g.cb, g.rb, 0.42, false);
+  ctx.fillStyle = rgb(sil, 0.94); poly(core); ctx.fill();
+  if (night) {   // a soft glow over the whole tower, coloured by height
+    const y0 = pb[1], y1 = P(g.top)[1]; const gr = ctx.createLinearGradient(0, y0, 0, y1);
+    for (let k = 0; k <= 6; k++) { const c = col[Math.round((k / 6) * CT.NR)]; gr.addColorStop(k / 6, rgb(c, 0.2 * c[3])); }
+    ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = gr; poly(body); ctx.fill(); ctx.globalCompositeOperation = 'source-over';
+  }
+  layer(g.cf, g.rf, 0.95, true);
+  // the top ring is a little heavier: the deck and the bubble-tram track run round it
+  ctx.beginPath(); seg(g.rf[CT.NR]); seg(g.rb[CT.NR]); ctx.lineWidth = lw * 1.8;
+  ctx.strokeStyle = night ? rgb(col[CT.NR], Math.min(1, col[CT.NR][3])) : rgb(sil, 1); if (night) ctx.globalCompositeOperation = 'lighter'; ctx.stroke(); ctx.globalCompositeOperation = 'source-over';
+  // 3. the mast: a slim lattice needle, lit along its edges with a few bright bands
+  ctx.fillStyle = rgb(sil, 0.92); poly(mast); ctx.fill();
+  if (night) {
+    const c = col[CT.NR + 1], [ML, MR] = mast; ctx.globalCompositeOperation = 'lighter';
+    ctx.fillStyle = rgb(c, 0.3 * c[3]); poly(mast); ctx.fill();
+    ctx.strokeStyle = rgb(c, Math.min(1, 0.9 * c[3])); ctx.lineWidth = Math.max(0.5, lw * 0.8); ctx.beginPath();
+    for (const E of [ML, MR]) { ctx.moveTo(E[0][0], E[0][1]); for (const q of E) ctx.lineTo(q[0], q[1]); }
+    for (let k = 1; k < ML.length - 1; k += 2) { ctx.moveTo(ML[k][0], ML[k][1]); ctx.lineTo(MR[k][0], MR[k][1]); }
+    ctx.stroke(); ctx.globalCompositeOperation = 'source-over';
+  }
+  // 4. aviation lights
+  const on = Math.sin(ts * 0.004) > 0.2;
+  for (const v of g.beacons) { const p = P(v); if (!p) continue; ctx.fillStyle = `rgba(255,72,72,${(on ? 0.95 : 0.3) * Math.max(0.25, lit)})`; ctx.beginPath(); ctx.arc(p[0], p[1], on ? 1.9 : 1.3, 0, Math.PI * 2); ctx.fill(); }
+  // 5. sparkles running over the near side (night only)
+  if (night && gap > 1) {
+    const tick = Math.floor(T * 6); ctx.fillStyle = `rgba(255,255,255,${0.85 * lit})`;
+    for (let k = 0; k <= CT.NR; k++) for (let j = 0; j < g.rf[k].length; j += 2) { const i = g.rf[k][j]; if (((i * 2654435761 + tick * 40503) >>> 0) % 97 !== 0) continue; ctx.beginPath(); ctx.arc(X[i], Y[i], Math.max(0.9, lw * 1.1), 0, Math.PI * 2); ctx.fill(); }
+  }
+  ctx.restore();
+}
 const PLANETS = [['Mercury', '水星', '#E8D9BF'], ['Venus', '金星', '#FFF6DC'], ['Mars', '火星', '#FF9C6E'], ['Jupiter', '木星', '#F7E3C2'], ['Saturn', '土星', '#F3DCA4'], ['Uranus', '天王星', '#BFEFF2'], ['Neptune', '海王星', '#9FBDFF']];
 const SPEEDS = [-3600, -600, -60, 1, 60, 600, 3600];
 const STAR_COL = [[169, 200, 255], [211, 226, 255], [245, 248, 255], [255, 241, 214], [255, 216, 168], [255, 190, 138]];
@@ -2525,9 +2653,12 @@ const Sky = {
       if (r() > e / (e + 2)) continue;
       wins.push([(i + r()) * bw, 0.12 + r() * (e * 0.95 - 0.12), (r() * 4) | 0]); k++;
     }
-    v.wins = wins.map(([az, el, c]) => ({ v: vHz(el, az), c }));
+    if (v.tg === undefined) v.tg = towerGeom(v);
+    const g = v.tg, front = (az) => { if (!v.tf) return 0; const i = Math.floor(az / bw) % N, j = (i - v.tw[0] + N) % N; return j < v.tf.length ? v.tf[j] / 100 : 0; };
+    const behind = (az, el) => g && el > front(az) && g.hides(az, el);
+    v.wins = wins.filter(([az, el]) => !behind(az, el)).map(([az, el, c]) => ({ v: vHz(el, az), c }));
     const peaks = [];
-    for (let i = 0; i < N; i++) { const e = v.el[i]; if (e < 2.5) continue; let top = true; for (let k = -10; k <= 10 && top; k++) if (k && v.el[(i + k + N) % N] > e) top = false; if (top) peaks.push({ v: vHz(e + 0.05, (i + 0.5) * bw), ph: r() * 6 }); }
+    for (let i = 0; i < N; i++) { const e = v.el[i]; if (e < 2.5) continue; let top = true; for (let k = -10; k <= 10 && top; k++) if (k && v.el[(i + k + N) % N] > e) top = false; if (top && !behind((i + 0.5) * bw, e)) peaks.push({ v: vHz(e + 0.05, (i + 0.5) * bw), ph: r() * 6 }); }
     v.peaks = peaks.filter((p, i, a) => !i || dot(p.v, a[i - 1].v) < Math.cos(1.2 * D2R));
   },
   buildUI() {
@@ -2810,14 +2941,19 @@ const Sky = {
       ctx.fillStyle = rgb(sil);
       for (const [tp, bt] of runs) { ctx.beginPath(); ctx.moveTo(tp[0][0], tp[0][1]); for (const q of tp) ctx.lineTo(q[0], q[1]); for (let k = bt.length - 1; k >= 0; k--) ctx.lineTo(bt[k][0], bt[k][1]); ctx.closePath(); ctx.fill(); }
       const nightK = 1 - day;
-      // Canton Tower light show
-      if (nightK > 0.2 && view.tw) {
-        const [b0, b1] = view.tw; const tp = [], bt = [];
-        for (let i = b0; ; i = (i + 1) % NB) { const azc = (i + 0.5) * bw; const pt = P(vHz(el[i], azc)), pb = P(vHz(-0.4, azc)); if (pt && pb && pb[2] > -0.25) { tp.push(pt); bt.push(pb); } if (i === b1) break; }
-        if (tp.length > 1) {
-          const hue = (ts / 60) % 360; const ymin = Math.min(...tp.map((q) => q[1])), ymax = Math.max(...bt.map((q) => q[1]));
-          const g = ctx.createLinearGradient(0, ymin, 0, ymax); g.addColorStop(0, `hsla(${hue},85%,72%,${0.9 * nightK})`); g.addColorStop(0.5, `hsla(${(hue + 60) % 360},80%,62%,${0.75 * nightK})`); g.addColorStop(1, `hsla(${(hue + 120) % 360},80%,55%,${0.55 * nightK})`);
-          ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(tp[0][0], tp[0][1]); for (const q of tp) ctx.lineTo(q[0], q[1]); for (let k = bt.length - 1; k >= 0; k--) ctx.lineTo(bt[k][0], bt[k][1]); ctx.closePath(); ctx.fill();
+      // 广州塔, then the buildings that stand in front of it
+      if (view.tg) {
+        drawTower(ctx, view.tg, P, W, H, sil, smooth(0.25, 0.75, nightK), ts);
+        if (view.tf) {
+          const fr = []; let tq = [], bq = [];
+          const fl = () => { if (tq.length > 1) fr.push([tq, bq]); tq = []; bq = []; };
+          view.tf.forEach((e, j) => {
+            const azc = ((view.tw[0] + j) % NB + 0.5) * bw; if (e <= 0) { fl(); return; }
+            const a = P(vHz(e / 100, azc)), b = P(vHz(-0.6, azc)); if (!a || !b || b[2] < -0.25) { fl(); return; }
+            tq.push(a); bq.push(b);
+          });
+          fl(); ctx.fillStyle = rgb(sil);
+          for (const [tp, bt] of fr) { ctx.beginPath(); ctx.moveTo(tp[0][0], tp[0][1]); for (const q of tp) ctx.lineTo(q[0], q[1]); for (let k = bt.length - 1; k >= 0; k--) ctx.lineTo(bt[k][0], bt[k][1]); ctx.closePath(); ctx.fill(); }
         }
       }
       if (nightK > 0.15) {
