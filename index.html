@@ -1377,21 +1377,22 @@ const FoodGroups = {
 /* ===================================================================== smooth 3D models (three.js) */
 // 方块拼不出来的造型，用 three.js 网格画进地图（放大到街区才加载，加载失败时退回原来的方块）：
 //   广州塔：按公开尺寸生成的扭转双曲面——24 根斜柱、46 道环、核心筒、各功能区的玻璃楼层、146 米天线
-//   珠江新城的超高层：东塔、西塔、珠江城、广晟、利通、富力盈凯、广州银行、富力中心、环球都会
+//   珠江新城的超高层：东塔、西塔、珠江城、广晟、利通、富力盈凯、广州银行、富力中心、环球都会；还有中信广场主楼
+//   广东省博物馆的“宝盒”、海心沙西端的看台和帆形顶棚
 //   猎德大桥：独塔双索面空间自锚式悬索桥，主桥 47 + 219 + 167 + 47 米。索塔由两片相扣的“贝壳”组成，
 //     横桥向宽 56 米、顺桥向 9.16 米，高 128 米（主体 103 米 + 顶部装饰 25 米），内外轮廓都是椭圆，顶部开孔
 const THREE_URL = './vendor/three.module.min.js';
 const MODEL_O = [113.322, 23.115];   // all models are laid out in metres east / north of this point
 const MKX = 111320 * Math.cos(MODEL_O[1] * Math.PI / 180), MKY = 110574;
 // OSM footprints of the towers the models replace (metres from MODEL_O, counter-clockwise)
-const CBD_FP = {"ifc":[[-457.1,589.2],[-455.5,584.8],[-451.0,579.1],[-434.4,560.7],[-415.1,548.3],[-407.8,551.2],[-399.9,566.9],[-394.1,582.2],[-392.2,589.2],[-391.3,596.9],[-393.3,609.9],[-400.2,613.1],[-409.0,611.5],[-411.4,610.6],[-432.5,602.8],[-441.5,598.8],[-452.1,594.3],[-456.5,591.9]],"pinnacle":[[-414.2,1379.5],[-407.0,1378.1],[-399.9,1376.6],[-392.0,1380.7],[-383.7,1384.9],[-378.9,1409.6],[-383.7,1415.7],[-389.0,1422.1],[-407.2,1425.5],[-422.0,1416.5],[-426.3,1394.6]],"imp":[[-54.2,637.1],[-46.7,629.4],[-46.3,609.9],[-46.0,592.3],[12.6,592.2],[12.3,605.3],[-4.6,621.9],[11.1,636.9],[-20.5,669.4],[-41.7,649.1]],"prt":[[-452.2,1324.9],[-463.9,1322.1],[-475.4,1317.9],[-484.8,1311.5],[-493.8,1303.7],[-488.1,1279.2],[-475.3,1277.9],[-466.3,1277.1],[-456.3,1277.2],[-446.1,1278.9],[-430.6,1285.9],[-421.8,1293.1],[-416.3,1300.1],[-421.1,1323.8],[-435.0,1325.3]],"leatop":[[-195.4,1468.3],[-148.5,1465.3],[-145.4,1512.8],[-192.4,1515.7]],"yingkai":[[-601.3,660.2],[-554.3,658.4],[-552.4,706.6],[-599.4,708.4]],"bog":[[-176.8,1412.9],[-177.9,1363.8],[-131.4,1362.7],[-130.2,1411.8]],"rfc":[[-597.4,571.1],[-594.7,542.7],[-598.6,514.5],[-569.9,518.3],[-542.9,513.3],[-545.1,542.8],[-541.7,569.9],[-569.1,566.2]],"ctf":[[-152.0,635.6],[-156.5,606.8],[-161.6,606.4],[-177.4,604.4],[-179.9,586.5],[-170.5,580.6],[-170.1,562.7],[-167.7,545.0],[-157.6,543.7],[-144.8,543.3],[-129.2,543.7],[-117.1,545.9],[-96.6,551.0],[-76.8,550.5],[-74.2,621.2],[-74.2,644.9],[-74.8,667.4],[-82.7,671.5],[-89.8,673.8],[-98.4,676.2],[-109.1,678.5],[-124.5,678.2],[-135.6,677.4],[-137.8,672.8],[-142.0,663.6],[-145.9,652.5],[-148.4,646.3],[-150.2,642.5]]};
+const CBD_FP = {"ifc":[[-457.1,589.2],[-455.5,584.8],[-451.0,579.1],[-434.4,560.7],[-415.1,548.3],[-407.8,551.2],[-399.9,566.9],[-394.1,582.2],[-392.2,589.2],[-391.3,596.9],[-393.3,609.9],[-400.2,613.1],[-409.0,611.5],[-411.4,610.6],[-432.5,602.8],[-441.5,598.8],[-452.1,594.3],[-456.5,591.9]],"pinnacle":[[-414.2,1379.5],[-407.0,1378.1],[-399.9,1376.6],[-392.0,1380.7],[-383.7,1384.9],[-378.9,1409.6],[-383.7,1415.7],[-389.0,1422.1],[-407.2,1425.5],[-422.0,1416.5],[-426.3,1394.6]],"imp":[[-54.2,637.1],[-46.7,629.4],[-46.3,609.9],[-46.0,592.3],[12.6,592.2],[12.3,605.3],[-4.6,621.9],[11.1,636.9],[-20.5,669.4],[-41.7,649.1]],"prt":[[-452.2,1324.9],[-463.9,1322.1],[-475.4,1317.9],[-484.8,1311.5],[-493.8,1303.7],[-488.1,1279.2],[-475.3,1277.9],[-466.3,1277.1],[-456.3,1277.2],[-446.1,1278.9],[-430.6,1285.9],[-421.8,1293.1],[-416.3,1300.1],[-421.1,1323.8],[-435.0,1325.3]],"leatop":[[-195.4,1468.3],[-148.5,1465.3],[-145.4,1512.8],[-192.4,1515.7]],"yingkai":[[-601.3,660.2],[-554.3,658.4],[-552.4,706.6],[-599.4,708.4]],"bog":[[-176.8,1412.9],[-177.9,1363.8],[-131.4,1362.7],[-130.2,1411.8]],"rfc":[[-597.4,571.1],[-594.7,542.7],[-598.6,514.5],[-569.9,518.3],[-542.9,513.3],[-545.1,542.8],[-541.7,569.9],[-569.1,566.2]],"ctf":[[-152.0,635.6],[-156.5,606.8],[-161.6,606.4],[-177.4,604.4],[-179.9,586.5],[-170.5,580.6],[-170.1,562.7],[-167.7,545.0],[-157.6,543.7],[-144.8,543.3],[-129.2,543.7],[-117.1,545.9],[-96.6,551.0],[-76.8,550.5],[-74.2,621.2],[-74.2,644.9],[-74.8,667.4],[-82.7,671.5],[-89.8,673.8],[-98.4,676.2],[-109.1,678.5],[-124.5,678.2],[-135.6,677.4],[-137.8,672.8],[-142.0,663.6],[-145.9,652.5],[-148.4,646.3],[-150.2,642.5]],"museum":[[-114.6,324.3],[-115.7,281.9],[-116.2,269.5],[-116.0,261.4],[-116.3,211.2],[-4.9,209.7],[-1.9,323.4]],"citic":[[-291.7,3223.2],[-244.0,3223.2],[-244.0,3270.5],[-291.6,3270.5]],"stand":[[-561.0,-153.3],[-550.0,-165.0],[-542.3,-180.5],[-539.1,-187.1],[-530.8,-192.0],[-517.8,-193.2],[-509.4,-192.7],[-481.7,-185.9],[-459.4,-176.1],[-475.4,-134.6],[-478.7,-89.3],[-475.4,-56.3],[-464.2,-26.0],[-475.6,-13.3],[-492.6,-7.6],[-508.6,-4.9],[-524.4,-5.7],[-545.1,-14.9],[-574.9,-15.9],[-610.3,-17.5],[-639.0,-18.7],[-637.3,-54.0],[-639.8,-78.0],[-645.5,-102.2],[-648.1,-110.9],[-644.7,-120.2],[-572.5,-146.6]]};
 const CTF_C = [-138, 576], CTF_ROT = 2.5;   // 东塔 stands in the south-west of its lot, across the central axis from 西塔
 const CANTON_C = [(113.31914 - MODEL_O[0]) * MKX + 0.3, (23.10899 - MODEL_O[1]) * MKY + 2.3];
 const mToLngLat = ([x, y]) => [+(MODEL_O[0] + x / MKX).toFixed(7), +(MODEL_O[1] + y / MKY).toFixed(7)];
 // stand-ins (plain blocks) for while three.js loads, or if it cannot load at all
 function modelFallback() {
   const sq = (c, w, a) => { const r = a * Math.PI / 180; return [[-w, -w], [w, -w], [w, w], [-w, w]].map(([x, y]) => [c[0] + x * Math.cos(r) - y * Math.sin(r), c[1] + x * Math.sin(r) + y * Math.cos(r)]); };
-  const H = { ifc: 438.6, pinnacle: 311.9, imp: 318, prt: 309.6, leatop: 264.6, yingkai: 296.5, bog: 267.8, rfc: 243, ctf: 45 };
+  const H = { ifc: 438.6, pinnacle: 311.9, imp: 318, prt: 309.6, leatop: 264.6, yingkai: 296.5, bog: 267.8, rfc: 243, ctf: 45, museum: 44, citic: 321.9, stand: 28 };
   const f = Object.entries(CBD_FP).map(([k, r]) => ({ type: 'Feature', properties: { h: H[k] }, geometry: { type: 'Polygon', coordinates: [[...r, r[0]].map(mToLngLat)] } }));
   const t = sq(CTF_C, 32.5, CTF_ROT); f.push({ type: 'Feature', properties: { h: 518 }, geometry: { type: 'Polygon', coordinates: [[...t, t[0]].map(mToLngLat)] } });
   return { type: 'FeatureCollection', features: f };
@@ -1609,6 +1610,95 @@ function buildCBD(THREE, K) {
   }
   return g;
 }
+// ---------------------------------------------------------------- 广东省博物馆 (2010，许李严建筑师事务所)
+// 一只“宝盒”：约 114 m 见方、高约 44 m 的方盒子，架在内收的玻璃首层上；外墙是深色铝板，四个立面被切出不规则的凹口，
+// 露出里层的红色（夜里红光从这些缝里透出来，所以叫“月光宝盒”）
+function buildMuseum(THREE, K) {
+  const g = new THREE.Group(), add = (geo, m) => g.add(K.mesh(geo, m)), r = K.ccw(CBD_FP.museum), c = K.centroid(r), Z0 = 9, Z1 = 44;
+  const glass = K.mat({ bg: '#9db6db', v: 8, vc: '#d6e1f1', vw: 3 });
+  const inner = K.scale(r, c, 0.86);
+  add(K.loft([K.at(inner, 0), K.at(inner, Z0)], { tw: 6, th: Z0 }), glass);
+  // the carved facade, drawn once round the whole box (u runs the full perimeter)
+  let per = 0; for (let i = 0; i < r.length; i++) { const p = r[i], q = r[(i + 1) % r.length]; per += Math.hypot(q[0] - p[0], q[1] - p[1]); }
+  const cv = document.createElement('canvas'); cv.width = 2048; cv.height = 256; const x = cv.getContext('2d');
+  x.fillStyle = '#525866'; x.fillRect(0, 0, 2048, 256);
+  x.fillStyle = 'rgba(255,255,255,.09)'; for (let i = 0; i < 2048; i += 10) x.fillRect(i, 0, 1, 256); for (let j = 0; j < 256; j += 18) x.fillRect(0, j, 2048, 1);
+  const R = rng(20100518), face = 2048 / 4;
+  const poly = (q, col) => { x.fillStyle = col; x.beginPath(); x.moveTo(q[0][0], q[0][1]); for (const v of q) x.lineTo(v[0], v[1]); x.closePath(); x.fill(); };
+  for (let f = 0; f < 4; f++) for (let k = 0, n = 7 + Math.floor(R() * 4); k < n; k++) {
+    // an angular cut: a slanted four-sided void, its rim catching light, glass or the red inner skin at the back
+    const w = 18 + R() * 120, h = 30 + R() * 150, x0 = f * face + 10 + R() * (face - w - 30), y0 = R() < 0.25 ? -10 : 10 + R() * (230 - h), sk = (R() - 0.5) * 80;
+    const pts = [[x0, y0], [x0 + w, y0 + (R() - 0.5) * 24], [x0 + w + sk, Math.min(250, y0 + h)], [x0 + sk * 0.5, Math.min(250, y0 + h + (R() - 0.5) * 24)]];
+    const cx = pts.reduce((a, v) => a + v[0], 0) / 4, cy = pts.reduce((a, v) => a + v[1], 0) / 4, inset = (q, s) => q.map(([px, py]) => [cx + (px - cx) * s, cy + (py - cy) * s]);
+    poly(pts, '#d3d9e2');
+    poly(inset(pts, 0.78), R() < 0.3 ? '#8f4a42' : '#8ea4c0');
+  }
+  const t = new THREE.CanvasTexture(cv); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; t.offset.y = -Z0 / (Z1 - Z0);
+  add(K.loft([K.at(r, Z0), K.at(r, Z1)], { tw: per, th: Z1 - Z0 }), new THREE.MeshLambertMaterial({ map: t }));
+  add(K.cap(K.at(r, Z0), true), K.mat(0x5d6472));
+  add(K.cap(K.at(r, Z1)), K.mat(0x666d7a));
+  return g;
+}
+// ---------------------------------------------------------------- 海心沙亚运公园：西端的看台
+// 2010 年亚运会开幕式主会场：看台在岛的西端，弧形面向东边的水上舞台（两个三角形水池）；
+// 后面是看台楼，前面是层层升起的座席，上面一片白色的帆形顶棚向东挑出；看台前面立着四根约 80 m 的帆桅（当年挂 LED 帆屏）
+function buildHaixinsha(THREE, K) {
+  const g = new THREE.Group(), add = (geo, m) => g.add(K.mesh(geo, m));
+  const lerpLine = (L, t) => { const f = t * (L.length - 1), i = Math.min(L.length - 2, Math.floor(f)), s = f - i; return [L[i][0] + (L[i + 1][0] - L[i][0]) * s, L[i][1] + (L[i + 1][1] - L[i][1]) * s]; };
+  // lines run south → north
+  const back = [[-528.7, -186.9], [-541.7, -148.2], [-547.9, -95.8], [-544.1, -43.5], [-529.6, -1.5]];        // top row of seats, foot of the roof
+  const front = [[-459.4, -176.1], [-475.4, -134.6], [-478.7, -89.3], [-475.4, -56.3], [-464.2, -26.0]];      // front row
+  const lip = [[-447.2, -156.9], [-458.4, -118.8], [-458.1, -71.2], [-446.8, -29.4]];                         // front edge of the roof
+  const N = 24, sample = (L) => Array.from({ length: N + 1 }, (_, i) => lerpLine(L, i / N));
+  const B = sample(back), F = sample(front), Lp = sample(lip);
+  // stand building behind the seats
+  const block = K.ccw([...B.slice().reverse(), [-575.6, -16.0], [-610.3, -17.5], [-639.0, -18.7], [-637.3, -54.0], [-639.8, -78.0], [-645.5, -102.2], [-648.1, -110.9], [-644.7, -120.2], [-572.5, -146.6], [-561.0, -153.3], [-550.0, -165.0], [-542.3, -180.5]]);
+  const wall = K.mat({ bg: '#dfe6f0', h: 4, hc: '#c3cfe0', v: 10, vc: '#cdd8e8', vw: 2 });
+  add(K.loft([K.at(block, 0), K.at(block, 28)], { tw: 12, th: 14 }), wall); add(K.cap(K.at(block, 28)), K.mat(0xe6ecf5));
+  // raked seating, rows of seats as stripes
+  const seats = K.mat({ bg: '#8fa9d6', h: 4, hc: '#e4ebf6', hw: 6 });
+  add(K.loft([K.at(F, 4), K.at(B, 28)], { open: true, tw: 10, th: 3 }), seats);
+  add(K.loft([K.at(F, 0), K.at(F, 4)], { open: true, tw: 10, th: 4 }), wall);
+  for (const i of [0, N]) add(K.loft([[[F[i][0], F[i][1], 0], [B[i][0], B[i][1], 0]], [[F[i][0], F[i][1], 4], [B[i][0], B[i][1], 28]]], { open: true }), K.mat(0xdfe6f0, { side: THREE.DoubleSide }));
+  // the sail roof: from the top of the stand out over the seats, its front edge rising into a row of sail points
+  const SAILS = 5, rows = [];
+  for (let v = 0; v <= 6; v++) {
+    const t = v / 6;
+    rows.push(B.map((b, i) => { const l = Lp[i], u = i / N, peak = Math.pow(Math.abs(Math.sin(Math.PI * SAILS * u)), 1.6); return [b[0] + (l[0] - b[0]) * t, b[1] + (l[1] - b[1]) * t, 33 + 3 * t + 11 * peak * t * t]; }));
+  }
+  add(K.loft(rows.map((r) => r), { open: true, smooth: false, tw: 8, th: 8 }), new THREE.MeshLambertMaterial({ color: 0xfbfcfe, emissive: 0x30363f, side: THREE.DoubleSide }));
+  // the four sail masts in front of the stand (OSM man_made=mast): steel space trusses about 80 m high that carried the
+  // folding LED sails of the 2010 ceremony, two sails each; drawn as square lattice towers with the yards for the sails
+  const white = K.mat(0xf3f6fb), truss = [];
+  for (const [mx, my] of [[-396, -156], [-386, -126], [-382, -81], [-387, -49]]) {
+    const w = (z) => 3.2 - 1.4 * (z / 78), corner = (sx, sy, z) => [mx + sx * w(z), my + sy * w(z), z];
+    const cs = [[-1, -1], [1, -1], [1, 1], [-1, 1]];
+    for (const [sx, sy] of cs) truss.push([corner(sx, sy, 0), corner(sx, sy, 78), 0.45]);
+    for (let z = 0; z < 78; z += 6) for (let k = 0; k < 4; k++) { const [ax, ay] = cs[k], [bx, by] = cs[(k + 1) % 4]; truss.push([corner(ax, ay, z), corner(bx, by, z + 6), 0.18], [corner(bx, by, z + 6), corner(ax, ay, z + 6), 0.18]); }
+    for (const z of [30, 56, 76]) truss.push([[mx, my - 9, z], [mx, my + 9, z], 0.5]);   // yards across, north–south
+    truss.push([[mx, my, 78], [mx, my, 84], 0.35]);
+  }
+  // two floodlight towers at the ends of the stand front
+  for (const [lx, ly] of [[-445, 2], [-440, -204]]) { truss.push([[lx, ly, 0], [lx, ly, 46], 0.8]); truss.push([[lx - 4, ly, 46], [lx + 4, ly, 46], 1.2]); }
+  g.add(K.rods(truss, white));
+  return g;
+}
+// ---------------------------------------------------------------- 中信广场主楼 (1997，80 层)
+// 屋顶 321.9 m，顶层 296.9 m，两根天线到 390.2 m。方形平面四角内收，顶部逐级收进成一座玻璃灯笼，
+// 再收成尖顶，两根并排的天线立在上面；两边的两栋 38 层公寓保持原样
+function buildCitic(THREE, K) {
+  const g = new THREE.Group(), add = (geo, m) => g.add(K.mesh(geo, m)), c = K.centroid(K.ccw(CBD_FP.citic));
+  const ns = (w, n) => [[w, -w + n], [w, w - n], [w - n, w - n], [w - n, w], [-w + n, w], [-w + n, w - n], [-w, w - n], [-w, -w + n], [-w + n, -w + n], [-w + n, -w], [w - n, -w], [w - n, -w + n]].map(([x, y]) => [c[0] + x, c[1] + y]);
+  const stone = K.mat({ bg: '#8297aa', v: 6, vc: '#dfe3e7', vw: 6, h: 3, hc: '#a2b2c2', hw: 2 }), roof = K.mat(0xdde4ee);
+  const tier = (w, n, z0, z1, m) => { add(K.loft([K.at(ns(w, n), z0), K.at(ns(w, n), z1)], { tw: 10, th: 12 }), m); add(K.cap(K.at(ns(w, n), z1)), roof); };
+  tier(23.8, 3.4, 0, 268, stone);
+  tier(22, 3.1, 268, 284, stone);
+  tier(20.2, 2.8, 284, 297, stone);
+  tier(18, 2.6, 297, 312, K.mat({ bg: '#a9c1e0', v: 8, vc: '#e9eef6', vw: 3 }));   // glass lantern
+  add(K.loft([K.at(ns(18, 2.6), 312), K.at(ns(5, 0.8), 321.9)], { tw: 10, th: 6 }), K.mat(0xc9d4e4));
+  g.add(K.rods([-7.5, 7.5].map((d) => [[c[0] + d, c[1], 300], [c[0] + d, c[1], 390.2], 1.1]), K.mat(0xe9eef6)));
+  return g;
+}
 // ---------------------------------------------------------------- 猎德大桥
 function buildLiede(THREE, K) {
   const O = { lng: 113.328546, lat: 23.11189, u: [0.03291, -0.99946], z0: 13 };   // tower foot at the water; u runs along the bridge (towards the south bank)
@@ -1673,6 +1763,9 @@ const ThreeModels = {
     const parts = [
       { g: buildCanton(THREE, K), z0: 12.4, z1: 13.6 },
       { g: buildCBD(THREE, K), z0: 13.2, z1: 14.8 },
+      { g: buildMuseum(THREE, K), z0: 13.2, z1: 14.8 },
+      { g: buildHaixinsha(THREE, K), z0: 13.2, z1: 14.8 },
+      { g: buildCitic(THREE, K), z0: 13.2, z1: 14.8 },
       { g: buildLiede(THREE, K), z0: 13.2, z1: 14.4 },
     ];
     for (const p of parts) { scene.add(p.g); p.g.traverse((o) => { o.frustumCulled = false; }); }
