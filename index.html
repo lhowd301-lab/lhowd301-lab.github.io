@@ -364,6 +364,8 @@ a.trk{text-decoration:none;color:inherit}
 .zoom .t3d[aria-pressed="true"]{color:var(--blue);background:var(--ice-2)}
 /* ---------- 纯享模式：标记、卡片和面板都收起来，只留地图、指北针和缩放 */
 .zoom .pure-btn[aria-pressed="true"]{color:var(--blue);background:var(--ice-2)}
+.zoom .night-btn[aria-pressed="true"]{color:#F5C46B;background:#16233D}
+body.night{background:#0A1426}
 .pure-exit{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:30;display:none;align-items:center;gap:8px;padding:8px 10px 8px 14px;border:0;border-radius:999px;font:500 13px var(--f-body);color:var(--ink);cursor:pointer;transition:opacity .6s ease}
 .pure-exit svg{width:15px;height:15px;color:var(--blue)}
 .pure-exit kbd{font-family:var(--f-mono);font-size:11px;padding:1px 6px;border-radius:6px;background:var(--ice-2);color:var(--ink-2)}
@@ -748,6 +750,7 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
     <button id="t3d" class="t3d" aria-pressed="true" aria-label="切换 3D 视角">3D</button>
     <button id="zSky" aria-label="抬头看星空" title="抬头看星空"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l1.9 4.6 4.9.4-3.7 3.2 1.1 4.8L12 14l-4.2 2.5 1.1-4.8-3.7-3.2 4.9-.4z"/><path d="M4 20.5h16"/></svg></button>
     <button id="zPure" class="pure-btn" aria-pressed="false" aria-label="纯享模式：收起标记和面板，只看地图" title="纯享模式"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V5.5A1.5 1.5 0 0 1 5.5 4H9M15 4h3.5A1.5 1.5 0 0 1 20 5.5V9M20 15v3.5a1.5 1.5 0 0 1-1.5 1.5H15M9 20H5.5A1.5 1.5 0 0 1 4 18.5V15"/></svg></button>
+    <button id="zNight" class="night-btn" aria-pressed="false" aria-label="夜间模式：深色地图，高楼和地标开灯" title="夜间模式"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 14.5A7.5 7.5 0 0 1 9.5 4.5a7.5 7.5 0 1 0 10 10z"/></svg></button>
     <button id="zHome" aria-label="回到广州全景"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 5l8 6.5"/><path d="M6.5 10v9h11v-9"/></svg></button>
   </div>
 
@@ -1437,7 +1440,32 @@ function modelKit(THREE) {
     if (o.v) { g.fillStyle = o.vc; for (let i = 0; i < o.v; i++) g.fillRect(i * 128 / o.v, 0, o.vw || 3, 128); }
     const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t;
   };
-  K.mat = (o, extra = {}) => new THREE.MeshLambertMaterial(Object.assign(typeof o === 'number' ? { color: o } : { map: K.tex(o) }, extra));
+  // night: the same pattern drawn dark, with lit panes in some of the cells and white lines (fins, piers) glowing
+  const lum = (h) => { const n = parseInt(h.slice(1), 16); return (0.2126 * (n >> 16) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255)) / 255; };
+  K.nightTex = (o) => {
+    const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d'), r = rng(hashStr(JSON.stringify(o)));
+    g.fillStyle = '#04070D'; g.fillRect(0, 0, 128, 128);
+    const nv = o.v || 6, nh = o.h || 4, cw = 128 / nv, ch = 128 / nh;
+    for (let i = 0; i < nv; i++) for (let j = 0; j < nh; j++) {
+      if (r() > 0.44) continue;
+      g.fillStyle = r() < 0.7 ? `rgba(255,${205 + Math.floor(r() * 30)},${140 + Math.floor(r() * 50)},${0.25 + r() * 0.4})` : `rgba(215,232,255,${0.25 + r() * 0.35})`;
+      g.fillRect(i * cw + 3, j * ch + 3, cw - 6, ch - 6);
+    }
+    if (o.v && lum(o.vc) > 0.85) { g.fillStyle = 'rgba(222,232,255,.8)'; for (let i = 0; i < o.v; i++) g.fillRect(i * 128 / o.v, 0, Math.max(2, (o.vw || 3) * 0.55), 128); }
+    if (o.h && lum(o.hc) > 0.85) { g.fillStyle = 'rgba(222,232,255,.8)'; for (let i = 0; i < o.h; i++) g.fillRect(0, i * 128 / o.h, 128, Math.max(2, (o.hw || 3) * 0.55)); }
+    const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t;
+  };
+  K.mats = [];
+  // glow: how strongly it lights up at night (textured materials light their windows by default; plain colours stay dark unless given one)
+  K.mat = (o, extra = {}, glow) => {
+    const tex = typeof o === 'number' ? null : o;
+    const m = new THREE.MeshLambertMaterial(Object.assign(tex ? { map: K.tex(tex) } : { color: o }, extra));
+    if (tex && glow !== 0) { m.emissiveMap = K.nightTex(tex); m.emissive = new THREE.Color(0xffffff); m.userData.glow = glow ?? 0.85; }
+    else if (glow) { m.emissive = new THREE.Color(o); m.userData.glow = glow; }
+    else m.userData.glow = 0;
+    m.emissiveIntensity = 0; K.mats.push(m); return m;
+  };
+  K.lit = (m, nightTex, glow = 1, color = 0xffffff) => { if (nightTex) m.emissiveMap = nightTex; m.emissive = new THREE.Color(color); m.emissiveIntensity = 0; m.userData.glow = glow; K.mats.push(m); return m; };
   const geo = (pos, uv, idx) => { const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); if (uv) g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx); g.computeVertexNormals(); return g; };
   // walls between rings of [x, y, z] points (same count, counter-clockwise); u runs along the wall in metres / tw, v up it / th
   K.loft = (rings, o = {}) => {
@@ -1483,14 +1511,14 @@ function buildCanton(THREE, K) {
   const rot = (x, y, a) => [x * Math.cos(a) - y * Math.sin(a), x * Math.sin(a) + y * Math.cos(a)];
   const at = (th, z, s = 1) => { const b = rot(40 * Math.cos(th), 30 * Math.sin(th), PH), u = rot(b[0] * SC, b[1] * SC, TW), t = z / H; return [cx + (b[0] + (u[0] - b[0]) * t) * s, cy + (b[1] + (u[1] - b[1]) * t) * s, z]; };
   const ring = (z, s = 1, n = 48) => Array.from({ length: n }, (_, j) => at((j / n) * Math.PI * 2, z, s));
-  const white = K.mat(0xf3f6fb), segs = [];
-  for (let i = 0; i < NC; i++) { const th = (i / NC) * Math.PI * 2; segs.push([at(th, 0), at(th, H), 1.1]); }
-  for (let k = 1; k <= NR; k++) { const r = ring((k / NR) * H); for (let j = 0; j < r.length; j++) segs.push([r[j], r[(j + 1) % r.length], k === NR ? 1.1 : 0.55]); }
-  g.add(K.rods(segs, white));
+  const white = K.mat(0xf3f6fb), segs = [], lev = [];
+  for (let i = 0; i < NC; i++) { const th = (i / NC) * Math.PI * 2; segs.push([at(th, 0), at(th, H), 1.1]); lev.push(0.4); }
+  for (let k = 1; k <= NR; k++) { const r = ring((k / NR) * H); for (let j = 0; j < r.length; j++) { segs.push([r[j], r[(j + 1) % r.length], k === NR ? 1.1 : 0.55]); lev.push((k / NR) * (H / 600)); } }
+  const lattice = K.rods(segs, white); g.add(lattice);
   // the lattice reads as a light veil from afar: a see-through skin that fades as you come close
   const skinRings = []; for (let k = 0; k <= 46; k++) skinRings.push(ring((k / 46) * H, 0.985));
   const skin = K.mat(0xdbe6f6, { transparent: true, opacity: 0.32, depthWrite: false, side: THREE.DoubleSide });
-  g.add(K.mesh(K.loft(skinRings, { smooth: true }), skin));
+  const skinMesh = K.mesh(K.loft(skinRings, { smooth: true }), skin); g.add(skinMesh);
   // core
   const core = Array.from({ length: 40 }, (_, j) => { const a = (j / 40) * Math.PI * 2, p = rot(8.5 * Math.cos(a), 7 * Math.sin(a), PH); return [cx + p[0], cy + p[1]]; });
   g.add(K.mesh(K.loft([K.at(core, 0), K.at(core, H)], { smooth: true, tw: 9, th: 5 }), K.mat({ bg: '#c3d1e6', h: 2, hc: '#aebfd9' })));
@@ -1503,7 +1531,7 @@ function buildCanton(THREE, K) {
   }
   g.add(K.mesh(K.cap(ring(H, 1)), K.mat(0xe4ebf5, { side: THREE.DoubleSide })));
   // the bubble-tram track round the top, a little outside the lattice
-  const tr = ring(H - 3, 1.07); g.add(K.rods(tr.map((p, j) => [p, tr[(j + 1) % tr.length], 1.3]), white));
+  const tr = ring(H - 3, 1.07), tram = K.rods(tr.map((p, j) => [p, tr[(j + 1) % tr.length], 1.3]), white); g.add(tram);
   // the mast: tapering octagon, a round deck at 488 m
   const oct = (r, z) => Array.from({ length: 8 }, (_, j) => { const a = (j / 8) * Math.PI * 2 + Math.PI / 8; return [cx + r * Math.cos(a), cy + r * Math.sin(a), z]; });
   const mastMat = K.mat({ bg: '#e2e9f4', h: 4, hc: '#c4d0e2' });
@@ -1511,6 +1539,23 @@ function buildCanton(THREE, K) {
   const disc = Array.from({ length: 24 }, (_, j) => { const a = (j / 24) * Math.PI * 2; return [cx + 11 * Math.cos(a), cy + 11 * Math.sin(a)]; });
   g.add(K.mesh(K.loft([K.at(disc, 488), K.at(disc, 492)], { smooth: true }), K.mat(0xd4deec)), K.mesh(K.cap(K.at(disc, 492)), K.mat(0xe9eff7)));
   g.add(K.mesh(K.loft([oct(4.4, 492), oct(2.2, 560), oct(0.5, 600)], { tw: 4, th: 10 }), mastMat));
+  // night: the lattice becomes the light show of the real tower (same scenes as in 地球之外), the skin a soft coloured glow
+  const show = new THREE.MeshBasicMaterial({ color: 0xffffff }), glow = new THREE.MeshBasicMaterial({ color: 0x8fb8ff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+  const C = new THREE.Color(); let lit = false;
+  const paint = (m, f) => { for (let i = 0; i < m.count; i++) { const [r, gg, b] = f(i); C.setRGB(r, gg, b, THREE.SRGBColorSpace); m.setColorAt(i, C); } m.instanceColor.needsUpdate = true; };
+  g.userData.night = (n, T) => {
+    const on = n > 0.02;
+    if (on !== lit) {
+      lit = on; lattice.material = tram.material = on ? show : white; skinMesh.material = on ? glow : skin;
+      if (!on) { paint(lattice, () => [1, 1, 1]); paint(tram, () => [1, 1, 1]); }
+    }
+    if (!on) return;
+    const D = 14, si = Math.floor(T / D), mk = smooth(D - 2.5, D, T % D), A = CT_SCENES[si % CT_SCENES.length], B = CT_SCENES[(si + 1) % CT_SCENES.length];
+    const col = (f) => { const a = A(f, T), b = B(f, T), c = mixc(a, b, mk), k = Math.min(1, (a[3] + (b[3] - a[3]) * mk)) * n / 255; return [c[0] * k, c[1] * k, c[2] * k]; };
+    const cache = new Map(); const at = (f) => { const q = Math.round(f * 60); if (!cache.has(q)) cache.set(q, col(q / 60)); return cache.get(q); };
+    paint(lattice, (i) => at(lev[i])); const top = at(H / 600); paint(tram, () => top);
+    const mid = at(0.42); glow.color.setRGB(mid[0], mid[1], mid[2], THREE.SRGBColorSpace); glow.opacity = 0.2 * n;
+  };
   return g;
 }
 // ---------------------------------------------------------------- 珠江新城
@@ -1540,7 +1585,7 @@ function buildCBD(THREE, K) {
         for (let s = 1; s <= 6; s++) { const t = s / 6, z = (k + t) * dz, p = surf(u0 + (j + dj * t) / NCOL, z, 0.7); segs.push([prev, p, 0.85 - 0.35 * (z / H)]); prev = p; }
       }
     }
-    g.add(K.rods(segs, K.mat(0xf7f9fc)));
+    g.add(K.rods(segs, K.mat(0xf7f9fc, {}, 0.85)));
   }
 
   // 东塔 广州周大福金融中心 (530 m): 方形平面、四角内凹；办公、公寓、酒店、塔冠四段逐级退台，
@@ -1597,7 +1642,7 @@ function buildCBD(THREE, K) {
     prism(r, 0, 246, m, { lid: false, tw: 9, th: 12 });
     const ux = Math.cos(a * Math.PI / 180), uy = Math.sin(a * Math.PI / 180), zt = (p) => 246 + 18.6 * (((p[0] - c[0]) * ux + (p[1] - c[1]) * uy) / (2 * w) + 0.5);
     add(K.loft([K.at(r, 246), K.at(r, zt)], { tw: 9, th: 12 }), m); add(K.cap(K.at(r, zt)), roof);
-    g.add(K.rods([[[c[0], c[1], 250], [c[0], c[1], 302.7], 1.1]], K.mat(0xe8eef6)));
+    g.add(K.rods([[[c[0], c[1], 250], [c[0], c[1], 302.7], 1.1]], K.mat(0xe8eef6, {}, 0.7)));
   }
 
   // 广晟国际大厦 (屋顶 311.9 m，尖顶 360 m): 切角方形塔身，顶部两级收进的塔冠，再接一根方尖顶
@@ -1606,7 +1651,7 @@ function buildCBD(THREE, K) {
     prism(r, 0, 265, m, { tw: 10, th: 12 });
     prism(K.scale(r, c, 0.84), 265, 290, m, { tw: 10, th: 12 });
     prism(K.scale(r, c, 0.66), 290, 311.9, m, { tw: 10, th: 12 });
-    const sp = K.scale(r, c, 0.12); add(K.loft([K.at(sp, 311.9), K.at(K.scale(r, c, 0.01), 360)], {}), K.mat(0xe6edf6));
+    const sp = K.scale(r, c, 0.12); add(K.loft([K.at(sp, 311.9), K.at(K.scale(r, c, 0.01), 360)], {}), K.mat(0xe6edf6, {}, 0.7));
   }
 
   // 富力盈凯广场 (296.5 m): 方形平面，对角两个角被“捏”掉——一角越往上切得越多，另一角越往下切得越多；立面竖向的白色纹理
@@ -1636,7 +1681,7 @@ function buildMuseum(THREE, K) {
   const glass = K.mat({ bg: '#6f7f93', v: 8, vc: '#9aa8b8', vw: 3 });
   const inner = K.scale(r, c, 0.93);
   add(K.loft([K.at(inner, 0), K.at(inner, Z0)], { tw: 6, th: Z0 }), glass);
-  const R = rng(20100518), RED = '#a12c35', WHITE = '#eceef2';
+  let R = rng(20100518), RED = '#a12c35', WHITE = '#eceef2';
   // scatter the carved bars and L-shapes over a rectangle given in metres (x0..x1, y0..y1; y downwards)
   const carve = (x, x0, x1, y0, y1, n, edge) => {
     for (let k = 0; k < n; k++) {
@@ -1651,32 +1696,40 @@ function buildMuseum(THREE, K) {
   };
   // facades: one canvas running round the whole box, drawn in metres
   let per = 0; for (let i = 0; i < r.length; i++) { const p = r[i], q = r[(i + 1) % r.length]; per += Math.hypot(q[0] - p[0], q[1] - p[1]); }
-  const H = Z1 - Z0, fc = document.createElement('canvas'); fc.width = 4096; fc.height = 512; const fx = fc.getContext('2d');
-  fx.fillStyle = '#3c4048'; fx.fillRect(0, 0, 4096, 512);
-  fx.setTransform(4096 / per, 0, 0, 512 / H, 0, 0);
-  fx.fillStyle = 'rgba(255,255,255,.05)'; for (let m = 0; m < per; m += 1.5) fx.fillRect(m, 0, 0.08, H);
-  carve(fx, 0, per - 8, 0.5, H - 3, Math.round(per / 2.4), true);
-  for (let f = 0; f < 4; f++) {   // one or two larger stepped white recesses low on each face
-    const fx0 = f * per / 4 + 20 + R() * (per / 4 - 50), fy = H - 9 - R() * 6; fx.fillStyle = WHITE;
-    fx.fillRect(fx0, fy, 9, 2.4); fx.fillRect(fx0 + 7, fy, 2.4, 6); fx.fillRect(fx0 + 7, fy + 4, 9, 2.4);
-  }
-  const ft = new THREE.CanvasTexture(fc); ft.colorSpace = THREE.SRGBColorSpace; ft.anisotropy = 8; ft.wrapS = ft.wrapT = THREE.RepeatWrapping; ft.offset.y = -Z0 / H;
-  add(K.loft([K.at(r, Z0), K.at(r, Z1)], { tw: per, th: H }), new THREE.MeshLambertMaterial({ map: ft }));
+  const H = Z1 - Z0;
+  // at night the box goes black and its cuts glow — red from the inner layer, warm white from the pale ones (the "月光宝盒")
+  const facade = (night) => {
+    R = rng(20100518); RED = night ? '#FF3B30' : '#a12c35'; WHITE = night ? '#FFE6BD' : '#eceef2';
+    const fc = document.createElement('canvas'); fc.width = 4096; fc.height = 512; const fx = fc.getContext('2d');
+    fx.fillStyle = night ? '#030407' : '#3c4048'; fx.fillRect(0, 0, 4096, 512);
+    fx.setTransform(4096 / per, 0, 0, 512 / H, 0, 0);
+    if (!night) { fx.fillStyle = 'rgba(255,255,255,.05)'; for (let m = 0; m < per; m += 1.5) fx.fillRect(m, 0, 0.08, H); }
+    carve(fx, 0, per - 8, 0.5, H - 3, Math.round(per / 2.4), true);
+    for (let f = 0; f < 4; f++) {   // one or two larger stepped white recesses low on each face
+      const fx0 = f * per / 4 + 20 + R() * (per / 4 - 50), fy = H - 9 - R() * 6; fx.fillStyle = WHITE;
+      fx.fillRect(fx0, fy, 9, 2.4); fx.fillRect(fx0 + 7, fy, 2.4, 6); fx.fillRect(fx0 + 7, fy + 4, 9, 2.4);
+    }
+    const ft = new THREE.CanvasTexture(fc); ft.colorSpace = THREE.SRGBColorSpace; ft.anisotropy = 8; ft.wrapS = ft.wrapT = THREE.RepeatWrapping; ft.offset.y = -Z0 / H; return ft;
+  };
+  add(K.loft([K.at(r, Z0), K.at(r, Z1)], { tw: per, th: H }), K.lit(new THREE.MeshLambertMaterial({ map: facade(false) }), facade(true)));
   add(K.cap(K.at(r, Z0), true), K.mat(0x4a4f58));
   // roof: dark, the same carving along a band round the edge, a big pale-framed skylight in the middle
   let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity; for (const [px, py] of r) { x0 = Math.min(x0, px); x1 = Math.max(x1, px); y0 = Math.min(y0, py); y1 = Math.max(y1, py); }
-  const W = x1 - x0, D = y1 - y0, rc = document.createElement('canvas'); rc.width = rc.height = 1024; const rx = rc.getContext('2d');
-  rx.fillStyle = '#474b53'; rx.fillRect(0, 0, 1024, 1024); rx.setTransform(1024 / W, 0, 0, 1024 / D, 0, 0);   // metres; y down = south
-  carve(rx, 1, W - 9, 1, 16, 26); carve(rx, 1, W - 9, D - 17, D - 2, 26); carve(rx, 1, 15, 17, D - 17, 18); carve(rx, W - 16, W - 6, 17, D - 17, 18);
-  const sx = W / 2 - 27, sy = D / 2 - 24, sw = 54, sd = 34;   // skylight a little north of the middle
-  rx.fillStyle = '#cfd2d6'; rx.fillRect(sx, sy, sw, sd);
-  rx.fillStyle = '#aab8b2'; rx.fillRect(sx + 5, sy + 5, sw - 10, sd - 10);
-  rx.fillStyle = '#c4cfca'; rx.fillRect(sx + 14, sy + 9, sw - 24, sd - 18);
-  rx.fillStyle = 'rgba(80,96,90,.55)'; for (let m = sx + 5; m < sx + sw - 5; m += 2.6) rx.fillRect(m, sy + 5, 0.25, sd - 10); for (let m = sy + 5; m < sy + sd - 5; m += 2.6) rx.fillRect(sx + 5, m, sw - 10, 0.25);
-  rx.fillStyle = '#c98a45'; rx.fillRect(sx + 7, sy + 12, 6, 4); rx.fillRect(sx + 9, sy + 18, 4, 5); rx.fillStyle = '#eef0f2'; rx.fillRect(sx + 6, sy + 7, 3, 2); rx.fillRect(sx + 40, sy + 26, 4, 2);
-  const rt = new THREE.CanvasTexture(rc); rt.colorSpace = THREE.SRGBColorSpace; rt.anisotropy = 8;
+  const W = x1 - x0, D = y1 - y0, sx = W / 2 - 27, sy = D / 2 - 24, sw = 54, sd = 34;   // skylight a little north of the middle
+  const roofTex = (night) => {
+    R = rng(7); RED = night ? '#FF3B30' : '#a12c35'; WHITE = night ? '#FFE6BD' : '#eceef2';
+    const rc = document.createElement('canvas'); rc.width = rc.height = 1024; const rx = rc.getContext('2d');
+    rx.fillStyle = night ? '#030407' : '#474b53'; rx.fillRect(0, 0, 1024, 1024); rx.setTransform(1024 / W, 0, 0, 1024 / D, 0, 0);   // metres; y down = south
+    carve(rx, 1, W - 9, 1, 16, 26); carve(rx, 1, W - 9, D - 17, D - 2, 26); carve(rx, 1, 15, 17, D - 17, 18); carve(rx, W - 16, W - 6, 17, D - 17, 18);
+    rx.fillStyle = night ? '#2A2C30' : '#cfd2d6'; rx.fillRect(sx, sy, sw, sd);
+    rx.fillStyle = night ? '#FFD38A' : '#aab8b2'; rx.fillRect(sx + 5, sy + 5, sw - 10, sd - 10);
+    rx.fillStyle = night ? '#FFE2AE' : '#c4cfca'; rx.fillRect(sx + 14, sy + 9, sw - 24, sd - 18);
+    rx.fillStyle = night ? 'rgba(60,40,10,.6)' : 'rgba(80,96,90,.55)'; for (let m = sx + 5; m < sx + sw - 5; m += 2.6) rx.fillRect(m, sy + 5, 0.25, sd - 10); for (let m = sy + 5; m < sy + sd - 5; m += 2.6) rx.fillRect(sx + 5, m, sw - 10, 0.25);
+    if (!night) { rx.fillStyle = '#c98a45'; rx.fillRect(sx + 7, sy + 12, 6, 4); rx.fillRect(sx + 9, sy + 18, 4, 5); rx.fillStyle = '#eef0f2'; rx.fillRect(sx + 6, sy + 7, 3, 2); rx.fillRect(sx + 40, sy + 26, 4, 2); }
+    const rt = new THREE.CanvasTexture(rc); rt.colorSpace = THREE.SRGBColorSpace; rt.anisotropy = 8; return rt;
+  };
   const plane = new THREE.PlaneGeometry(W, D); plane.rotateX(-Math.PI / 2); plane.translate((x0 + x1) / 2, Z1 + 0.05, -(y0 + y1) / 2);
-  add(plane, new THREE.MeshLambertMaterial({ map: rt }));
+  add(plane, K.lit(new THREE.MeshLambertMaterial({ map: roofTex(false) }), roofTex(true)));
   // the skylight sits up a little on its frame
   const sk = [[x0 + sx, y1 - sy - sd], [x0 + sx + sw, y1 - sy - sd], [x0 + sx + sw, y1 - sy], [x0 + sx, y1 - sy]];
   add(K.loft([K.at(sk, Z1), K.at(sk, Z1 + 1.6)], { tw: 6, th: 2 }), K.mat(0xc9ccd1));
@@ -1709,10 +1762,13 @@ function buildHaixinsha(THREE, K) {
     const t = v / 6;
     rows.push(B.map((b, i) => { const l = Lp[i], u = i / N, peak = Math.pow(Math.abs(Math.sin(Math.PI * SAILS * u)), 1.6); return [b[0] + (l[0] - b[0]) * t, b[1] + (l[1] - b[1]) * t, 33 + 3 * t + 11 * peak * t * t]; }));
   }
-  add(K.loft(rows.map((r) => r), { open: true, smooth: false, tw: 8, th: 8 }), new THREE.MeshLambertMaterial({ color: 0xfbfcfe, emissive: 0x30363f, side: THREE.DoubleSide }));
+  const sail = new THREE.MeshLambertMaterial({ color: 0xfbfcfe, emissive: 0x30363f, side: THREE.DoubleSide });
+  add(K.loft(rows.map((r) => r), { open: true, smooth: false, tw: 8, th: 8 }), sail);
+  const sailDay = new THREE.Color(0x30363f), sailNight = new THREE.Color(0x9fbfff);
+  g.userData.night = (n) => sail.emissive.copy(sailDay).lerp(sailNight, n);
   // the four sail masts in front of the stand (OSM man_made=mast): steel space trusses about 80 m high that carried the
   // folding LED sails of the 2010 ceremony, two sails each; drawn as square lattice towers with the yards for the sails
-  const white = K.mat(0xf3f6fb), truss = [];
+  const white = K.mat(0xf3f6fb, {}, 0.8), truss = [];
   for (const [mx, my] of [[-396, -156], [-386, -126], [-382, -81], [-387, -49]]) {
     const w = (z) => 3.2 - 1.4 * (z / 78), corner = (sx, sy, z) => [mx + sx * w(z), my + sy * w(z), z];
     const cs = [[-1, -1], [1, -1], [1, 1], [-1, 1]];
@@ -1741,8 +1797,12 @@ function buildCitic(THREE, K) {
   fx.fillStyle = 'rgba(225,238,246,.55)'; for (let i = 0; i < 256; i += 8) fx.fillRect(i, 0, 1, 256);
   fx.fillStyle = 'rgba(205,226,238,.6)'; for (let j = 0; j < 256; j += 64) fx.fillRect(0, j, 256, 3);
   const ft = new THREE.CanvasTexture(fc); ft.colorSpace = THREE.SRGBColorSpace; ft.anisotropy = 8; ft.wrapS = ft.wrapT = THREE.RepeatWrapping;
-  const face = new THREE.MeshLambertMaterial({ map: ft });
-  const notch = K.mat({ bg: '#3e6c86', h: 2, hc: '#5c87a0' }), white = K.mat(0xf1f4f7), stone = K.mat({ bg: '#5b636c', v: 6, vc: '#aeb6be', vw: 14 });
+  const nc = document.createElement('canvas'); nc.width = nc.height = 256; const nx = nc.getContext('2d'), nr = rng(1997);
+  nx.fillStyle = '#03070C'; nx.fillRect(0, 0, 256, 256);
+  for (let i = 0; i < 256; i += 8) for (let j = 0; j < 256; j += 32) { const mid = i >= 92 && i < 164; if (nr() > (mid ? 0.25 : 0.5)) continue; nx.fillStyle = nr() < 0.75 ? `rgba(255,222,160,${0.4 + nr() * 0.4})` : `rgba(210,232,255,${0.4 + nr() * 0.4})`; nx.fillRect(i + 1, j + 3, 6, 26); }
+  const nt = new THREE.CanvasTexture(nc); nt.colorSpace = THREE.SRGBColorSpace; nt.anisotropy = 8; nt.wrapS = nt.wrapT = THREE.RepeatWrapping;
+  const face = K.lit(new THREE.MeshLambertMaterial({ map: ft }), nt);
+  const notch = K.mat({ bg: '#3e6c86', h: 2, hc: '#5c87a0' }, {}, 0.4), white = K.mat(0xf1f4f7, {}, 0.95), stone = K.mat({ bg: '#5b636c', v: 6, vc: '#aeb6be', vw: 14 });
   const wall = (i, z0, z1, m, a = 0, b = 1, tw) => { const p = r[i], q = r[(i + 1) % 12], P = [p[0] + (q[0] - p[0]) * a, p[1] + (q[1] - p[1]) * a], Q = [p[0] + (q[0] - p[0]) * b, p[1] + (q[1] - p[1]) * b]; add(K.loft([[[...P, z0], [...Q, z0]], [[...P, z1], [...Q, z1]]], { open: true, tw: tw || 6, th: 8 }), m); };
   for (let i = 0; i < 12; i++) {
     if (i % 3 === 0) { wall(i, 0, 22, stone); wall(i, 22, TOP, face, 0, 1, faceLen); }
@@ -1757,7 +1817,7 @@ function buildCitic(THREE, K) {
   sx.fillStyle = '#c8303a'; sx.fillRect(0, 0, 512, 224); sx.fillStyle = '#f3e4e4'; sx.fillRect(14, 14, 484, 196);
   sx.fillStyle = '#c8303a'; sx.font = 'bold 150px "Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif'; sx.textAlign = 'center'; sx.textBaseline = 'middle'; sx.fillText('中信', 256, 118);
   const st = new THREE.CanvasTexture(sc); st.colorSpace = THREE.SRGBColorSpace; st.anisotropy = 8;
-  const signFace = new THREE.MeshLambertMaterial({ map: st }), red = K.mat(0xc8303a);
+  const signFace = K.lit(new THREE.MeshLambertMaterial({ map: st }), st), red = K.mat(0xc8303a, {}, 0.8);
   const box = new THREE.Mesh(new THREE.BoxGeometry(20, 9, 0.8), [red, red, red, red, signFace, signFace]);
   box.position.set(c[0], TOP + 4 + 4.5, -c[1]); g.add(box);
   g.add(K.rods([-7, 0, 7].map((d) => [[c[0] + d, c[1], TOP], [c[0] + d, c[1], TOP + 4], 0.35]), K.mat(0xb8c0c8)));
@@ -1811,10 +1871,13 @@ function buildLiede(THREE, K) {
   group.matrixAutoUpdate = false;
   group.matrix.makeBasis(new THREE.Vector3(ue, 0, -un), new THREE.Vector3(0, 1, 0), new THREE.Vector3(un, 0, ue));
   const wrap = new THREE.Group(); wrap.position.set((O.lng - MODEL_O[0]) * MKX, 0, -(O.lat - MODEL_O[1]) * MKY); wrap.add(group);
+  const tD = new THREE.Color(0x39424f), tN = new THREE.Color(0xd6e4ff), cD = new THREE.Color(0x2a3340), cN = new THREE.Color(0xc4d8ff), hD = new THREE.Color(0xa9b6c6), hN = new THREE.Color(0xe2ecff);
+  wrap.userData.night = (n) => { towerMat.emissive.copy(tD).lerp(tN, n * 0.8); cableMat.emissive.copy(cD).lerp(cN, n * 0.85); hangMat.color.copy(hD).lerp(hN, n); };
   return wrap;
 }
 const ThreeModels = {
-  started: false,
+  started: false, nightTarget: 0, n: 0, last: 0, rp: 0,
+  setNight(v) { this.nightTarget = v ? 1 : 0; if (map) map.triggerRepaint(); },
   watch() { const go = () => this.start(); map.on('moveend', go); go(); },
   start() {
     if (this.started || !map || map.getZoom() < 12.2) return;
@@ -1834,8 +1897,17 @@ const ThreeModels = {
     ];
     for (const p of parts) { scene.add(p.g); p.g.traverse((o) => { o.frustumCulled = false; }); }
     const skin = parts[0].g.children.find((o) => o.material && o.material.transparent);
-    scene.add(new THREE.HemisphereLight(0xffffff, 0xa9b9cf, 2.1));
+    const hemi = new THREE.HemisphereLight(0xffffff, 0xa9b9cf, 2.1); scene.add(hemi);
     const sun = new THREE.DirectionalLight(0xffffff, 1.9); sun.position.set(-0.55, 1, 0.45); scene.add(sun);
+    const night = (now) => {   // fade between day and night over about a second; keep repainting while the tower's light show runs
+      const dt = Math.min(0.1, (now - (this.last || now)) / 1000); this.last = now;
+      if (this.n !== this.nightTarget) this.n = this.nightTarget > this.n ? Math.min(1, this.n + dt / 1.1) : Math.max(0, this.n - dt / 1.1);
+      const n = this.n;
+      hemi.intensity = 2.1 * (1 - 0.86 * n); sun.intensity = 1.9 * (1 - 0.94 * n);
+      for (const m of K.mats) m.emissiveIntensity = n * m.userData.glow;
+      for (const p of parts) if (p.g.userData.night) p.g.userData.night(n, now / 1000);
+      if ((n > 0 || this.n !== this.nightTarget) && !this.rp) this.rp = setTimeout(() => { this.rp = 0; map.triggerRepaint(); }, n === this.nightTarget ? 40 : 16);
+    };
     const mc = maplibregl.MercatorCoordinate.fromLngLat(MODEL_O, 0), sc = mc.meterInMercatorCoordinateUnits();
     const l = new THREE.Matrix4().makeTranslation(mc.x, mc.y, mc.z).scale(new THREE.Vector3(sc, -sc, sc)).multiply(new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(1, 0, 0), Math.PI / 2));
     const camera = new THREE.Camera(); let renderer = null;
@@ -1846,12 +1918,14 @@ const ThreeModels = {
         const z = map.getZoom(); if (z < 12.4 || !renderer) return;
         for (const p of parts) { const k = Math.min(1, Math.max(0, (z - p.z0) / (p.z1 - p.z0))); p.g.visible = k > 0.002; p.g.scale.y = Math.max(k, 0.002); }
         if (skin) skin.material.opacity = 0.34 - 0.24 * Math.min(1, Math.max(0, (z - 14.5) / 2));
+        night(performance.now());
         camera.projectionMatrix = new THREE.Matrix4().fromArray(matrix).multiply(l);
         renderer.resetState(); renderer.render(scene, camera);
       },
     }, 'bld');
     // the models are in: hide the plain stand-ins
     for (const id of ['tower', 'models-fb']) if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', 'none');
+    this.nightTarget = this.n = Night.on ? 1 : 0;
     map.triggerRepaint();
   },
 };
@@ -1975,6 +2049,7 @@ function initMap() {
         'fill-extrusion-vertical-gradient': true,
       } }, 'trail');
     if (map.getLayer('models-3d')) for (const id of ['tower', 'models-fb']) map.setLayoutProperty(id, 'visibility', 'none');
+    try { if (localStorage.getItem('bh-night') === '1') Night.set(true, false); } catch (e) { /* storage may be blocked */ }
     $('#veil').classList.add('gone');
     setTimeout(() => $('#veil').remove(), 800);
     setModule(state.module, { fit: false });
@@ -3528,16 +3603,22 @@ const DaySky = {
     if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
     if (!map) return;
     const { yh, fpx } = mapHorizon();
-    const key = yh > 0 ? `${cv.width}x${cv.height}:${yh.toFixed(1)}` : `${cv.width}x${cv.height}:-`;
+    const nt = Night.on, key = (yh > 0 ? `${cv.width}x${cv.height}:${yh.toFixed(1)}` : `${cv.width}x${cv.height}:-`) + (nt ? ':n' : '');
     if (key === this.key) return;   // panning and rotating never move the horizon
     this.key = key;
     const ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
     if (yh <= 0) return;
     const g = ctx.createLinearGradient(0, 0, 0, yh);
-    for (let k = 0; k <= 8; k++) { const e = Math.atan(yh * (1 - k / 8) / fpx) / D2R; g.addColorStop(k / 8, rgb(mixc(this.HOR, this.ZEN, Math.pow(Math.min(1, e / 90), 0.42)))); }
+    const HOR = nt ? [30, 44, 78] : this.HOR, ZEN = nt ? [3, 7, 18] : this.ZEN, LAND = nt ? [10, 20, 38] : [242, 246, 252];
+    for (let k = 0; k <= 8; k++) { const e = Math.atan(yh * (1 - k / 8) / fpx) / D2R; g.addColorStop(k / 8, rgb(mixc(HOR, ZEN, Math.pow(Math.min(1, e / 90), 0.42)))); }
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, yh);
-    const g2 = ctx.createLinearGradient(0, yh, 0, yh + 90); g2.addColorStop(0, rgb(this.HOR)); g2.addColorStop(1, rgb([242, 246, 252]));
-    ctx.fillStyle = g2; ctx.fillRect(0, yh, W, 90); ctx.fillStyle = rgb([242, 246, 252]); ctx.fillRect(0, yh + 90, W, H);
+    if (nt) {   // a sprinkling of stars, fading towards the hazy, lit-up horizon
+      const r = rng(2026); ctx.fillStyle = '#EAF2FF';
+      for (let i = 0; i < 220; i++) { const x = r() * W, y = r() * yh, a = Math.max(0, 1 - y / yh * 1.25) * (0.35 + r() * 0.65); if (a <= 0.02) continue; ctx.globalAlpha = a; const s = r() < 0.08 ? 1.6 : 0.9; ctx.fillRect(x, y, s, s); }
+      ctx.globalAlpha = 1;
+    }
+    const g2 = ctx.createLinearGradient(0, yh, 0, yh + 90); g2.addColorStop(0, rgb(HOR)); g2.addColorStop(1, rgb(LAND));
+    ctx.fillStyle = g2; ctx.fillRect(0, yh, W, 90); ctx.fillStyle = rgb(LAND); ctx.fillRect(0, yh + 90, W, H);
   },
 };
 const SkyDome = {   // night-sky preview drawn above the map's horizon while you pull past the top
@@ -3728,6 +3809,64 @@ $('#t3d').addEventListener('click', () => {
   map.easeTo({ pitch: state.is3d ? 55 : 0, duration: 700 });
 });
 $('#zHome').addEventListener('click', () => map && map.flyTo({ ...HOME(), essential: true }));
+/* ---------- 夜间模式：底图换深色，主干道像亮着路灯，楼房亮起窗灯；广州塔开灯光秀，珠江新城、海心沙、猎德大桥这些模型也开灯 */
+const NIGHT_ROAD = { lane: ['#24334E', '#0B162A'], street: ['#2D3E5E', '#0B162A'], secondary: ['#7E6E52', '#221D14'], primary: ['#DDB06A', '#3F2E12'], motorway: ['#F2A54C', '#4F2E0E'] };
+const NIGHT_HALO = 'rgba(8,16,32,0.92)';
+const NIGHT_BLD = ['interpolate', ['linear'], ['get', 'h'], 0, '#1A2741', 60, '#1F2F4F', 150, '#24395F', 300, '#2B4572'];
+const NIGHT_PAINT = [
+  ['bg', 'background-color', '#0A1426'], ['hill', 'raster-opacity', 0.3], ['hill', 'raster-brightness-max', 0.35],
+  ['dist-fill', 'fill-color', '#15264A'],
+  ['green', 'fill-color', ['match', ['get', 'k'], 'forest', '#0E2A2B', 'sport', '#12233D', 'grass', '#10283A', 'farm', '#122A2C', '#0F283A']],
+  ['water', 'fill-color', '#050D1B'], ['water-line', 'line-color', '#1C3B6B'], ['waterway', 'line-color', '#050D1B'],
+  ['rail-case', 'line-color', '#33476B'], ['rail-dash', 'line-color', '#0A1426'], ['rail-metro', 'line-color', '#4E6FB0'], ['path', 'line-color', '#2C3F63'],
+  ['road-label', 'text-color', '#C3D2EC'], ['road-label-minor', 'text-color', '#8FA3C6'], ['place-label', 'text-color', '#9DB8E8'],
+  ['poi-label', 'text-color', '#BCD3FB'], ['bridge-label', 'text-color', '#9FB2D4'], ['area-label', 'text-color', '#8FB2F5'],
+  ['dist-label', 'text-color', '#7AA7FF'], ['cover-label', 'text-color', '#7AA7FF'],
+  ['poi-dot', 'circle-color', '#60A5FA'], ['poi-dot', 'circle-stroke-color', '#0A1426'],
+  ['bld', 'fill-extrusion-color', NIGHT_BLD], ['models-fb', 'fill-extrusion-color', NIGHT_BLD],
+  ['bld', 'fill-extrusion-pattern', ['match', ['%', ['floor', ['*', ['get', 'h'], 7]], 3], 0, 'nw0', 1, 'nw1', 'nw2']],
+];
+const Night = {
+  on: false, day: null,
+  // windows: a dark wall with a few lit panes, three variants so neighbouring blocks differ
+  images() {
+    if (map.hasImage('nw0')) return;
+    for (let v = 0; v < 3; v++) {
+      const S = 64, c = document.createElement('canvas'); c.width = c.height = S; const g = c.getContext('2d'), r = rng(77 + v * 13);
+      g.fillStyle = '#1B2943'; g.fillRect(0, 0, S, S);
+      for (let y = 2; y < S; y += 8) for (let x = 2; x < S; x += 6) {
+        const lit = r() < [0.36, 0.26, 0.48][v];
+        g.fillStyle = lit ? (r() < 0.72 ? `rgba(255,${200 + Math.floor(r() * 30)},${130 + Math.floor(r() * 50)},${0.7 + r() * 0.3})` : 'rgba(214,230,255,.8)') : 'rgba(10,18,34,.8)';
+        g.fillRect(x, y, 3, 4);
+      }
+      map.addImage('nw' + v, g.getImageData(0, 0, S, S), { pixelRatio: 3 });
+    }
+  },
+  rules() {
+    const R = [...NIGHT_PAINT];
+    for (const l of map.getStyle().layers) {
+      const m = /^r([cf])-(\w+?)(-br)?$/.exec(l.id); if (!m || !NIGHT_ROAD[m[2]]) continue;
+      R.push([l.id, 'line-color', NIGHT_ROAD[m[2]][m[1] === 'f' ? 0 : 1]]);
+    }
+    for (const l of map.getStyle().layers) if (l.type === 'symbol' && map.getPaintProperty(l.id, 'text-halo-color') !== undefined) R.push([l.id, 'text-halo-color', NIGHT_HALO]);
+    return R.filter(([id]) => map.getLayer(id));
+  },
+  set(v, save = true) {
+    this.on = v; document.body.classList.toggle('night', v);
+    $('#zNight').setAttribute('aria-pressed', String(v));
+    if (save) try { localStorage.setItem('bh-night', v ? '1' : '0'); } catch (e) { /* storage may be blocked */ }
+    DaySky.key = ''; DaySky.queue();
+    ThreeModels.setNight(v);
+    if (!map || !state.ready) return;
+    if (v) this.images();
+    const rules = this.rules();
+    if (!this.day) this.day = rules.map(([id, prop]) => [id, prop, map.getPaintProperty(id, prop)]);
+    if (v) for (const [id, prop, val] of rules) map.setPaintProperty(id, prop, val);
+    else for (const [id, prop, val] of this.day) if (map.getLayer(id)) map.setPaintProperty(id, prop, val === undefined ? null : val);
+    map.setLight(v ? { anchor: 'viewport', color: '#A9BCE6', intensity: 0.22, position: [1.25, 205, 38] } : { anchor: 'viewport', color: '#FFFFFF', intensity: 0.32, position: [1.25, 205, 38] });
+  },
+};
+$('#zNight').addEventListener('click', () => Night.set(!Night.on));
 /* ---------- 纯享模式：收起所有标记、卡片和面板，只拖着地图看；再点一次按钮、点顶上的“退出纯享”或按 Esc 回来 */
 const Pure = {
   on: false, t: 0, saved: {},
