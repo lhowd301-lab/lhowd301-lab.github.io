@@ -487,6 +487,7 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
 .pin-photo.is-active .pb{border-color:var(--blue)}
 .pin-mark .pb{display:flex;align-items:center;gap:0;padding:5px;border-radius:10px;background:var(--blue);color:var(--white);font-size:12.5px;font-weight:500;white-space:nowrap;border:1.5px solid var(--white);transition:gap .2s,padding .2s}
 .pin-mark .pb svg{width:15px;height:15px;flex:none}
+.pin-mark.lm-hid{visibility:hidden;pointer-events:none}
 .pin-mark .lbl{max-width:0;overflow:hidden;transition:max-width .25s}
 .pin-mark:hover .pb,.pin-mark.is-active .pb{gap:6px;padding-right:10px}
 .pin-mark:hover .lbl,.pin-mark.is-active .lbl{max-width:240px}
@@ -1073,6 +1074,68 @@ const SITE = {
       facts: { 正式名称: '广州解放纪念像', 落成: '1959 年', 位置: '越秀区 · 海珠广场' },
       intro: '海珠广场正中的雕像，纪念 1949 年 10 月广州解放，1959 年落成。雕像是一名手持步枪、怀抱鲜花的解放军战士，广场南面就是海珠桥和珠江。',
       thoughts: '写下你对海珠广场的理解。', sample: true },
+    // ---- 城市新地标：地图上用 three.js 建了模的那些（点建模也能打开卡片）。kind: 'new' 在列表里单独成组；
+    //      minor: true 的几座写字楼挨得近，缩小时图钉和别的叠在一起就先藏起来；meta 是列表右边的小字；zoom / pitch 是“定位”时的镜头
+    { id: 'l27', city: 'gz', kind: 'new', meta: '600 m', name: '广州塔', en: 'Canton Tower', lnglat: [113.31914, 23.10901], zoom: 14.9, pitch: 64,
+      facts: { 高度: '600 m（塔身 454 m + 天线桅杆 146 m）', 开放: '2010 年', 设计: 'IBA（Mark Hemel、Barbara Kuit）、奥雅纳' },
+      intro: '珠江南岸、新城市中轴线南端的电视观光塔，昵称“小蛮腰”。塔身是上下两个椭圆之间扭转的钢结构网格，越往中间越细。2009 年封顶后成了世界最高的电视塔，2011 年才被东京晴空塔超过。塔顶外沿有一圈透明的观光舱，绕着屋顶慢慢转。',
+      thoughts: '写下你对广州塔的理解。', sample: true },
+    { id: 'l28', city: 'gz', kind: 'new', meta: '438.6 m', name: '广州国际金融中心（西塔）', en: 'Guangzhou International Finance Center', lnglat: [113.3179, 23.12027], zoom: 15.4, pitch: 62,
+      facts: { 高度: '438.6 m · 103 层', 建成: '2010 年', 设计: 'WilkinsonEyre' },
+      intro: '珠江新城中轴线西侧的“西塔”，和东边的东塔隔着花城广场相对。平面是弧边三角形，外面包着一层白色的斜交网格结构。1 到 66 层是写字楼，69 到 98 层是四季酒店，酒店大堂在 70 层。',
+      thoughts: '写下你对西塔的理解。', sample: true },
+    { id: 'l29', city: 'gz', kind: 'new', meta: '530 m', name: '广州周大福金融中心（东塔）', en: 'Guangzhou CTF Finance Centre', lnglat: [113.32065, 23.12021], zoom: 15.3, pitch: 62,
+      facts: { 高度: '530 m · 111 层', 建成: '2016 年', 设计: 'KPF' },
+      intro: '广州最高的楼，也叫“东塔”，和西塔隔着中轴线相对。塔身分几段往上退台，立面是一条条贯通的白色陶土竖肋；裙楼是 K11 商场，最上面 16 层是瑰丽酒店。楼里的日立电梯测试时跑到每秒 21 米，被吉尼斯认证为世界最快的电梯。',
+      thoughts: '写下你对东塔的理解。', sample: true },
+    { id: 'l30', city: 'gz', kind: 'new', meta: '309.6 m', name: '珠江城大厦', en: 'Pearl River Tower', lnglat: [113.31756, 23.12677], zoom: 15.7, pitch: 62,
+      facts: { 高度: '309.6 m · 71 层', 建成: '2011 年', 设计: 'SOM（Adrian Smith、Gordon Gill）' },
+      intro: '主打节能的超高层：两个设备层各开了两个贯通的风洞，里面装着风力涡轮机，再加上双层幕墙、辐射制冷和装了光伏板的遮阳。业主是中国烟草总公司。',
+      thoughts: '写下你对珠江城大厦的理解。', sample: true },
+    { id: 'l31', city: 'gz', kind: 'new', minor: true, meta: '360 m', name: '广晟国际大厦', en: 'The Pinnacle', lnglat: [113.31807, 23.12767], zoom: 15.7, pitch: 62,
+      facts: { 高度: '屋顶 311.9 m · 尖顶 360 m', 层数: '60 层', 建成: '2012 年' },
+      intro: '珠江新城北段的写字楼。切角方形的塔身，顶上两级往里收的塔冠，再接一根尖顶，所以总高比屋顶高出将近 50 米。由广州瀚华建筑设计。',
+      thoughts: '写下你对广晟国际大厦的理解。', sample: true },
+    { id: 'l32', city: 'gz', kind: 'new', minor: true, meta: '302.7 m', name: '利通广场', en: 'Leatop Plaza', lnglat: [113.32034, 23.12848], zoom: 15.8, pitch: 62,
+      facts: { 高度: '屋顶 264.6 m · 天线 302.7 m', 建成: '2012 年', 设计: 'JAHN' },
+      intro: '方形切角的玻璃塔，屋顶朝一个方向斜切成单坡，顶上立着一根天线。由 JAHN 事务所设计，2012 年完工，主要是写字楼。',
+      thoughts: '写下你对利通广场的理解。', sample: true },
+    { id: 'l33', city: 'gz', kind: 'new', minor: true, meta: '296 m', name: '富力盈凯广场', en: 'R&F Yingkai Square', lnglat: [113.31637, 23.12118], zoom: 15.7, pitch: 62,
+      facts: { 高度: '约 296 m · 66 层', 建成: '2014 年', 设计: 'Goettsch Partners' },
+      intro: '方形塔身的两个对角被“捏”掉了：一个角越往上切得越多，另一个越往下切得越多，所以从不同方向看轮廓都不一样。上面几层是广州柏悦酒店，下面是写字楼。',
+      thoughts: '写下你对富力盈凯广场的理解。', sample: true },
+    { id: 'l34', city: 'gz', kind: 'new', minor: true, meta: '267.8 m', name: '广州银行大厦', en: 'Bank of Guangzhou Tower', lnglat: [113.3205, 23.12755], zoom: 15.8, pitch: 62,
+      facts: { 高度: '267.8 m · 57 层', 建成: '2012 年', 用途: '写字楼' },
+      intro: '广州银行的总部大楼，在珠江新城北段，挨着利通广场。玻璃幕墙的塔身，顶部稍微往里收了一圈。',
+      thoughts: '写下你对广州银行大厦的理解。', sample: true },
+    { id: 'l35', city: 'gz', kind: 'new', minor: true, meta: '243 m', name: '富力中心', en: 'R&F Center', lnglat: [113.31643, 23.1199], zoom: 15.9, pitch: 62,
+      facts: { 高度: '243 m · 54 层', 建成: '2007 年', 设计: 'Aedas' },
+      intro: '珠江新城最早落成的一批超高层之一，在华夏路上，正对珠江新城地铁站 B2 出口，是富力地产的总部。平面是两边往里凹的“蝴蝶结”形。',
+      thoughts: '写下你对富力中心的理解。', sample: true },
+    { id: 'l36', city: 'gz', kind: 'new', minor: true, meta: '318.9 m', name: '环球都会广场', en: 'Global City Square', lnglat: [113.3218, 23.12065], zoom: 15.7, pitch: 62,
+      facts: { 高度: '318.9 m · 67 层', 建成: '2016 年', 位置: '天河区 · 珠江新城' },
+      intro: '紧挨在东塔东边的玻璃幕墙写字楼，2011 年动工，2016 年完工。',
+      thoughts: '写下你对环球都会广场的理解。', sample: true },
+    { id: 'l37', city: 'gz', kind: 'new', meta: '2010', name: '广东省博物馆', en: 'Guangdong Museum', lnglat: [113.32142, 23.11742], zoom: 16.4,
+      facts: { 新馆开馆: '2010 年', 设计: '许李严建筑师事务所', 外号: '月光宝盒' },
+      intro: '珠江新城中轴线东侧的新馆，设计取意“珍宝容器”：一只深色的方盒子，外墙和屋顶边缘散着红色、白色的凹槽，像漆盒上的雕刻。夜里红光从一层层外壳之间透出来，所以被叫作“月光宝盒”。',
+      thoughts: '写下你对广东省博物馆的理解。', sample: true },
+    { id: 'l38', city: 'gz', kind: 'new', meta: '2010', name: '海心沙', en: 'Haixinsha Island', lnglat: [113.3195, 23.114], zoom: 16,
+      facts: { 位置: '珠江中的沙洲 · 中轴线南端', 用途: '2010 年亚运会开、闭幕式场地', 现在: '海心沙亚运公园' },
+      intro: '花城广场正南、珠江里的一座沙洲。2010 年广州亚运会把开幕式和闭幕式都放在这里，没有进体育场：看台在岛的西端，弧形朝着东边的水上舞台，看台前立着四根当年挂 LED 帆屏的帆桅。现在是亚运公园，隔江就是广州塔。',
+      thoughts: '写下你对海心沙的理解。', sample: true },
+    { id: 'l39', city: 'gz', kind: 'new', meta: '390.2 m', name: '中信广场', en: 'CITIC Plaza', lnglat: [113.31938, 23.14436], zoom: 15.4, pitch: 62,
+      facts: { 高度: '屋顶 321.9 m · 天线 390.2 m', 层数: '80 层', 建成: '1997 年' },
+      intro: '天河北路上的老牌地标，由刘荣广伍振民建筑师事务所设计。1997 年落成时是全国最高的楼，也曾是世界最高的钢筋混凝土建筑。它和广州东站、珠江新城、广州塔排在同一条新城市中轴线上，两根天线之间挂着红色的“中信”招牌。',
+      thoughts: '写下你对中信广场的理解。', sample: true },
+    { id: 'l40', city: 'gz', kind: 'new', meta: '琶洲', name: '广交会展馆', en: 'Canton Fair Complex', lnglat: [113.3555, 23.1031], zoom: 15, pitch: 55,
+      facts: { 正式名称: '中国进出口商品交易会展馆', 位置: '海珠区 · 琶洲', 规模: '四期建成后总建筑面积约 168 万 m²' },
+      intro: '每年春、秋两届广交会的主场，2008 年起广交会全部搬到了琶洲。大展厅的屋面是一道道东西走向的长筒形扁拱，两头是整面的玻璃山墙。2022 年底四期（D 区）启用后，号称全球规模最大的会展综合体。',
+      thoughts: '写下你对广交会展馆的理解。', sample: true },
+    { id: 'l41', city: 'gz', kind: 'new', meta: '2009', name: '猎德大桥', en: 'Liede Bridge', lnglat: [113.32855, 23.11189], zoom: 15.8, pitch: 62,
+      facts: { 结构: '独塔自锚式悬索桥', 跨径: '219 m + 167 m', 通车: '2009 年' },
+      intro: '连接天河区猎德和海珠区的跨江大桥，2009 年 7 月通车。全桥只有一座桥塔，塔身像两片合在一起的贝壳，桥面从中间穿过；主缆从塔顶垂下来，锚在两头的桥面上。',
+      thoughts: '写下你对猎德大桥的理解。', sample: true },
   ],
 
   // 成长轨迹：按时间顺序排列；地图上每个阶段一种颜色（颜色在 STAGE_COL 里改），坐标取自 OpenStreetMap（WGS-84）
@@ -2106,17 +2169,36 @@ const ThreeModels = {
   build(THREE) {
     const K = modelKit(THREE), scene = new THREE.Scene();
     // each part grows up out of the ground between two zoom levels, in step with the map's own buildings
+    // l: which 地标 card a click on the part opens (珠江新城 is one group of towers: each mesh goes to the footprint it stands in)
     const parts = [
-      { g: buildCanton(THREE, K), z0: 12.4, z1: 13.6 },
-      { g: buildCBD(THREE, K), z0: 13.2, z1: 14.8 },
-      { g: buildMuseum(THREE, K), z0: 13.2, z1: 14.8 },
-      { g: buildHaixinsha(THREE, K), z0: 13.2, z1: 14.8 },
-      { g: buildCitic(THREE, K), z0: 13.2, z1: 14.8 },
-      { g: buildExpo(THREE, K), z0: 13.2, z1: 14.8 },
-      { g: buildCathedral(THREE, K), z0: 13.2, z1: 14.8 },
-      { g: buildLiede(THREE, K), z0: 13.2, z1: 14.4 },
+      { g: buildCanton(THREE, K), z0: 12.4, z1: 13.6, l: 'l27' },
+      { g: buildCBD(THREE, K), z0: 13.2, z1: 14.8, l: { ifc: 'l28', ctf: 'l29', prt: 'l30', pinnacle: 'l31', leatop: 'l32', yingkai: 'l33', bog: 'l34', rfc: 'l35', imp: 'l36' } },
+      { g: buildMuseum(THREE, K), z0: 13.2, z1: 14.8, l: 'l37' },
+      { g: buildHaixinsha(THREE, K), z0: 13.2, z1: 14.8, l: 'l38' },
+      { g: buildCitic(THREE, K), z0: 13.2, z1: 14.8, l: 'l39' },
+      { g: buildExpo(THREE, K), z0: 13.2, z1: 14.8, l: 'l40' },
+      { g: buildCathedral(THREE, K), z0: 13.2, z1: 14.8, l: 'l11' },
+      { g: buildLiede(THREE, K), z0: 13.2, z1: 14.4, l: 'l41' },
     ];
     for (const p of parts) { scene.add(p.g); p.g.traverse((o) => { o.frustumCulled = false; }); }
+    // things a click can hit, each tagged with its landmark id
+    const inPoly = (pt, r) => { let c = false; for (let i = 0, j = r.length - 1; i < r.length; j = i++) { const [xi, yi] = r[i], [xj, yj] = r[j]; if ((yi > pt[1]) !== (yj > pt[1]) && pt[0] < ((xj - xi) * (pt[1] - yi)) / (yj - yi) + xi) c = !c; } return c; };
+    const cbdCen = Object.fromEntries(Object.keys(CBD_FP).map((k) => [k, K.centroid(K.ccw(CBD_FP[k]))]));
+    const v = new THREE.Vector3();
+    this.pickables = [];
+    for (const p of parts) p.g.traverse((o) => {
+      if (!o.isMesh) return;
+      let id = p.l;
+      if (typeof id === 'object') {
+        const bb = o.isInstancedMesh ? (o.computeBoundingBox(), o.boundingBox) : (o.geometry.computeBoundingBox(), o.geometry.boundingBox);
+        bb.getCenter(v); const pt = [v.x, -v.z];
+        let key = Object.keys(id).find((k) => inPoly(pt, CBD_FP[k]));
+        if (!key) key = Object.keys(id).reduce((a, k) => (Math.hypot(cbdCen[k][0] - pt[0], cbdCen[k][1] - pt[1]) < Math.hypot(cbdCen[a][0] - pt[0], cbdCen[a][1] - pt[1]) ? k : a));
+        id = id[key];
+      }
+      o.userData.l = id; o.userData.part = p.g; this.pickables.push(o);
+    });
+    this.T = THREE; this.ray = new THREE.Raycaster();
     const skin = parts[0].g.children.find((o) => o.material && o.material.transparent);
     const hemi = new THREE.HemisphereLight(0xffffff, 0xa9b9cf, 2.1); scene.add(hemi);
     const sun = new THREE.DirectionalLight(0xffffff, 1.9); sun.position.set(-0.55, 1, 0.45); scene.add(sun);
@@ -2140,7 +2222,7 @@ const ThreeModels = {
         for (const p of parts) { const k = Math.min(1, Math.max(0, (z - p.z0) / (p.z1 - p.z0))); p.g.visible = k > 0.002; p.g.scale.y = Math.max(k, 0.002); }
         if (skin) skin.material.opacity = 0.34 - 0.24 * Math.min(1, Math.max(0, (z - 14.5) / 2));
         night(performance.now());
-        camera.projectionMatrix = new THREE.Matrix4().fromArray(matrix).multiply(l);
+        camera.projectionMatrix = this.camM = new THREE.Matrix4().fromArray(matrix).multiply(l);
         renderer.resetState(); renderer.render(scene, camera);
       },
     }, 'bld');
@@ -2148,6 +2230,16 @@ const ThreeModels = {
     for (const id of ['tower', 'models-fb']) if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', 'none');
     this.nightTarget = this.n = Night.on ? 1 : 0;
     map.triggerRepaint();
+  },
+  // which landmark model is under a screen point (cast a ray through the same matrix the models were drawn with)
+  pick(pt) {
+    if (!this.camM || !this.pickables || map.getZoom() < 13.4) return null;
+    const T = this.T, c = map.getCanvas(), x = (pt.x / c.clientWidth) * 2 - 1, y = 1 - (pt.y / c.clientHeight) * 2;
+    const inv = this.camM.clone().invert(), a = new T.Vector3(x, y, -1).applyMatrix4(inv), b = new T.Vector3(x, y, 1).applyMatrix4(inv);
+    this.ray.set(a, b.sub(a).normalize());
+    const hit = this.ray.intersectObjects(this.pickables, false).find((h) => h.object.userData.part.visible && h.object.userData.part.scale.y > 0.5);
+    const id = hit && hit.object.userData.l;
+    return id && SITE.landmarks.some((l) => l.id === id) ? id : null;
   },
 };
 // 模型数据（建模、桥梁）用 gzip + base64 打包，体积约为原来的六分之一
@@ -2284,8 +2376,24 @@ function initMap() {
   map.on('click', 'lm-3d', (e) => { if (state.pure) return; const id = lmId(e); if (id) openDetail('landmark', id); });
   map.on('mousemove', 'lm-3d', (e) => { map.getCanvas().style.cursor = lmId(e) ? 'pointer' : ''; });
   map.on('mouseleave', 'lm-3d', () => { map.getCanvas().style.cursor = ''; });
+  // three.js 建模（广州塔、珠江新城、博物馆、猎德大桥……）：点到哪座就开哪座的地标卡片
+  const onPin = (e) => e.originalEvent && e.originalEvent.target && e.originalEvent.target.closest && e.originalEvent.target.closest('.maplibregl-marker, .maplibregl-popup');
+  map.on('click', (e) => { if (state.pure || onPin(e)) return; const id = ThreeModels.pick(e.point); if (id) openDetail('landmark', id); });
+  let pickQ = null, pickBusy = false, pickHot = false;
+  map.on('mousemove', (e) => {
+    if (state.pure || !ThreeModels.pickables) return;
+    pickQ = e.point;
+    if (pickBusy) return;
+    pickBusy = true;
+    requestAnimationFrame(() => {
+      pickBusy = false;
+      const id = pickQ && !map.isMoving() && !onPin(e) ? ThreeModels.pick(pickQ) : null;
+      if (id) { map.getCanvas().style.cursor = 'pointer'; pickHot = true; } else if (pickHot) { map.getCanvas().style.cursor = ''; pickHot = false; }
+    });
+  });
   map.on('zoom', () => { const z = map.getZoom(), c = map.getContainer(); c.classList.toggle('near', z >= 15.5); c.classList.toggle('far', z < 13.4); FoodGroups.update(); });
   map.on('pitchend', () => { state.is3d = map.getPitch() > 5; });
+  map.on('move', () => { if (state.module === 'landmark' && !lmDQ) lmDQ = requestAnimationFrame(() => { lmDQ = 0; lmDeclutter(); }); });
   LookUp.init();
   map.on('move', syncAltitude);
   map.on('mousemove', (e) => { state.cursor = e.lngLat; syncAltitude(); });
@@ -2456,6 +2564,22 @@ function showMarkers(type) {
   // MapLibre writes a generic "Map marker" aria-label on addTo — put ours back
   ensureMarkers(type).forEach((x) => { const e = x.m.getElement(); const l = e.dataset.label || e.getAttribute('aria-label'); e.dataset.label = l; x.m.addTo(map); e.setAttribute('aria-label', l); });
   if (type === 'food') FoodGroups.show(); else FoodGroups.hide();
+  if (type === 'landmark') lmDeclutter();
+}
+// 珠江新城几座写字楼（minor）挨得近：缩小时图钉和别的地标叠在一起，就先藏起来，放大分开了再出现
+let lmDQ = 0;
+function lmDeclutter() {
+  if (!map || state.module !== 'landmark' || !markers.landmark.length) return;
+  const items = markers.landmark.map((x) => ({ x, it: SITE.landmarks.find((l) => l.id === x.id) })).filter((o) => o.it);
+  const near = map.getContainer().classList.contains('far') || map.getContainer().classList.contains('tilted') ? 16 : 28;
+  const kept = items.filter((o) => !o.it.minor).map((o) => map.project(o.it.lnglat));
+  for (const o of items) {
+    if (!o.it.minor) continue;
+    const p = map.project(o.it.lnglat);
+    const hide = state.active !== o.it.id && kept.some((q) => Math.abs(q.x - p.x) < near && Math.abs(q.y - p.y) < near);
+    o.x.m.getElement().classList.toggle('lm-hid', hide);
+    if (!hide) kept.push(p);
+  }
 }
 function setTrail(on) {
   if (!map || !map.getSource('trail')) return;
@@ -2486,7 +2610,7 @@ function itemsFor(mod, city) { return MODULES.find((m) => m.id === mod).items().
 function itemLabel(mod, i) {
   if (mod === 'food') return [i.name, i.lnglat ? scoreTxt(i) : i.branches ? `连锁 ${i.branches.length}` : '未标点'];
   if (mod === 'street') return [i.title, i.date ? i.date.slice(2, 7).replace('-', '.') : i.place.split(' · ').pop()];
-  if (mod === 'landmark') return [i.name, ''];
+  if (mod === 'landmark') return [i.name, i.meta || ''];
   if (i.stage) return [`${i.stage} · ${i.short || i.place}`, i.years ? i.years.slice(0, 4) : ''];
   if (!i.date) return [i.short || i.place, ''];
   return [i.title, i.date.slice(5).replace('-', '.')];
@@ -2520,7 +2644,12 @@ function renderCities() {
           for (const i of g) html += `<li><button class="item-btn${i.lnglat ? '' : ' nopin'}" data-item="${i.id}" data-type="food" aria-current="${state.active === i.id}"><span>${esc(i.name)}</span><span class="meta">${i.lnglat ? scoreTxt(i) : i.branches ? `连锁 ${i.branches.length}` : '未标点'}</span></button></li>`;
         }
       }
-      if (mod.id !== 'food') for (const i of list) { const [a, b] = itemLabel(mod.id, i); html += `<li><button class="item-btn" data-item="${i.id}" data-type="${mod.id}" aria-current="${state.active === i.id}"><span>${esc(a)}</span><span class="meta">${esc(b)}</span></button></li>`; }
+      // 地标分两组：名胜古迹 / 城市新地标（kind: 'new'）
+      const lmGroups = mod.id === 'landmark' ? [['名胜古迹', list.filter((i) => i.kind !== 'new')], ['城市新地标', list.filter((i) => i.kind === 'new')]].filter((g) => g[1].length) : null;
+      if (mod.id !== 'food') for (const [gname, g] of lmGroups || [[null, list]]) {
+        if (gname) html += `<li class="group-label">${gname} · ${g.length}</li>`;
+        for (const i of g) { const [a, b] = itemLabel(mod.id, i); html += `<li><button class="item-btn" data-item="${i.id}" data-type="${mod.id}" aria-current="${state.active === i.id}"><span>${esc(a)}</span><span class="meta">${esc(b)}</span></button></li>`; }
+      }
       html += '</ul>';
     }
     html += '</li>';
@@ -2689,7 +2818,7 @@ function flyToItem(item, force) {
   const off = mq.matches ? [0, -Math.round(window.innerHeight * 0.2)] : [-190, 40];
   const lm = SITE.landmarks.includes(item);
   const zoom = lm ? (item.zoom || 16.7) : Math.max(force ? 16.4 : 15.4, Math.min(map.getZoom(), 16.6));
-  map.flyTo({ center: item.lnglat, zoom, pitch: state.is3d ? (lm ? 60 : 55) : 0, offset: off, ...(mq.matches ? {} : { padding: hudPadding() }), duration: reduceMotion ? 0 : 1400, essential: true });
+  map.flyTo({ center: item.lnglat, zoom, pitch: state.is3d ? (lm ? item.pitch || 60 : 55) : 0, offset: off, ...(mq.matches ? {} : { padding: hudPadding() }), duration: reduceMotion ? 0 : 1400, essential: true });
 }
 // 扫街小图：图片加载完再淡入；鼠标移动时轻微倾斜 + 高光；点开全屏
 function bindShots(d, item) {
