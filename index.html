@@ -1399,7 +1399,7 @@ const FoodGroups = {
 // 方块拼不出来的造型，用 three.js 网格画进地图（放大到街区才加载，加载失败时退回原来的方块）：
 //   广州塔：按公开尺寸生成的扭转双曲面——24 根斜柱、46 道环、核心筒、各功能区的玻璃楼层、146 米天线
 //   珠江新城的超高层：东塔、西塔、珠江城、广晟、利通、富力盈凯、广州银行、富力中心、环球都会；还有中信广场主楼
-//   广东省博物馆的“宝盒”、海心沙西端的看台和帆形顶棚、琶洲的广交会展馆
+//   广东省博物馆的“宝盒”、海心沙西端的看台和帆形顶棚、琶洲的广交会展馆、石室圣心大教堂
 //   猎德大桥：独塔双索面空间自锚式悬索桥，主桥 47 + 219 + 167 + 47 米。索塔由两片相扣的“贝壳”组成，
 //     横桥向宽 56 米、顺桥向 9.16 米，高 128 米（主体 103 米 + 顶部装饰 25 米），内外轮廓都是椭圆，顶部开孔
 const THREE_URL = './vendor/three.module.min.js';
@@ -1893,6 +1893,142 @@ function buildExpo(THREE, K) {
   box([[3110.4, -1202.7], [3157.9, -1202.8], [3158.6, -1177.1], [3111.2, -1175.4]], 16, glass);
   return g;
 }
+// ---------------------------------------------------------------- 石室圣心大教堂（1863—1888）
+// 全花岗岩砌的哥特复兴式教堂，坐北朝南。南立面两座方塔，塔身四角扶壁、钟楼层成对的尖券百叶窗，塔顶一圈女儿墙和四个小尖塔，
+// 上面是八角石尖顶，连十字架高 58.5 m；两塔之间的山墙下是尖券大门，上面是玫瑰窗。中厅高、两侧廊低，侧廊外墙一排扶壁，
+// 飞扶壁越过侧廊撑住中厅高窗；中段横厅伸出成十字，北端是多边形的后殿和回廊。平面按 OSM 轮廓（宽约 30 m、长约 72 m、横厅 34 m）。
+// 夜里石头被泛光照成暖色，彩色玻璃窗和玫瑰窗亮起来
+function buildCathedral(THREE, K) {
+  const g = new THREE.Group(), add = (geo, m) => g.add(K.mesh(geo, m));
+  const F = [-6883.0, 229.1], U = [-0.1167, 0.9932], N = [0.9932, 0.1167];   // façade centre; U along the church (north), N across (east)
+  const P = (s, t, z) => [F[0] + U[0] * s + N[0] * t, F[1] + U[1] * s + N[1] * t, z];
+  const DS = THREE.DoubleSide;
+  const tex = (w, h, draw) => { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d')); const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; };
+  // granite ashlar by day; at night the same stone in warm floodlight
+  const ashlar = (x, w, h, night) => {
+    x.fillStyle = night ? '#6E5A44' : '#B2B5B8'; x.fillRect(0, 0, w, h);
+    x.fillStyle = night ? '#5A4836' : '#9EA2A7';
+    for (let y = 0, r = 0; y < h; y += 12, r++) { x.fillRect(0, y, w, 1.4); for (let xx = (r % 2) * 14; xx < w; xx += 28) x.fillRect(xx, y, 1.4, 12); }
+  };
+  const lancetPath = (x, x0, x1, yTop, yBot) => { const w = x1 - x0, sp = yTop + w * 0.9; x.beginPath(); x.moveTo(x0, yBot); x.lineTo(x0, sp); x.quadraticCurveTo(x0, yTop + w * 0.2, (x0 + x1) / 2, yTop); x.quadraticCurveTo(x1, yTop + w * 0.2, x1, sp); x.lineTo(x1, yBot); x.closePath(); };
+  const PANES = ['#FF5A48', '#FFB437', '#49A6FF', '#A06CFF', '#FFE08A', '#3FD0A0'];
+  const glassIn = (x, night, draw) => {   // fill the current path as a window: dark leaded glass by day, stained glass glowing at night
+    x.save(); draw(); x.clip();
+    if (night) { for (let yy = 0; yy < x.canvas.height; yy += 5) for (let xx = 0; xx < x.canvas.width; xx += 4) { x.fillStyle = PANES[((xx * 13 + yy * 7) >> 2) % PANES.length]; x.fillRect(xx, yy, 3.4, 4.2); } }
+    else { x.fillStyle = '#39465A'; x.fillRect(0, 0, x.canvas.width, x.canvas.height); x.fillStyle = 'rgba(160,175,195,.35)'; for (let yy = 0; yy < x.canvas.height; yy += 6) x.fillRect(0, yy, x.canvas.width, 0.8); }
+    x.restore();
+  };
+  const win = (x, x0, x1, yTop, yBot, night) => {
+    if (!night) { x.fillStyle = '#C8CBCE'; lancetPath(x, x0 - 3, x1 + 3, yTop - 4, yBot + 2); x.fill(); }
+    glassIn(x, night, () => lancetPath(x, x0, x1, yTop, yBot));
+    if (!night) { x.fillStyle = '#C8CBCE'; x.fillRect((x0 + x1) / 2 - 0.8, yTop + (x1 - x0) * 0.6, 1.6, yBot - yTop); }
+  };
+  const rose = (x, cx, cy, r, night) => {
+    if (!night) { x.fillStyle = '#C8CBCE'; x.beginPath(); x.arc(cx, cy, r + 4, 0, Math.PI * 2); x.fill(); }
+    glassIn(x, night, () => { x.beginPath(); x.arc(cx, cy, r, 0, Math.PI * 2); });
+    x.strokeStyle = night ? 'rgba(60,40,20,.8)' : '#C8CBCE'; x.lineWidth = 1.6;
+    for (let k = 0; k < 12; k++) { const a = (k / 12) * Math.PI * 2; x.beginPath(); x.moveTo(cx + Math.cos(a) * r * 0.25, cy + Math.sin(a) * r * 0.25); x.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r); x.stroke(); }
+    x.beginPath(); x.arc(cx, cy, r * 0.25, 0, Math.PI * 2); x.stroke(); x.beginPath(); x.arc(cx, cy, r * 0.62, 0, Math.PI * 2); x.stroke();
+  };
+  // each surface: a day texture and a night one (used as the glow map)
+  const surf = (w, h, draw, extra = {}) => K.lit(new THREE.MeshLambertMaterial(Object.assign({ map: tex(w, h, (x) => draw(x, false)), side: DS }, extra)), tex(w, h, (x) => draw(x, true)), 1);
+  // aisle / ambulatory wall: one bay 4.6 m wide, 10 m high, a lancet window
+  const aisle = surf(128, 256, (x, n) => { ashlar(x, 128, 256, n); win(x, 44, 84, 46, 190, n); });
+  // clerestory: 4.6 m bay, 9 m high (from 11 m up)
+  const cler = surf(128, 256, (x, n) => { ashlar(x, 128, 256, n); win(x, 40, 88, 40, 222, n); });
+  cler.map.offset.y = cler.emissiveMap.offset.y = -11 / 9;
+  // tower face: 9.6 m × 27 m — string courses, a window, the belfry with paired louvred lancets
+  const tower = surf(256, 720, (x, n) => {
+    ashlar(x, 256, 720, n);
+    x.fillStyle = n ? '#8A7254' : '#C3C6C9'; for (const z of [6, 16.5, 26.4]) x.fillRect(0, 720 - z * 26.7, 256, 7);
+    win(x, 110, 146, 720 - 13.5 * 26.7, 720 - 9 * 26.7, n);
+    for (const x0 of [74, 136]) { win(x, x0, x0 + 46, 720 - 25 * 26.7, 720 - 18.4 * 26.7, n); if (!n) { x.fillStyle = 'rgba(90,100,112,.9)'; for (let y = 720 - 23.5 * 26.7; y < 720 - 18.6 * 26.7; y += 9) x.fillRect(x0 + 2, y, 42, 3); } }
+  });
+  // the middle of the façade: 10.8 m × 22 m — the pointed main door, a small arcade and the rose window
+  const front = surf(256, 520, (x, n) => {
+    ashlar(x, 256, 520, n);
+    const zy = (z) => 520 - z * 23.6;
+    x.fillStyle = n ? '#8A7254' : '#C3C6C9'; lancetPath(x, 64, 192, zy(10.4), 520); x.fill();
+    x.fillStyle = n ? '#5B3A22' : '#5A4638'; lancetPath(x, 80, 176, zy(9.4), 520); x.fill();
+    if (!n) { x.fillStyle = '#4A3A2E'; x.fillRect(127, zy(7.6), 2, 520); }
+    for (let k = 0; k < 6; k++) win(x, 46 + k * 28, 64 + k * 28, zy(12.6), zy(10.9), n);
+    rose(x, 128, zy(16.2), 3.5 * 23.6, n);
+  });
+  // transept end: 17.5 m × 20 m — two tall lancets and a rose above
+  const transept = surf(256, 300, (x, n) => { ashlar(x, 256, 300, n); win(x, 86, 118, 300 - 10.5 * 15, 300 - 2.5 * 15, n); win(x, 138, 170, 300 - 10.5 * 15, 300 - 2.5 * 15, n); rose(x, 128, 300 - 15 * 15, 3.0 * 15, n); });
+  const stone = surf(64, 64, (x, n) => ashlar(x, 64, 64, n));
+  const slate = K.mat({ bg: '#59626C', h: 10, hc: '#4B535C', hw: 2 }, { side: DS }, 0);
+  const gold = K.mat(0xD8B45A, {}, 0.9);
+  const wall = (a, b, z0, z1, m, tw, th) => add(K.loft([[P(a[0], a[1], z0), P(b[0], b[1], z0)], [P(a[0], a[1], z1), P(b[0], b[1], z1)]], { open: true, tw, th }), m);
+  const slope = (a0, b0, a1, b1, m) => add(K.loft([[a0, b0], [a1, b1]], { open: true, tw: 6, th: 1.2 }), m);   // a roof face between two horizontal edges
+  const tri = (pts, m) => { const pos = []; for (let i = 1; i < pts.length - 1; i++) for (const p of [pts[0], pts[i], pts[i + 1]]) pos.push(p[0], p[2], -p[1]); const gg = new THREE.BufferGeometry(); gg.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); gg.computeVertexNormals(); add(gg, m); };
+  const prism = (pts, z0, z1, m, lid = stone) => { const r = K.ccw(pts.map(([s, t]) => P(s, t, 0).slice(0, 2))); add(K.loft([K.at(r, z0), K.at(r, z1)], { tw: 3, th: 3 }), m); if (lid) add(K.cap(K.at(r, z1)), lid); };
+  const sq = (s, t, a, b = a) => [[s - a, t - b], [s + a, t - b], [s + a, t + b], [s - a, t + b]];
+  const oct = (s, t, r, rot = Math.PI / 8) => Array.from({ length: 8 }, (_, k) => { const a = rot + (k / 8) * Math.PI * 2; return [s + r * Math.cos(a), t + r * Math.sin(a)]; });
+  const pinnacle = (s, t, z0, w, h) => { prism(sq(s, t, w / 2), z0, z0 + h * 0.55, stone); const r = K.ccw(sq(s, t, w / 2).map(([a, b]) => P(a, b, 0).slice(0, 2))); add(K.loft([K.at(r, z0 + h * 0.55), K.at(r.map(() => P(s, t, 0).slice(0, 2)), z0 + h)], { tw: 2, th: 2 }), stone); };
+  const crossAt = (s, t, z, h = 1.6) => g.add(K.rods([[P(s, t, z), P(s, t, z + h), 0.12], [P(s, t - h * 0.3, z + h * 0.65), P(s, t + h * 0.3, z + h * 0.65), 0.1]], gold));
+
+  // ---- twin towers with spires
+  for (const sd of [-1, 1]) {
+    const t0 = sd * 5.4, t1 = sd * 15, tc = (t0 + t1) / 2, s0 = 0, s1 = 9.6, H = 27;
+    const c = [[s0, t0], [s0, t1], [s1, t1], [s1, t0]];
+    for (let i = 0; i < 4; i++) wall(c[i], c[(i + 1) % 4], 0, H, tower, 9.6, H);
+    prism(sq(4.8, tc, 5.2, 5.1), H - 0.6, H + 0.9, stone);                         // parapet band
+    for (const [cs, ct] of [[s0, t0], [s0, t1], [s1, t1], [s1, t0]]) {             // corner buttresses, stepped, with pinnacles
+      prism(sq(cs, ct, 0.85), 0, 12, stone, null); prism(sq(cs, ct, 0.65), 12, H - 0.6, stone, null);
+      pinnacle(cs, ct, H + 0.9, 1.3, 6.2);
+    }
+    prism(oct(4.8, tc, 4.1), H + 0.9, H + 3.2, stone);                              // octagonal drum
+    const base = K.ccw(oct(4.8, tc, 3.9).map(([a, b]) => P(a, b, 0).slice(0, 2)));
+    add(K.loft([K.at(base, H + 3.2), K.at(base.map(() => P(4.8, tc, 0).slice(0, 2)), 57.6)], { tw: 3, th: 3 }), stone);   // the stone spire
+    for (let k = 0; k < 4; k++) {                                                 // small gabled lucarnes on four faces of the spire
+      const a = (k / 4) * Math.PI * 2, cs = 4.8 + Math.cos(a) * 3.6, ct = tc + Math.sin(a) * 3.6, ps = -Math.sin(a), pt = Math.cos(a);
+      tri([P(cs - ps * 1.1, ct - pt * 1.1, H + 3.2), P(cs + ps * 1.1, ct + pt * 1.1, H + 3.2), P(cs, ct, H + 7.4)], stone);
+    }
+    crossAt(4.8, tc, 57.4, 1.6);
+  }
+  // ---- façade between the towers, and its gable
+  wall([0, -5.4], [0, 5.4], 0, 22, front, 10.8, 22);
+  tri([P(0, -5.6, 22), P(0, 5.6, 22), P(0, 0, 29.5)], stone); crossAt(0, 0, 29.4, 1.8);
+  // ---- nave (clerestory walls, steep slate roof) from the façade to the apse
+  for (const sd of [-1, 1]) for (const [a, b] of [[9.6, 36.3], [53.8, 60]]) wall([a, sd * 6], [b, sd * 6], 11, 20, cler, 4.6, 9);
+  for (const sd of [-1, 1]) slope(P(0.3, sd * 6.6, 20), P(60, sd * 6.6, 20), P(0.3, 0, 28), P(60, 0, 28), slate);
+  // ---- aisles: outer walls with buttresses, lean-to roofs, flying buttresses over them
+  const fly = [];
+  for (const sd of [-1, 1]) for (const [a, b] of [[9.6, 36.3], [53.8, 60]]) {
+    wall([a, sd * 15], [b, sd * 15], 0, 10, aisle, 4.6, 10);
+    slope(P(a, sd * 15.4, 10), P(b, sd * 15.4, 10), P(a, sd * 6, 13), P(b, sd * 6, 13), slate);
+    for (let s = a + 2.3; s < b - 0.5; s += 4.6) {
+      prism(sq(s, sd * 15.6, 0.55, 0.7), 0, 12.5, stone, null); pinnacle(s, sd * 15.6, 12.5, 0.9, 3.6);
+      let prev = P(s, sd * 15.6, 12.3);
+      for (let k = 1; k <= 6; k++) { const f = k / 6, t = sd * (15.6 - 9.4 * f), z = 12.3 + 5.4 * Math.sin(f * Math.PI / 2); const p = P(s, t, z); fly.push([prev, p, 0.42]); prev = p; }
+    }
+  }
+  g.add(K.rods(fly, stone));
+  // ---- transept: tall end walls with a rose, gable roof across the church
+  for (const sd of [-1, 1]) {
+    wall([36.3, sd * 17.2], [53.8, sd * 17.2], 0, 20, transept, 17.5, 20);
+    tri([P(36.3, sd * 17.2, 20), P(53.8, sd * 17.2, 20), P(45.05, sd * 17.2, 28)], stone); crossAt(45.05, sd * 17.2, 27.9, 1.4);
+    for (const s of [36.3, 53.8]) wall([s, sd * 15], [s, sd * 17.2], 0, 20, stone, 3, 3);
+    for (const s of [36.3, 53.8]) for (const t of [15, 17.2]) { prism(sq(s, sd * t, 0.6), 0, 20.5, stone, null); pinnacle(s, sd * t, 20.5, 1.0, 4.2); }
+  }
+  for (const s of [36.3, 53.8]) wall([s, -15], [s, 15], 13, 20, cler, 4.6, 9);
+  slope(P(35.7, -17.8, 20), P(35.7, 17.8, 20), P(45.05, -17.8, 28), P(45.05, 17.8, 28), slate);
+  slope(P(54.4, -17.8, 20), P(54.4, 17.8, 20), P(45.05, -17.8, 28), P(45.05, 17.8, 28), slate);
+  // ---- apse: a low ambulatory round a tall polygonal choir, both seven-sided
+  const ring = (R) => Array.from({ length: 7 }, (_, k) => { const a = -Math.PI / 2 + (k / 6) * Math.PI; return [60 + R * Math.cos(a), R * Math.sin(a)]; });
+  const out = ring(12.5), inn = ring(6), outR = ring(12.9), innR = ring(6.5);
+  for (let k = 0; k < 6; k++) {
+    wall(out[k], out[k + 1], 0, 10, aisle, 4.6, 10);
+    wall(inn[k], inn[k + 1], 11, 20, cler, 4.6, 9);
+    slope(P(...outR[k], 10), P(...outR[k + 1], 10), P(...inn[k], 13), P(...inn[k + 1], 13), slate);
+    tri([P(...innR[k], 20), P(...innR[k + 1], 20), P(60, 0, 28)], slate);
+    const m = [(out[k][0] + out[k + 1][0]) / 2, (out[k][1] + out[k + 1][1]) / 2], d = Math.hypot(m[0] - 60, m[1]) || 1;
+    const bs = 60 + (m[0] - 60) * (13.3 / d), bt = m[1] * (13.3 / d);
+    if (k > 0 && k < 5) { prism(sq(bs, bt, 0.55), 0, 12.5, stone, null); pinnacle(bs, bt, 12.5, 0.9, 3.4); }
+  }
+  return g;
+}
 // ---------------------------------------------------------------- 猎德大桥
 function buildLiede(THREE, K) {
   const O = { lng: 113.328546, lat: 23.11189, u: [0.03291, -0.99946], z0: 13 };   // tower foot at the water; u runs along the bridge (towards the south bank)
@@ -1964,6 +2100,7 @@ const ThreeModels = {
       { g: buildHaixinsha(THREE, K), z0: 13.2, z1: 14.8 },
       { g: buildCitic(THREE, K), z0: 13.2, z1: 14.8 },
       { g: buildExpo(THREE, K), z0: 13.2, z1: 14.8 },
+      { g: buildCathedral(THREE, K), z0: 13.2, z1: 14.8 },
       { g: buildLiede(THREE, K), z0: 13.2, z1: 14.4 },
     ];
     for (const p of parts) { scene.add(p.g); p.g.traverse((o) => { o.frustumCulled = false; }); }
