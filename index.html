@@ -1833,49 +1833,62 @@ function buildCitic(THREE, K) {
   return g;
 }
 // ---------------------------------------------------------------- 琶洲 · 广交会展馆（A、B、C、D 四个区）
-// 照着航拍照片：每个区是一条条东西走向的“长筒”大展厅——屋面横截面是两边往下卷的扁拱，银色金属屋面上是顺着长边的接缝，
-// 隔一段有一道横向的肋；两头是大片玻璃山墙，屋面在端头往下收、往外挑，从侧面看端部是一道大弧。
-// 轮廓按 OSM：A 区在中间，B 区在东，C 区在 A 区南面，D 区（四期，2022）在西，D 区西头接着一栋几层高的平顶楼
+// 照着航拍照片：每个区是东西走向的长条大展厅，屋面像一块压扁的长筒——顶上平缓，长边往外挑出再圆圆地卷下来
+// （卷边是一圈浅色百叶），两头的屋面边缘是一道大弧，下面是整面玻璃山墙；屋面银灰色，顺着长边一条条接缝，
+// 隔一段有一道横向的弧形分缝。D 区（四期）屋面北高南低，南边卷得更厉害，西头连着一栋几层高的平顶楼。
+// 高度按资料：一期（A 区）40 m，三期 47.5 m；轮廓按 OSM
 function buildExpo(THREE, K) {
   const g = new THREE.Group(), add = (geo, m) => g.add(K.mesh(geo, m));
-  const roof = K.mat({ bg: '#d6dde7', h: 8, hc: '#bcc6d3', hw: 3 }, { side: THREE.DoubleSide }, 0);
-  const glass = K.mat({ bg: '#8fabd4', v: 8, vc: '#cfdcef', vw: 3, h: 3, hc: '#b6c8e2', hw: 2 });
+  // roof skin: one picture across the whole width — seams along the hall, pale louvred bands where it rolls over the long edges
+  const rc = document.createElement('canvas'); rc.width = 64; rc.height = 1024; const rx = rc.getContext('2d');
+  rx.fillStyle = '#c9d1dc'; rx.fillRect(0, 0, 64, 1024);
+  for (let y = 0; y < 1024; y += 7) { rx.fillStyle = '#b3bdca'; rx.fillRect(0, y, 64, 2); }
+  for (const [y0, y1] of [[0, 120], [904, 1024]]) { rx.fillStyle = '#e1e7ee'; rx.fillRect(0, y0, 64, y1 - y0); rx.fillStyle = '#b9c3cf'; for (let y = y0; y < y1; y += 5) rx.fillRect(0, y, 64, 1); }
+  const rt = new THREE.CanvasTexture(rc); rt.wrapS = rt.wrapT = THREE.RepeatWrapping; rt.colorSpace = THREE.SRGBColorSpace; rt.anisotropy = 8;
+  const roof = K.lit(new THREE.MeshLambertMaterial({ map: rt, side: THREE.DoubleSide }), null, 0);
+  const glass = K.mat({ bg: '#7f9dc9', v: 6, vc: '#d3deee', vw: 4, h: 2, hc: '#a9bddb', hw: 2 });
   const office = K.mat({ bg: '#c9d3e1', v: 10, vc: '#9fb2cc', vw: 5, h: 4, hc: '#e6ecf4', hw: 18 });
-  const rib = K.mat(0xaab6c6, {}, 0);
+  const seam = K.mat(0x8e9aab, {}, 0), edge = K.mat(0xe9eef4, {}, 0.25);
   const lerp = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
-  // q = [SW, SE, NE, NW]; ribs: number of bays the roof is divided into; the vault runs west → east
-  const hall = (q, ribs, eave, crown) => {
+  // q = [SW, SE, NE, NW]: the glass line of the hall; the roof overhangs it. ribs = bays between the curved roof joints;
+  // crown at fraction c of the width from the south edge
+  const hall = (q, ribs, crown, edgeZ, c = 0.5) => {
     const P = (u, v) => lerp(lerp(q[0], q[1], u), lerp(q[3], q[2], u), v);
     const L = Math.hypot(q[1][0] - q[0][0], q[1][1] - q[0][1]), D = Math.hypot(q[3][0] - q[0][0], q[3][1] - q[0][1]);
-    const cross = (v) => Math.pow(Math.max(0, 1 - Math.pow(Math.abs(2 * v - 1), 3)), 1 / 3);          // flat top, edges rolling down
-    const endK = (u) => { const d = Math.min(u, 1 - u) * L / 34; return d >= 1 ? 1 : 0.62 + 0.38 * Math.sin(d * Math.PI / 2); };   // the roof dips at the two ends
-    const Z = (u, v) => (eave * 0.55 + (eave * 0.45 + (crown - eave) * cross(v))) * endK(u) - (1 - cross(v)) * eave * 0.25;
-    const NU = Math.max(24, Math.round(L / 10)), NV = 22;
-    const us = Array.from({ length: NU + 1 }, (_, k) => k / NU), vs = Array.from({ length: NV + 1 }, (_, k) => k / NV);
-    add(K.grid(vs.map((v) => us.map((u) => [...P(u, v), Z(u, v)])), { u: L / 60, v: D / 6 }), roof);
-    // long glass walls under the eaves, set in a little; glass gables set back under the overhanging ends
-    const inset = 3 / D, back = 12 / L;
-    const side = (v, rev) => { let pts = us.filter((u) => u >= back && u <= 1 - back).map((u) => [...P(u, v), Z(u, v)]); if (rev) pts = pts.reverse(); add(K.loft([pts.map((p) => [p[0], p[1], 0]), pts], { open: true, tw: 8, th: 9 }), glass); };
-    side(inset, false); side(1 - inset, true);
-    const gable = (u, rev) => { let pts = vs.filter((v) => v >= inset && v <= 1 - inset).map((v) => [...P(u, v), Z(u, v)]); if (rev) pts = pts.reverse(); add(K.loft([pts.map((p) => [p[0], p[1], 0]), pts], { open: true, tw: 8, th: 9 }), glass); };
-    gable(back, true); gable(1 - back, false);
-    // transverse ribs across the roof
-    const segs = [];
-    for (let k = 1; k < ribs; k++) { const u = k / ribs; for (let j = 0; j < NV; j++) { const a = [...P(u, vs[j]), Z(u, vs[j]) + 0.6], b = [...P(u, vs[j + 1]), Z(u, vs[j + 1]) + 0.6]; segs.push([a, b, 1.1]); } }
-    if (segs.length) g.add(K.rods(segs, rib));
+    const oa = 10 / L, ob = 7 / D;   // overhang at the ends / along the long sides
+    const Z = (v) => { const t = (v + ob) / (1 + 2 * ob), sx = t < c ? (c - t) / c : (t - c) / (1 - c); return edgeZ + (crown - edgeZ) * Math.pow(Math.max(0, 1 - Math.pow(sx, 3.2)), 1 / 3.2); };
+    const NU = Math.max(20, Math.round(L / 12)), NV = 30;
+    const us = Array.from({ length: NU + 1 }, (_, k) => -oa + (1 + 2 * oa) * k / NU), vs = Array.from({ length: NV + 1 }, (_, k) => -ob + (1 + 2 * ob) * k / NV);
+    add(K.grid(vs.map((v) => us.map((u) => [...P(u, v), Z(v)])), { u: L / 40, v: 1 }), roof);
+    // glass walls under the roof
+    const ws = Array.from({ length: 13 }, (_, k) => k / 12);
+    const wallAlong = (v, rev) => { let pts = ws.map((u) => [...P(u, v), Z(v) - 0.4]); if (rev) pts = pts.reverse(); add(K.loft([pts.map((p) => [p[0], p[1], 0]), pts], { open: true, tw: 9, th: 8 }), glass); };
+    wallAlong(0, false); wallAlong(1, true);
+    const gv = Array.from({ length: 25 }, (_, k) => k / 24);
+    const gable = (u, rev) => { let pts = gv.map((v) => [...P(u, v), Z(v) - 0.4]); if (rev) pts = pts.reverse(); add(K.loft([pts.map((p) => [p[0], p[1], 0]), pts], { open: true, tw: 9, th: 8 }), glass); };
+    gable(0, true); gable(1, false);
+    // crisp roof edges all round, and the curved joints across the roof
+    const rim = [], joints = [];
+    for (const v of [vs[0], vs[NV]]) for (let k = 0; k < NU; k++) rim.push([[...P(us[k], v), Z(v)], [...P(us[k + 1], v), Z(v)], 1.0]);
+    for (const u of [us[0], us[NU]]) for (let j = 0; j < NV; j++) rim.push([[...P(u, vs[j]), Z(vs[j])], [...P(u, vs[j + 1]), Z(vs[j + 1])], 1.0]);
+    for (let k = 1; k < ribs; k++) {
+      const uk = k / ribs, at = (v) => { const t = (v + ob) / (1 + 2 * ob); return uk - (18 / L) * (1 - Math.pow(2 * t - 1, 2)); };   // bowed towards the west
+      for (let j = 0; j < NV; j++) joints.push([[...P(at(vs[j]), vs[j]), Z(vs[j]) + 0.5], [...P(at(vs[j + 1]), vs[j + 1]), Z(vs[j + 1]) + 0.5], 0.9]);
+    }
+    g.add(K.rods(rim, edge)); if (joints.length) g.add(K.rods(joints, seam));
   };
   const box = (r, z, m) => { const rr = K.ccw(r); add(K.loft([K.at(rr, 0), K.at(rr, z)], { tw: 8, th: 4 }), m); add(K.cap(K.at(rr, z)), K.mat(0xd9e1ec)); };
-  // A 区
-  hall([[3152.7, -1369.5], [3621.4, -1385.3], [3628.9, -1174.6], [3159.2, -1160.1]], 5, 18, 40);
-  hall([[3159.2, -1160.1], [3440.0, -1168.7], [3443.3, -1060.8], [3162.5, -1052.2]], 3, 15, 31);
+  // A 区（一期，40 m）
+  hall([[3152.7, -1369.5], [3621.4, -1385.3], [3628.9, -1174.6], [3159.2, -1160.1]], 5, 40, 17);
+  hall([[3159.2, -1160.1], [3440.0, -1168.7], [3443.3, -1060.8], [3162.5, -1052.2]], 3, 29, 13);
   // B 区
-  hall([[3693.0, -1391.8], [3984.1, -1396.0], [3986.0, -1193.0], [3697.0, -1192.8]], 3, 18, 40);
-  hall([[3728.7, -1193.3], [3986.0, -1193.0], [3989.2, -1080.0], [3731.0, -1074.0]], 3, 15, 31);
-  // C 区
-  hall([[3448.9, -1737.8], [3776.5, -1748.5], [3779.1, -1594.5], [3453.5, -1583.9]], 4, 16, 34);
-  // D 区（四期）: one huge hall, a lower one to the north-east, the office block at the west end and the link to A 区
-  hall([[2593.6, -1350.2], [3105.6, -1366.1], [3111.2, -1160.0], [2605.4, -1144.6]], 4, 20, 46);
-  hall([[2967.5, -1154.1], [3111.2, -1160.0], [3116.2, -983.3], [2973.6, -978.2]], 2, 15, 30);
+  hall([[3693.0, -1391.8], [3984.1, -1396.0], [3986.0, -1193.0], [3697.0, -1192.8]], 3, 40, 17);
+  hall([[3728.7, -1193.3], [3986.0, -1193.0], [3989.2, -1080.0], [3731.0, -1074.0]], 3, 29, 13);
+  // C 区（47.5 m）
+  hall([[3448.9, -1737.8], [3776.5, -1748.5], [3779.1, -1594.5], [3453.5, -1583.9]], 4, 47.5, 20);
+  // D 区（四期）: north side higher, the south edge rolling down further; the north-east block, the office block at the west end, the link to A 区
+  hall([[2593.6, -1350.2], [3105.6, -1366.1], [3111.2, -1160.0], [2605.4, -1144.6]], 4, 45, 15, 0.68);
+  hall([[2967.5, -1154.1], [3111.2, -1160.0], [3116.2, -983.3], [2973.6, -978.2]], 2, 30, 13);
   box([[2549.0, -1268.6], [2595.0, -1270.5], [2605.1, -1151.1], [2550.4, -1149.4]], 24, office);
   box([[3110.4, -1202.7], [3157.9, -1202.8], [3158.6, -1177.1], [3111.2, -1175.4]], 16, glass);
   return g;
