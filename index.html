@@ -362,6 +362,17 @@ a.trk{text-decoration:none;color:inherit}
 .zoom svg{width:18px;height:18px}
 .zoom .t3d{font-family:var(--f-mono);font-size:12px;font-weight:600}
 .zoom .t3d[aria-pressed="true"]{color:var(--blue);background:var(--ice-2)}
+/* ---------- 纯享模式：标记、卡片和面板都收起来，只留地图、指北针和缩放 */
+.zoom .pure-btn[aria-pressed="true"]{color:var(--blue);background:var(--ice-2)}
+.pure-exit{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:30;display:none;align-items:center;gap:8px;padding:8px 10px 8px 14px;border:0;border-radius:999px;font:500 13px var(--f-body);color:var(--ink);cursor:pointer;transition:opacity .6s ease}
+.pure-exit svg{width:15px;height:15px;color:var(--blue)}
+.pure-exit kbd{font-family:var(--f-mono);font-size:11px;padding:1px 6px;border-radius:6px;background:var(--ice-2);color:var(--ink-2)}
+body.pure .pure-exit{display:flex}
+body.pure .pure-exit.dim{opacity:.3}
+body.pure .pure-exit:hover,body.pure .pure-exit:focus-visible{opacity:1}
+body.pure #ui .col-left,body.pure #ui .top,body.pure #ui .top-handle,body.pure #ui .pop,body.pure #ui .city-pill,body.pure #ui .cities,body.pure #ui .city-toggle,body.pure #ui .status .coord{display:none!important}
+body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scrim{display:none!important}
+@media (hover:none){.pure-exit kbd{display:none}}
 .status{grid-area:status;align-self:end;justify-self:start;border-radius:12px;padding:7px 12px;font-size:11px;color:var(--ink-2);display:flex;flex-direction:column;gap:2px;max-width:100%}
 .status .coord{font-family:var(--f-mono);font-size:11.5px;color:var(--ink);white-space:nowrap}
 .status .attr{color:var(--ink-3)}
@@ -736,6 +747,7 @@ a.trk{text-decoration:none;color:inherit}
     <button id="zOut" aria-label="缩小"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 12h14"/></svg></button>
     <button id="t3d" class="t3d" aria-pressed="true" aria-label="切换 3D 视角">3D</button>
     <button id="zSky" aria-label="抬头看星空" title="抬头看星空"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l1.9 4.6 4.9.4-3.7 3.2 1.1 4.8L12 14l-4.2 2.5 1.1-4.8-3.7-3.2 4.9-.4z"/><path d="M4 20.5h16"/></svg></button>
+    <button id="zPure" class="pure-btn" aria-pressed="false" aria-label="纯享模式：收起标记和面板，只看地图" title="纯享模式"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V5.5A1.5 1.5 0 0 1 5.5 4H9M15 4h3.5A1.5 1.5 0 0 1 20 5.5V9M20 15v3.5a1.5 1.5 0 0 1-1.5 1.5H15M9 20H5.5A1.5 1.5 0 0 1 4 18.5V15"/></svg></button>
     <button id="zHome" aria-label="回到广州全景"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 5l8 6.5"/><path d="M6.5 10v9h11v-9"/></svg></button>
   </div>
 
@@ -745,6 +757,7 @@ a.trk{text-decoration:none;color:inherit}
   </div>
 </div>
 
+<button class="pure-exit glass" id="pureExit" type="button" aria-label="退出纯享模式"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M15 20v-5h5M9 20v-5H4"/></svg>退出纯享<kbd>Esc</kbd></button>
 <div class="scrim" id="scrim" hidden></div>
 <aside class="drawer" id="profileDrawer" aria-label="个人介绍" aria-hidden="true"></aside>
 <article class="detail" id="detail" hidden aria-live="polite"></article>
@@ -1165,7 +1178,7 @@ const MODULES = [
   { id: 'sky', name: '地球之外', en: 'BEYOND', items: () => [] },
 ];
 const ICON_OF = { food: ICONS.food, street: ICONS.street, landmark: ICONS.landmark, diary: ICONS.diary, sky: ICONS.sky };
-const state = { module: 'food', foodCat: 'all', active: null, city: 'gz', cityOpen: true, is3d: true, ready: false, navMin: false, cityMin: false };
+const state = { module: 'food', foodCat: 'all', active: null, city: 'gz', cityOpen: true, is3d: true, ready: false, navMin: false, cityMin: false, pure: false };
 
 /* ===================================================================== profile + socials + friends */
 function renderProfile() {
@@ -1972,7 +1985,7 @@ function initMap() {
   map.on('pitch', () => map.getContainer().classList.toggle('tilted', map.getPitch() > 30));
   // 点建模也能打开地标卡片
   const lmId = (e) => { const id = e.features[0] && e.features[0].properties.l; return SITE.landmarks.some((l) => l.id === id) ? id : null; };
-  map.on('click', 'lm-3d', (e) => { const id = lmId(e); if (id) openDetail('landmark', id); });
+  map.on('click', 'lm-3d', (e) => { if (state.pure) return; const id = lmId(e); if (id) openDetail('landmark', id); });
   map.on('mousemove', 'lm-3d', (e) => { map.getCanvas().style.cursor = lmId(e) ? 'pointer' : ''; });
   map.on('mouseleave', 'lm-3d', () => { map.getCanvas().style.cursor = ''; });
   map.on('zoom', () => { const z = map.getZoom(), c = map.getContainer(); c.classList.toggle('near', z >= 15.5); c.classList.toggle('far', z < 13.4); FoodGroups.update(); });
@@ -1984,6 +1997,7 @@ function initMap() {
 }
 // keep the map's visual centre inside the area the panels leave free
 function hudPadding() {
+  if (state.pure) return { top: 0, bottom: 0, left: 0, right: 0 };
   if (mq.matches) return { top: 130, bottom: 140, left: 10, right: 56 };
   const wide = window.innerWidth >= 1280;
   const auto = Auto.on();
@@ -3714,6 +3728,30 @@ $('#t3d').addEventListener('click', () => {
   map.easeTo({ pitch: state.is3d ? 55 : 0, duration: 700 });
 });
 $('#zHome').addEventListener('click', () => map && map.flyTo({ ...HOME(), essential: true }));
+/* ---------- 纯享模式：收起所有标记、卡片和面板，只拖着地图看；再点一次按钮、点顶上的“退出纯享”或按 Esc 回来 */
+const Pure = {
+  on: false, t: 0, saved: {},
+  set(v) {
+    if (v === this.on) return;
+    this.on = state.pure = v;
+    document.body.classList.toggle('pure', v);
+    $('#zPure').setAttribute('aria-pressed', String(v));
+    const layers = ['lm-park', 'lm-park-line', 'trail'];
+    if (v) {
+      closeDetail(); closePops(); closeDrawer();
+      if (map) for (const l of layers) if (map.getLayer(l)) { this.saved[l] = map.getLayoutProperty(l, 'visibility'); map.setLayoutProperty(l, 'visibility', 'none'); }
+      this.wake();
+    } else if (map) {
+      for (const l of layers) if (map.getLayer(l) && this.saved[l]) map.setLayoutProperty(l, 'visibility', this.saved[l]);
+      this.saved = {};
+    }
+    if (map) map.easeTo({ padding: hudPadding(), duration: 450 });
+  },
+  wake() { const b = $('#pureExit'); b.classList.remove('dim'); clearTimeout(this.t); this.t = setTimeout(() => b.classList.add('dim'), 2600); },
+};
+$('#zPure').addEventListener('click', () => Pure.set(!Pure.on));
+$('#pureExit').addEventListener('click', () => Pure.set(false));
+document.addEventListener('pointermove', () => { if (Pure.on) Pure.wake(); }, { passive: true });
 $('#zSky').addEventListener('click', () => {
   if (!map) return;
   if (LookUp.atTop()) { LookUp.go(); return; }
@@ -3729,6 +3767,7 @@ document.addEventListener('keydown', (e) => {
   if (!$('#sky').hidden) Sky.close();
   else if ($('#profileDrawer').classList.contains('open')) closeDrawer();
   else if (!$('#detail').hidden) closeDetail();
+  else if (Pure.on) Pure.set(false);
   else closePops();
 });
 
