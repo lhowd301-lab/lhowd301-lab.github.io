@@ -1392,7 +1392,7 @@ const mToLngLat = ([x, y]) => [+(MODEL_O[0] + x / MKX).toFixed(7), +(MODEL_O[1] 
 // stand-ins (plain blocks) for while three.js loads, or if it cannot load at all
 function modelFallback() {
   const sq = (c, w, a) => { const r = a * Math.PI / 180; return [[-w, -w], [w, -w], [w, w], [-w, w]].map(([x, y]) => [c[0] + x * Math.cos(r) - y * Math.sin(r), c[1] + x * Math.sin(r) + y * Math.cos(r)]); };
-  const H = { ifc: 438.6, pinnacle: 311.9, imp: 318, prt: 309.6, leatop: 264.6, yingkai: 296.5, bog: 267.8, rfc: 243, ctf: 45, museum: 44, citic: 321.9, stand: 28 };
+  const H = { ifc: 438.6, pinnacle: 311.9, imp: 318, prt: 309.6, leatop: 264.6, yingkai: 296.5, bog: 267.8, rfc: 243, ctf: 45, museum: 45.25, citic: 321.9, stand: 28 };
   const f = Object.entries(CBD_FP).map(([k, r]) => ({ type: 'Feature', properties: { h: H[k] }, geometry: { type: 'Polygon', coordinates: [[...r, r[0]].map(mToLngLat)] } }));
   const t = sq(CTF_C, 32.5, CTF_ROT); f.push({ type: 'Feature', properties: { h: 518 }, geometry: { type: 'Polygon', coordinates: [[...t, t[0]].map(mToLngLat)] } });
   return { type: 'FeatureCollection', features: f };
@@ -1611,10 +1611,10 @@ function buildCBD(THREE, K) {
   return g;
 }
 // ---------------------------------------------------------------- 广东省博物馆 (2010，许李严建筑师事务所)
-// 一只“宝盒”：约 114 m 见方、高约 44 m 的方盒子，架在内收的玻璃首层上；外墙是深色铝板，四个立面被切出不规则的凹口，
+// 一只“宝盒”：约 114 m 见方、高 45.25 m 的方盒子，架在内收的玻璃首层上；外墙是深色铝板，四个立面被切出不规则的凹口，
 // 露出里层的红色（夜里红光从这些缝里透出来，所以叫“月光宝盒”）
 function buildMuseum(THREE, K) {
-  const g = new THREE.Group(), add = (geo, m) => g.add(K.mesh(geo, m)), r = K.ccw(CBD_FP.museum), c = K.centroid(r), Z0 = 9, Z1 = 44;
+  const g = new THREE.Group(), add = (geo, m) => g.add(K.mesh(geo, m)), r = K.ccw(CBD_FP.museum), c = K.centroid(r), Z0 = 9, Z1 = 45.25;
   const glass = K.mat({ bg: '#9db6db', v: 8, vc: '#d6e1f1', vw: 3 });
   const inner = K.scale(r, c, 0.86);
   add(K.loft([K.at(inner, 0), K.at(inner, Z0)], { tw: 6, th: Z0 }), glass);
@@ -1683,20 +1683,30 @@ function buildHaixinsha(THREE, K) {
   g.add(K.rods(truss, white));
   return g;
 }
-// ---------------------------------------------------------------- 中信广场主楼 (1997，80 层)
-// 屋顶 321.9 m，顶层 296.9 m，两根天线到 390.2 m。方形平面四角内收，顶部逐级收进成一座玻璃灯笼，
-// 再收成尖顶，两根并排的天线立在上面；两边的两栋 38 层公寓保持原样
+// ---------------------------------------------------------------- 中信广场主楼 (1997，80 层，刘荣广伍振民建筑师事务所)
+// 屋顶 321.9 m，顶层 296.9 m，两根天线到 390.2 m。方形平面、四角内凹，深色玻璃幕墙配浅色竖向转角；
+// 顶上一段像阶梯金字塔，四角一级级往里收，最后收成小尖顶，两根并排的天线立在上面；两边的两栋 38 层公寓保持原样
 function buildCitic(THREE, K) {
   const g = new THREE.Group(), add = (geo, m) => g.add(K.mesh(geo, m)), c = K.centroid(K.ccw(CBD_FP.citic));
   const ns = (w, n) => [[w, -w + n], [w, w - n], [w - n, w - n], [w - n, w], [-w + n, w], [-w + n, w - n], [-w, w - n], [-w, -w + n], [-w + n, -w + n], [-w + n, -w], [w - n, -w], [w - n, -w + n]].map(([x, y]) => [c[0] + x, c[1] + y]);
-  const stone = K.mat({ bg: '#8297aa', v: 6, vc: '#dfe3e7', vw: 6, h: 3, hc: '#a2b2c2', hw: 2 }), roof = K.mat(0xdde4ee);
-  const tier = (w, n, z0, z1, m) => { add(K.loft([K.at(ns(w, n), z0), K.at(ns(w, n), z1)], { tw: 10, th: 12 }), m); add(K.cap(K.at(ns(w, n), z1)), roof); };
-  tier(23.8, 3.4, 0, 268, stone);
-  tier(22, 3.1, 268, 284, stone);
-  tier(20.2, 2.8, 284, 297, stone);
-  tier(18, 2.6, 297, 312, K.mat({ bg: '#a9c1e0', v: 8, vc: '#e9eef6', vw: 3 }));   // glass lantern
-  add(K.loft([K.at(ns(18, 2.6), 312), K.at(ns(5, 0.8), 321.9)], { tw: 10, th: 6 }), K.mat(0xc9d4e4));
-  g.add(K.rods([-7.5, 7.5].map((d) => [[c[0] + d, c[1], 300], [c[0] + d, c[1], 390.2], 1.1]), K.mat(0xe9eef6)));
+  const glass = K.mat({ bg: '#5f7e98', v: 8, vc: '#b9c8d6', vw: 2, h: 3, hc: '#7b95ab', hw: 5 });
+  const stone = K.mat({ bg: '#d3d9df', h: 3, hc: '#bcc5ce', hw: 2 });
+  const roof = K.mat(0xc9d2dc);
+  // a notched-square tier: the four broad faces in glass, the eight faces of the corner recesses in light stone
+  const tier = (w, n, z0, z1) => {
+    const r = ns(w, n);
+    for (let i = 0; i < 12; i++) {
+      const p = r[i], q = r[(i + 1) % 12], main = i % 3 === 0;
+      add(K.loft([[[p[0], p[1], z0], [q[0], q[1], z0]], [[p[0], p[1], z1], [q[0], q[1], z1]]], { open: true, tw: main ? 9 : 4, th: 12 }), main ? glass : stone);
+    }
+    add(K.cap(K.at(r, z1)), roof);
+  };
+  tier(23.85, 4.6, 0, 266);
+  // the stepped crown: each step a little narrower, the corner recesses a little deeper
+  for (let k = 1; k <= 6; k++) tier(23.85 - 1.35 * k, 4.6 + 0.95 * k, 266 + (k - 1) * 8, 266 + k * 8);
+  const top = ns(15.75, 10.3);
+  add(K.loft([K.at(top, 314), K.at(ns(4.2, 2.6), 321.9)], { tw: 6, th: 6 }), K.mat({ bg: '#8ea6be', h: 3, hc: '#c4d0dc' }));
+  g.add(K.rods([-6, 6].map((d) => [[c[0] + d, c[1], 300], [c[0] + d, c[1], 390.2], 0.9]), K.mat(0xe7ecf3)));
   return g;
 }
 // ---------------------------------------------------------------- 猎德大桥
