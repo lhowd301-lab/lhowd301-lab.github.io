@@ -1833,46 +1833,51 @@ function buildCitic(THREE, K) {
   return g;
 }
 // ---------------------------------------------------------------- 琶洲 · 广交会展馆（A、B、C、D 四个区）
-// 轮廓按 OSM：A 区在中间，B 区在东，C 区在 A 区南面，D 区（四期，2022）在西。各区由一跨跨大跨度无柱展厅并排组成，
-// 每跨约 80～100 m 宽（A 区一排正好五跨，对应“5 个 1 万平方米无柱展厅”），屋面是倒三角立体桁架撑起的拱形金属屋顶，
-// 拱的走向南北，所以从江边看过去，一跨跨的拱连成起伏的屋面；山墙是玻璃幕墙
+// 照着航拍照片：每个区是一条条东西走向的“长筒”大展厅——屋面横截面是两边往下卷的扁拱，银色金属屋面上是顺着长边的接缝，
+// 隔一段有一道横向的肋；两头是大片玻璃山墙，屋面在端头往下收、往外挑，从侧面看端部是一道大弧。
+// 轮廓按 OSM：A 区在中间，B 区在东，C 区在 A 区南面，D 区（四期，2022）在西，D 区西头接着一栋几层高的平顶楼
 function buildExpo(THREE, K) {
   const g = new THREE.Group(), add = (geo, m) => g.add(K.mesh(geo, m));
-  const roof = K.mat({ bg: '#dfe5ee', v: 16, vc: '#c7d0dc', vw: 2 }, { side: THREE.DoubleSide }, 0);
-  const glass = K.mat({ bg: '#9eb8de', v: 8, vc: '#d6e2f2', vw: 2, h: 3, hc: '#c3d3ea', hw: 2 });
-  const wall = K.mat({ bg: '#c9d4e4', v: 6, vc: '#b5c3d8', vw: 2, h: 2, hc: '#d8e1ee' });
-  const flat = K.mat({ bg: '#b9c8de', v: 6, vc: '#dbe4f1', vw: 2 });
+  const roof = K.mat({ bg: '#d6dde7', h: 8, hc: '#bcc6d3', hw: 3 }, { side: THREE.DoubleSide }, 0);
+  const glass = K.mat({ bg: '#8fabd4', v: 8, vc: '#cfdcef', vw: 3, h: 3, hc: '#b6c8e2', hw: 2 });
+  const office = K.mat({ bg: '#c9d3e1', v: 10, vc: '#9fb2cc', vw: 5, h: 4, hc: '#e6ecf4', hw: 18 });
+  const rib = K.mat(0xaab6c6, {}, 0);
   const lerp = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
-  // q = [SW, SE, NE, NW]; n bays west → east; each bay vaulted across its width
-  const hall = (q, n, eave, crown) => {
-    const P = (u, v) => lerp(lerp(q[0], q[1], u), lerp(q[3], q[2], u), v), NU = 14;
-    for (let i = 0; i < n; i++) {
-      const prof = (t) => eave + (crown - eave) * Math.sin(Math.PI * t);
-      const us = Array.from({ length: NU + 1 }, (_, k) => (i + k / NU) / n), ts = us.map((u, k) => k / NU);
-      const rows = [0, 0.5, 1].map((v) => us.map((u, k) => [...P(u, v), prof(ts[k])]));
-      add(K.grid(rows, { u: 6, v: 1 }), roof);
-      const south = us.map((u) => P(u, 0)), north = us.map((u) => P(u, 1)).reverse(), tz = ts.map(prof), tzr = tz.slice().reverse();
-      add(K.loft([south.map((p) => [...p, 0]), south.map((p, k) => [...p, tz[k]])], { open: true, tw: 8, th: 9 }), glass);
-      add(K.loft([north.map((p) => [...p, 0]), north.map((p, k) => [...p, tzr[k]])], { open: true, tw: 8, th: 9 }), glass);
-    }
-    const w0 = P(0, 1), w1 = P(0, 0), e0 = P(1, 0), e1 = P(1, 1);
-    add(K.loft([[[...w0, 0], [...w1, 0]], [[...w0, eave], [...w1, eave]]], { open: true, tw: 9, th: 9 }), wall);
-    add(K.loft([[[...e0, 0], [...e1, 0]], [[...e0, eave], [...e1, eave]]], { open: true, tw: 9, th: 9 }), wall);
+  // q = [SW, SE, NE, NW]; ribs: number of bays the roof is divided into; the vault runs west → east
+  const hall = (q, ribs, eave, crown) => {
+    const P = (u, v) => lerp(lerp(q[0], q[1], u), lerp(q[3], q[2], u), v);
+    const L = Math.hypot(q[1][0] - q[0][0], q[1][1] - q[0][1]), D = Math.hypot(q[3][0] - q[0][0], q[3][1] - q[0][1]);
+    const cross = (v) => Math.pow(Math.max(0, 1 - Math.pow(Math.abs(2 * v - 1), 3)), 1 / 3);          // flat top, edges rolling down
+    const endK = (u) => { const d = Math.min(u, 1 - u) * L / 34; return d >= 1 ? 1 : 0.62 + 0.38 * Math.sin(d * Math.PI / 2); };   // the roof dips at the two ends
+    const Z = (u, v) => (eave * 0.55 + (eave * 0.45 + (crown - eave) * cross(v))) * endK(u) - (1 - cross(v)) * eave * 0.25;
+    const NU = Math.max(24, Math.round(L / 10)), NV = 22;
+    const us = Array.from({ length: NU + 1 }, (_, k) => k / NU), vs = Array.from({ length: NV + 1 }, (_, k) => k / NV);
+    add(K.grid(vs.map((v) => us.map((u) => [...P(u, v), Z(u, v)])), { u: L / 60, v: D / 6 }), roof);
+    // long glass walls under the eaves, set in a little; glass gables set back under the overhanging ends
+    const inset = 3 / D, back = 12 / L;
+    const side = (v, rev) => { let pts = us.filter((u) => u >= back && u <= 1 - back).map((u) => [...P(u, v), Z(u, v)]); if (rev) pts = pts.reverse(); add(K.loft([pts.map((p) => [p[0], p[1], 0]), pts], { open: true, tw: 8, th: 9 }), glass); };
+    side(inset, false); side(1 - inset, true);
+    const gable = (u, rev) => { let pts = vs.filter((v) => v >= inset && v <= 1 - inset).map((v) => [...P(u, v), Z(u, v)]); if (rev) pts = pts.reverse(); add(K.loft([pts.map((p) => [p[0], p[1], 0]), pts], { open: true, tw: 8, th: 9 }), glass); };
+    gable(back, true); gable(1 - back, false);
+    // transverse ribs across the roof
+    const segs = [];
+    for (let k = 1; k < ribs; k++) { const u = k / ribs; for (let j = 0; j < NV; j++) { const a = [...P(u, vs[j]), Z(u, vs[j]) + 0.6], b = [...P(u, vs[j + 1]), Z(u, vs[j + 1]) + 0.6]; segs.push([a, b, 1.1]); } }
+    if (segs.length) g.add(K.rods(segs, rib));
   };
-  const box = (r, z) => { const rr = K.ccw(r); add(K.loft([K.at(rr, 0), K.at(rr, z)], { tw: 8, th: 8 }), flat); add(K.cap(K.at(rr, z)), K.mat(0xd9e1ec)); };
-  // A 区: five bays along the south, three more on the north side of the west half
-  hall([[3152.7, -1369.5], [3621.4, -1385.3], [3628.9, -1174.6], [3159.2, -1160.1]], 5, 22, 34);
-  hall([[3159.2, -1160.1], [3440.0, -1168.7], [3443.3, -1060.8], [3162.5, -1052.2]], 3, 22, 34);
+  const box = (r, z, m) => { const rr = K.ccw(r); add(K.loft([K.at(rr, 0), K.at(rr, z)], { tw: 8, th: 4 }), m); add(K.cap(K.at(rr, z)), K.mat(0xd9e1ec)); };
+  // A 区
+  hall([[3152.7, -1369.5], [3621.4, -1385.3], [3628.9, -1174.6], [3159.2, -1160.1]], 5, 18, 40);
+  hall([[3159.2, -1160.1], [3440.0, -1168.7], [3443.3, -1060.8], [3162.5, -1052.2]], 3, 15, 31);
   // B 区
-  hall([[3693.0, -1391.8], [3984.1, -1396.0], [3986.0, -1193.0], [3697.0, -1192.8]], 3, 22, 34);
-  hall([[3728.7, -1193.3], [3986.0, -1193.0], [3989.2, -1080.0], [3731.0, -1074.0]], 3, 22, 34);
+  hall([[3693.0, -1391.8], [3984.1, -1396.0], [3986.0, -1193.0], [3697.0, -1192.8]], 3, 18, 40);
+  hall([[3728.7, -1193.3], [3986.0, -1193.0], [3989.2, -1080.0], [3731.0, -1074.0]], 3, 15, 31);
   // C 区
-  hall([[3448.9, -1737.8], [3776.5, -1748.5], [3779.1, -1594.5], [3453.5, -1583.9]], 4, 20, 31);
-  // D 区（四期）: the main run of halls, a block to the north-east, a low wing at the west end and the link to A 区
-  hall([[2593.6, -1350.2], [3105.6, -1366.1], [3111.2, -1160.0], [2605.4, -1144.6]], 5, 24, 38);
-  hall([[2967.5, -1154.1], [3111.2, -1160.0], [3116.2, -983.3], [2973.6, -978.2]], 2, 24, 36);
-  box([[2549.0, -1268.6], [2595.0, -1270.5], [2605.1, -1151.1], [2550.4, -1149.4]], 14);
-  box([[3110.4, -1202.7], [3157.9, -1202.8], [3158.6, -1177.1], [3111.2, -1175.4]], 16);
+  hall([[3448.9, -1737.8], [3776.5, -1748.5], [3779.1, -1594.5], [3453.5, -1583.9]], 4, 16, 34);
+  // D 区（四期）: one huge hall, a lower one to the north-east, the office block at the west end and the link to A 区
+  hall([[2593.6, -1350.2], [3105.6, -1366.1], [3111.2, -1160.0], [2605.4, -1144.6]], 4, 20, 46);
+  hall([[2967.5, -1154.1], [3111.2, -1160.0], [3116.2, -983.3], [2973.6, -978.2]], 2, 15, 30);
+  box([[2549.0, -1268.6], [2595.0, -1270.5], [2605.1, -1151.1], [2550.4, -1149.4]], 24, office);
+  box([[3110.4, -1202.7], [3157.9, -1202.8], [3158.6, -1177.1], [3111.2, -1175.4]], 16, glass);
   return g;
 }
 // ---------------------------------------------------------------- 猎德大桥
