@@ -1611,32 +1611,57 @@ function buildCBD(THREE, K) {
   return g;
 }
 // ---------------------------------------------------------------- 广东省博物馆 (2010，许李严建筑师事务所)
-// 一只“宝盒”：约 114 m 见方、高 45.25 m 的方盒子，架在内收的玻璃首层上；外墙是深色铝板，四个立面被切出不规则的凹口，
-// 露出里层的红色（夜里红光从这些缝里透出来，所以叫“月光宝盒”）
+// 一只“宝盒”：约 114 m 见方、高 45.25 m 的深色方盒子，首层略往里收。外墙和屋顶边缘散布着红色、白色的
+// 条形和 L 形凹槽（像漆盒上的雕刻）；屋顶中间偏北是一大片浅色框起来的玻璃天窗
 function buildMuseum(THREE, K) {
-  const g = new THREE.Group(), add = (geo, m) => g.add(K.mesh(geo, m)), r = K.ccw(CBD_FP.museum), c = K.centroid(r), Z0 = 9, Z1 = 45.25;
-  const glass = K.mat({ bg: '#9db6db', v: 8, vc: '#d6e1f1', vw: 3 });
-  const inner = K.scale(r, c, 0.86);
+  const g = new THREE.Group(), add = (geo, m) => g.add(K.mesh(geo, m)), r = K.ccw(CBD_FP.museum), c = K.centroid(r), Z0 = 6, Z1 = 45.25;
+  const glass = K.mat({ bg: '#6f7f93', v: 8, vc: '#9aa8b8', vw: 3 });
+  const inner = K.scale(r, c, 0.93);
   add(K.loft([K.at(inner, 0), K.at(inner, Z0)], { tw: 6, th: Z0 }), glass);
-  // the carved facade, drawn once round the whole box (u runs the full perimeter)
+  const R = rng(20100518), RED = '#a12c35', WHITE = '#eceef2';
+  // scatter the carved bars and L-shapes over a rectangle given in metres (x0..x1, y0..y1; y downwards)
+  const carve = (x, x0, x1, y0, y1, n, edge) => {
+    for (let k = 0; k < n; k++) {
+      const col = R() < 0.6 ? RED : WHITE, t = 1.1 + R() * 0.8, L = 2.5 + R() * 8, px = x0 + R() * (x1 - x0), py = y0 + R() * (y1 - y0);
+      x.fillStyle = col;
+      const kind = R();
+      if (kind < 0.4) x.fillRect(px, py, L, t);
+      else if (kind < 0.75) x.fillRect(px, py, t, L * 0.8);
+      else { x.fillRect(px, py, L * 0.8, t); x.fillRect(px, py, t, L * 0.6); }
+      if (edge && R() < 0.15) { x.fillStyle = col; x.fillRect(px, y0 - 1, t, 3 + R() * 4); }
+    }
+  };
+  // facades: one canvas running round the whole box, drawn in metres
   let per = 0; for (let i = 0; i < r.length; i++) { const p = r[i], q = r[(i + 1) % r.length]; per += Math.hypot(q[0] - p[0], q[1] - p[1]); }
-  const cv = document.createElement('canvas'); cv.width = 2048; cv.height = 256; const x = cv.getContext('2d');
-  x.fillStyle = '#525866'; x.fillRect(0, 0, 2048, 256);
-  x.fillStyle = 'rgba(255,255,255,.09)'; for (let i = 0; i < 2048; i += 10) x.fillRect(i, 0, 1, 256); for (let j = 0; j < 256; j += 18) x.fillRect(0, j, 2048, 1);
-  const R = rng(20100518), face = 2048 / 4;
-  const poly = (q, col) => { x.fillStyle = col; x.beginPath(); x.moveTo(q[0][0], q[0][1]); for (const v of q) x.lineTo(v[0], v[1]); x.closePath(); x.fill(); };
-  for (let f = 0; f < 4; f++) for (let k = 0, n = 7 + Math.floor(R() * 4); k < n; k++) {
-    // an angular cut: a slanted four-sided void, its rim catching light, glass or the red inner skin at the back
-    const w = 18 + R() * 120, h = 30 + R() * 150, x0 = f * face + 10 + R() * (face - w - 30), y0 = R() < 0.25 ? -10 : 10 + R() * (230 - h), sk = (R() - 0.5) * 80;
-    const pts = [[x0, y0], [x0 + w, y0 + (R() - 0.5) * 24], [x0 + w + sk, Math.min(250, y0 + h)], [x0 + sk * 0.5, Math.min(250, y0 + h + (R() - 0.5) * 24)]];
-    const cx = pts.reduce((a, v) => a + v[0], 0) / 4, cy = pts.reduce((a, v) => a + v[1], 0) / 4, inset = (q, s) => q.map(([px, py]) => [cx + (px - cx) * s, cy + (py - cy) * s]);
-    poly(pts, '#d3d9e2');
-    poly(inset(pts, 0.78), R() < 0.3 ? '#8f4a42' : '#8ea4c0');
+  const H = Z1 - Z0, fc = document.createElement('canvas'); fc.width = 4096; fc.height = 512; const fx = fc.getContext('2d');
+  fx.fillStyle = '#3c4048'; fx.fillRect(0, 0, 4096, 512);
+  fx.setTransform(4096 / per, 0, 0, 512 / H, 0, 0);
+  fx.fillStyle = 'rgba(255,255,255,.05)'; for (let m = 0; m < per; m += 1.5) fx.fillRect(m, 0, 0.08, H);
+  carve(fx, 0, per - 8, 0.5, H - 3, Math.round(per / 2.4), true);
+  for (let f = 0; f < 4; f++) {   // one or two larger stepped white recesses low on each face
+    const fx0 = f * per / 4 + 20 + R() * (per / 4 - 50), fy = H - 9 - R() * 6; fx.fillStyle = WHITE;
+    fx.fillRect(fx0, fy, 9, 2.4); fx.fillRect(fx0 + 7, fy, 2.4, 6); fx.fillRect(fx0 + 7, fy + 4, 9, 2.4);
   }
-  const t = new THREE.CanvasTexture(cv); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; t.offset.y = -Z0 / (Z1 - Z0);
-  add(K.loft([K.at(r, Z0), K.at(r, Z1)], { tw: per, th: Z1 - Z0 }), new THREE.MeshLambertMaterial({ map: t }));
-  add(K.cap(K.at(r, Z0), true), K.mat(0x5d6472));
-  add(K.cap(K.at(r, Z1)), K.mat(0x666d7a));
+  const ft = new THREE.CanvasTexture(fc); ft.colorSpace = THREE.SRGBColorSpace; ft.anisotropy = 8; ft.wrapS = ft.wrapT = THREE.RepeatWrapping; ft.offset.y = -Z0 / H;
+  add(K.loft([K.at(r, Z0), K.at(r, Z1)], { tw: per, th: H }), new THREE.MeshLambertMaterial({ map: ft }));
+  add(K.cap(K.at(r, Z0), true), K.mat(0x4a4f58));
+  // roof: dark, the same carving along a band round the edge, a big pale-framed skylight in the middle
+  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity; for (const [px, py] of r) { x0 = Math.min(x0, px); x1 = Math.max(x1, px); y0 = Math.min(y0, py); y1 = Math.max(y1, py); }
+  const W = x1 - x0, D = y1 - y0, rc = document.createElement('canvas'); rc.width = rc.height = 1024; const rx = rc.getContext('2d');
+  rx.fillStyle = '#474b53'; rx.fillRect(0, 0, 1024, 1024); rx.setTransform(1024 / W, 0, 0, 1024 / D, 0, 0);   // metres; y down = south
+  carve(rx, 1, W - 9, 1, 16, 26); carve(rx, 1, W - 9, D - 17, D - 2, 26); carve(rx, 1, 15, 17, D - 17, 18); carve(rx, W - 16, W - 6, 17, D - 17, 18);
+  const sx = W / 2 - 27, sy = D / 2 - 24, sw = 54, sd = 34;   // skylight a little north of the middle
+  rx.fillStyle = '#cfd2d6'; rx.fillRect(sx, sy, sw, sd);
+  rx.fillStyle = '#aab8b2'; rx.fillRect(sx + 5, sy + 5, sw - 10, sd - 10);
+  rx.fillStyle = '#c4cfca'; rx.fillRect(sx + 14, sy + 9, sw - 24, sd - 18);
+  rx.fillStyle = 'rgba(80,96,90,.55)'; for (let m = sx + 5; m < sx + sw - 5; m += 2.6) rx.fillRect(m, sy + 5, 0.25, sd - 10); for (let m = sy + 5; m < sy + sd - 5; m += 2.6) rx.fillRect(sx + 5, m, sw - 10, 0.25);
+  rx.fillStyle = '#c98a45'; rx.fillRect(sx + 7, sy + 12, 6, 4); rx.fillRect(sx + 9, sy + 18, 4, 5); rx.fillStyle = '#eef0f2'; rx.fillRect(sx + 6, sy + 7, 3, 2); rx.fillRect(sx + 40, sy + 26, 4, 2);
+  const rt = new THREE.CanvasTexture(rc); rt.colorSpace = THREE.SRGBColorSpace; rt.anisotropy = 8;
+  const plane = new THREE.PlaneGeometry(W, D); plane.rotateX(-Math.PI / 2); plane.translate((x0 + x1) / 2, Z1 + 0.05, -(y0 + y1) / 2);
+  add(plane, new THREE.MeshLambertMaterial({ map: rt }));
+  // the skylight sits up a little on its frame
+  const sk = [[x0 + sx, y1 - sy - sd], [x0 + sx + sw, y1 - sy - sd], [x0 + sx + sw, y1 - sy], [x0 + sx, y1 - sy]];
+  add(K.loft([K.at(sk, Z1), K.at(sk, Z1 + 1.6)], { tw: 6, th: 2 }), K.mat(0xc9ccd1));
   return g;
 }
 // ---------------------------------------------------------------- 海心沙亚运公园：西端的看台
@@ -1683,30 +1708,41 @@ function buildHaixinsha(THREE, K) {
   g.add(K.rods(truss, white));
   return g;
 }
-// ---------------------------------------------------------------- 中信广场主楼 (1997，80 层，刘荣广伍振民建筑师事务所)
-// 屋顶 321.9 m，顶层 296.9 m，两根天线到 390.2 m。方形平面、四角内凹，深色玻璃幕墙配浅色竖向转角；
-// 顶上一段像阶梯金字塔，四角一级级往里收，最后收成小尖顶，两根并排的天线立在上面；两边的两栋 38 层公寓保持原样
+// ---------------------------------------------------------------- 中信广场主楼（中信大厦，1997，80 层）
+// 屋顶 321.9 m，两根天线到 390.2 m。平顶的方形玻璃塔，四角内凹；蓝绿色反光玻璃，每个立面中间一条颜色更深的竖带；
+// 几个避难层是两道白色横线；顶上二三十米四个内凹角换成白色板；两根白色天线之间架着红色“中信”招牌
 function buildCitic(THREE, K) {
-  const g = new THREE.Group(), add = (geo, m) => g.add(K.mesh(geo, m)), c = K.centroid(K.ccw(CBD_FP.citic));
+  const g = new THREE.Group(), add = (geo, m) => g.add(K.mesh(geo, m)), c = K.centroid(K.ccw(CBD_FP.citic)), w = 23.85, n = 4.2, TOP = 321.9;
   const ns = (w, n) => [[w, -w + n], [w, w - n], [w - n, w - n], [w - n, w], [-w + n, w], [-w + n, w - n], [-w, w - n], [-w, -w + n], [-w + n, -w + n], [-w + n, -w], [w - n, -w], [w - n, -w + n]].map(([x, y]) => [c[0] + x, c[1] + y]);
-  const glass = K.mat({ bg: '#5f7e98', v: 8, vc: '#b9c8d6', vw: 2, h: 3, hc: '#7b95ab', hw: 5 });
-  const stone = K.mat({ bg: '#d3d9df', h: 3, hc: '#bcc5ce', hw: 2 });
-  const roof = K.mat(0xc9d2dc);
-  // a notched-square tier: the four broad faces in glass, the eight faces of the corner recesses in light stone
-  const tier = (w, n, z0, z1) => {
-    const r = ns(w, n);
-    for (let i = 0; i < 12; i++) {
-      const p = r[i], q = r[(i + 1) % 12], main = i % 3 === 0;
-      add(K.loft([[[p[0], p[1], z0], [q[0], q[1], z0]], [[p[0], p[1], z1], [q[0], q[1], z1]]], { open: true, tw: main ? 9 : 4, th: 12 }), main ? glass : stone);
-    }
-    add(K.cap(K.at(r, z1)), roof);
-  };
-  tier(23.85, 4.6, 0, 266);
-  // the stepped crown: each step a little narrower, the corner recesses a little deeper
-  for (let k = 1; k <= 6; k++) tier(23.85 - 1.35 * k, 4.6 + 0.95 * k, 266 + (k - 1) * 8, 266 + k * 8);
-  const top = ns(15.75, 10.3);
-  add(K.loft([K.at(top, 314), K.at(ns(4.2, 2.6), 321.9)], { tw: 6, th: 6 }), K.mat({ bg: '#8ea6be', h: 3, hc: '#c4d0dc' }));
-  g.add(K.rods([-6, 6].map((d) => [[c[0] + d, c[1], 300], [c[0] + d, c[1], 390.2], 0.9]), K.mat(0xe7ecf3)));
+  const r = ns(w, n), faceLen = 2 * (w - n);
+  // a broad face: lighter reflective glass at the sides, a darker band down the middle, mullions and floor lines
+  const fc = document.createElement('canvas'); fc.width = fc.height = 256; const fx = fc.getContext('2d');
+  const grd = fx.createLinearGradient(0, 0, 256, 0); grd.addColorStop(0, '#78a9c4'); grd.addColorStop(0.3, '#6c9fbd'); grd.addColorStop(1, '#78a9c4');
+  fx.fillStyle = grd; fx.fillRect(0, 0, 256, 256);
+  fx.fillStyle = '#3f7491'; fx.fillRect(92, 0, 72, 256);
+  fx.fillStyle = 'rgba(225,238,246,.55)'; for (let i = 0; i < 256; i += 8) fx.fillRect(i, 0, 1, 256);
+  fx.fillStyle = 'rgba(205,226,238,.6)'; for (let j = 0; j < 256; j += 64) fx.fillRect(0, j, 256, 3);
+  const ft = new THREE.CanvasTexture(fc); ft.colorSpace = THREE.SRGBColorSpace; ft.anisotropy = 8; ft.wrapS = ft.wrapT = THREE.RepeatWrapping;
+  const face = new THREE.MeshLambertMaterial({ map: ft });
+  const notch = K.mat({ bg: '#3e6c86', h: 2, hc: '#5c87a0' }), white = K.mat(0xf1f4f7), stone = K.mat({ bg: '#5b636c', v: 6, vc: '#aeb6be', vw: 14 });
+  const wall = (i, z0, z1, m, a = 0, b = 1, tw) => { const p = r[i], q = r[(i + 1) % 12], P = [p[0] + (q[0] - p[0]) * a, p[1] + (q[1] - p[1]) * a], Q = [p[0] + (q[0] - p[0]) * b, p[1] + (q[1] - p[1]) * b]; add(K.loft([[[...P, z0], [...Q, z0]], [[...P, z1], [...Q, z1]]], { open: true, tw: tw || 6, th: 8 }), m); };
+  for (let i = 0; i < 12; i++) {
+    if (i % 3 === 0) { wall(i, 0, 22, stone); wall(i, 22, TOP, face, 0, 1, faceLen); }
+    else { wall(i, 0, 22, stone); wall(i, 22, TOP - 30, notch); wall(i, TOP - 30, TOP, white); }
+  }
+  add(K.cap(K.at(r, TOP)), K.mat(0xd5dce3));
+  // refuge floors: two thin white lines across the lighter parts of each face
+  for (const z of [102, 180, 262]) for (const i of [0, 3, 6, 9]) for (const [a, b] of [[0, 0.36], [0.64, 1]]) { wall(i, z, z + 0.9, white, a, b); wall(i, z + 2.3, z + 3.2, white, a, b); }
+  // masts and the sign between them (east–west, facing south and north)
+  g.add(K.rods([-11.5, 11.5].flatMap((d) => [[[c[0] + d, c[1], TOP], [c[0] + d, c[1], 360], 0.9], [[c[0] + d, c[1], 360], [c[0] + d, c[1], 390.2], 0.45]]), white));
+  const sc = document.createElement('canvas'); sc.width = 512; sc.height = 224; const sx = sc.getContext('2d');
+  sx.fillStyle = '#c8303a'; sx.fillRect(0, 0, 512, 224); sx.fillStyle = '#f3e4e4'; sx.fillRect(14, 14, 484, 196);
+  sx.fillStyle = '#c8303a'; sx.font = 'bold 150px "Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif'; sx.textAlign = 'center'; sx.textBaseline = 'middle'; sx.fillText('中信', 256, 118);
+  const st = new THREE.CanvasTexture(sc); st.colorSpace = THREE.SRGBColorSpace; st.anisotropy = 8;
+  const signFace = new THREE.MeshLambertMaterial({ map: st }), red = K.mat(0xc8303a);
+  const box = new THREE.Mesh(new THREE.BoxGeometry(20, 9, 0.8), [red, red, red, red, signFace, signFace]);
+  box.position.set(c[0], TOP + 4 + 4.5, -c[1]); g.add(box);
+  g.add(K.rods([-7, 0, 7].map((d) => [[c[0] + d, c[1], TOP], [c[0] + d, c[1], TOP + 4], 0.35]), K.mat(0xb8c0c8)));
   return g;
 }
 // ---------------------------------------------------------------- 猎德大桥
