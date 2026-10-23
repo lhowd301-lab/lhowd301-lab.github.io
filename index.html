@@ -1136,6 +1136,19 @@ const SITE = {
       facts: { 结构: '独塔自锚式悬索桥', 跨径: '219 m + 167 m', 通车: '2009 年' },
       intro: '连接天河区猎德和海珠区的跨江大桥，2009 年 7 月通车。全桥只有一座桥塔，塔身像两片合在一起的贝壳，桥面从中间穿过；主缆从塔顶垂下来，锚在两头的桥面上。',
       thoughts: '写下你对猎德大桥的理解。', sample: true },
+    { id: 'l42', city: 'gz', kind: 'new', meta: '1998', name: '星海音乐厅', en: 'Xinghai Concert Hall', lnglat: [113.30013, 23.11034], zoom: 16.6, pitch: 60,
+      facts: { 启用: '1998 年', 结构: '双曲抛物面钢筋混凝土薄壳', 座位: '交响乐厅 1518 座 · 室内乐厅 461 座' },
+      intro: '二沙岛西部、珠江边的音乐厅，以冼星海命名，1998 年启用。整个屋面是一片双曲抛物面的钢筋混凝土薄壳，一角高高翘起、对角稍低：从北面看像一只张开一高一低两只翅膀的天鹅，从西往东看又像一架掀开琴盖的三角钢琴。翘起的那一角下面是整面蓝绿色的玻璃幕墙，东边广场上立着冼星海的铜像。',
+      thoughts: '写下你对星海音乐厅的理解。', sample: true },
+    // 下面两处是老建筑，归在“名胜古迹”组（没有 kind: 'new'），同样有 three.js 建模
+    { id: 'l43', city: 'gz', meta: '1937', name: '爱群大厦', en: 'Oi Kwan Building', lnglat: [113.25148, 23.11207], zoom: 17, pitch: 62,
+      facts: { 落成: '1937 年', 高度: '64 m · 15 层', 设计: '陈荣枝、李炳垣' },
+      intro: '沿江西路和长堤大马路交汇的三角地上，1937 年落成，是广州第一座钢框架结构的高层建筑，“广州第一高楼”的名头一直保持到 1967 年。设计借鉴纽约伍尔沃斯大楼的新哥特式手法：窄窗上下对齐成一条条竖线，首层沿街是骑楼，西端是圆弧形的“船头”；12 层以上是层层收进的塔楼，顶上是褐色的五棱台屋顶和五个白色小尖塔。1993 年列为广州市文物保护单位。',
+      thoughts: '写下你对爱群大厦的理解。', sample: true },
+    { id: 'l44', city: 'gz', meta: '1967', name: '人民桥', en: 'Renmin Bridge', lnglat: [113.24513, 23.10838], zoom: 16.2, pitch: 58,
+      facts: { 通车: '1967 年', 结构: '梁桥', 全长: '701.2 m' },
+      intro: '北接六二三路和康王南路、南通海珠区的跨江大桥，1965 年动工，1967 年 5 月 1 日通车。原本外观朴素，2018 年的历史文化环境艺术提升工程给它换上了欧陆风格：四角各建一座欧式桥头堡，橘红色的圆顶被街坊叫作“洋葱头”，西侧两岸的桥头堡里装了垂直电梯；桥栏用白色大理石包起来、刻着木棉花，路灯也换成了欧式铁艺灯。',
+      thoughts: '写下你对人民桥的理解。', sample: true },
   ],
 
   // 成长轨迹：按时间顺序排列；地图上每个阶段一种颜色（颜色在 STAGE_COL 里改），坐标取自 OpenStreetMap（WGS-84）
@@ -2157,6 +2170,183 @@ function buildLiede(THREE, K) {
   wrap.userData.night = (n) => { towerMat.emissive.copy(tD).lerp(tN, n * 0.8); cableMat.emissive.copy(cD).lerp(cN, n * 0.85); hangMat.color.copy(hD).lerp(hN, n); };
   return wrap;
 }
+// ---------------------------------------------------------------- 星海音乐厅 (1998)
+// 交响乐厅上面是一整片双曲抛物面的钢筋混凝土薄壳（直纹面，四条边都是直线）：平面近似菱形，南角翘得最高，下面是整面蓝绿色玻璃幕墙；
+// 对角的北角次高，东、西两角压低——从北边看像张开一高一低两只翅膀的天鹅，从西往东看像掀开琴盖的三角钢琴。
+// 西、南两面是两层高的弧形裙房，东角外是带螺旋坡道的下沉圆形广场，东北是白色的室内乐厅。角点按卫星图，高度是估计的
+function buildXinghai(THREE, K) {
+  const g = new THREE.Group(), add = (geo, m) => g.add(K.mesh(geo, m)), DS = THREE.DoubleSide;
+  const C = { W: [-2279, -510.5, 14], S: [-2230, -555, 50], E: [-2212, -523, 15], N: [-2245, -488, 30] };
+  const bl = (a, b) => [0, 1, 2].map((i) => (1 - a) * (1 - b) * C.W[i] + a * (1 - b) * C.S[i] + a * b * C.E[i] + (1 - a) * b * C.N[i]);
+  const n = 28, top = [], bot = [];
+  for (let i = 0; i <= n; i++) { const r = [], q = []; for (let j = 0; j <= n; j++) { const p = bl(j / n, i / n); r.push(p); q.push([p[0], p[1], p[2] - 1.1]); } top.push(r); bot.push(q); }
+  // silver-grey shell with seams; at night it is washed in blue light like the real one
+  const shell = K.lit(new THREE.MeshLambertMaterial({ map: K.tex({ bg: '#d3d9e1', v: 22, vc: '#b9c2ce', vw: 2 }), side: DS }), null, 0.55, 0x8c9cff);
+  add(K.grid(top, { u: 1.2 }), shell); add(K.grid(bot, { u: 1.2 }), shell);
+  const per = [];
+  for (let j = 0; j < n; j++) per.push(top[0][j]);
+  for (let i = 0; i < n; i++) per.push(top[i][n]);
+  for (let j = n; j > 0; j--) per.push(top[n][j]);
+  for (let i = n; i > 0; i--) per.push(top[i][0]);
+  const rim = K.lit(new THREE.MeshLambertMaterial({ color: 0xeef1f5, side: DS }), null, 0.5, 0xb8c4ff);
+  add(K.loft([per.map((p) => [p[0], p[1], p[2] - 1.1]), per], {}), rim);
+  // walls a little inside the shell's edge, up to its underside: glass under the high south corner (and a strip under the north one)
+  const cen = [0, 1].map((i) => (C.W[i] + C.S[i] + C.E[i] + C.N[i]) / 4);
+  const ins = (p, d) => { const dx = cen[0] - p[0], dy = cen[1] - p[1], L = Math.hypot(dx, dy); return [p[0] + (dx / L) * d, p[1] + (dy / L) * d, p[2]]; };
+  const glass = K.mat({ bg: '#3f8d97', v: 10, vc: '#a6d2d6', vw: 2, h: 6, hc: '#74b5bb', hw: 2 }, { side: DS }, 0.8);
+  const stone = K.mat({ bg: '#d5d9df', h: 6, hc: '#bfc6cf', hw: 2, v: 4, vc: '#e6e9ee', vw: 3 }, { side: DS }, 0.35);
+  const ring = [C.W, C.S, C.E, C.N];
+  for (let e = 0; e < 4; e++) {
+    const A = ring[e], B = ring[(e + 1) % 4], a = ins(A, 3), b = ins(B, 3), m = 12;
+    for (let k = 0; k < m; k++) {
+      const t0 = k / m, t1 = (k + 1) / m, L = (t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t], z = (t) => A[2] + (B[2] - A[2]) * t - 1.5;
+      const p0 = L(t0), p1 = L(t1), mid = L((t0 + t1) / 2);
+      const isG = Math.hypot(mid[0] - C.S[0], mid[1] - C.S[1]) < 36 || Math.hypot(mid[0] - C.N[0], mid[1] - C.N[1]) < 13;
+      add(K.loft([[[p0[0], p0[1], 0], [p1[0], p1[1], 0]], [[p0[0], p0[1], z(t0)], [p1[0], p1[1], z(t1)]]], { open: true, tw: 6, th: 6 }), isG ? glass : stone);
+    }
+  }
+  const white = K.mat(0xf4f6f9, {}, 0.6), sIn = ins(C.S, 3);
+  g.add(K.rods([[[sIn[0], sIn[1], 0], [sIn[0], sIn[1], C.S[2] - 1.6], 0.75]], white, 8));
+  // podium: a two-storey curved base along the west and south sides
+  const pod = K.chaikin(K.ccw([[-2287, -511], [-2271, -549], [-2236, -563], [-2212, -552], [-2224, -546], [-2251, -535], [-2268, -508]]), 2);
+  add(K.loft([K.at(pod, 0), K.at(pod, 6)], { tw: 16, th: 6 }), K.mat({ bg: '#5f646b', h: 1, hc: '#dccbb2', hw: 86 }, {}, 0.5));
+  add(K.cap(K.at(pod, 6)), K.mat(0xe2d8c8));
+  // the sunken round plaza with its ramp, east of the hall
+  const circ = (c, r, z, nn = 48) => Array.from({ length: nn }, (_, i) => { const a = (i / nn) * Math.PI * 2; return [c[0] + r * Math.cos(a), c[1] + r * Math.sin(a), z]; });
+  const pc = [-2196, -527], warm = K.mat(0xd8cbb4, { side: DS });
+  add(K.loft([circ(pc, 14, 0), circ(pc, 14, 5)], { smooth: true }), warm);
+  const o5 = circ(pc, 14, 5), i5 = circ(pc, 6.5, 5);
+  add(K.grid([[...o5, o5[0]], [...i5, i5[0]]]), K.mat(0xe6dccb, { side: DS }));
+  add(K.loft([circ(pc, 6.5, 0.8), circ(pc, 6.5, 5)], { smooth: true }), warm);
+  add(K.cap(circ(pc, 6.6, 0.8)), K.mat(0x9db8a0));
+  // chamber-music hall: white, rounded, ribbon windows
+  const annex = K.ccw([[-2250.0, -488.9], [-2240.4, -482.6], [-2239.9, -479.6], [-2244.2, -477.9], [-2247.6, -474.7], [-2249.6, -470.5], [-2249.8, -465.9], [-2248.2, -461.3], [-2244.9, -457.7], [-2240.5, -455.6], [-2174.6, -467.0], [-2172.5, -472.5], [-2173.8, -481.1], [-2175.3, -487.7], [-2180.4, -492.5], [-2184.8, -494.5], [-2189.5, -495.3], [-2194.4, -494.9], [-2211.9, -491.9], [-2219.1, -494.3]]);
+  add(K.loft([K.at(annex, 0), K.at(annex, 15)], { tw: 12, th: 15 }), K.mat({ bg: '#eceff2', h: 4, hc: '#8d9aab', hw: 9 }));
+  add(K.cap(K.at(annex, 15)), K.mat(0xdde2e8));
+  return g;
+}
+// ---------------------------------------------------------------- 爱群大厦 (1937，陈荣枝、李炳垣)
+// 沿江西路和长堤大马路之间的三角地：西端是整面到顶的圆弧“船头”，长边上窄窗上下对齐成竖线条，首层沿街是拱券骑楼；
+// 11 层以上（约 46 m）在船头后面收成塔楼，四角小尖塔，顶上是褐色的五棱台屋顶、五个白色小尖塔和一根旗杆，总高 64 m；
+// 船头屋面上有个小圆亭，塔楼西面顶上是红色的“爱群”招牌。轮廓按 OSM（船头按照片放宽成圆弧）
+function buildOiKwan(THREE, K) {
+  const g = new THREE.Group(), add = (geo, m) => g.add(K.mesh(geo, m));
+  const sub = (a, b) => [a[0] - b[0], a[1] - b[1]], nrm = (a) => { const L = Math.hypot(a[0], a[1]); return [a[0] / L, a[1] / L]; };
+  const E = [-7194.3, -322.7], N = [-7208.3, -290.8], sideE = [[-7200.0, -309.2], [-7201.5, -305.8], [-7203.8, -300.9]];
+  const s0 = [-7232.4, -340.2], n0 = [-7239.9, -330.6], dS = nrm(sub(E, s0)), dN = nrm(sub(N, n0));
+  // where the two long faces meet if extended
+  const den = dS[0] * dN[1] - dS[1] * dN[0], a = ((n0[0] - s0[0]) * dN[1] - (n0[1] - s0[1]) * dN[0]) / den, V = [s0[0] + dS[0] * a, s0[1] + dS[1] * a];
+  const bis = nrm([dS[0] + dN[0], dS[1] + dN[1]]), side = [-bis[1], bis[0]];   // side points from the river face towards 长堤
+  const at = (u, v) => [V[0] + bis[0] * u + side[0] * v, V[1] + bis[1] * u + side[1] * v];
+  // the prow: a half-round nose, the two faces running into it as tangents
+  const R = 5.2, Cn = at(R + 1.0, 0), PS = [V[0] + dS[0] * 24, V[1] + dS[1] * 24], PN = [V[0] + dN[0] * 24, V[1] + dN[1] * 24];
+  const tangent = (P, sgn) => { const d = sub(P, Cn), L = Math.hypot(d[0], d[1]), ph = Math.atan2(d[1], d[0]), al = Math.acos(R / L); const cand = [ph + al, ph - al].map((t) => [t, [Cn[0] + R * Math.cos(t), Cn[1] + R * Math.sin(t)]]); return cand.find(([, p]) => Math.sign((p[0] - Cn[0]) * bis[1] - (p[1] - Cn[1]) * bis[0]) === sgn) || cand[0]; };
+  const sgnS = Math.sign(dS[0] * bis[1] - dS[1] * bis[0]), [tS] = tangent(PS, sgnS), [tN] = tangent(PN, -sgnS);
+  const back = Math.atan2(-bis[1], -bis[0]); let sweep = tS - tN; while (sweep > Math.PI) sweep -= 2 * Math.PI; while (sweep < -Math.PI) sweep += 2 * Math.PI;
+  // go the long way round if the short way misses the front of the nose
+  const mid = tN + sweep / 2; if (Math.cos(mid - back) < 0) sweep = sweep > 0 ? sweep - 2 * Math.PI : sweep + 2 * Math.PI;
+  const arc = Array.from({ length: 25 }, (_, i) => { const t = tN + (sweep * i) / 24; return [Cn[0] + R * Math.cos(t), Cn[1] + R * Math.sin(t)]; });
+  const fp = K.ccw([E, ...sideE, N, PN, ...arc, PS]);
+  // facade: white piers and spandrels, narrow dark windows lined up floor over floor; ground floor: arcade arches
+  const facade = K.mat({ bg: '#4a535f', h: 4, hc: '#ece9e3', hw: 9, v: 6, vc: '#ece9e3', vw: 13 }, {}, 0.7);
+  const ac = document.createElement('canvas'); ac.width = ac.height = 128; const ax = ac.getContext('2d');
+  ax.fillStyle = '#e9e5dd'; ax.fillRect(0, 0, 128, 128); ax.fillStyle = '#3e434b'; ax.beginPath(); ax.moveTo(26, 128); ax.lineTo(26, 46); ax.arc(64, 46, 38, Math.PI, 0); ax.lineTo(102, 128); ax.fill();
+  const at2 = new THREE.CanvasTexture(ac); at2.wrapS = at2.wrapT = THREE.RepeatWrapping; at2.colorSpace = THREE.SRGBColorSpace;
+  const arcade = K.lit(new THREE.MeshLambertMaterial({ map: at2 }), null, 0.45, 0xffe3b8);
+  add(K.loft([K.at(fp, 0), K.at(fp, 6.5)], { tw: 4.4, th: 6.5 }), arcade);
+  add(K.loft([K.at(fp, 6.5), K.at(fp, 46)], { tw: 12.6, th: 13.8 }), facade);
+  const trim = K.mat(0xf2efe9, {}, 0.5);
+  add(K.loft([K.at(fp, 46), K.at(fp, 47.3)], {}), trim); add(K.cap(K.at(fp, 47.3)), K.mat(0xd8d3ca));
+  // tower: the slice of the plan 13–31 m behind the prow, drawn in a little, with a pointed (prow-like) west face → five sides
+  const half = (u) => { let lo = 1e9, hi = -1e9; for (let i = 0; i < fp.length; i++) { const p = fp[i], q = fp[(i + 1) % fp.length], up = (p[0] - V[0]) * bis[0] + (p[1] - V[1]) * bis[1], uq = (q[0] - V[0]) * bis[0] + (q[1] - V[1]) * bis[1]; if ((up - u) * (uq - u) <= 0 && up !== uq) { const t = (u - up) / (uq - up), x = [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t], v = (x[0] - V[0]) * side[0] + (x[1] - V[1]) * side[1]; lo = Math.min(lo, v); hi = Math.max(hi, v); } } return [lo, hi]; };
+  const [a0, b0] = half(14.5), [a1, b1] = half(31), mid0 = (a0 + b0) / 2;
+  const T = K.ccw([at(12.2, mid0), at(14.5, a0 + 1.4), at(31, a1 + 1.4), at(31, b1 - 1.4), at(14.5, b0 - 1.4)]);
+  add(K.loft([K.at(T, 47.3), K.at(T, 59)], { tw: 12.6, th: 13.8 }), facade);
+  add(K.loft([K.at(T, 59), K.at(T, 59.8)], {}), trim);
+  const tc = K.centroid(T), roofT = K.scale(T, tc, 0.42), brown = K.mat({ bg: '#8b4b33', h: 5, hc: '#7a3f2a', hw: 3 });
+  add(K.loft([K.at(T, 59.8), K.at(roofT, 64.2)], { tw: 4, th: 4 }), brown); add(K.cap(K.at(roofT, 64.2)), brown);
+  // white spires at the roof's five corners, little turrets round the tower, a flagpole on top
+  const spire = (p, z0, z1, r) => { const sq = (rr, z) => Array.from({ length: 8 }, (_, j) => { const t = (j / 8) * Math.PI * 2; return [p[0] + rr * Math.cos(t), p[1] + rr * Math.sin(t), z]; }); add(K.loft([sq(r, z0), sq(r, z1 - (z1 - z0) * 0.4), sq(0.05, z1)], {}), trim); };
+  for (const p of T) { spire(p, 59.8, 63.8, 0.55); }
+  for (const p of K.scale(T, tc, 1.04)) spire(p, 57.5, 61.2, 0.8);
+  g.add(K.rods([[[tc[0], tc[1], 64.2], [tc[0], tc[1], 72], 0.18]], trim, 6));
+  // red sign high on the tower's west face
+  const sp = at(11.8, mid0), sign = new THREE.Mesh(new THREE.BoxGeometry(0.5, 2.6, 4.2), K.mat(0xc8322b, {}, 1.4));
+  sign.position.set(sp[0], 55.6, -sp[1]); sign.rotation.y = Math.atan2(bis[1], bis[0]); g.add(sign);
+  // the little round pavilion on the prow roof
+  const pv = Array.from({ length: 8 }, (_, j) => { const t = (j / 8) * Math.PI * 2; return [Cn[0] + 1.9 * Math.cos(t), Cn[1] + 1.9 * Math.sin(t)]; });
+  g.add(K.rods(pv.map((p) => [[p[0], p[1], 47.3], [p[0], p[1], 50.3], 0.14]), trim, 6));
+  const disc = (r, z0, z1) => { const c = Array.from({ length: 24 }, (_, j) => { const t = (j / 24) * Math.PI * 2; return [Cn[0] + r * Math.cos(t), Cn[1] + r * Math.sin(t)]; }); add(K.loft([K.at(c, z0), K.at(c, z1)], { smooth: true }), trim); add(K.cap(K.at(c, z1)), trim); };
+  disc(2.5, 50.3, 50.8); disc(1.2, 50.8, 51.6);
+  return g;
+}
+// ---------------------------------------------------------------- 人民桥 (1967；2018 年历史文化环境提升后)
+// 主桥是三跨混凝土梁桥，梁底在桥墩处加深、跨中变浅（略带拱意），厚重的桥墩两头做成尖形分水；
+// 桥面两侧是包白色大理石的宝瓶栏杆和欧式铁艺路灯，每个桥墩在栏杆外伸出一座小方墩；
+// 四角各一座三层的欧式桥头堡：方塔、拱窗、开敞的观景层、八角鼓座上是橘红色带肋的圆顶（街坊叫它“洋葱头”）
+function buildRenmin(THREE, K) {
+  const g = new THREE.Group(), add = (geo, m) => g.add(K.mesh(geo, m)), DS = THREE.DoubleSide;
+  const O = [-7910.25, -656.65], U = [0.45096, -0.89254], Wv = [0.89254, 0.45096];   // s runs south along the bridge, t east across it
+  const P = (s, t, z) => [O[0] + U[0] * s + Wv[0] * t, O[1] + U[1] * s + Wv[1] * t, z];
+  const HW = 19, Z = 13, PIERS = [0, 57, 114, 170.5], S0 = -6, S1 = 176.5;
+  const depth = (s) => { if (s <= PIERS[0] || s >= PIERS[3]) return 4.2; for (let k = 0; k < 3; k++) if (s <= PIERS[k + 1]) { const x = (s - PIERS[k]) / (PIERS[k + 1] - PIERS[k]); return 1.7 + 2.5 * (2 * x - 1) ** 2; } return 2; };
+  const ss = []; for (let s = S0; s < S1; s += 1.5) ss.push(s); ss.push(S1); PIERS.forEach((p) => ss.push(p)); ss.sort((a, b) => a - b);
+  const cream = K.lit(new THREE.MeshLambertMaterial({ map: K.tex({ bg: '#e6dfcf', h: 4, hc: '#d4cab4', hw: 2 }), side: DS }), null, 0.18, 0xffd9a0);
+  // girder: a box whose underside dips at the piers
+  add(K.loft(ss.map((s) => [P(s, -HW, Z - depth(s)), P(s, HW, Z - depth(s)), P(s, HW, Z), P(s, -HW, Z)]), { tw: 4, th: 4 }), cream);
+  // road and pavements
+  const strip = (t0, t1, z, m, o) => add(K.grid([S0, S1].map((s) => [P(s, t0, z), P(s, t1, z)]), o), m);
+  strip(-15, 15, Z + 0.03, new THREE.MeshLambertMaterial({ map: K.tex({ bg: '#7d8794', v: 8, vc: '#eef1f5', vw: 2 }), side: DS }), { u: 1, v: 1 });
+  const pave = new THREE.MeshLambertMaterial({ map: K.tex({ bg: '#dcd5c6', h: 2, hc: '#c8bfab', hw: 3 }), side: DS });
+  strip(15, HW, Z + 0.15, pave, { u: 1, v: 60 }); strip(-HW, -15, Z + 0.15, pave, { u: 1, v: 60 });
+  // balustrades: white marble balusters (cut out of a small texture)
+  const bc = document.createElement('canvas'); bc.width = 64; bc.height = 32; const bx = bc.getContext('2d');
+  bx.fillStyle = '#f1ece1'; bx.fillRect(0, 0, 64, 6); bx.fillRect(0, 27, 64, 5);
+  for (let i = 0; i < 4; i++) { const cx = i * 16 + 8; bx.beginPath(); bx.moveTo(cx - 3, 27); bx.quadraticCurveTo(cx - 7, 17, cx - 2.5, 9); bx.lineTo(cx - 3.5, 6); bx.lineTo(cx + 3.5, 6); bx.lineTo(cx + 2.5, 9); bx.quadraticCurveTo(cx + 7, 17, cx + 3, 27); bx.fill(); }
+  const bt = new THREE.CanvasTexture(bc); bt.wrapS = bt.wrapT = THREE.RepeatWrapping; bt.colorSpace = THREE.SRGBColorSpace; bt.anisotropy = 8;
+  const bal = K.lit(new THREE.MeshLambertMaterial({ map: bt, alphaTest: 0.5, side: DS }), null, 0.4, 0xffe2b0);
+  for (const t of [-HW + 0.15, HW - 0.15]) add(K.loft([ss.map((s) => P(s, t, Z)), ss.map((s) => P(s, t, Z + 1.3))], { open: true, tw: 1.3, th: 1.3 }), bal);
+  // stone blocks over every pier and abutment, outside the railings
+  const box = (s, t, hs, ht, z0, z1, m) => { const r = [P(s - hs, t - ht), P(s + hs, t - ht), P(s + hs, t + ht), P(s - hs, t + ht)].map((p) => [p[0], p[1]]); add(K.loft([K.at(K.ccw(r), z0), K.at(K.ccw(r), z1)], { tw: 3, th: 3 }), m); add(K.cap(K.at(K.ccw(r), z1)), m); };
+  for (const s of PIERS) for (const sg of [-1, 1]) { box(s, sg * (HW + 0.9), 1.3, 0.9, Z - 4.4, Z + 2.6, cream); box(s, sg * (HW + 0.9), 1.55, 1.1, Z + 2.6, Z + 3.1, cream); }
+  // piers in the river (pointed both ends, the way the water runs) and the two abutments
+  const stoneP = K.mat({ bg: '#d2cbbb', h: 6, hc: '#bfb6a2', hw: 2 });
+  for (const s of PIERS.slice(1, 3)) { const r = K.ccw([[s - 2, -HW + 2], [s, -HW - 0.8], [s + 2, -HW + 2], [s + 2, HW - 2], [s, HW + 0.8], [s - 2, HW - 2]].map(([a, b]) => P(a, b).slice(0, 2))); add(K.loft([K.at(r, -1), K.at(r, Z - depth(s))], { tw: 4, th: 3 }), stoneP); }
+  for (const s of [PIERS[0], PIERS[3]]) box(s, 0, 2.5, HW - 0.5, -1, Z - 4.2, stoneP);
+  // lamp posts: dark iron, three lanterns
+  const iron = K.mat(0x34403c), lamps = [], posts = [];
+  for (let s = 9.5; s < 170; s += 19) for (const sg of [-1, 1]) { const b = P(s, sg * (HW - 0.4), Z), t = P(s, sg * (HW - 0.4), Z + 5.4); posts.push([b, t, 0.13]); posts.push([P(s - 0.75, sg * (HW - 0.4), Z + 4.9), P(s + 0.75, sg * (HW - 0.4), Z + 4.9), 0.06]); lamps.push(P(s, sg * (HW - 0.4), Z + 5.6), P(s - 0.75, sg * (HW - 0.4), Z + 5.1), P(s + 0.75, sg * (HW - 0.4), Z + 5.1)); }
+  g.add(K.rods(posts, iron, 6));
+  const lm = new THREE.InstancedMesh(new THREE.SphereGeometry(0.32, 10, 8), K.mat(0xfff3dc, {}, 1.6), lamps.length), M4 = new THREE.Matrix4();
+  lamps.forEach((p, i) => { M4.makeTranslation(p[0], p[2], -p[1]); lm.setMatrixAt(i, M4); }); g.add(lm);
+  // the four bridgehead towers
+  const stone = K.lit(new THREE.MeshLambertMaterial({ map: K.tex({ bg: '#e8dfca', h: 8, hc: '#cfc3a8', hw: 2 }) }), null, 0.4, 0xffd59a);
+  const smooth = K.lit(new THREE.MeshLambertMaterial({ color: 0xefe7d5 }), null, 0.4, 0xffd59a);
+  const ac = document.createElement('canvas'); ac.width = ac.height = 64; const ax = ac.getContext('2d');
+  ax.fillStyle = '#eee6d3'; ax.fillRect(0, 0, 64, 64); ax.fillStyle = '#4a4740'; ax.beginPath(); ax.moveTo(22, 58); ax.lineTo(22, 26); ax.arc(32, 26, 10, Math.PI, 0); ax.lineTo(42, 58); ax.fill();
+  const atx = new THREE.CanvasTexture(ac); atx.wrapS = atx.wrapT = THREE.RepeatWrapping; atx.colorSpace = THREE.SRGBColorSpace;
+  const arched = K.lit(new THREE.MeshLambertMaterial({ map: atx }), null, 0.5, 0xffd59a), dark = K.mat(0x3d3a35, {}, 0.7);
+  const dome = K.lit(new THREE.MeshLambertMaterial({ map: K.tex({ bg: '#c8764a', v: 12, vc: '#e6a678', vw: 5 }) }), null, 0.5, 0xffa060);
+  const sq = (c, h, z) => [[-h, -h], [h, -h], [h, h], [-h, h]].map(([a, b]) => P(c[0] + a, c[1] + b, z));
+  const prism = (c, h, z0, z1, m, o = {}) => { add(K.loft([K.ccw(sq(c, h, z0)), K.ccw(sq(c, h, z1))], o), m); add(K.cap(K.ccw(sq(c, h, z1))), m); };
+  for (const s of [-3.5, 174]) for (const sg of [-1, 1]) {
+    const c = [s, sg * (HW + 3.4)];
+    prism(c, 3.0, 0, Z + 0.6, stone, { tw: 6, th: 4 });
+    prism(c, 3.3, Z + 0.6, Z + 1.2, smooth);
+    prism(c, 2.5, Z + 1.2, Z + 4.2, arched, { tw: 5, th: 3 });
+    prism(c, 2.75, Z + 4.2, Z + 4.5, smooth);
+    prism(c, 1.6, Z + 4.5, Z + 6.6, dark);                                                   // open belvedere: dark inside…
+    for (const a of [-1, 1]) for (const b of [-1, 1]) prism([c[0] + a * 2.0, c[1] + b * 2.0], 0.5, Z + 4.5, Z + 6.6, smooth);   // …corner piers
+    prism(c, 2.55, Z + 6.6, Z + 7.3, smooth);
+    prism(c, 2.9, Z + 7.3, Z + 7.8, smooth);
+    const cp = P(c[0], c[1], 0), oct = (r, z) => Array.from({ length: 8 }, (_, j) => { const t = (j / 8) * Math.PI * 2 + Math.PI / 8; return [cp[0] + r * Math.cos(t), cp[1] + r * Math.sin(t), z]; });
+    add(K.loft([oct(2.15, Z + 7.8), oct(2.15, Z + 8.6)], { tw: 3, th: 3 }), smooth);
+    const prof = [[2.2, 0], [2.45, 0.6], [2.4, 1.3], [2.1, 2.0], [1.6, 2.7], [0.9, 3.3], [0.3, 3.7], [0.01, 3.8]].map(([r, z]) => new THREE.Vector2(r, z));
+    const dg = new THREE.LatheGeometry(prof, 24); dg.translate(cp[0], Z + 8.6, -cp[1]); add(dg, dome);
+    g.add(K.rods([[[cp[0], cp[1], Z + 12.3], [cp[0], cp[1], Z + 13.6], 0.08]], iron, 6));
+  }
+  return g;
+}
 const ThreeModels = {
   started: false, nightTarget: 0, n: 0, last: 0, rp: 0,
   setNight(v) { this.nightTarget = v ? 1 : 0; if (map) map.triggerRepaint(); },
@@ -2179,6 +2369,9 @@ const ThreeModels = {
       { g: buildExpo(THREE, K), z0: 13.2, z1: 14.8, l: 'l40' },
       { g: buildCathedral(THREE, K), z0: 13.2, z1: 14.8, l: 'l11' },
       { g: buildLiede(THREE, K), z0: 13.2, z1: 14.4, l: 'l41' },
+      { g: buildXinghai(THREE, K), z0: 13.2, z1: 14.8, l: 'l42' },
+      { g: buildOiKwan(THREE, K), z0: 13.2, z1: 14.8, l: 'l43' },
+      { g: buildRenmin(THREE, K), z0: 13.2, z1: 14.4, l: 'l44' },
     ];
     for (const p of parts) { scene.add(p.g); p.g.traverse((o) => { o.frustumCulled = false; }); }
     // things a click can hit, each tagged with its landmark id
@@ -2326,7 +2519,7 @@ function initMap() {
       loadPacked('map/bridges3d.pack.json').then((j) => map.getSource('bridgesup').setData(j)).catch(() => { supLoaded = false; }); };
     map.on('zoomend', loadSup); map.on('moveend', loadSup); loadSup();
     for (const l of map.getStyle().layers) if (/^r[cf]-.+-br$/.test(l.id)) map.setPaintProperty(l.id, 'line-opacity', ['interpolate', ['linear'], ['zoom'], 13.6, 1, 14.4, 0]);
-    // 地标建模：26 处地标的彩色简化 3D 模型（替换掉这些位置原来的灰白建筑块）
+    // 地标建模：前 26 处地标的彩色简化 3D 模型（替换掉这些位置原来的灰白建筑块）
     map.addSource('lm3d', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
     map.addSource('lmpark', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
     map.addLayer({ id: 'lm-park', type: 'fill', source: 'lmpark', layout: { visibility: 'none' },
