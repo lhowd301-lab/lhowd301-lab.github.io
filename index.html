@@ -3749,6 +3749,44 @@ const Pure = {
   },
   wake() { const b = $('#pureExit'); b.classList.remove('dim'); clearTimeout(this.t); this.t = setTimeout(() => b.classList.add('dim'), 2600); },
 };
+/* ---------- 键盘漫游：像玩游戏一样，W 前进、S 后退、A 左移、D 右移；按住 Shift 加速，Q / E 左右转身。
+   方向跟着当前视角走（转过身之后 W 还是往屏幕上方走），速度按屏幕像素算，所以放大时走得慢、缩小时走得快 */
+const Walk = {
+  keys: new Set(), vx: 0, vy: 0, turn: 0, raf: 0, last: 0, shift: false, told: false,
+  MOVE: { KeyW: [0, 1], KeyS: [0, -1], KeyA: [-1, 0], KeyD: [1, 0] },
+  usable(e) {
+    const t = e.target;
+    return map && state.ready && $('#sky').hidden && !document.body.classList.contains('lifted') && !e.ctrlKey && !e.metaKey && !e.altKey
+      && !(t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)));
+  },
+  down(e) {
+    this.shift = e.shiftKey;
+    if (!(e.code in this.MOVE) && e.code !== 'KeyQ' && e.code !== 'KeyE') return;
+    if (!this.usable(e)) return;
+    e.preventDefault(); this.keys.add(e.code);
+    if (!this.told) { this.told = true; toast('W / A / S / D 移动 · 按住 Shift 加速 · Q / E 转身', 3600); }
+    if (!this.raf) { this.last = performance.now(); this.raf = requestAnimationFrame((t) => this.step(t)); }
+  },
+  up(e) { this.shift = e.shiftKey; this.keys.delete(e.code); },
+  stop() { this.keys.clear(); },
+  step(now) {
+    const dt = Math.min(0.05, (now - this.last) / 1000); this.last = now;
+    let ix = 0, iy = 0; for (const k of this.keys) { const m = this.MOVE[k]; if (m) { ix += m[0]; iy += m[1]; } }
+    const n = Math.hypot(ix, iy) || 1, fast = this.shift ? 2.6 : 1, ease = 1 - Math.exp(-dt / 0.12);
+    this.vx += ((ix / n) * 520 * fast - this.vx) * ease; this.vy += ((iy / n) * 520 * fast - this.vy) * ease;   // screen px per second
+    this.turn += (((this.keys.has('KeyE') ? 1 : 0) - (this.keys.has('KeyQ') ? 1 : 0)) * 75 * fast - this.turn) * ease;   // degrees per second
+    if (!this.keys.size && Math.hypot(this.vx, this.vy) < 3 && Math.abs(this.turn) < 0.5) { this.vx = this.vy = this.turn = 0; this.raf = 0; return; }
+    const c = map.getCenter(), b = map.getBearing() * Math.PI / 180, cl = Math.cos(c.lat * Math.PI / 180);
+    const mpp = 40075016.7 * cl / (512 * Math.pow(2, map.getZoom()));   // metres per screen pixel at the centre
+    const right = this.vx * dt * mpp, fwd = this.vy * dt * mpp;
+    const east = right * Math.cos(b) + fwd * Math.sin(b), north = -right * Math.sin(b) + fwd * Math.cos(b);
+    map.jumpTo({ center: [c.lng + east / (111320 * cl), c.lat + north / 110574], bearing: map.getBearing() + this.turn * dt });
+    this.raf = requestAnimationFrame((t) => this.step(t));
+  },
+};
+document.addEventListener('keydown', (e) => Walk.down(e));
+document.addEventListener('keyup', (e) => Walk.up(e));
+window.addEventListener('blur', () => Walk.stop());
 $('#zPure').addEventListener('click', () => Pure.set(!Pure.on));
 $('#pureExit').addEventListener('click', () => Pure.set(false));
 document.addEventListener('pointermove', () => { if (Pure.on) Pure.wake(); }, { passive: true });
