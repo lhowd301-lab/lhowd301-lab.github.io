@@ -1374,6 +1374,86 @@ const FoodGroups = {
   show() { this.on = true; this.dirty = true; this.level = null; this.update(); },
   hide() { this.on = false; this.level = null; this.clear(); },
 };
+/* ===================================================================== smooth 3D models (three.js) */
+// 猎德大桥（2009）：独塔双索面空间自锚式悬索桥，主桥 47 + 219 + 167 + 47 米。索塔由两片相扣的“贝壳”组成，
+// 横桥向宽 56 米、顺桥向 9.16 米，高 128 米（主体 103 米 + 顶部装饰 25 米），内外轮廓都是椭圆，顶部开孔。
+// 方块拼不出这种曲面，所以用 three.js 网格画在地图里（放大到街区才加载）
+const THREE_URL = './vendor/three.module.min.js';
+const ThreeModels = {
+  started: false,
+  watch() { const go = () => this.start(); map.on('moveend', go); go(); },
+  start() {
+    if (this.started || !map || map.getZoom() < 12.6) return;
+    this.started = true;
+    import(THREE_URL).then((T) => this.addLiede(T)).catch((e) => { console.warn('three.js', e); this.started = false; });
+  },
+  addLiede(THREE) {
+    const O = { lng: 113.328546, lat: 23.11189, u: [0.03291, -0.99946], z0: 13 };   // tower foot at the water; u runs along the bridge (towards the south bank)
+    const group = new THREE.Group();
+    const towerMat = new THREE.MeshLambertMaterial({ color: 0xf4f6f9, emissive: 0x39424f, transparent: true });
+    const cableMat = new THREE.MeshLambertMaterial({ color: 0xd2d9e2, emissive: 0x2a3340, transparent: true });
+    const hangMat = new THREE.LineBasicMaterial({ color: 0xa9b6c6, transparent: true });
+    // tower: cross-section across the bridge = outer ellipse minus inner ellipse (the deck passes through), a hole at the top;
+    // two halves extruded along the bridge and staggered a little, so they read as two shells clasped together
+    const Ao = 28, Zo = 40, Bo = 88, Ai = 19.5, Zi = 30, Bi = 73, H = { z: 113.5, a: 4.2, b: 5 };
+    const half = (sg) => {
+      const pts = [];
+      const pb = Math.asin(-Zo / Bo);
+      for (let i = 0; i <= 56; i++) { const p = pb + (Math.PI / 2 - pb) * i / 56; pts.push([sg * Ao * Math.cos(p), Zo + Bo * Math.sin(p)]); }
+      for (let i = 0; i <= 18; i++) { const q = Math.PI * i / 18; pts.push([sg * H.a * Math.sin(q), H.z + H.b * Math.cos(q)]); }
+      const pib = Math.asin(-Zi / Bi);
+      for (let i = 0; i <= 44; i++) { const p = Math.PI / 2 - (Math.PI / 2 - pib) * i / 44; pts.push([sg * Ai * Math.cos(p), Zi + Bi * Math.sin(p)]); }
+      const shape = new THREE.Shape(pts.map(([x, y]) => new THREE.Vector2(x, y)));
+      const depth = sg < 0 ? 7.2 : 6.4;
+      const g = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: true, bevelThickness: 0.95, bevelSize: 0.85, bevelSegments: 4, curveSegments: 8 });
+      g.translate(0, 0, -depth / 2 + (sg < 0 ? 0.6 : -0.6));
+      g.rotateY(Math.PI / 2);
+      g.computeVertexNormals();
+      return g;
+    };
+    group.add(new THREE.Mesh(half(-1), towerMat), new THREE.Mesh(half(1), towerMat));
+    // two main cables, spatial: close together on the tower, out at the deck edges at the anchorages
+    const z0 = O.z0, hang = [];
+    for (const side of [-1, 1]) for (const L of [-219, 167]) {
+      const pts = [];
+      for (let i = 0; i <= 60; i++) {
+        const x = i / 60; pts.push(new THREE.Vector3(L * x, z0 + 1.5 + (99 - z0 - 1.5) * Math.pow(1 - x, 1.9), side * (13.6 + 3.6 * Math.pow(x, 0.8))));
+      }
+      group.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 140, 0.65, 6, false), cableMat));
+      const n = Math.floor((Math.abs(L) - 8) / 12);
+      for (let k = 1; k <= n; k++) {
+        const x = (k * 12) / Math.abs(L); const yc = z0 + 1.5 + (99 - z0 - 1.5) * Math.pow(1 - x, 1.9);
+        if (yc < z0 + 3) continue;
+        hang.push(L * x, yc, side * (13.6 + 3.6 * Math.pow(x, 0.8)), L * x, z0 + 0.4, side * 17.4);
+      }
+    }
+    const hg = new THREE.BufferGeometry(); hg.setAttribute('position', new THREE.Float32BufferAttribute(hang, 3));
+    group.add(new THREE.LineSegments(hg, hangMat));
+    // bridge axis → map: X along the bridge, Y up, Z across (right-hand side)
+    const [ue, un] = O.u;
+    group.matrixAutoUpdate = false;
+    group.matrix.makeBasis(new THREE.Vector3(ue, 0, -un), new THREE.Vector3(0, 1, 0), new THREE.Vector3(un, 0, ue));
+    const scene = new THREE.Scene(); scene.add(group);
+    scene.add(new THREE.HemisphereLight(0xffffff, 0xa9b9cf, 2.1));
+    const sun = new THREE.DirectionalLight(0xffffff, 1.9); sun.position.set(-0.55, 1, 0.45); scene.add(sun);
+    const mc = maplibregl.MercatorCoordinate.fromLngLat([O.lng, O.lat], 0), sc = mc.meterInMercatorCoordinateUnits();
+    const rotX = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(1, 0, 0), Math.PI / 2);
+    const camera = new THREE.Camera(); let renderer = null;
+    map.addLayer({
+      id: 'liede-3d', type: 'custom', renderingMode: '3d',
+      onAdd: (m, gl) => { renderer = new THREE.WebGLRenderer({ canvas: m.getCanvas(), context: gl, antialias: true }); renderer.autoClear = false; },
+      render: (gl, matrix) => {
+        const z = map.getZoom(); if (z < 13.2 || !renderer) return;
+        const k = Math.min(1, (z - 13.2) / 1.2), op = Math.min(1, (z - 13.2) / 0.6);   // grow in with the buildings
+        towerMat.opacity = cableMat.opacity = hangMat.opacity = op;
+        const l = new THREE.Matrix4().makeTranslation(mc.x, mc.y, mc.z).scale(new THREE.Vector3(sc, -sc, sc)).multiply(rotX).multiply(new THREE.Matrix4().makeScale(1, k, 1));
+        camera.projectionMatrix = new THREE.Matrix4().fromArray(matrix).multiply(l);
+        renderer.resetState(); renderer.render(scene, camera);
+      },
+    }, 'bld');
+    map.triggerRepaint();
+  },
+};
 // 模型数据（建模、桥梁）用 gzip + base64 打包，体积约为原来的六分之一
 async function loadPacked(path) {
   const j = await (await fetch(U(path))).json();
@@ -1451,6 +1531,7 @@ function initMap() {
         'fill-extrusion-opacity': ['interpolate', ['linear'], ['zoom'], 13.2, 0, 13.8, 1],
         'fill-extrusion-vertical-gradient': true,
       } }, 'bld');
+    ThreeModels.watch();
     let supLoaded = false;
     const loadSup = () => { if (supLoaded || map.getZoom() < 12.6) return; supLoaded = true;
       loadPacked('map/bridges3d.pack.json').then((j) => map.getSource('bridgesup').setData(j)).catch(() => { supLoaded = false; }); };
