@@ -2483,18 +2483,54 @@ function buildGDTV(THREE, K) {
   return g;
 }
 // ---------------------------------------------------------------- 广州电视塔 (花果山，1991，215.8 m)
-// 四边形钢铁塔，塔腿笔直往上收；约 130 m 处一圈圆形玻璃幕墙的观光层（一直没启用），顶上一段天线。按 OSM 塔基方向摆放
+// 按照片：中间一根等宽的方形钢架塔身从地面直通到 126 m；四根外腿从地面四角（按 OSM 塔基）大幅张开、斜着收到约 60 m 处
+// 和塔身相接，中间有两道横撑。塔身 86–122 m 四面挂着红色广告牌；126 m 处是一个圆筒形的玻璃观光层，下面一圈深色托环；
+// 再往上是一段收窄的方形钢架桅杆（中途一圈小平台），顶上红白天线到 215.8 m。钢架是深灰色的
 function buildGZTV(THREE, K) {
-  const g = new THREE.Group(), add = (geo, m) => g.add(K.mesh(geo, m)), C = [-6030.3, 3564.6];
-  const steel = K.mat(0xe2e6ec, {}, 0.55), red = K.mat(0xd2483c, {}, 0.9), white = K.mat(0xf4f6f9, {}, 0.9);
-  const { mesh } = lattice(THREE, K, C, 4, (-42 * Math.PI) / 180 + Math.PI / 4, [[0, 25], [30, 18], [60, 13], [90, 9.6], [124, 6.6], [150, 4.6], [175, 2.6], [186, 1.6]], 186, 7, steel);
-  g.add(mesh);
-  const hit = new THREE.Mesh(new THREE.CylinderGeometry(3, 16, 215, 4, 1, true), new THREE.MeshBasicMaterial()); hit.position.set(C[0], 107.5, -C[1]); hit.visible = false; g.add(hit);   // invisible, for clicking
-  const cyl = (r, z) => Array.from({ length: 32 }, (_, k) => { const a = (k / 32) * Math.PI * 2; return [C[0] + r * Math.cos(a), C[1] + r * Math.sin(a), z]; });
-  add(K.loft([cyl(10.5, 125), cyl(10.5, 136)], { smooth: true, tw: 3, th: 2.75 }), K.mat({ bg: '#3d5876', v: 8, vc: '#a9bdd4', vw: 2, h: 2, hc: '#6e86a3', hw: 2 }, {}, 1));
-  for (const z of [124.4, 136]) { add(K.loft([cyl(11.2, z), cyl(11.2, z + 0.7)], { smooth: true }), white); add(K.cap(cyl(11.2, z + (z > 130 ? 0.7 : 0))), white); }
-  const mast = []; for (let k = 0; k < 8; k++) { const z0 = 186 + k * 3.725, r = 0.9 - k * 0.08; mast.push([[C[0], C[1], z0], [C[0], C[1], z0 + 3.725], r, k % 2]); }
+  const g = new THREE.Group(), add = (geo, m) => g.add(K.mesh(geo, m)), C = [-6030.3, 3564.6], DS = THREE.DoubleSide;
+  const a = (-42 * Math.PI) / 180, U = [Math.cos(a), Math.sin(a)], V = [-U[1], U[0]];
+  const P = (x, y, z) => [C[0] + U[0] * x + V[0] * y, C[1] + U[1] * x + V[1] * y, z];
+  const steel = K.mat(0x6c7480, {}, 0.45), red = K.mat(0xd2483c, {}, 0.9), white = K.mat(0xf4f6f9, {}, 0.9);
+  const segs = [], SG = [[1, 1], [-1, 1], [-1, -1], [1, -1]];
+  const box = (w, z) => SG.map(([sx, sy]) => P(sx * w, sy * w, z));
+  // a square lattice between two levels: corner columns, a ring at the top, X bracing on each face
+  const bay = (w0, z0, w1, z1, r) => { const A = box(w0, z0), B = box(w1, z1); for (let k = 0; k < 4; k++) { const k1 = (k + 1) % 4; segs.push([A[k], B[k], r], [B[k], B[k1], r * 0.45], [A[k], B[k1], r * 0.3], [A[k1], B[k], r * 0.3]); } };
+  const W = 6.5;
+  for (let z = 0; z < 126; z += 7) bay(W, z, W, Math.min(126, z + 7), 0.5);
+  // four outer legs from the ground corners up to the shaft at 60 m, with two levels of struts
+  const L0 = 17.8, ZJ = 60, leg = (s, z) => { const f = z / ZJ, w = L0 + (W - L0) * f; return P(s[0] * w, s[1] * w, z); };
+  for (const s of SG) {
+    for (let z = 0; z < ZJ; z += 10) segs.push([leg(s, z), leg(s, z + 10), 0.75]);
+    for (const zs of [20, 40]) segs.push([leg(s, zs), P(s[0] * W, s[1] * W, zs), 0.35]);
+  }
+  for (const zs of [20, 40]) for (let k = 0; k < 4; k++) segs.push([leg(SG[k], zs), leg(SG[(k + 1) % 4], zs), 0.3]);
+  for (let k = 0; k < 4; k++) { const s = SG[k], s1 = SG[(k + 1) % 4]; segs.push([leg(s, 0), leg(s1, 20), 0.25], [leg(s1, 0), leg(s, 20), 0.25], [leg(s, 20), leg(s1, 40), 0.22], [leg(s1, 20), leg(s, 40), 0.22]); }
+  // upper mast: tapering square lattice, a small platform, then the red-and-white antenna
+  for (let z = 137; z < 179; z += 5) { const f0 = (z - 137) / 42, f1 = Math.min(1, (z + 5 - 137) / 42); bay(4.2 - 2.8 * f0, z, 4.2 - 2.8 * f1, Math.min(179, z + 5), 0.32); }
+  g.add(K.rods(segs, steel, 5));
+  // advertising boards on all four faces of the shaft
+  const board = K.mat(0xcf3a33, { side: DS }, 1.1), frame = [];
+  for (const [sx, sy] of [[1, 0], [0, 1], [-1, 0], [0, -1]]) {
+    const ox = sx * (W + 0.4), oy = sy * (W + 0.4), tx = -sy, ty = sx, hw = W - 0.6;
+    const r = [P(ox - tx * hw, oy - ty * hw, 86), P(ox + tx * hw, oy + ty * hw, 86)];
+    add(K.loft([r, r.map((p) => [p[0], p[1], 122])], { open: true }), board);
+    // white frames: two stacked panels
+    const e = (s, z) => P(ox * 1.02 + tx * s * hw, oy * 1.02 + ty * s * hw, z);
+    for (const z of [86, 104, 122]) frame.push([e(-1, z), e(1, z), 0.4]);
+    for (const s of [-1, 1]) frame.push([e(s, 86), e(s, 122), 0.4]);
+  }
+  g.add(K.rods(frame, white, 4));
+  // the observation drum: dark supporting ring, a glass cylinder, a pale lid
+  const cyl = (r, z, n = 40) => Array.from({ length: n }, (_, k) => { const t = (k / n) * Math.PI * 2; return [C[0] + r * Math.cos(t), C[1] + r * Math.sin(t), z]; });
+  const dark = K.mat(0x262b33, {}, 0.3);
+  add(K.loft([cyl(7, 122), cyl(9.8, 126)], { smooth: true }), dark); add(K.cap(cyl(7, 122), true), dark);
+  add(K.loft([cyl(9.8, 126), cyl(9.8, 128)], { smooth: true }), dark);
+  add(K.loft([cyl(9.4, 128), cyl(9.4, 135.6)], { smooth: true, tw: 3, th: 2.5 }), K.mat({ bg: '#6f8fae', v: 10, vc: '#b8cbe0', vw: 2, h: 3, hc: '#5a7896', hw: 2 }, {}, 1));
+  add(K.loft([cyl(9.9, 135.6), cyl(9.9, 137)], { smooth: true }), white); add(K.cap(cyl(9.9, 137)), K.mat(0xcfd6df));
+  const ring = cyl(3.2, 165, 16); add(K.cap(ring), white); add(K.loft([cyl(3.2, 164.4, 16), ring], { smooth: true }), white);
+  const mast = []; for (let k = 0; k < 8; k++) { const z0 = 179 + k * 4.6, r = 0.6 - k * 0.05; mast.push([[C[0], C[1], z0], [C[0], C[1], Math.min(215.8, z0 + 4.6)], r, k % 2]); }
   g.add(K.rods(mast.filter((m) => m[3]).map((m) => m.slice(0, 3)), red, 8), K.rods(mast.filter((m) => !m[3]).map((m) => m.slice(0, 3)), white, 8));
+  const hit = new THREE.Mesh(new THREE.CylinderGeometry(3, 18, 215, 4, 1, true), new THREE.MeshBasicMaterial()); hit.position.set(C[0], 107.5, -C[1]); hit.visible = false; g.add(hit);   // invisible, for clicking
   return g;
 }
 // ---------------------------------------------------------------- 花园酒店 (1985，贝聿铭概念设计，司徒惠)
