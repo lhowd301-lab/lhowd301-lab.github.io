@@ -725,16 +725,13 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
 .pet-room .room-layers,.pet-room svg.layer{position:absolute;inset:0;width:100%;height:100%;display:block}
 .pet-room .room-layers,.pet-room svg.layer{pointer-events:none}
 .pet-room svg.layer g[data-f]{pointer-events:visiblePainted;cursor:pointer}
-.pet-room .who{position:absolute;z-index:3;height:25%;transform:translate(-50%,-100%);border:0;background:transparent;padding:0;cursor:grab;touch-action:none;display:flex;justify-content:center;align-items:flex-end}
+.pet-room canvas.pet3d{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;z-index:3}
+.pet-room canvas.pet3d[hidden]{display:none}
+.pet-room .who{position:absolute;z-index:45;height:24%;width:19%;transform:translate(-50%,-100%);border:0;background:transparent;padding:0;cursor:grab;touch-action:none;border-radius:40%}
 .pet-room .who[hidden]{display:none}
-.pet-room .who.lying{height:19%}
-.pet-room .who .body{height:100%;display:block;transform-origin:50% 100%;animation:petBob 2.8s ease-in-out infinite;filter:drop-shadow(0 3px 2px rgba(90,59,42,.16))}
-.pet-room .who img{height:100%;width:auto;display:block;pointer-events:none;-webkit-user-drag:none}
-.pet-room .who .shade{position:absolute;left:50%;bottom:-3%;width:62%;height:9%;transform:translateX(-50%);border-radius:50%;background:radial-gradient(closest-side,rgba(74,52,40,.28),rgba(74,52,40,0))}
-.pet-room .who .body.walking{animation:petStep .34s ease-in-out infinite}
+.pet-room .who img{display:none;pointer-events:none;-webkit-user-drag:none}
+.pet-room .who.flat img{display:block;height:100%;width:auto;margin:0 auto;animation:petBob 2.8s ease-in-out infinite}
 .pet-room .who.held{cursor:grabbing}
-.pet-room .who.held .body{animation:petSwing .55s ease-in-out infinite alternate;transform-origin:50% 8%}
-.pet-room .who.held .shade,.pet-room .who.falling .shade{opacity:0}
 .pet-room .empty{position:absolute;z-index:5;left:50%;top:58%;transform:translate(-50%,-50%);background:rgba(255,255,255,.94);border:2px dashed var(--p-line);border-radius:16px;padding:10px 14px;font-size:13.5px;text-align:center;line-height:1.6;max-width:72%}
 .pet-room .empty[hidden]{display:none}
 .pet-say{position:absolute;z-index:31;transform:translate(-50%,-100%);background:#fff;border:2px solid #5A3B2A;border-radius:12px;padding:3px 10px;font-size:13px;font-weight:700;white-space:nowrap;pointer-events:none;color:#4A3428;animation:rise .2s ease-out}
@@ -5524,27 +5521,317 @@ const Pet = {
   advance(hours, away = true) { this.skew += hours * 3600000; this.step(!away); this.save(); this.updateDock(); this.render(); },
 };
 
-/* ===================================================================== 啵铃在家里：走路、动作、拎起来（试玩模式也用这一套）
-   房间是等轴测的：地板上的点用 (u, v) 表示，u 朝右上的墙、v 朝右下；P(u, v, h) 换成画面坐标（viewBox 里的单位）
-   - 点地板：它沿着绕开家具的路线（网格 A* 再拉直）蹦过去
-   - 点家具：走到家具旁边做对应的事（床上睡觉、桌边吃点心、窗前看云……）
-   - 鼠标碰到它：随机翻滚、蹦跳、转圈、抖水、害羞；点它：摸摸（爱心）
-   - 按住拖动：把它拎起来晃来晃去，松手掉回地上弹一下
-   - 没人理它时自己溜达、打盹、看窗外 */
+/* ===================================================================== 啵铃 3D
+   一个小骨架：root（地上的位置、朝向）→ lift（跳起的高度）→ spin（翻滚、转圈、被拎着晃的支点，在身体中间）→ hips（胯）
+   → chest → neck → head；胯上挂两条腿和尾巴，胸口挂两只手，头上挂两只云耳和卷毛。
+   所有动作都是每帧按时间算出来的（走路、四肢着地爬、翻跟头、转圈、抖水、被摸、吃东西、睡觉、被拎起来乱蹬……），
+   耳朵和尾巴用弹簧跟着身体晃，所以会“慢半拍”。卡通描边用的是“反面外扩”的老办法。
+   单位：模型里头的半径约 0.5，整只高约 1.75；放进房间时整体缩放到房间边长的 0.24 倍左右 */
+function makeBoling(THREE) {
+  const C = { cream: 0xfff1df, cream2: 0xffe6cc, blue: 0x9ccbf3, blue2: 0xdcedfc, drop: 0x7db9ec, peach: 0xf5b9a0, line: 0x6b4630, eye: 0x3a2116, iris: 0x8c552d, mouth: 0xb83a4b, tongue: 0xff8fa0 };
+  const grad = (() => { const d = new Uint8Array([196, 196, 196, 255, 232, 232, 232, 255, 255, 255, 255, 255]); const t = new THREE.DataTexture(d, 3, 1); t.minFilter = t.magFilter = THREE.NearestFilter; t.needsUpdate = true; return t; })();
+  const toon = (c) => new THREE.MeshToonMaterial({ color: c, gradientMap: grad });
+  const flat = (c, o = {}) => new THREE.MeshBasicMaterial(Object.assign({ color: c }, o));
+  const LINE_W = 0.032;
+  const outline = new THREE.ShaderMaterial({
+    uniforms: { c: { value: new THREE.Color(C.line) }, w: { value: LINE_W } },
+    vertexShader: 'uniform float w; void main(){ vec3 p = position + normalize(normal) * w; gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0); }',
+    fragmentShader: 'uniform vec3 c;\nvoid main() {\n  gl_FragColor = vec4(c, 1.0);\n  #include <colorspace_fragment>\n}',
+    side: THREE.BackSide,
+  });
+  const hits = [];
+  const smooth = (geo) => {
+    const g = geo.index ? geo.toNonIndexed() : geo.clone(), p = g.attributes.position, n = g.attributes.normal, acc = new Map(), key = (i) => `${p.getX(i).toFixed(4)},${p.getY(i).toFixed(4)},${p.getZ(i).toFixed(4)}`;
+    for (let i = 0; i < p.count; i++) { const k = key(i), a = acc.get(k) || [0, 0, 0]; a[0] += n.getX(i); a[1] += n.getY(i); a[2] += n.getZ(i); acc.set(k, a); }
+    for (let i = 0; i < p.count; i++) { const a = acc.get(key(i)), l = Math.hypot(...a) || 1; n.setXYZ(i, a[0] / l, a[1] / l, a[2] / l); }
+    return g;
+  };
+  // a toon mesh with its own outline hull
+  const part = (geo, color, parent, pos, scl, line = true) => {   // line: true, false, or 'smooth' (rebuild normals for the outline)
+    const m = new THREE.Mesh(geo, toon(color)); if (pos) m.position.set(...pos); if (scl) m.scale.set(...scl);
+    parent.add(m); hits.push(m);
+    if (line) { const o = new THREE.Mesh(line === 'smooth' ? smooth(geo) : geo, outline); m.add(o); }
+    return m;
+  };
+  const G = () => new THREE.Group();
+  // a tube that gets thinner along a curve (curl, tail)
+  const taper = (pts, r0, r1, seg = 64, rad = 14) => {
+    const curve = new THREE.CatmullRomCurve3(pts.map((p) => new THREE.Vector3(...p))), fr = curve.computeFrenetFrames(seg, false);
+    const pos = [], nor = [], idx = [];
+    for (let i = 0; i <= seg; i++) {
+      const t = i / seg, P = curve.getPointAt(t), N = fr.normals[i], B = fr.binormals[i], r = r0 + (r1 - r0) * t;
+      for (let j = 0; j <= rad; j++) { const a = (j / rad) * Math.PI * 2, n = new THREE.Vector3().addScaledVector(N, Math.cos(a)).addScaledVector(B, Math.sin(a)); pos.push(P.x + n.x * r, P.y + n.y * r, P.z + n.z * r); nor.push(n.x, n.y, n.z); }
+    }
+    for (let i = 0; i < seg; i++) for (let j = 0; j < rad; j++) { const a = i * (rad + 1) + j, b = a + rad + 1; idx.push(a, a + 1, b, b, a + 1, b + 1); }
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3)); g.setIndex(idx);
+    return { geo: g, curve };
+  };
+  const sphere = (r, w = 32, h = 24) => new THREE.SphereGeometry(r, w, h);
+
+  // ------------------------------------------------------------- rig
+  const root = G(), lift = G(), spin = G(), hips = G(), chest = G(), neck = G(), head = G();
+  root.add(lift); lift.add(spin); spin.position.y = 0.62; spin.add(hips); hips.position.y = 0.33 - 0.62;
+  hips.add(chest); chest.position.y = 0.36; chest.add(neck); neck.position.y = 0.1; neck.add(head); head.position.y = 0.4;
+  // body: a soft pear
+  const bodyGeo = sphere(0.36, 40, 28);
+  { const p = bodyGeo.attributes.position; for (let i = 0; i < p.count; i++) { const y = p.getY(i), k = 1 + 0.12 * Math.max(0, -y / 0.36); p.setX(i, p.getX(i) * k); p.setZ(i, p.getZ(i) * k); } bodyGeo.computeVertexNormals(); }
+  const body = part(bodyGeo, C.cream, hips, [0, 0.21, 0], [1, 1.06, 0.92]);
+  // the water-drop mark on the chest
+  const dropShape = new THREE.Shape(); dropShape.moveTo(0, 0.07); dropShape.bezierCurveTo(0.012, 0.03, 0.05, 0.0, 0.05, -0.03); dropShape.bezierCurveTo(0.05, -0.065, 0.025, -0.08, 0, -0.08); dropShape.bezierCurveTo(-0.025, -0.08, -0.05, -0.065, -0.05, -0.03); dropShape.bezierCurveTo(-0.05, 0.0, -0.012, 0.03, 0, 0.07);
+  const chestDrop = new THREE.Mesh(new THREE.ShapeGeometry(dropShape, 16), flat(C.drop)); chestDrop.position.set(0, 0.29, 0.338); chestDrop.rotation.x = -0.18; hips.add(chestDrop);
+  const shine = new THREE.Mesh(new THREE.CircleGeometry(0.013, 10), flat(0xffffff)); shine.position.set(-0.018, -0.035, 0.002); chestDrop.add(shine);
+  // legs: short stubs with round feet and peach pads underneath
+  const mkLeg = (s) => {
+    const pv = G(); pv.position.set(0.16 * s, 0.03, 0.03); hips.add(pv);
+    part(new THREE.CapsuleGeometry(0.1, 0.1, 6, 16), C.cream, pv, [0, -0.12, 0]);
+    const foot = part(sphere(0.12, 24, 16), C.cream, pv, [0, -0.255, 0.05], [1.05, 0.72, 1.3]);
+    const pad = new THREE.Mesh(new THREE.CircleGeometry(0.06, 20), flat(C.peach)); pad.rotation.x = Math.PI / 2; pad.position.set(0, -0.121, 0.0); foot.add(pad);
+    return pv;
+  };
+  const legL = mkLeg(-1), legR = mkLeg(1);
+  // arms
+  const mkArm = (s) => {
+    const pv = G(); pv.position.set(0.25 * s, 0.0, 0.07); chest.add(pv);
+    part(new THREE.CapsuleGeometry(0.075, 0.1, 6, 14), C.cream, pv, [0, -0.11, 0]);
+    part(sphere(0.085, 20, 14), C.cream, pv, [0, -0.2, 0.01]);
+    return pv;
+  };
+  const armL = mkArm(-1), armR = mkArm(1);
+  // head: a wide soft ball with puffy cheeks
+  const headM = part(sphere(0.5, 48, 32), C.cream, head, [0, 0, 0], [1.1, 0.96, 0.98]);
+  for (const s of [-1, 1]) part(sphere(0.2, 24, 16), C.cream, head, [0.4 * s, -0.22, 0.1], [1.05, 0.82, 0.95]);
+  // eyes: dark rim, warm iris low down, pupil, two white highlights and a little blue glint
+  const mkEye = (s) => {
+    const g = G(); g.position.set(0.215 * s, -0.04, 0.442); g.rotation.set(0.05, 0.42 * s, 0); head.add(g);
+    const open = G(); g.add(open);
+    const L = (r, sx, sy, c, x, y, z) => { const m = new THREE.Mesh(sphere(r, 24, 16), flat(c)); m.scale.set(sx, sy, 0.35); m.position.set(x, y, z); open.add(m); return m; };
+    L(0.112, 1, 1.3, C.eye, 0, 0, 0);
+    L(0.085, 1, 1.12, C.iris, 0, -0.032, 0.012);
+    L(0.055, 1, 1.25, 0x24120a, 0, 0.008, 0.022);
+    L(0.036, 1, 1.05, 0xffffff, 0.034, 0.06, 0.035);
+    L(0.017, 1, 1, 0xffffff, -0.04, -0.06, 0.035);
+    L(0.022, 1.1, 1, C.drop, 0.006, -0.1, 0.03);
+    const arc = (up) => { const a = new THREE.Mesh(new THREE.TorusGeometry(0.075, 0.017, 8, 24, Math.PI), flat(C.line)); a.position.z = 0.02; if (!up) a.rotation.z = Math.PI; a.visible = false; g.add(a); return a; };
+    return { g, open, happy: arc(true), closed: arc(false) };
+  };
+  const eyes = [mkEye(-1), mkEye(1)];
+  const nose = new THREE.Mesh(sphere(0.022, 12, 8), flat(C.line)); nose.scale.set(1.3, 0.8, 0.6); nose.position.set(0, -0.155, 0.468); head.add(nose);
+  // mouth: a little “ω”, or open with a tongue
+  const mouth = G(); mouth.position.set(0, -0.245, 0.418); mouth.rotation.x = -0.5; head.add(mouth);
+  const wCurve = new THREE.CatmullRomCurve3([[-0.075, 0.012, 0], [-0.04, -0.028, 0.004], [0, 0.0, 0.006], [0.04, -0.028, 0.004], [0.075, 0.012, 0]].map((p) => new THREE.Vector3(...p)));
+  const mouthW = new THREE.Mesh(new THREE.TubeGeometry(wCurve, 24, 0.012, 6), flat(C.line)); mouth.add(mouthW);
+  const os = new THREE.Shape(); os.moveTo(-0.07, 0); os.quadraticCurveTo(0, -0.18, 0.07, 0); os.quadraticCurveTo(0.035, -0.03, 0, -0.005); os.quadraticCurveTo(-0.035, -0.03, -0.07, 0);
+  const mouthO = G(); mouth.add(mouthO);
+  mouthO.add(new THREE.Mesh(new THREE.ShapeGeometry(os, 16), flat(C.mouth)));
+  { const tg = new THREE.Mesh(new THREE.CircleGeometry(0.04, 16), flat(C.tongue)); tg.scale.set(1, 0.6, 1); tg.position.set(0, -0.085, 0.002); mouthO.add(tg); }
+  { const rim = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([[-0.07, 0, 0], [-0.035, -0.11, 0], [0, -0.128, 0], [0.035, -0.11, 0], [0.07, 0, 0]].map((p) => new THREE.Vector3(...p))), 20, 0.01, 6), flat(C.line)); rim.position.z = 0.003; mouthO.add(rim); }
+  mouthO.add(new THREE.Mesh(new THREE.TubeGeometry(wCurve, 24, 0.012, 6), flat(C.line)));
+  mouthO.visible = false;
+  // blush
+  const blushMat = flat(C.peach, { transparent: true, opacity: 0.75, depthWrite: false });
+  for (const s of [-1, 1]) { const b = new THREE.Mesh(new THREE.CircleGeometry(0.075, 24), blushMat); b.scale.set(1.3, 0.75, 1); b.position.set(0.33 * s, -0.2, 0.37); b.rotation.set(-0.3, 0.72 * s, 0); head.add(b); }
+  // the curl on top: a fat swirl that thins to a point
+  { const pts = []; const cx = 0.03, cy = 0.47, cz = 0.18; for (let i = 0; i <= 40; i++) { const t = i / 40, a = (-100 + 560 * t) * Math.PI / 180, r = 0.2 * (1 - 0.82 * t); pts.push([cx + r * Math.cos(a), cy + r * Math.sin(a), cz + 0.06 * t]); }
+    const { geo } = taper(pts, 0.105, 0.035, 80, 14); part(geo, C.cream, head); part(sphere(0.035, 12, 8), C.cream, head, pts[pts.length - 1], null, false); }
+  // ears: puffy cloud wings with a pale heart on the front
+  const cloud = (() => {
+    const circ = [[0.17, 0.1, 0.19], [0.4, 0.33, 0.24], [0.66, 0.24, 0.2], [0.66, -0.02, 0.18], [0.42, -0.1, 0.2], [0.2, -0.08, 0.15]], cx = 0.42, cy = 0.1, n = 90, pts = [];
+    for (let k = 0; k < n; k++) {
+      const a = (k / n) * Math.PI * 2, dx = Math.cos(a), dy = Math.sin(a); let best = 0.05;
+      for (const [x, y, r] of circ) { const ox = cx - x, oy = cy - y, b = ox * dx + oy * dy, c = ox * ox + oy * oy - r * r, d = b * b - c; if (d >= 0) best = Math.max(best, -b + Math.sqrt(d)); }
+      pts.push(new THREE.Vector2(cx + dx * best, cy + dy * best));
+    }
+    const sm = pts.map((p, i) => { const a = pts[(i + n - 1) % n], b = pts[(i + 1) % n]; return new THREE.Vector2((a.x + 2 * p.x + b.x) / 4, (a.y + 2 * p.y + b.y) / 4); });
+    return new THREE.Shape(sm);
+  })();
+  const earGeo = new THREE.ExtrudeGeometry(cloud, { depth: 0.05, bevelEnabled: true, bevelThickness: 0.075, bevelSize: 0.05, bevelSegments: 6, curveSegments: 4 }); earGeo.translate(0, 0, -0.025);
+  { const p = earGeo.attributes.position; for (let i = 0; i < p.count; i++) { const x = p.getX(i), y = p.getY(i); p.setZ(i, p.getZ(i) - 0.32 * x * x - 0.08 * (y - 0.1) * (y - 0.1)); } earGeo.computeVertexNormals(); }   // cupped, so seen edge-on it's a curve, not a plank
+  const heart = new THREE.Shape(); heart.moveTo(0, -0.13); heart.bezierCurveTo(-0.05, -0.08, -0.16, -0.02, -0.14, 0.06); heart.bezierCurveTo(-0.12, 0.13, -0.03, 0.13, 0, 0.06); heart.bezierCurveTo(0.03, 0.13, 0.12, 0.13, 0.14, 0.06); heart.bezierCurveTo(0.16, -0.02, 0.05, -0.08, 0, -0.13);
+  const mkEar = (s) => {
+    const pv = G(); pv.position.set(0.34 * s, 0.15, -0.13); pv.scale.set(s < 0 ? -0.84 : 0.84, 0.84, 0.84); head.add(pv);
+    const flap = G(); pv.add(flap);
+    const e = part(earGeo, C.blue, flap, [-0.08, -0.1, 0], null, 'smooth');
+    const h = new THREE.Mesh(new THREE.ShapeGeometry(heart, 16), flat(C.blue2)); h.position.set(0.42, 0.06, 0.102); h.rotation.z = -1.1; h.scale.set(1.15, 1.15, 1); e.add(h);
+    return { pv, flap, a: 0, v: 0, sw: 0 };
+  };
+  const ears = [mkEar(-1), mkEar(1)];
+  // tail: a thick curl behind, ending in a blue drop
+  const tailRoot = G(); tailRoot.position.set(0.05, 0.1, -0.27); hips.add(tailRoot);
+  const tailPts = [[0, 0, 0], [0.05, -0.04, -0.16], [0.12, 0.04, -0.32], [0.16, 0.22, -0.38], [0.15, 0.38, -0.3], [0.12, 0.42, -0.16], [0.1, 0.34, -0.08]];
+  const { geo: tailGeo, curve: tailCurve } = taper(tailPts, 0.12, 0.075, 70, 14);
+  part(tailGeo, C.cream, tailRoot);
+  const tuft = G(); tailRoot.add(tuft);
+  { const end = tailCurve.getPointAt(1), tan = tailCurve.getTangentAt(1); tuft.position.copy(end);
+    const prof = []; for (let i = 0; i <= 24; i++) { const t = i / 24, y = t * 0.3, r = 0.11 * Math.sin(Math.PI * Math.pow(t, 0.62)) * (1 - 0.15 * t); prof.push(new THREE.Vector2(Math.max(0.001, r), y)); }
+    const dm = part(new THREE.LatheGeometry(prof, 24), C.blue, tuft, [0, -0.04, 0]);
+    tuft.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(tan.x, tan.y + 0.6, tan.z + 0.4).normalize()); dm.rotation.z = 0.2; }
+
+  // ------------------------------------------------------------- animation
+  const S = { yaw: -Math.PI / 4, phase: 0, crawl: 0, walk: 0, blinkT: 2.5, blinkK: 0, t: 0, tailA: 0, prevLift: 0, vLift: 0, sit: 0, lie: 0, held: 0 };
+  const sm = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
+  const VIEW = -Math.PI / 4;   // facing the viewer
+  const TO_CAM = new THREE.Vector3(-Math.SQRT1_2 * Math.cos(Math.PI / 6), 0.5, Math.SQRT1_2 * Math.cos(Math.PI / 6)), _n = new THREE.Vector3(), _eu = new THREE.Euler();
+  /* I: { speed (world units/s), moveYaw, gait 'walk'|'crawl', yaw (wanted facing when not moving, or null = towards the viewer),
+          act: { name, t (s since start), k (0..1) } | null, mode: 'idle'|'walk'|'act'|'sleep'|'drag'|'fall', look: [yaw, pitch] | null } */
+  function update(dt, I) {
+    S.t += dt; const t = S.t, act = I.act, an = act && act.name, k = act ? act.k : 0, at = act ? act.t : 0;
+    const moving = I.speed > 0.02;
+    // facing: where it walks, else what it's looking at, else the viewer
+    const want = moving ? I.moveYaw : I.yaw != null ? I.yaw : VIEW;
+    S.yaw += wrap(want - S.yaw) * Math.min(1, dt * (moving ? 9 : 4));
+    root.rotation.y = S.yaw;
+    // gait blend
+    S.crawl = lerp(S.crawl, moving && I.gait === 'crawl' ? 1 : 0, Math.min(1, dt * 6));
+    S.walk = lerp(S.walk, moving && I.gait !== 'crawl' ? 1 : 0, Math.min(1, dt * 8));
+    S.sit = lerp(S.sit, an === 'eat' ? 1 : 0, Math.min(1, dt * 7));
+    S.lie = lerp(S.lie, I.mode === 'sleep' ? 1 : 0, Math.min(1, dt * 3));
+    S.held = lerp(S.held, I.mode === 'drag' ? 1 : 0, Math.min(1, dt * 8));
+    if (moving) S.phase += dt * (I.gait === 'crawl' ? 2.1 : 2.6) * Math.PI * 2 * Math.min(1.4, I.speed / 0.3);
+    const ph = S.phase, sw = Math.sin(ph), cw = Math.cos(ph);
+    // ---- base pose
+    let hipY = 0.33, hRx = 0.06, hRy = 0, hRz = 0, sx = 1, sy = 1, chRx = 0, hdRx = 0, hdRy = 0, hdRz = 0, lift_ = 0;
+    let lL = 0.02, lR = -0.02, lLz = 0.06, lRz = -0.06, aL = 0.12, aR = 0.12, aLz = 0.32, aRz = 0.32, earT = 0, tailY = Math.sin(t * 1.7) * 0.18, tailX = 0;
+    let eye = 'open', mopen = false, blush = 0.75, spinX = 0, spinY = 0, spinZ = 0;
+    // idle breathing
+    const br = Math.sin(t * 2.2); sy *= 1 + 0.012 * br; sx *= 1 - 0.006 * br;
+    hdRz += Math.sin(t * 0.9) * 0.03;
+    // ---- walking: little steps, waddle, bob
+    { const w = S.walk; hipY += w * Math.abs(cw) * 0.045; hRz += w * sw * 0.09; hRx += w * 0.08; hdRz -= w * sw * 0.06;
+      lL += w * sw * 0.75; lR -= w * sw * 0.75; aL -= w * sw * 0.65; aR += w * sw * 0.65; tailY += w * sw * 0.3; }
+    // ---- crawling on all fours: body tips forward, head stays up, diagonal limbs reach
+    { const c = S.crawl, pitch = 1.05; hRx += c * pitch; hipY += c * (-0.1 + Math.abs(sw) * 0.02); hdRx -= c * 0.95; hdRy += c * sw * 0.08; hRz += c * sw * 0.06;
+      lL += c * (-1.15 - sw * 0.45); lR += c * (-1.15 + sw * 0.45);
+      aL += c * (-1.0 + sw * 0.55); aR += c * (-1.0 - sw * 0.55); aLz -= c * 0.18; aRz -= c * 0.18; tailY += c * sw * 0.35; tailX += c * 0.4; }
+    // ---- sitting (eating): bottom down, feet forward
+    { const s = S.sit; hipY -= s * 0.08; hRx -= s * 0.12; lL -= s * 1.3; lR -= s * 1.3; }
+    // ---- asleep: lying on its tummy, chin on its paws, tail wrapped round
+    { const s = S.lie; hRx += s * 1.3; hipY -= s * 0.17; hdRx -= s * 1.22; hdRz += s * 0.28; lL -= s * 1.4; lR -= s * 1.4; aL -= s * 1.5; aR -= s * 1.5; aLz -= s * 0.1; aRz -= s * 0.1;
+      earT += s * 0.55; tailY = lerp(tailY, 1.1 + Math.sin(t * 0.8) * 0.05, s); tailX += s * 0.5; if (s > 0.5) { eye = 'closed'; sy *= 1 + 0.02 * Math.sin(t * 1.6); } }
+    // ---- held up: dangling, paddling its feet, swinging
+    { const h = S.held; lL += h * Math.sin(t * 11) * 0.55; lR -= h * Math.sin(t * 11) * 0.55; aLz += h * (0.9 + Math.sin(t * 9) * 0.35); aRz += h * (0.9 - Math.sin(t * 9) * 0.35); aL -= h * 0.3; aR -= h * 0.3;
+      spinZ += h * Math.sin(t * 3.4) * 0.14; earT += h * 0.75; tailX += h * 0.9; hdRx += h * 0.2; if (h > 0.5) mopen = true; }
+    if (I.mode === 'fall') { aLz += 1.4; aRz += 1.4; lLz += 0.3; lRz -= 0.3; earT -= 0.6; mopen = true; }
+    // ---- one-off actions
+    if (an === 'hop' || an === 'land') {
+      const jumps = an === 'hop' ? [[0.06, 0.44, 0.34], [0.5, 0.86, 0.22]] : [];
+      let air = 0; for (const [a, b, hgt] of jumps) if (k > a && k < b) { const u = (k - a) / (b - a); lift_ += hgt * 4 * u * (1 - u); air = 1; }
+      const sq = an === 'land' ? Math.sin(Math.min(1, k / 0.45) * Math.PI) * (1 - k) : jumps.reduce((m, [a, b]) => m + Math.max(0, 1 - Math.abs(k - a) / 0.06) + Math.max(0, 1 - Math.abs(k - b) / 0.06), 0);
+      sy *= 1 - 0.18 * sq; sx *= 1 + 0.12 * sq;
+      if (air) { aLz += 1.5; aRz += 1.5; lL -= 0.35; lR -= 0.35; }
+      eye = 'happy'; mopen = true;
+    } else if (an === 'roll') {   // a real forward somersault, tucked into a ball
+      const e = sm(0.05, 0.85, k), tuck = Math.sin(Math.min(1, k / 0.9) * Math.PI);
+      spinX += e * Math.PI * 2; lift_ += Math.sin(k * Math.PI) * 0.16;
+      lL -= tuck * 1.6; lR -= tuck * 1.6; aL -= tuck * 1.4; aR -= tuck * 1.4; hdRx += tuck * 0.45; earT += tuck * 0.9; tailX += tuck * 0.8;
+      eye = tuck > 0.3 ? 'happy' : 'open';
+    } else if (an === 'spin') {
+      spinY += sm(0, 0.92, k) * Math.PI * 2; lift_ += Math.sin(k * Math.PI) * 0.14; aLz += 1.2 * Math.sin(k * Math.PI); aRz += 1.2 * Math.sin(k * Math.PI); earT -= 0.7 * Math.sin(k * Math.PI); eye = 'happy'; mopen = true;
+    } else if (an === 'shake') {   // shakes the water off, ears flapping
+      const d = 1 - k, w = Math.sin(at * Math.PI * 2 * 7.5); hRy += w * 0.5 * d; hdRy -= w * 0.35 * d; earT += Math.sin(at * Math.PI * 2 * 7.5 + 1.2) * 0.9 * d; tailY += w * 0.8 * d; eye = 'happy';
+    } else if (an === 'pat' || an === 'shy') {
+      const p = Math.sin(Math.min(1, k * 1.2) * Math.PI); hdRz += p * 0.28; sy *= 1 - 0.1 * p; sx *= 1 + 0.07 * p; earT += Math.sin(at * 22) * 0.25 * p - 0.25 * p; blush = 0.75 + 0.25 * p; eye = 'happy'; mopen = an === 'pat';
+      tailY += Math.sin(at * 16) * 0.4 * p;
+    } else if (an === 'eat') {
+      const nib = Math.sin(at * 16); aL -= 1.95 + nib * 0.12; aR -= 1.95 - nib * 0.12; aLz -= 0.35; aRz -= 0.35; hdRx += 0.12 + nib * 0.04; mopen = nib > 0; eye = 'happy';
+    } else if (an === 'gaze') { hdRx -= 0.3; tailY += Math.sin(at * 3) * 0.35; earT -= 0.15; }
+    else if (an === 'sniff') { hdRx += 0.25 + Math.sin(at * 14) * 0.06; hRx += 0.2; }
+    else if (an === 'lamp') { hdRx -= 0.45 * Math.sin(Math.min(1, k * 1.5) * Math.PI / 2); mopen = true; }
+    else if (an === 'peek') { hRx += 0.32 * Math.sin(Math.min(1, k * 2) * Math.PI / 2); hdRx -= 0.15; tailY += Math.sin(at * 18) * 0.5; }
+    else if (an === 'look') { hdRy += Math.sin(k * Math.PI * 2) * 0.75; hdRz += Math.sin(k * Math.PI * 2) * 0.12; }
+    else if (an === 'wake') { const s = Math.sin(k * Math.PI); aLz += s * 2.3; aRz += s * 2.3; sy *= 1 + 0.08 * s; mopen = s > 0.3; eye = s > 0.2 ? 'closed' : 'open'; }
+    // looking at something (the cursor): head turns, relative to the body
+    if (I.look && !an && I.mode === 'idle') { hdRy += Math.max(-0.9, Math.min(0.9, wrap(I.look[0] - S.yaw))); hdRx += I.look[1]; }
+    // ---- blink
+    S.blinkT -= dt; if (S.blinkT < 0) { S.blinkK = 0.16; S.blinkT = 2.2 + Math.random() * 3; }
+    let bl = 1; if (S.blinkK > 0) { S.blinkK -= dt; bl = 0.12 + 0.88 * Math.abs(S.blinkK / 0.08 - 1); }
+    // ---- ears and tail lag behind (springs), kicked by vertical motion
+    S.vLift = (lift_ - S.prevLift) / Math.max(dt, 1e-3); S.prevLift = lift_;
+    for (const [i, e] of ears.entries()) {
+      const target = earT + (moving ? Math.sin(ph + i) * 0.12 : Math.sin(t * 1.3 + i * 2) * 0.04);
+      e.v += ((target - e.a) * 70 - e.v * 9 + S.vLift * 6) * dt; e.a += e.v * dt;
+    }
+    S.tailA += ((tailY - S.tailA) * 40 - 0) * dt; S.tailA = Math.max(-2, Math.min(2, S.tailA));
+    // ---- write it all to the rig
+    lift.position.y = lift_;
+    spin.rotation.set(spinX, spinY, spinZ);
+    hips.position.y = hipY - 0.62; hips.rotation.set(hRx, hRy, hRz); hips.scale.set(sx, sy, sx);
+    chest.rotation.x = chRx;
+    head.rotation.set(hdRx, hdRy, hdRz);
+    legL.rotation.set(lL, 0, lLz); legR.rotation.set(lR, 0, lRz);
+    armL.rotation.set(aL, 0, -aLz); armR.rotation.set(aR, 0, aRz);
+    tailRoot.rotation.set(0.15 + tailX * 0.6, S.tailA, 0);
+    tuft.rotation.z = Math.sin(t * 2.4) * 0.15;
+    // ears swivel so a face of the cloud (front or back) is turned to the camera, never the thin edge
+    root.updateWorldMatrix(true, true);
+    for (const e of ears) {
+      let best = 0, bs = -9;
+      for (let c = -0.8; c <= 0.81; c += 0.16) {
+        _eu.set(0.05, -0.42 + c, 0.38 - e.a); _n.set(0, 0, 1).applyEuler(_eu).transformDirection(e.pv.matrixWorld);
+        const sc = Math.abs(_n.dot(TO_CAM)) - 0.3 * c * c; if (sc > bs) { bs = sc; best = c; }
+      }
+      e.sw += (best - e.sw) * Math.min(1, dt * 5);
+      e.flap.rotation.set(0.05, -0.42 + e.sw, 0.38 - e.a);
+    }
+    for (const e of eyes) { e.open.visible = eye === 'open'; e.happy.visible = eye === 'happy'; e.closed.visible = eye === 'closed'; e.g.scale.y = eye === 'open' ? bl : 1; }
+    mouthO.visible = mopen; mouthW.visible = !mopen; blushMat.opacity = blush;
+  }
+  // mirror the left arm's sideways angle so both swing outward
+  return { root, head, hits, update, S };
+}
+
+// the stage: an orthographic camera lined up with the room drawing, so a point on the floor (u, v) lands exactly where the SVG draws it
+function petStage(THREE, canvas, geo) {
+  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, premultipliedAlpha: true });
+  renderer.setClearColor(0x000000, 0);
+  const scene = new THREE.Scene();
+  const k = Math.hypot(geo.UA[0], geo.UA[1]) * Math.SQRT2 / Math.SQRT2 * Math.SQRT2 / 1;   // SVG units per world unit along the screen (u+v direction / √2)
+  const K = geo.UA[0] * Math.SQRT2;            // 240·√2 = 339.4
+  const el = Math.atan2(-geo.UA[1], geo.UA[0]);   // tan(elevation) relation: 120/240 → sin(elev) = 0.5
+  const elev = Math.asin(-geo.UA[1] / geo.UA[0]);
+  const cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 40);
+  const f = new THREE.Vector3(Math.cos(elev) / Math.SQRT2, -Math.sin(elev), -Math.cos(elev) / Math.SQRT2);
+  cam.position.copy(f.clone().multiplyScalar(-15)); cam.up.set(0, 1, 0); cam.lookAt(0, 0, 0);
+  const VB = geo.VB, x0 = geo.L0[0], y0 = geo.L0[1];
+  cam.left = (VB[0] - x0) / K; cam.right = (VB[0] + VB[2] - x0) / K; cam.top = (y0 - VB[1]) / K; cam.bottom = (y0 - (VB[1] + VB[3])) / K; cam.updateProjectionMatrix();
+  const hFactor = K * Math.cos(elev);   // SVG units per world unit straight up
+  scene.add(new THREE.HemisphereLight(0xffffff, 0xe6d2bd, 1.55));
+  const sun = new THREE.DirectionalLight(0xffffff, 1.75); sun.position.set(-2, 5, 3); scene.add(sun);
+  // a soft round shadow on the floor
+  const sc = document.createElement('canvas'); sc.width = sc.height = 64; const g = sc.getContext('2d'); const rg = g.createRadialGradient(32, 32, 2, 32, 32, 31); rg.addColorStop(0, 'rgba(74,52,40,.45)'); rg.addColorStop(1, 'rgba(74,52,40,0)'); g.fillStyle = rg; g.fillRect(0, 0, 64, 64);
+  const shadow = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(sc), transparent: true, depthWrite: false }));
+  shadow.rotation.x = -Math.PI / 2; shadow.renderOrder = -1; scene.add(shadow);
+  let cw = 0, chh = 0;
+  const size = () => { const w = canvas.clientWidth, h = canvas.clientHeight; if (!w || !h || (w === cw && h === chh)) return; cw = w; chh = h; renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1)); renderer.setSize(w, h, false); };
+  size();
+  return { renderer, scene, cam, shadow, hFactor, K, size, render() { size(); renderer.render(scene, cam); } };   // re-checks its size every frame (the room can be re-laid out while hidden)
+}
+
+/* ===================================================================== 啵铃在家里：爬、走、动作、拎起来（试玩模式也用这一套）
+   房间是等轴测的 SVG；啵铃是一只 3D 小模型（makeBoling），画在叠在房间上的透明 WebGL 画布里，
+   相机和 SVG 的投影完全对齐，所以地板上的点 (u, v) 正好落在 SVG 画的位置
+   - 点地板：它沿着绕开家具的路线爬过去（近的就走两步）
+   - 点家具：过去做对应的事（床上睡觉、桌边吃点心、窗前看云……）
+   - 鼠标碰到它：随机翻跟头、蹦跳、转圈、抖水、害羞；点它：摸摸；手机上双击它做动作
+   - 按住拖动：拎起来，它四脚乱蹬；松手掉回地上弹一下
+   - 没人理它时自己溜达、打盹、看窗外
+   碰撞判定用一个看不见的按钮 .who 跟着它走 */
 const Room = {
-  el: null, layers: null, who: null, body: null, im: null, say: null, empty: null, stand: [], obs: [], raf: 0, lt: 0, key: '', shown: false,
-  pos: { u: 0.56, v: 0.6 }, h: 0, path: [], then: null, speed: 0.3, pose: 'front', face: 1,
-  mode: 'idle', nextIdle: 0, wakeAt: 0, zzzAt: 0, hoverAt: 0, anim: null, press: null, drag: null, fall: null, slide: null, noClick: false, ptr: null, sayT: 0,
-  POSES: ['front', 'side', 'back', 'happy', 'curious', 'sleepy'],
-  // standing furniture: r = footprint [u0, u1, v0, v1] it can't walk through; spot = where it stands to use it
+  el: null, layers: null, who: null, im: null, say: null, empty: null, canvas: null, stand: [], obs: [], raf: 0, lt: 0, key: null, shown: false,
+  st: null, B: null, three: false,
+  pos: { u: 0.56, v: 0.6 }, h: 0, path: [], then: null, gait: 'crawl', speed: 0.3, moveYaw: 0, faceYaw: null, vel: 0,
+  mode: 'idle', act: null, nextIdle: 0, wakeAt: 0, zzzAt: 0, hoverAt: 0, press: null, drag: null, fall: null, slide: null, noClick: false, ptr: null, sayT: 0,
+  VIEW: -Math.PI / 4,
   FURN: {
-    box: { r: [0.06, 0.30, 0.10, 0.32], spot: [0.22, 0.42], act: 'peek' },
-    plant: { r: [0.04, 0.16, 0.04, 0.16], spot: [0.12, 0.26], act: 'sniff' },
-    lamp: { r: [0.84, 0.92, 0.10, 0.18], spot: [0.80, 0.28], act: 'lamp' },
-    table: { r: [0.16, 0.36, 0.60, 0.80], spot: [0.28, 0.89], act: 'eat' },
+    box: { r: [0.06, 0.30, 0.10, 0.32], spot: [0.22, 0.42], act: 'peek', at: [0.18, 0.21] },
+    plant: { r: [0.04, 0.16, 0.04, 0.16], spot: [0.13, 0.27], act: 'sniff', at: [0.10, 0.10] },
+    lamp: { r: [0.84, 0.92, 0.10, 0.18], spot: [0.80, 0.28], act: 'lamp', at: [0.88, 0.14] },
+    table: { r: [0.16, 0.36, 0.60, 0.80], spot: [0.28, 0.89], act: 'eat', at: null },
     bed: { spot: [0.62, 0.38], act: 'nap' },
-    window: { spot: [0.88, 0.52], act: 'gaze' },
+    window: { spot: [0.86, 0.52], act: 'gaze', yaw: Math.PI / 2 },
   },
+  DUR: { pat: 0.65, shy: 0.7, hop: 0.95, roll: 0.95, spin: 0.9, shake: 0.75, look: 2.4, eat: 1.6, gaze: 2.8, sniff: 1.3, lamp: 1.4, peek: 1.3, land: 0.56, wake: 0.8 },
   P(u, v, h = 0) { const g = PET_ROOM.geo; return [g.L0[0] + u * g.UA[0] + v * g.VA[0], g.L0[1] + u * g.UA[1] + v * g.VA[1] - h]; },
   pct(p) { const b = PET_ROOM.geo.VB; return [((p[0] - b[0]) / b[2]) * 100, ((p[1] - b[1]) / b[3]) * 100]; },
   svgXY(cx, cy) { const r = this.el.getBoundingClientRect(), b = PET_ROOM.geo.VB; return [b[0] + ((cx - r.left) / r.width) * b[2], b[1] + ((cy - r.top) / r.height) * b[3]]; },
@@ -5553,16 +5840,23 @@ const Room = {
   present() { return !!Pet.preview || Pet.s.status === 'home'; },
   // ------------------------------------------------------------- set up
   mount(ph) {
-    this.el = ph; this.key = null; this.shown = false; this.mode = 'idle'; this.path = []; this.drag = this.fall = this.slide = null;
-    ph.innerHTML = `<div class="room-layers"></div>
-      <button class="who" type="button" aria-label="啵铃：点一下摸摸它，按住拖动可以把它拎起来"><span class="shade" aria-hidden="true"></span><span class="body"><img alt="" draggable="false"></span></button>
+    this.el = ph; this.key = null; this.shown = false; this.mode = 'idle'; this.path = []; this.drag = this.fall = this.slide = this.act = null; this.st = this.B = null;
+    ph.innerHTML = `<div class="room-layers"></div><canvas class="pet3d" aria-hidden="true"></canvas>
+      <button class="who" type="button" aria-label="啵铃：点一下摸摸它，按住拖动可以把它拎起来"><img alt="" draggable="false"></button>
       <span class="pet-say" hidden></span><div class="empty" hidden>家里空空的——啵铃还在外面。<br>先去地图上把它找回来，或者点下面的“试玩”。</div>`;
-    this.layers = ph.querySelector('.room-layers'); this.who = ph.querySelector('.who'); this.body = ph.querySelector('.body'); this.im = ph.querySelector('.body img');
+    this.layers = ph.querySelector('.room-layers'); this.canvas = ph.querySelector('.pet3d'); this.who = ph.querySelector('.who'); this.im = ph.querySelector('.who img');
     this.say = ph.querySelector('.pet-say'); this.empty = ph.querySelector('.empty');
-    this.POSES.forEach((n) => { const i = new Image(); i.src = Pet.img(n); });
-    this.pose = ''; this.setPose('front'); this.setFace(1);
+    this.im.src = Pet.img('front');
+    // the 3D pet (three.js is the same file the map's models use); without WebGL it falls back to the flat picture
+    import(THREE_URL).then((T) => {
+      if (this.el !== ph) return;
+      try {
+        this.st = petStage(T, this.canvas, PET_ROOM.geo); this.B = makeBoling(T); this.st.scene.add(this.B.root); this.B.root.scale.setScalar(0.24);
+        this.three = true; ph.classList.add('is3d');
+      } catch (e) { console.warn('pet 3d', e); this.three = false; }
+    }).catch(() => { this.three = false; });
     ph.addEventListener('click', (e) => { if (!e.target.closest('.who')) this.roomClick(e); });
-    ph.addEventListener('pointermove', (e) => { if (e.pointerType === 'mouse') this.ptr = this.svgXY(e.clientX, e.clientY); });
+    ph.addEventListener('pointermove', (e) => { if (e.pointerType === 'mouse') { this.ptr = this.svgXY(e.clientX, e.clientY); this.movedAt = performance.now(); } });
     ph.addEventListener('pointerleave', () => { this.ptr = null; });
     const w = this.who;
     w.addEventListener('click', () => {   // a tap pats it; on a touch screen a double tap does a trick (there's no hover)
@@ -5590,7 +5884,6 @@ const Room = {
     return `<svg class="layer" viewBox="${vb}" style="z-index:0" role="img" aria-label="我的家：${Object.keys(it).length ? '摆了 ' + Object.keys(it).length + ' 件家具' : '毛坯房'}">${back}</svg>`
       + stand.map((k) => `<svg class="layer" viewBox="${vb}" aria-hidden="true" data-f="${k}">${g(k, L[k])}</svg>`).join('');
   },
-  // after Pet.render(): new furniture, the pet arriving or leaving
   sync() {
     if (!this.el) return;
     const it = this.items(), pres = this.present(), key = Object.keys(it).sort().join(',');
@@ -5598,10 +5891,10 @@ const Room = {
       this.key = key; this.layers.innerHTML = this.layersHTML(it); this.stand = [...this.layers.querySelectorAll('svg[data-f]')];
       if (pres && this.shown && !this.free(this.pos.u, this.pos.v)) { const g = this.nearFree(this.pos.u, this.pos.v); this.walkTo(g[0], g[1]); }
     }
-    this.who.hidden = !pres; this.empty.hidden = pres;
+    this.who.hidden = !pres; this.canvas.hidden = !pres; this.empty.hidden = pres;
     if (pres && !this.shown) {   // it drops in from above
-      this.shown = true; this.pos = { u: 0.56, v: 0.6 }; this.h = 0; this.path = []; this.mode = 'act'; this.setPose('happy');
-      const to = this.P(this.pos.u, this.pos.v); this.fall = { a: [to[0], to[1] - 170], b: to, t0: performance.now() + 150, dur: 520 }; this.who.classList.add('falling');
+      this.shown = true; this.pos = { u: 0.56, v: 0.6 }; this.h = 0; this.path = []; this.act = null; this.mode = 'fall';
+      this.fall = { h0: 190, t0: performance.now() + 250, dur: 560 };
       this.talk('啵～我来啦！', 2200);
     }
     if (!pres) { this.shown = false; this.say.hidden = true; }
@@ -5612,34 +5905,54 @@ const Room = {
   // ------------------------------------------------------------- every frame
   frame(t) {
     if (!this.el || !this.el.isConnected || !Pet.isOpen() || Pet.tab !== 'home') { this.raf = 0; return; }
-    const dt = this.lt ? Math.min(0.25, (t - this.lt) / 1000) : 0; this.lt = t;   // real time even when frames are slow
+    const dt = this.lt ? Math.min(0.25, (t - this.lt) / 1000) : 0; this.lt = t;
     if (this.present() && this.shown) {
+      this.vel = 0;
       if (this.fall) this.fallStep(t);
       else if (this.slide) this.slideStep(t);
       else if (!this.drag && this.path.length) this.walkStep(dt);
       else if (!this.drag && this.mode === 'idle' && t > this.nextIdle) this.idle();
-      else if (this.mode === 'sleep') { if (t > this.wakeAt) this.wake(); else if (t > this.zzzAt) { this.zzzAt = t + 1400; this.fx('zzz'); } }
-      if (this.mode === 'idle' && !this.path.length && !this.anim) this.lookAtPointer();
-      const hh = !this.drag && !this.fall && this.onBed() ? 12 : 0; this.h += (hh - this.h) * Math.min(1, dt * 8);
+      else if (this.mode === 'sleep') { if (t > this.wakeAt) this.wake(); else if (t > this.zzzAt) { this.zzzAt = t + 1500; this.fx('zzz'); } }
+      if (this.act && t > this.act.t0 + this.act.dur * 1000) this.endAct();
+      if (!this.fall && !this.drag) { const hh = this.onBed() ? 12 : 0; this.h += (hh - this.h) * Math.min(1, dt * 8); }
       this.place();
+      this.draw(dt, t);
     }
     this.raf = requestAnimationFrame((tt) => this.frame(tt));
   },
-  place() {
-    const xy = this.drag ? this.drag.xy : this.fall ? this.fall.xy || this.fall.a : this.P(this.pos.u, this.pos.v, this.h), [l, tp] = this.pct(xy);
-    this.who.style.left = l + '%'; this.who.style.top = tp + '%';
-    const up = this.drag || this.fall;
-    this.who.style.zIndex = up ? 40 : 3;
-    for (const s of this.stand) { const r = this.FURN[s.dataset.f].r, front = this.pos.v > r[3] - 0.01 || this.pos.u < r[0] + 0.01; s.style.zIndex = up || front ? 2 : 4; }
-    if (!this.say.hidden) { this.say.style.left = l + '%'; this.say.style.top = tp - (this.pose === 'sleepy' ? 21 : 27) + '%'; }
+  // where it is on screen (the foot), in SVG units
+  foot() {
+    if (this.drag) return this.drag.xy;
+    return this.P(this.pos.u, this.pos.v, this.h);
   },
-  setPose(n) { if (n === this.pose) return; this.pose = n; this.im.src = Pet.img(n); this.who.classList.toggle('lying', n === 'sleepy'); },
-  setFace(f) { this.face = f; this.im.style.transform = f < 0 ? 'scaleX(-1)' : ''; },
-  heading(du, dv) {   // which way it's going on screen: back view going up, front view going down, side view otherwise
-    const g = PET_ROOM.geo, dx = du * g.UA[0] + dv * g.VA[0], dy = du * g.UA[1] + dv * g.VA[1];
-    if (dy < 0 && -dy > 1.3 * Math.abs(dx)) this.setPose('back');
-    else if (dy > 0 && dy > 1.3 * Math.abs(dx)) this.setPose('front');
-    else { this.setPose('side'); this.setFace(dx < 0 ? 1 : -1); }
+  place() {
+    const xy = this.foot(), [l, tp] = this.pct(xy), up = this.drag || this.fall;
+    this.who.style.left = l + '%'; this.who.style.top = tp + '%';
+    this.canvas.style.zIndex = up ? 40 : 3;
+    for (const s of this.stand) { const r = this.FURN[s.dataset.f].r, front = this.pos.v > r[3] - 0.01 || this.pos.u < r[0] + 0.01; s.style.zIndex = up || front ? 2 : 4; }
+    if (!this.say.hidden) { this.say.style.left = l + '%'; this.say.style.top = tp - (this.mode === 'sleep' ? 17 : 29) + '%'; }
+  },
+  draw(dt, t) {
+    if (!this.three || !this.B) { this.who.classList.add('flat'); return; }
+    this.who.classList.remove('flat');
+    const st = this.st, B = this.B;
+    // world position: on the floor at (u, v), raised by h; while held, the floor point under the cursor and a fixed lift
+    let u = this.pos.u, v = this.pos.v, h = this.h;
+    if (this.drag) { const g = this.toUV([this.drag.xy[0], this.drag.xy[1] + this.drag.lift]); u = g[0]; v = g[1]; h = this.drag.lift; }
+    B.root.position.set(u, h / st.hFactor, v);
+    st.shadow.position.set(u, 0.002, v); const s = 0.3 * (1 - Math.min(0.5, h / 260)); st.shadow.scale.set(s, s, 1); st.shadow.material.opacity = 1 - Math.min(0.6, h / 200);
+    let look = null;
+    if (this.ptr && this.mode === 'idle' && !this.act) {
+      const f = this.P(u, v, h), d = Math.hypot(this.ptr[0] - f[0], this.ptr[1] - (f[1] - 60));
+      if (d < 190) { const g = this.toUV([this.ptr[0], this.ptr[1] + 40]); look = [Math.atan2(g[0] - u, g[1] - v), this.ptr[1] < f[1] - 110 ? -0.25 : 0.1]; }
+    }
+    const a = this.act;
+    B.update(dt, {
+      speed: this.vel, moveYaw: this.moveYaw, gait: this.gait,
+      yaw: this.faceYaw, act: a ? { name: a.name, t: Math.max(0, (t - a.t0) / 1000), k: Math.min(1, Math.max(0, (t - a.t0) / 1000 / a.dur)) } : null,
+      mode: this.drag ? 'drag' : this.fall ? 'fall' : this.mode, look,
+    });
+    st.render();
   },
   // ------------------------------------------------------------- where it can stand
   free(u, v) { if (u < 0.06 || u > 0.94 || v < 0.06 || v > 0.94) return false; for (const r of this.obs) if (u > r[0] - 0.03 && u < r[1] + 0.03 && v > r[2] - 0.03 && v < r[3] + 0.03) return false; return true; },
@@ -5677,136 +5990,108 @@ const Room = {
   },
   onBed() { return !!this.items().bed && Math.hypot(this.pos.u - this.FURN.bed.spot[0], this.pos.v - this.FURN.bed.spot[1]) < 0.09; },
   // ------------------------------------------------------------- moving
-  walkTo(u, v, then) {
+  walkTo(u, v, then, gait) {
     if (this.mode === 'sleep') this.wake(true);
-    this.anim?.cancel(); this.anim = null; this.slide = null;
-    const s = this.free(this.pos.u, this.pos.v) ? [this.pos.u, this.pos.v] : this.nearFree(this.pos.u, this.pos.v), g = this.nearFree(u, v);
-    if (Math.hypot(g[0] - this.pos.u, g[1] - this.pos.v) < 0.012) { this.path = []; this.mode = 'idle'; if (then) then(); return; }
+    this.act = null; this.slide = null; this.faceYaw = null;
+    const s = this.free(this.pos.u, this.pos.v) ? [this.pos.u, this.pos.v] : this.nearFree(this.pos.u, this.pos.v), g = this.nearFree(u, v), d = Math.hypot(g[0] - this.pos.u, g[1] - this.pos.v);
+    if (d < 0.012) { this.path = []; this.mode = 'idle'; if (then) then(); return; }
     this.path = (s[0] !== this.pos.u || s[1] !== this.pos.v ? [s] : []).concat(this.route(s, g));
-    this.then = then || null; this.mode = 'walk'; this.body.classList.add('walking');
+    this.gait = gait || (d < 0.14 ? 'walk' : 'crawl'); this.speed = this.gait === 'crawl' ? 0.2 : 0.28;
+    this.then = then || null; this.mode = 'walk';
   },
   walkStep(dt) {
-    const tg = this.path[0], du = tg[0] - this.pos.u, dv = tg[1] - this.pos.v, d = Math.hypot(du, dv), st = this.speed * dt;
-    if (d > 1e-4) this.heading(du, dv);
+    const tg = this.path[0], du = tg[0] - this.pos.u, dv = tg[1] - this.pos.v, d = Math.hypot(du, dv);
+    // turn first, then go: speed eases in while it's still turning
+    if (d > 1e-4) this.moveYaw = Math.atan2(du, dv);
+    const turn = this.B ? Math.abs(Math.atan2(Math.sin(this.moveYaw - this.B.S.yaw), Math.cos(this.moveYaw - this.B.S.yaw))) : 0;
+    const st = this.speed * dt * Math.max(0.15, 1 - turn / 1.6);
+    this.vel = this.speed;
     if (d <= st) { this.pos = { u: tg[0], v: tg[1] }; this.path.shift(); if (!this.path.length) this.arrive(); }
     else { this.pos.u += (du / d) * st; this.pos.v += (dv / d) * st; }
   },
   arrive() {
-    this.body.classList.remove('walking'); this.mode = 'idle';
+    this.mode = 'idle'; this.vel = 0;
     const f = this.then; this.then = null;
-    if (f) f(); else { this.setPose('front'); this.nextIdle = performance.now() + 3500 + Math.random() * 5000; }
+    if (f) f(); else this.nextIdle = performance.now() + 3500 + Math.random() * 5000;
   },
   goto(f) {
     const F = this.FURN[f]; if (!F) return;
-    this.walkTo(F.spot[0], F.spot[1], () => (F.act === 'nap' ? this.nap(true) : this.react(F.act)));
+    this.walkTo(F.spot[0], F.spot[1], () => {
+      if (F.act === 'nap') return this.nap(true);
+      // face what it's using (half towards you, so you still see its face), or straight at the window
+      const at = F.at; this.faceYaw = F.yaw != null ? F.yaw : at ? this.blendYaw(Math.atan2(at[0] - this.pos.u, at[1] - this.pos.v), 0.55) : null;
+      this.react(F.act, true);
+    });
   },
+  blendYaw(a, k) { const d = Math.atan2(Math.sin(a - this.VIEW), Math.cos(a - this.VIEW)); return this.VIEW + d * k; },
   slideStep(t) {
     const s = this.slide, k = Math.min(1, Math.max(0, (t - s.t0) / s.dur)), e = k < 0.5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2;
     this.pos = { u: s.a[0] + (s.b[0] - s.a[0]) * e, v: s.a[1] + (s.b[1] - s.a[1]) * e };
     if (k >= 1) this.slide = null;
   },
-  fallStep(t) {
-    const f = this.fall, k = Math.min(1, Math.max(0, (t - f.t0) / f.dur)), e = k * k;
-    f.xy = [f.a[0] + (f.b[0] - f.a[0]) * e, f.a[1] + (f.b[1] - f.a[1]) * e];
+  fallStep(t) {   // straight down onto the floor, speeding up
+    const f = this.fall, k = Math.min(1, Math.max(0, (t - f.t0) / f.dur));
+    this.h = f.h0 * (1 - k * k) + (f.h1 || 0) * k * k;
     if (k < 1) return;
-    this.fall = null; this.who.classList.remove('falling');
-    this.land();
+    this.fall = null; this.h = f.h1 || 0; this.mode = 'idle';
+    this.react('land'); this.fx('dust', 3);
   },
   // ------------------------------------------------------------- picked up and dropped
   grab(e) {
     if (this.mode === 'sleep') this.wake(true);
-    this.anim?.cancel(); this.anim = null; this.path = []; this.then = null; this.slide = null; this.body.classList.remove('walking');
+    this.act = null; this.path = []; this.then = null; this.slide = null; this.faceYaw = null;
     const foot = this.P(this.pos.u, this.pos.v, this.h), p = this.svgXY(e.clientX, e.clientY);
-    this.drag = { off: [foot[0] - p[0], foot[1] - p[1] - 16], xy: [foot[0], foot[1] - 16] };
-    this.mode = 'drag'; this.setPose('front'); this.setFace(1); this.who.classList.add('held');
+    this.drag = { off: [foot[0] - p[0], foot[1] - p[1] - 20], xy: [foot[0], foot[1] - 20], lift: 70 };
+    this.mode = 'drag'; this.who.classList.add('held');
     this.talk(['哇——！', '放我下来啦～', '飞起来咯！'][Math.floor(Math.random() * 3)], 1600);
   },
   drop() {
     const d = this.drag; this.drag = null; this.who.classList.remove('held');
-    const uv = this.toUV(d.xy), g = this.nearFree(uv[0], uv[1]);
+    const uv = this.toUV([d.xy[0], d.xy[1] + d.lift]), g = this.nearFree(uv[0], uv[1]);
     this.pos = { u: g[0], v: g[1] };
-    const to = this.P(g[0], g[1], this.onBed() ? 12 : 0); this.h = this.onBed() ? 12 : 0;
-    const drop = Math.max(10, to[1] - d.xy[1]);
-    this.fall = { a: d.xy, b: to, t0: performance.now(), dur: Math.min(560, 220 + drop * 2.2) }; this.who.classList.add('falling');
-  },
-  land() {
-    this.mode = 'act'; this.setPose('happy');
-    this.play([{ transform: 'scale(1,1)' }, { transform: 'scale(1.16,.8)', offset: 0.22 }, { transform: 'translateY(-9%) scale(.94,1.07)', offset: 0.5 }, { transform: 'scale(1.05,.95)', offset: 0.8 }, { transform: 'scale(1,1)' }], 560);
-    this.fx('dust', 3);
+    const hb = this.onBed() ? 12 : 0, h0 = Math.max(hb + 10, this.P(g[0], g[1])[1] - d.xy[1]);
+    this.h = h0; this.mode = 'fall';
+    this.fall = { h0, h1: hb, t0: performance.now(), dur: Math.min(600, 230 + h0 * 2.4) };
   },
   // ------------------------------------------------------------- reactions
-  play(kf, dur, origin, ease = 'ease-in-out') {
-    this.anim?.cancel();
-    this.body.style.transformOrigin = origin || '';
-    const a = (this.anim = this.body.animate(kf, { duration: reduceMotion ? Math.min(dur, 300) : dur, easing: ease }));
-    a.onfinish = () => {
-      if (this.anim !== a) return;
-      this.anim = null; this.body.style.transformOrigin = '';
-      if (this.mode === 'act') { this.mode = 'idle'; this.setPose('front'); this.nextIdle = performance.now() + 2500 + Math.random() * 4500; }
-    };
-    return a;
-  },
-  react(name) {
+  react(name, keepFace) {
     if (!this.present() || !this.shown || this.drag || this.fall) return;
     if (this.mode === 'sleep') { this.wake(true); if (name !== 'pat') return; }
-    this.path = []; this.then = null; this.slide = null; this.body.classList.remove('walking'); this.mode = 'act';
-    const pick = (a) => a[Math.floor(Math.random() * a.length)], squash = [{ transform: 'scale(1,1)' }, { transform: 'scale(1.1,.88)', offset: 0.25 }, { transform: 'translateY(-6%) scale(.95,1.06)', offset: 0.55 }, { transform: 'scale(1,1)' }];
-    if (name === 'pat') { this.setPose('happy'); this.play(squash, 650); this.fx('heart', 3); this.talk(pick(['嘿嘿～', '再摸摸！', '好舒服～', '最喜欢你啦！'])); }
-    else if (name === 'shy') { this.setPose('happy'); this.play([{ transform: 'scale(1)' }, { transform: 'scale(1.06,.94)', offset: 0.3 }, { transform: 'scale(.97,1.03)', offset: 0.6 }, { transform: 'scale(1)' }], 700); this.fx('heart', 2); this.talk('好痒！'); }
-    else if (name === 'hop') {
-      this.setPose('happy');
-      this.play([{ transform: 'translateY(0) scale(1,1)' }, { transform: 'translateY(0) scale(1.12,.86)', offset: 0.1 }, { transform: 'translateY(-26%) scale(.93,1.08)', offset: 0.28 }, { transform: 'translateY(0) scale(1.1,.88)', offset: 0.46 },
-        { transform: 'translateY(-18%) scale(.95,1.05)', offset: 0.66 }, { transform: 'translateY(0) scale(1.06,.94)', offset: 0.86 }, { transform: 'translateY(0) scale(1,1)' }], 950, '', 'linear');
-      this.fx('sparkle', 3); this.talk(pick(['啵！', '跳跳～', '嘿！']));
-    } else if (name === 'roll') {   // a somersault across the floor, left or right wherever there's room
+    this.path = []; this.then = null; this.slide = null; this.mode = 'act';
+    if (!keepFace) this.faceYaw = null;
+    const pick = (a) => a[Math.floor(Math.random() * a.length)];
+    this.act = { name, t0: performance.now(), dur: this.DUR[name] || 1 };
+    if (name === 'pat') { this.fx('heart', 3); this.talk(pick(['嘿嘿～', '再摸摸！', '好舒服～', '最喜欢你啦！'])); }
+    else if (name === 'shy') { this.fx('heart', 2); this.talk('好痒！'); }
+    else if (name === 'hop') { this.fx('sparkle', 3); this.talk(pick(['啵！', '跳跳～', '嘿！'])); }
+    else if (name === 'roll') {   // a forward somersault, left or right across the floor wherever there's room
       const dirs = Math.random() < 0.5 ? [1, -1] : [-1, 1];
-      let sg = dirs[0], b = null;
-      for (const s of dirs) { const t = [this.pos.u + s * 0.13, this.pos.v + s * 0.13]; if (this.clear([this.pos.u, this.pos.v], t) && this.free(t[0], t[1])) { sg = s; b = t; break; } }
-      this.setPose('front'); this.setFace(1);
-      if (b) this.slide = { a: [this.pos.u, this.pos.v], b, t0: performance.now(), dur: 800 };
-      this.play([{ transform: 'translateY(0) rotate(0deg)' }, { transform: `translateY(-20%) rotate(${sg * 180}deg)`, offset: 0.45 }, { transform: `translateY(0) rotate(${sg * 360}deg)`, offset: 0.82 },
-        { transform: `translateY(0) rotate(${sg * 360}deg) scale(1.08,.92)`, offset: 0.92 }, { transform: `translateY(0) rotate(${sg * 360}deg)` }], 950, '50% 58%');
+      for (const s of dirs) { const b = [this.pos.u + s * 0.14, this.pos.v + s * 0.14]; if (this.clear([this.pos.u, this.pos.v], b) && this.free(b[0], b[1])) { this.slide = { a: [this.pos.u, this.pos.v], b, t0: performance.now() + 80, dur: 820 }; this.faceYaw = Math.atan2(s, s); this.B && (this.B.S.yaw = this.faceYaw); break; } }
       this.fx('drop', 2); this.talk('咕噜咕噜～');
-    } else if (name === 'spin') {
-      this.setPose('side');
-      this.play([{ transform: 'perspective(600px) translateY(0) rotateY(0deg)' }, { transform: 'perspective(600px) translateY(-12%) rotateY(360deg)', offset: 0.5 }, { transform: 'perspective(600px) translateY(0) rotateY(720deg)' }], 900, '50% 50%');
-      this.fx('sparkle', 2); this.talk('转圈圈～');
-    } else if (name === 'shake') {   // shakes the water off its ears
-      this.setPose('curious');
-      this.play([0, -10, 10, -8, 8, -5, 5, 0].map((a) => ({ transform: `rotate(${a}deg)` })), 720);
-      this.fx('drop', 4); this.talk('抖抖～');
-    } else if (name === 'look') {
-      this.setPose('curious');
-      this.play([{ transform: 'translateY(0)' }, { transform: 'translateY(-3%)', offset: 0.5 }, { transform: 'translateY(0)' }], 2400);
-      setTimeout(() => { if (this.mode === 'act' && this.pose === 'curious') this.setFace(-this.face); }, 800);
-      setTimeout(() => { if (this.mode === 'act' && this.pose === 'curious') this.setFace(-this.face); }, 1600);
-      this.talk(pick(['嗯？', '那是什么？', '咦～']));
-    } else if (name === 'eat') {
-      this.setPose('happy'); this.setFace(1);
-      this.play([0, 1, 0, 1, 0, 1, 0].map((k) => ({ transform: k ? 'scale(1.04,.95)' : 'scale(1,1)' })), 1400);
-      this.fx('sparkle', 3); this.talk('啊呜～好吃！');
-    } else if (name === 'gaze') {
-      this.setPose('back');
-      this.play([{ transform: 'rotate(0)' }, { transform: 'rotate(-3deg)', offset: 0.3 }, { transform: 'rotate(3deg)', offset: 0.7 }, { transform: 'rotate(0)' }], 2600);
-      this.talk(pick(['外面有云！', '风好舒服～', '那朵云像我！']), 2400);
-    } else if (name === 'sniff') { this.setPose('curious'); this.setFace(1); this.play([0, -4, 0, -4, 0].map((a) => ({ transform: `rotate(${a}deg)` })), 1200); this.fx('sparkle', 2); this.talk('香香的～'); }
-    else if (name === 'lamp') { this.setPose('curious'); this.setFace(1); this.play([{ transform: 'translateY(0)' }, { transform: 'translateY(-5%)', offset: 0.5 }, { transform: 'translateY(0)' }], 1300); this.fx('sparkle', 2); this.talk('暖暖的～'); }
-    else if (name === 'peek') { this.setPose('curious'); this.setFace(1); this.play([0, 6, 0, 6, 0].map((a) => ({ transform: `rotate(${a}deg)` })), 1200); this.talk('箱子里有什么？'); }
+    } else if (name === 'spin') { this.fx('sparkle', 2); this.talk('转圈圈～'); }
+    else if (name === 'shake') { this.fx('drop', 5); this.talk('抖抖～'); }
+    else if (name === 'look') this.talk(pick(['嗯？', '那是什么？', '咦～']));
+    else if (name === 'eat') { this.fx('sparkle', 3); this.talk('啊呜～好吃！'); }
+    else if (name === 'gaze') this.talk(pick(['外面有云！', '风好舒服～', '那朵云像我！']), 2600);
+    else if (name === 'sniff') { this.fx('sparkle', 2); this.talk('香香的～'); }
+    else if (name === 'lamp') { this.fx('sparkle', 2); this.talk('暖暖的～'); }
+    else if (name === 'peek') this.talk('箱子里有什么？');
+    else if (name === 'wake') this.talk('嗯…睡醒啦');
+  },
+  endAct() {
+    this.act = null;
+    if (this.mode === 'act') { this.mode = 'idle'; this.faceYaw = null; this.nextIdle = performance.now() + 2500 + Math.random() * 4500; }
   },
   nap(onBed) {
-    this.anim?.cancel(); this.anim = null; this.path = []; this.body.classList.remove('walking');
-    this.mode = 'sleep'; this.setPose('sleepy'); this.setFace(1);
-    this.wakeAt = performance.now() + 12000 + Math.random() * 10000; this.zzzAt = performance.now() + 600;
+    this.act = null; this.path = []; this.mode = 'sleep'; this.faceYaw = null;
+    this.wakeAt = performance.now() + 12000 + Math.random() * 10000; this.zzzAt = performance.now() + 900;
     if (onBed) this.talk('呼～软软的', 1800);
   },
-  wake(quiet) {
-    this.mode = 'idle'; this.setPose('front'); this.nextIdle = performance.now() + 3000 + Math.random() * 3000;
-    if (!quiet) { this.mode = 'act'; this.setPose('happy'); this.play([{ transform: 'scale(1,1)' }, { transform: 'scale(.96,1.08)', offset: 0.5 }, { transform: 'scale(1,1)' }], 700); this.talk('嗯…睡醒啦'); }
-  },
-  idle() {   // left alone: wander about, nap, look out of the window, have a snack
+  wake(quiet) { this.mode = 'idle'; this.nextIdle = performance.now() + 3000 + Math.random() * 3000; if (!quiet) this.react('wake'); },
+  idle() {   // left alone: potter about, nap, look out of the window, have a snack
     const it = this.items(), r = Math.random(), sad = !Pet.preview && Pet.s.attach < 25;
     if (sad && r < 0.6) return this.nap();
-    if (r < 0.42) { for (let k = 0; k < 12; k++) { const u = 0.1 + Math.random() * 0.8, v = 0.1 + Math.random() * 0.8; if (this.free(u, v) && Math.hypot(u - this.pos.u, v - this.pos.v) > 0.18) return this.walkTo(u, v); } }
+    if (r < 0.42) { for (let k = 0; k < 12; k++) { const u = 0.1 + Math.random() * 0.8, v = 0.1 + Math.random() * 0.8; if (this.free(u, v) && Math.hypot(u - this.pos.u, v - this.pos.v) > 0.18) return this.walkTo(u, v, null, Math.random() < 0.5 ? 'crawl' : 'walk'); } }
     if (r < 0.54) return this.react('hop');
     if (r < 0.64) return this.react('shake');
     if (r < 0.74) return it.bed ? this.goto('bed') : this.nap();
@@ -5816,19 +6101,15 @@ const Room = {
   },
   hover(e) {
     if (e.pointerType !== 'mouse' || !this.present() || this.drag || this.fall || this.press) return;
-    const t = performance.now(); if (t < this.hoverAt || this.mode === 'act') return;
+    // only when you reach out and touch it, not when it walks into a mouse that's sitting still
+    const t = performance.now(); if (t < this.hoverAt || this.mode === 'act' || this.mode === 'walk' || t - (this.movedAt || 0) > 250) return;
     this.hoverAt = t + 1800;
     if (this.mode === 'sleep') { this.wake(true); this.react('shake'); return; }
     this.react(['roll', 'hop', 'spin', 'shake', 'shy', 'roll'][Math.floor(Math.random() * 6)]);
   },
-  lookAtPointer() {   // the cursor comes close: it turns its head to look
-    if (!this.ptr) { if (this.pose === 'curious') this.setPose('front'); return; }
-    const f = this.P(this.pos.u, this.pos.v, this.h), d = Math.hypot(this.ptr[0] - f[0], this.ptr[1] - (f[1] - 50));
-    if (d < 150) { this.setPose('curious'); this.setFace(this.ptr[0] < f[0] ? 1 : -1); } else if (this.pose === 'curious') this.setPose('front');
-  },
   roomClick(e) {
     if (!this.present() || !this.shown || this.drag || this.fall) return;
-    const f = e.target.closest('[data-f]')?.dataset.f || 'floor', p = this.svgXY(e.clientX, e.clientY), uv = this.toUV(p);
+    const f = e.target.closest('[data-f]')?.dataset.f || 'floor', uv = this.toUV(this.svgXY(e.clientX, e.clientY));
     this.ping(e);
     if (this.FURN[f]) return this.goto(f);
     if (f === 'floor' || f === 'rug') return this.walkTo(uv[0], uv[1]);
@@ -5849,13 +6130,13 @@ const Room = {
     zzz: '<b>z</b>',
   },
   fx(kind, n = 1) {
-    const [l, tp] = this.pct(this.P(this.pos.u, this.pos.v, this.h)), foot = kind === 'dust';
+    const [l, tp] = this.pct(this.foot()), foot = kind === 'dust';
     for (let i = 0; i < n; i++) {
       const s = document.createElement('span');
       s.className = 'pet-fx' + (kind === 'zzz' ? ' zzz' : '') + (foot ? ' dust' : '');
       s.innerHTML = this.FX[kind];
-      s.style.left = l + (Math.random() - 0.5) * (foot ? 14 : 9) + '%';
-      s.style.top = tp - (foot ? 1 : this.pose === 'sleepy' ? 14 : 20) + (Math.random() - 0.5) * 4 + '%';
+      s.style.left = l + (Math.random() - 0.5) * (foot ? 14 : 10) + '%';
+      s.style.top = tp - (foot ? 1 : this.mode === 'sleep' ? 12 : 20) + (Math.random() - 0.5) * 4 + '%';
       s.style.setProperty('--dx', (Math.random() - 0.5) * 50 + 'px'); s.style.animationDelay = i * 110 + 'ms';
       this.el.appendChild(s); setTimeout(() => s.remove(), 1600 + i * 110);
     }
