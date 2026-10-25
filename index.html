@@ -721,15 +721,43 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
 .pet-rules{margin:0;padding-left:20px;font-size:14px;line-height:1.75;color:#5C4334}
 .pet-rules b{color:var(--p-ink)}
 /* the room */
-.pet-room{position:relative;width:100%;aspect-ratio:520/470;user-select:none}
-.pet-room svg{position:absolute;inset:0;width:100%;height:100%;display:block}
-.pet-room .who{position:absolute;transform:translate(-50%,-100%);border:0;background:transparent;padding:0;cursor:pointer;width:22%;filter:drop-shadow(0 4px 4px rgba(90,59,42,.18))}
-.pet-room .who img{width:100%;height:auto;display:block;animation:petBob 2.8s ease-in-out infinite;transform-origin:50% 100%}
-.pet-room .who.wide{width:27%}
-.pet-room .who.joy img{animation:petJoy .5s ease-in-out 2}
-.pet-room .empty{position:absolute;left:50%;top:58%;transform:translate(-50%,-50%);background:rgba(255,255,255,.92);border:2px dashed var(--p-line);border-radius:16px;padding:10px 14px;font-size:13.5px;text-align:center;line-height:1.6;max-width:70%}
-.pet-heart{position:absolute;pointer-events:none;font-size:0;width:26px;height:24px;animation:petHeart 1.2s ease-out forwards}
-.pet-heart svg{width:100%;height:100%}
+.pet-room{position:relative;width:100%;aspect-ratio:520/470;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;overflow:hidden;border-radius:14px}
+.pet-room .room-layers,.pet-room svg.layer{position:absolute;inset:0;width:100%;height:100%;display:block}
+.pet-room .room-layers,.pet-room svg.layer{pointer-events:none}
+.pet-room svg.layer g[data-f]{pointer-events:visiblePainted;cursor:pointer}
+.pet-room .who{position:absolute;z-index:3;height:25%;transform:translate(-50%,-100%);border:0;background:transparent;padding:0;cursor:grab;touch-action:none;display:flex;justify-content:center;align-items:flex-end}
+.pet-room .who[hidden]{display:none}
+.pet-room .who.lying{height:19%}
+.pet-room .who .body{height:100%;display:block;transform-origin:50% 100%;animation:petBob 2.8s ease-in-out infinite;filter:drop-shadow(0 3px 2px rgba(90,59,42,.16))}
+.pet-room .who img{height:100%;width:auto;display:block;pointer-events:none;-webkit-user-drag:none}
+.pet-room .who .shade{position:absolute;left:50%;bottom:-3%;width:62%;height:9%;transform:translateX(-50%);border-radius:50%;background:radial-gradient(closest-side,rgba(74,52,40,.28),rgba(74,52,40,0))}
+.pet-room .who .body.walking{animation:petStep .34s ease-in-out infinite}
+.pet-room .who.held{cursor:grabbing}
+.pet-room .who.held .body{animation:petSwing .55s ease-in-out infinite alternate;transform-origin:50% 8%}
+.pet-room .who.held .shade,.pet-room .who.falling .shade{opacity:0}
+.pet-room .empty{position:absolute;z-index:5;left:50%;top:58%;transform:translate(-50%,-50%);background:rgba(255,255,255,.94);border:2px dashed var(--p-line);border-radius:16px;padding:10px 14px;font-size:13.5px;text-align:center;line-height:1.6;max-width:72%}
+.pet-room .empty[hidden]{display:none}
+.pet-say{position:absolute;z-index:31;transform:translate(-50%,-100%);background:#fff;border:2px solid #5A3B2A;border-radius:12px;padding:3px 10px;font-size:13px;font-weight:700;white-space:nowrap;pointer-events:none;color:#4A3428;animation:rise .2s ease-out}
+.pet-say[hidden]{display:none}
+.pet-say::after{content:"";position:absolute;left:50%;bottom:-6px;width:8px;height:8px;margin-left:-5px;background:#fff;border-right:2px solid #5A3B2A;border-bottom:2px solid #5A3B2A;transform:rotate(45deg)}
+.pet-fx{position:absolute;z-index:30;width:5.2%;aspect-ratio:1;pointer-events:none;opacity:0;transform:translate(-50%,-50%);animation:petFx 1.3s ease-out forwards}
+.pet-fx svg{width:100%;height:100%;display:block}
+.pet-fx.dust{width:4.5%;animation:petDust .7s ease-out forwards}
+.pet-fx.zzz{width:auto;font-family:"ZCOOL KuaiLe",var(--f-body);font-size:20px;color:#5A7FB0;animation-duration:1.8s}
+.pet-ping{position:absolute;z-index:1;width:8%;aspect-ratio:2/1;border:2.5px solid #2F6DB0;border-radius:50%;transform:translate(-50%,-50%) scale(.3);pointer-events:none;animation:petPing .7s ease-out forwards}
+.pet-room-tip{margin:10px 0 0;font-size:12.5px;line-height:1.7;color:var(--p-ink-2)}
+.pet-room-tip b{color:var(--p-ink)}
+.pet-trial{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:0 0 12px;padding:10px 12px;border-radius:14px;background:#FFF4D6;border:2px dashed #C99A3B;font-size:13.5px;line-height:1.55}
+.pet-trial b{font-weight:700}
+.pet-seg{display:inline-flex;border:2px solid var(--p-line);border-radius:12px;overflow:hidden;margin-left:auto}
+.pet-seg button{height:34px;padding:0 12px;border:0;background:#fff;font-weight:700;font-size:13px;color:var(--p-ink)}
+.pet-seg button + button{border-left:2px solid var(--p-line)}
+.pet-seg button[aria-pressed="true"]{background:var(--p-line);color:#FFF9F1}
+@keyframes petStep{0%,100%{transform:translateY(0) scale(1,1)}20%{transform:translateY(0) scale(1.05,.95)}55%{transform:translateY(-9%) scale(.97,1.04)}}
+@keyframes petSwing{from{transform:rotate(-9deg)}to{transform:rotate(9deg)}}
+@keyframes petFx{0%{opacity:0;transform:translate(-50%,-50%) scale(.5)}15%{opacity:1}100%{opacity:0;transform:translate(calc(-50% + var(--dx,0px)),-320%) scale(1.05)}}
+@keyframes petDust{0%{opacity:.9;transform:translate(-50%,-50%) scale(.4)}100%{opacity:0;transform:translate(calc(-50% + var(--dx,0px)),-90%) scale(1.3)}}
+@keyframes petPing{0%{opacity:1;transform:translate(-50%,-50%) scale(.3)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.4)}}
 .pet-homebar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:12px}
 .pet-homebar .stat{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700}
 .pet-homebar .stat .pet-meter{width:150px}
@@ -806,7 +834,7 @@ body.pure .pet-dock,body.pure .pet-bubble{display:none!important}
 @keyframes petPeek{0%,100%{transform:translateY(0) rotate(0)}30%{transform:translateY(-4px) rotate(-4deg)}60%{transform:translateY(0) rotate(4deg)}}
 @keyframes petHop{0%{transform:translateY(0) scale(1,1)}40%{transform:translateY(-22px) scale(.95,1.05)}100%{transform:translateY(0) scale(1,1)}}
 @keyframes petHeart{0%{opacity:0;transform:translate(-50%,0) scale(.6)}20%{opacity:1}100%{opacity:0;transform:translate(-50%,-60px) scale(1.1)}}
-@media (prefers-reduced-motion:reduce){.pet-hero img,.pet-room .who img,.pet-dock img,.pet-dock .lost,.pet-mark img{animation:none}}
+@media (prefers-reduced-motion:reduce){.pet-hero img,.pet-room .who .body,.pet-dock img,.pet-dock .lost,.pet-mark img{animation:none}}
 @media (max-width:1023px){
   /* phone: sit in the row above the bottom tab bar, to the left of the zoom buttons */
   .pet-dock{right:calc(max(8px,env(safe-area-inset-right,0px)) + 50px);bottom:calc(84px + env(safe-area-inset-bottom,0px));width:60px;height:60px}
@@ -5099,7 +5127,7 @@ document.addEventListener('keydown', (e) => {
   else closePops();
 });
 
-const PET_ROOM = {"vb":"40 -50 520 470","layers":{"walls_bare":"<path d=\"M60.0 300.0 L300.0 180.0 L300.0 -30.0 L60.0 90.0 Z\" fill=\"#CFCBC4\" stroke=\"#7E7870\" stroke-width=\"3\" stroke-linejoin=\"round\"/><path d=\"M300.0 180.0 L540.0 300.0 L540.0 90.0 L300.0 -30.0 Z\" fill=\"#BEB9B1\" stroke=\"#7E7870\" stroke-width=\"3\" stroke-linejoin=\"round\"/><path d=\"M108.0 216.0 L136.8 195.6 L132.0 178.0 L103.2 198.4 Z\" fill=\"#C3BFB7\"/><path d=\"M192.0 114.0 L220.8 93.6 L216.0 76.0 L187.2 96.4 Z\" fill=\"#C3BFB7\"/><path d=\"M240.0 170.0 L268.8 149.6 L264.0 132.0 L235.2 152.4 Z\" fill=\"#C3BFB7\"/><path d=\"M372.0 136.0 L396.0 152.0 L400.8 132.4 L372.0 114.0 Z\" fill=\"#B2ADA5\"/><path d=\"M448.8 114.4 L472.8 130.4 L477.6 110.8 L448.8 92.4 Z\" fill=\"#B2ADA5\"/>","walls_paint":"<path d=\"M60.0 300.0 L300.0 180.0 L300.0 -30.0 L60.0 90.0 Z\" fill=\"#EAF3FC\" stroke=\"#6F86A3\" stroke-width=\"3\" stroke-linejoin=\"round\"/><path d=\"M300.0 180.0 L540.0 300.0 L540.0 90.0 L300.0 -30.0 Z\" fill=\"#DCEAF8\" stroke=\"#6F86A3\" stroke-width=\"3\" stroke-linejoin=\"round\"/><path d=\"M60.0 300.0 L300.0 180.0 L300.0 134.0 L60.0 254.0 Z\" fill=\"#CFE1F4\" stroke=\"#6F86A3\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M300.0 180.0 L540.0 300.0 L540.0 254.0 L300.0 134.0 Z\" fill=\"#C3D8EE\" stroke=\"#6F86A3\" stroke-width=\"2\" stroke-linejoin=\"round\"/>","floor_bare":"<path d=\"M60.0 300.0 L300.0 180.0 L540.0 300.0 L300.0 420.0 Z\" fill=\"#A7A198\" stroke=\"#7E7870\" stroke-width=\"3\" stroke-linejoin=\"round\"/><g fill=\"none\" stroke=\"#8C867D\" stroke-width=\"2.5\" stroke-linecap=\"round\"><path d=\"M276 336 L310 334 L329 348\"/><path d=\"M300 252 L329 252 L343 240\"/></g>","floor_wood":"<path d=\"M60.0 300.0 L300.0 180.0 L540.0 300.0 L300.0 420.0 Z\" fill=\"#D9B38A\" stroke=\"#6F86A3\" stroke-width=\"3\" stroke-linejoin=\"round\"/><g stroke=\"#BE9466\" stroke-width=\"2\"><path d=\"M90 285 L330 405\"/><path d=\"M120 270 L360 390\"/><path d=\"M150 255 L390 375\"/><path d=\"M180 240 L420 360\"/><path d=\"M210 225 L450 345\"/><path d=\"M240 210 L480 330\"/><path d=\"M270 195 L510 315\"/></g>","window":"<path d=\"M372.0 138.0 L477.6 190.8 L477.6 86.8 L372.0 34.0 Z\" fill=\"#BFE0FF\" stroke=\"#6F86A3\" stroke-width=\"4\" stroke-linejoin=\"round\"/><g transform=\"translate(396.0 78.0) scale(1.0)\" opacity=\"1.0\"><path d=\"M-14 6 a8 8 0 0 1 2 -14 a10 10 0 0 1 18 -2 a8 8 0 0 1 8 14 Z\" fill=\"#FFFFFF\" stroke=\"#B8CDE6\" stroke-width=\"2.0\" stroke-linejoin=\"round\"/></g><g transform=\"translate(444.0 132.0) scale(0.8)\" opacity=\"1.0\"><path d=\"M-14 6 a8 8 0 0 1 2 -14 a10 10 0 0 1 18 -2 a8 8 0 0 1 8 14 Z\" fill=\"#FFFFFF\" stroke=\"#B8CDE6\" stroke-width=\"2.5\" stroke-linejoin=\"round\"/></g><g transform=\"translate(424.8 74.4) scale(0.6)\" opacity=\"1.0\"><path d=\"M-14 6 a8 8 0 0 1 2 -14 a10 10 0 0 1 18 -2 a8 8 0 0 1 8 14 Z\" fill=\"#FFFFFF\" stroke=\"#B8CDE6\" stroke-width=\"3.3\" stroke-linejoin=\"round\"/></g><path d=\"M372.0 138.0 L477.6 190.8 L477.6 178.8 L372.0 126.0 Z\" fill=\"#A9C3E0\"/><path d=\"M425 164 L425 60\" stroke=\"#6F86A3\" stroke-width=\"3\"/>","lights":"<circle cx=\"60\" cy=\"108\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"300\" cy=\"-12\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"80\" cy=\"104\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"320\" cy=\"4\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"100\" cy=\"88\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"340\" cy=\"8\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"120\" cy=\"72\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"360\" cy=\"12\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"140\" cy=\"68\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"380\" cy=\"28\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"160\" cy=\"64\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"400\" cy=\"44\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"180\" cy=\"48\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"420\" cy=\"48\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"200\" cy=\"32\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"440\" cy=\"52\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"220\" cy=\"28\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"460\" cy=\"68\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"240\" cy=\"24\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"480\" cy=\"84\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"260\" cy=\"8\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"500\" cy=\"88\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"280\" cy=\"-8\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"520\" cy=\"92\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"300\" cy=\"-12\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"540\" cy=\"108\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/>","shelf":"<path d=\"M103.2 148.4 L184.8 107.6 L198.8 114.6 L117.2 155.4 Z\" fill=\"#B98552\" stroke=\"#6D5235\" stroke-width=\"2\" stroke-linejoin=\"round\"/><g transform=\"translate(127 124)\"><path transform=\"translate(0 0) scale(1.2)\" opacity=\"1.0\" d=\"M0 -12 C 5 -5 8 -1 8 3 a8 8 0 0 1 -16 0 C -8 -1 -5 -5 0 -12 Z\" fill=\"#8EC3F2\" stroke=\"#5A3B2A\" stroke-width=\"1.7\" stroke-linejoin=\"round\"/><path transform=\"translate(0 0) scale(1.2)\" opacity=\"1.0\" d=\"M-3 2 a3 3 0 0 0 3 3\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.3\" stroke-linecap=\"round\"/></g><rect x=\"149\" y=\"100\" width=\"24\" height=\"20\" rx=\"4\" fill=\"#9FC48A\" stroke=\"#6D5235\" stroke-width=\"2\"/>","bulb":"<path d=\"M220 10 L220 80\" stroke=\"#4A4540\" stroke-width=\"2.5\"/><circle cx=\"220\" cy=\"92\" r=\"12\" fill=\"#FFF2B8\" stroke=\"#4A4540\" stroke-width=\"2.5\"/><circle cx=\"220\" cy=\"92\" r=\"26\" fill=\"#FFF2B8\" opacity=\"0.25\"/>","box":"<path d=\"M108.0 258.8 L156.0 234.8 L199.2 256.4 L151.2 280.4 Z\" fill=\"#D7B07A\" stroke=\"#6D5235\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M108.0 304.8 L151.2 326.4 L151.2 280.4 L108.0 258.8 Z\" fill=\"#B98C55\" stroke=\"#6D5235\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M151.2 326.4 L199.2 302.4 L199.2 256.4 L151.2 280.4 Z\" fill=\"#C99C64\" stroke=\"#6D5235\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M130 270 L178 246\" stroke=\"#8E6A3E\" stroke-width=\"3\"/>","rug":"<ellipse cx=\"324.0\" cy=\"300.0\" rx=\"94.9\" ry=\"47.6\" fill=\"#9CC8F2\" stroke=\"#4F78A8\" stroke-width=\"3\"/><ellipse cx=\"324.0\" cy=\"300.0\" rx=\"67.8\" ry=\"34.0\" fill=\"#C8E2FA\"/><ellipse cx=\"324.0\" cy=\"300.0\" rx=\"33.9\" ry=\"17.0\" fill=\"#FFF3D6\"/>","plant":"<path d=\"M88.8 266.0 L108.0 256.4 L127.2 266.0 L108.0 275.6 Z\" fill=\"#C77F4B\" stroke=\"#5A4636\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M88.8 300.0 L108.0 309.6 L108.0 275.6 L88.8 266.0 Z\" fill=\"#A9643A\" stroke=\"#5A4636\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M108.0 309.6 L127.2 300.0 L127.2 266.0 L108.0 275.6 Z\" fill=\"#B87043\" stroke=\"#5A4636\" stroke-width=\"2\" stroke-linejoin=\"round\"/><g fill=\"#6FA35A\" stroke=\"#3F6B34\" stroke-width=\"2\"><ellipse cx=\"94\" cy=\"236\" rx=\"12\" ry=\"26\" transform=\"rotate(-25 94 236)\"/><ellipse cx=\"122\" cy=\"236\" rx=\"12\" ry=\"26\" transform=\"rotate(25 122 236)\"/><ellipse cx=\"108\" cy=\"224\" rx=\"12\" ry=\"30\"/></g>","lamp":"<path d=\"M305 211 L305 91\" stroke=\"#5A4636\" stroke-width=\"4\"/><path d=\"M283 93 L327 93 L319 63 L291 63 Z\" fill=\"#FFE3A8\" stroke=\"#5A4636\" stroke-width=\"3\"/><ellipse cx=\"305\" cy=\"107\" rx=\"40\" ry=\"18\" fill=\"#FFE3A8\" opacity=\"0.35\"/><ellipse cx=\"305\" cy=\"211\" rx=\"12\" ry=\"5\" fill=\"#5A4636\"/>","bed":"<g transform=\"translate(300 267) scale(1.0 0.6)\"><g fill=\"#FFFFFF\" stroke=\"#7FA6CF\" stroke-width=\"5\"><circle cx=\"-46\" cy=\"4\" r=\"26\"/><circle cx=\"-20\" cy=\"-8\" r=\"30\"/><circle cx=\"14\" cy=\"-10\" r=\"30\"/><circle cx=\"44\" cy=\"2\" r=\"26\"/><circle cx=\"0\" cy=\"12\" r=\"34\"/></g><g fill=\"#FFFFFF\"><circle cx=\"-46\" cy=\"4\" r=\"23\"/><circle cx=\"-20\" cy=\"-8\" r=\"27\"/><circle cx=\"14\" cy=\"-10\" r=\"27\"/><circle cx=\"44\" cy=\"2\" r=\"23\"/><circle cx=\"0\" cy=\"12\" r=\"31\"/></g><g fill=\"#DDEEFF\"><circle cx=\"-20\" cy=\"2\" r=\"16\"/><circle cx=\"14\" cy=\"0\" r=\"16\"/></g></g>","table":"<path d=\"M252.0 326.8 L290.4 307.6 L328.8 326.8 L290.4 346.0 Z\" fill=\"#C9935C\" stroke=\"#5A4636\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M252.0 352.8 L290.4 372.0 L290.4 346.0 L252.0 326.8 Z\" fill=\"#A87442\" stroke=\"#5A4636\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M290.4 372.0 L328.8 352.8 L328.8 326.8 L290.4 346.0 Z\" fill=\"#B98552\" stroke=\"#5A4636\" stroke-width=\"2\" stroke-linejoin=\"round\"/><ellipse cx=\"290\" cy=\"325\" rx=\"24\" ry=\"10\" fill=\"#FFFFFF\" stroke=\"#6D5235\" stroke-width=\"2\"/><circle cx=\"282\" cy=\"321\" r=\"7\" fill=\"#E7B36A\" stroke=\"#6D5235\" stroke-width=\"1.5\"/><circle cx=\"298\" cy=\"323\" r=\"7\" fill=\"#E7B36A\" stroke=\"#6D5235\" stroke-width=\"1.5\"/><path d=\"M306 303 l0 14 a7 4 0 0 0 14 0 l0 -14 Z\" fill=\"#BFE0FF\" stroke=\"#6D5235\" stroke-width=\"2\"/>"},"spots":{"floor":[55.54,74.47],"bed":[50.0,65.36],"door":[57.38,88.77]}};
+const PET_ROOM = {"vb":"40 -50 520 470","geo":{"L0":[60,300],"UA":[240,-120],"VA":[240,120],"VB":[40,-50,520,470]},"layers":{"walls_bare":"<path d=\"M60.0 300.0 L300.0 180.0 L300.0 -30.0 L60.0 90.0 Z\" fill=\"#CFCBC4\" stroke=\"#7E7870\" stroke-width=\"3\" stroke-linejoin=\"round\"/><path d=\"M300.0 180.0 L540.0 300.0 L540.0 90.0 L300.0 -30.0 Z\" fill=\"#BEB9B1\" stroke=\"#7E7870\" stroke-width=\"3\" stroke-linejoin=\"round\"/><path d=\"M108.0 216.0 L136.8 195.6 L132.0 178.0 L103.2 198.4 Z\" fill=\"#C3BFB7\"/><path d=\"M192.0 114.0 L220.8 93.6 L216.0 76.0 L187.2 96.4 Z\" fill=\"#C3BFB7\"/><path d=\"M240.0 170.0 L268.8 149.6 L264.0 132.0 L235.2 152.4 Z\" fill=\"#C3BFB7\"/><path d=\"M372.0 136.0 L396.0 152.0 L400.8 132.4 L372.0 114.0 Z\" fill=\"#B2ADA5\"/><path d=\"M448.8 114.4 L472.8 130.4 L477.6 110.8 L448.8 92.4 Z\" fill=\"#B2ADA5\"/>","walls_paint":"<path d=\"M60.0 300.0 L300.0 180.0 L300.0 -30.0 L60.0 90.0 Z\" fill=\"#EAF3FC\" stroke=\"#6F86A3\" stroke-width=\"3\" stroke-linejoin=\"round\"/><path d=\"M300.0 180.0 L540.0 300.0 L540.0 90.0 L300.0 -30.0 Z\" fill=\"#DCEAF8\" stroke=\"#6F86A3\" stroke-width=\"3\" stroke-linejoin=\"round\"/><path d=\"M60.0 300.0 L300.0 180.0 L300.0 134.0 L60.0 254.0 Z\" fill=\"#CFE1F4\" stroke=\"#6F86A3\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M300.0 180.0 L540.0 300.0 L540.0 254.0 L300.0 134.0 Z\" fill=\"#C3D8EE\" stroke=\"#6F86A3\" stroke-width=\"2\" stroke-linejoin=\"round\"/>","floor_bare":"<path d=\"M60.0 300.0 L300.0 180.0 L540.0 300.0 L300.0 420.0 Z\" fill=\"#A7A198\" stroke=\"#7E7870\" stroke-width=\"3\" stroke-linejoin=\"round\"/><g fill=\"none\" stroke=\"#8C867D\" stroke-width=\"2.5\" stroke-linecap=\"round\"><path d=\"M276 336 L310 334 L329 348\"/><path d=\"M300 252 L329 252 L343 240\"/></g>","floor_wood":"<path d=\"M60.0 300.0 L300.0 180.0 L540.0 300.0 L300.0 420.0 Z\" fill=\"#D9B38A\" stroke=\"#6F86A3\" stroke-width=\"3\" stroke-linejoin=\"round\"/><g stroke=\"#BE9466\" stroke-width=\"2\"><path d=\"M90 285 L330 405\"/><path d=\"M120 270 L360 390\"/><path d=\"M150 255 L390 375\"/><path d=\"M180 240 L420 360\"/><path d=\"M210 225 L450 345\"/><path d=\"M240 210 L480 330\"/><path d=\"M270 195 L510 315\"/></g>","window":"<path d=\"M372.0 138.0 L477.6 190.8 L477.6 86.8 L372.0 34.0 Z\" fill=\"#BFE0FF\" stroke=\"#6F86A3\" stroke-width=\"4\" stroke-linejoin=\"round\"/><g transform=\"translate(396.0 78.0) scale(1.0)\" opacity=\"1.0\"><path d=\"M-14 6 a8 8 0 0 1 2 -14 a10 10 0 0 1 18 -2 a8 8 0 0 1 8 14 Z\" fill=\"#FFFFFF\" stroke=\"#B8CDE6\" stroke-width=\"2.0\" stroke-linejoin=\"round\"/></g><g transform=\"translate(444.0 132.0) scale(0.8)\" opacity=\"1.0\"><path d=\"M-14 6 a8 8 0 0 1 2 -14 a10 10 0 0 1 18 -2 a8 8 0 0 1 8 14 Z\" fill=\"#FFFFFF\" stroke=\"#B8CDE6\" stroke-width=\"2.5\" stroke-linejoin=\"round\"/></g><g transform=\"translate(424.8 74.4) scale(0.6)\" opacity=\"1.0\"><path d=\"M-14 6 a8 8 0 0 1 2 -14 a10 10 0 0 1 18 -2 a8 8 0 0 1 8 14 Z\" fill=\"#FFFFFF\" stroke=\"#B8CDE6\" stroke-width=\"3.3\" stroke-linejoin=\"round\"/></g><path d=\"M372.0 138.0 L477.6 190.8 L477.6 178.8 L372.0 126.0 Z\" fill=\"#A9C3E0\"/><path d=\"M425 164 L425 60\" stroke=\"#6F86A3\" stroke-width=\"3\"/>","lights":"<circle cx=\"60\" cy=\"108\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"300\" cy=\"-12\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"80\" cy=\"104\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"320\" cy=\"4\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"100\" cy=\"88\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"340\" cy=\"8\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"120\" cy=\"72\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"360\" cy=\"12\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"140\" cy=\"68\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"380\" cy=\"28\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"160\" cy=\"64\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"400\" cy=\"44\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"180\" cy=\"48\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"420\" cy=\"48\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"200\" cy=\"32\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"440\" cy=\"52\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"220\" cy=\"28\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"460\" cy=\"68\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"240\" cy=\"24\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"480\" cy=\"84\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"260\" cy=\"8\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"500\" cy=\"88\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"280\" cy=\"-8\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"520\" cy=\"92\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"300\" cy=\"-12\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"540\" cy=\"108\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/>","shelf":"<path d=\"M103.2 148.4 L184.8 107.6 L198.8 114.6 L117.2 155.4 Z\" fill=\"#B98552\" stroke=\"#6D5235\" stroke-width=\"2\" stroke-linejoin=\"round\"/><g transform=\"translate(127 124)\"><path transform=\"translate(0 0) scale(1.2)\" opacity=\"1.0\" d=\"M0 -12 C 5 -5 8 -1 8 3 a8 8 0 0 1 -16 0 C -8 -1 -5 -5 0 -12 Z\" fill=\"#8EC3F2\" stroke=\"#5A3B2A\" stroke-width=\"1.7\" stroke-linejoin=\"round\"/><path transform=\"translate(0 0) scale(1.2)\" opacity=\"1.0\" d=\"M-3 2 a3 3 0 0 0 3 3\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.3\" stroke-linecap=\"round\"/></g><rect x=\"149\" y=\"100\" width=\"24\" height=\"20\" rx=\"4\" fill=\"#9FC48A\" stroke=\"#6D5235\" stroke-width=\"2\"/>","bulb":"<path d=\"M220 10 L220 80\" stroke=\"#4A4540\" stroke-width=\"2.5\"/><circle cx=\"220\" cy=\"92\" r=\"12\" fill=\"#FFF2B8\" stroke=\"#4A4540\" stroke-width=\"2.5\"/><circle cx=\"220\" cy=\"92\" r=\"26\" fill=\"#FFF2B8\" opacity=\"0.25\"/>","box":"<path d=\"M108.0 258.8 L156.0 234.8 L199.2 256.4 L151.2 280.4 Z\" fill=\"#D7B07A\" stroke=\"#6D5235\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M108.0 304.8 L151.2 326.4 L151.2 280.4 L108.0 258.8 Z\" fill=\"#B98C55\" stroke=\"#6D5235\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M151.2 326.4 L199.2 302.4 L199.2 256.4 L151.2 280.4 Z\" fill=\"#C99C64\" stroke=\"#6D5235\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M130 270 L178 246\" stroke=\"#8E6A3E\" stroke-width=\"3\"/>","rug":"<ellipse cx=\"324.0\" cy=\"300.0\" rx=\"94.9\" ry=\"47.6\" fill=\"#9CC8F2\" stroke=\"#4F78A8\" stroke-width=\"3\"/><ellipse cx=\"324.0\" cy=\"300.0\" rx=\"67.8\" ry=\"34.0\" fill=\"#C8E2FA\"/><ellipse cx=\"324.0\" cy=\"300.0\" rx=\"33.9\" ry=\"17.0\" fill=\"#FFF3D6\"/>","plant":"<path d=\"M88.8 266.0 L108.0 256.4 L127.2 266.0 L108.0 275.6 Z\" fill=\"#C77F4B\" stroke=\"#5A4636\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M88.8 300.0 L108.0 309.6 L108.0 275.6 L88.8 266.0 Z\" fill=\"#A9643A\" stroke=\"#5A4636\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M108.0 309.6 L127.2 300.0 L127.2 266.0 L108.0 275.6 Z\" fill=\"#B87043\" stroke=\"#5A4636\" stroke-width=\"2\" stroke-linejoin=\"round\"/><g fill=\"#6FA35A\" stroke=\"#3F6B34\" stroke-width=\"2\"><ellipse cx=\"94\" cy=\"236\" rx=\"12\" ry=\"26\" transform=\"rotate(-25 94 236)\"/><ellipse cx=\"122\" cy=\"236\" rx=\"12\" ry=\"26\" transform=\"rotate(25 122 236)\"/><ellipse cx=\"108\" cy=\"224\" rx=\"12\" ry=\"30\"/></g>","lamp":"<path d=\"M305 211 L305 91\" stroke=\"#5A4636\" stroke-width=\"4\"/><path d=\"M283 93 L327 93 L319 63 L291 63 Z\" fill=\"#FFE3A8\" stroke=\"#5A4636\" stroke-width=\"3\"/><ellipse cx=\"305\" cy=\"107\" rx=\"40\" ry=\"18\" fill=\"#FFE3A8\" opacity=\"0.35\"/><ellipse cx=\"305\" cy=\"211\" rx=\"12\" ry=\"5\" fill=\"#5A4636\"/>","bed":"<g transform=\"translate(300 267) scale(1.0 0.6)\"><g fill=\"#FFFFFF\" stroke=\"#7FA6CF\" stroke-width=\"5\"><circle cx=\"-46\" cy=\"4\" r=\"26\"/><circle cx=\"-20\" cy=\"-8\" r=\"30\"/><circle cx=\"14\" cy=\"-10\" r=\"30\"/><circle cx=\"44\" cy=\"2\" r=\"26\"/><circle cx=\"0\" cy=\"12\" r=\"34\"/></g><g fill=\"#FFFFFF\"><circle cx=\"-46\" cy=\"4\" r=\"23\"/><circle cx=\"-20\" cy=\"-8\" r=\"27\"/><circle cx=\"14\" cy=\"-10\" r=\"27\"/><circle cx=\"44\" cy=\"2\" r=\"23\"/><circle cx=\"0\" cy=\"12\" r=\"31\"/></g><g fill=\"#DDEEFF\"><circle cx=\"-20\" cy=\"2\" r=\"16\"/><circle cx=\"14\" cy=\"0\" r=\"16\"/></g></g>","table":"<path d=\"M252.0 326.8 L290.4 307.6 L328.8 326.8 L290.4 346.0 Z\" fill=\"#C9935C\" stroke=\"#5A4636\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M252.0 352.8 L290.4 372.0 L290.4 346.0 L252.0 326.8 Z\" fill=\"#A87442\" stroke=\"#5A4636\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M290.4 372.0 L328.8 352.8 L328.8 326.8 L290.4 346.0 Z\" fill=\"#B98552\" stroke=\"#5A4636\" stroke-width=\"2\" stroke-linejoin=\"round\"/><ellipse cx=\"290\" cy=\"325\" rx=\"24\" ry=\"10\" fill=\"#FFFFFF\" stroke=\"#6D5235\" stroke-width=\"2\"/><circle cx=\"282\" cy=\"321\" r=\"7\" fill=\"#E7B36A\" stroke=\"#6D5235\" stroke-width=\"1.5\"/><circle cx=\"298\" cy=\"323\" r=\"7\" fill=\"#E7B36A\" stroke=\"#6D5235\" stroke-width=\"1.5\"/><path d=\"M306 303 l0 14 a7 4 0 0 0 14 0 l0 -14 Z\" fill=\"#BFE0FF\" stroke=\"#6D5235\" stroke-width=\"2\"/>"},"spots":{"floor":[55.54,74.47],"bed":[50.0,65.36],"door":[57.38,88.77]}};
 /* ===================================================================== 萌宠啵铃
    每位访客一份自己的游戏，存在各自浏览器的 localStorage（bh-pet-v1），换设备或清缓存会从头开始：
    - 走失：啵铃藏在地图上某个地标 / 餐厅 / 扫街点旁边，不定时发消息给线索（完成任务、花水滴也能换线索）；
@@ -5108,7 +5136,7 @@ const PET_ROOM = {"vb":"40 -50 520 470","layers":{"walls_bare":"<path d=\"M60.0 
    - 每日任务（逛地标、看餐厅、看扫街、看星空、摸摸它）给水滴，水滴买家具、零食和提示
    房间的各层图形在 PET_ROOM（由 tools 外的脚本按等轴测画好），宠物图片在 pet/ 目录 */
 const Pet = {
-  K: 'bh-pet-v1', s: null, mem: false, skew: 0, tab: 'about', marker: null, chatAt: 0, dockKey: '', _badge: false,
+  K: 'bh-pet-v1', s: null, mem: false, skew: 0, tab: 'about', preview: null, marker: null, chatAt: 0, dockKey: '', _badge: false,
   ITEMS: [
     { id: 'paint', name: '刷墙', desc: '浅蓝色墙面，加一圈墙裙', price: 80, comfort: 10 },
     { id: 'floor', name: '木地板', desc: '把水泥地换成暖色木地板', price: 100, comfort: 12 },
@@ -5140,7 +5168,7 @@ const Pet = {
     this.newSpawn();
   },
   init() {
-    if (/petdebug/.test(location.search)) window.__pet = this;
+    if (/petdebug/.test(location.search)) { window.__pet = this; window.__room = Room; }
     this.s = this.load();
     if (!this.s) this.fresh();
     this.step(false);
@@ -5324,7 +5352,7 @@ const Pet = {
   },
   caught() {
     const sp = this.s.spawn, fast = this.now() - sp.t0 < 10 * 60000, gain = 50 + (fast ? 30 : 0), first = !this.s.caught;
-    this.s.status = 'home'; this.s.spawn = null; this.s.caught++; this.s.coins += gain;
+    this.s.status = 'home'; this.s.spawn = null; this.s.caught++; this.s.coins += gain; this.preview = null;
     this.s.attach = Math.max(this.s.attach, 40); this.s.flags.w10 = this.s.flags.w25 = 0; this.chatAt = 0;
     this.log(`抓到啵铃啦！+${gain} 水滴${fast ? '（10 分钟内抓到，多 30）' : ''}`);
     this.save(); this.placeMarker(); $('#petBubble').hidden = true; this.updateDock();
@@ -5339,30 +5367,25 @@ const Pet = {
   },
   // ------------------------------------------------------------- at home
   pat() {
+    if (this.preview) { Room.react('pat'); return; }
     if (this.s.status !== 'home') return;
-    if (this.s.pats >= 5) { toast('今天已经摸了好多次啦，啵铃的毛都要摸平了～'); return; }
+    if (this.s.pats >= 5) { Room.react('pat'); toast('今天已经摸了好多次啦，啵铃的毛都要摸平了～'); return; }
     this.s.pats++; this.s.attach = Math.min(100, this.s.attach + 3);
-    this.progress('pat'); this.save(); this.render(); this.joy();
+    this.progress('pat'); this.save(); this.render(); Room.react('pat');
   },
   feed() {
+    if (this.preview) { Room.eat(); return; }
     if (this.s.status !== 'home' || this.s.coins < 10) return;
     if (this.s.feeds >= 3) { toast('今天吃了三份点心，吃不下啦～'); return; }
     this.s.coins -= 10; this.s.feeds++; this.s.attach = Math.min(100, this.s.attach + 6);
-    this.save(); this.render(); this.joy();
+    this.save(); this.render(); Room.eat();
   },
   buy(id) {
     const it = this.ITEMS.find((i) => i.id === id); if (!it || this.s.items[id] || this.s.coins < it.price) return;
     this.s.coins -= it.price; this.s.items[id] = this.now();
     if (this.s.status === 'home') this.s.attach = Math.min(100, this.s.attach + 4);
     this.log(`买了「${it.name}」，-${it.price} 水滴`); toast(`「${it.name}」摆好啦`);
-    this.save(); this.render(); if (this.s.status === 'home') this.joy();
-  },
-  joy() {
-    const w = $('#pet .pet-room .who'); if (!w) return;
-    w.classList.remove('joy'); void w.offsetWidth; w.classList.add('joy');
-    const h = document.createElement('span'); h.className = 'pet-heart'; h.style.left = w.style.left; h.style.top = `calc(${w.style.top} - 26%)`;
-    h.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 21 C 4 15 1.5 10.5 3.5 7 C 5.5 3.8 9.8 4 12 7.5 C 14.2 4 18.5 3.8 20.5 7 C 22.5 10.5 20 15 12 21 Z" fill="#FF7E8C" stroke="#5A3B2A" stroke-width="1.6"/></svg>';
-    w.parentNode.appendChild(h); setTimeout(() => h.remove(), 1300);
+    this.save(); this.render(); if (this.s.status === 'home' && !this.preview) setTimeout(() => Room.react('hop'), 120);
   },
   // ------------------------------------------------------------- the page
   open(tab) {
@@ -5374,7 +5397,7 @@ const Pet = {
     $('#petClose').focus({ preventScroll: true });
   },
   close() {
-    $('#pet').hidden = true;
+    $('#pet').hidden = true; Room.stop();
     document.querySelectorAll('.nav-btn').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mod === state.module)));
   },
   isOpen() { return !$('#pet').hidden; },
@@ -5394,7 +5417,11 @@ const Pet = {
   render() {
     if (!this.isOpen()) return;
     this.renderStats();
-    $('#petBody').innerHTML = this.tab === 'home' ? this.homeHTML() : this.tab === 'quest' ? this.questHTML() : this.aboutHTML();
+    const body = $('#petBody'), keep = this.tab === 'home' && Room.el && body.contains(Room.el) ? Room.el : null;   // the room is live: keep it, swap the rest
+    body.innerHTML = this.tab === 'home' ? this.homeHTML() : this.tab === 'quest' ? this.questHTML() : this.aboutHTML();
+    if (this.tab !== 'home') { Room.stop(); return; }
+    const ph = body.querySelector('.pet-room');
+    if (keep) { ph.replaceWith(keep); Room.sync(); } else Room.mount(ph);
   },
   aboutHTML() {
     const poses = [['front', '正面'], ['side', '侧面'], ['back', '背面'], ['happy', '开心'], ['curious', '好奇'], ['sleepy', '困困']];
@@ -5432,27 +5459,22 @@ const Pet = {
       </ol></div>
     </div>`;
   },
-  roomHTML() {
-    const o = this.s.items, L = PET_ROOM.layers, home = this.s.status === 'home';
-    const parts = [o.paint ? L.walls_paint : L.walls_bare, o.floor ? L.floor_wood : L.floor_bare, o.window && L.window, o.lights && L.lights, o.shelf && L.shelf,
-      !o.lamp && L.bulb, !o.table && !o.shelf && L.box, o.rug && L.rug, o.plant && L.plant, o.lamp && L.lamp, o.bed && L.bed, o.table && L.table].filter(Boolean).join('');
-    let who = '';
-    if (home) {
-      const a = this.s.attach, pose = a < 25 ? 'sleepy' : a >= 70 ? 'happy' : 'front', spot = PET_ROOM.spots[o.bed ? 'bed' : 'floor'];
-      who = `<button class="who${pose === 'sleepy' ? ' wide' : ''}" type="button" data-act="pat" style="left:${spot[0]}%;top:${spot[1]}%" aria-label="摸摸啵铃"><img src="${this.img(pose)}" alt=""></button>`;
-    } else who = '<div class="empty">家里空空的——啵铃还在外面。<br>先去地图上把它找回来吧。</div>';
-    return `<div class="pet-room"><svg viewBox="${PET_ROOM.vb}" role="img" aria-label="我的家：${this.comfort() ? '已经摆了 ' + Object.keys(o).length + ' 件家具' : '还是毛坯房'}">${parts}</svg>${who}</div>`;
-  },
   homeHTML() {
-    const s = this.s, home = s.status === 'home', c = this.comfort(), owned = Object.keys(s.items).length;
-    const left = `<div class="pet-card shadow"><h3>我的家 <span style="font-weight:500;font-size:13px;color:#6A4F3E">· ${owned ? `摆了 ${owned} 件家具，舒适度 ${c}` : '毛坯房'}</span></h3>${this.roomHTML()}
-      ${home ? `<div class="pet-homebar">
+    const s = this.s, home = s.status === 'home', pv = this.preview, c = this.comfort(), owned = Object.keys(s.items).length;
+    const trial = pv ? `<div class="pet-trial"><span><b>试玩中</b> · 啵铃先来家里玩一会儿，这里做的事都不会改动你的进度。</span>
+        <span class="pet-seg" role="group" aria-label="试玩的房间"><button type="button" data-act="pv-room" data-v="0" aria-pressed="${!pv.full}">毛坯房</button><button type="button" data-act="pv-room" data-v="1" aria-pressed="${!!pv.full}">布置好的家</button></span>
+        <button class="pet-act" type="button" data-act="pv-end">结束试玩</button></div>` : '';
+    const tip = home || pv ? '<p class="pet-room-tip"><b>点地板</b>它会蹦过去 · <b>点家具</b>它会过去玩（床、桌子、窗、绿植、落地灯）· <b>鼠标碰它</b>（手机上双击它）会翻滚、转圈、抖水 · <b>点它</b>摸摸 · <b>按住拖动</b>能把它拎起来</p>' : '';
+    const bar = pv ? `<div class="pet-homebar"><button class="pet-act" type="button" data-act="pat">摸摸它</button><button class="pet-act" type="button" data-act="feed">喂点心</button></div>`
+      : home ? `<div class="pet-homebar">
         <span class="stat">依恋度 <span class="pet-meter" aria-hidden="true"><i style="width:${Math.round(s.attach)}%"></i></span> ${Math.round(s.attach)}%</span>
         <button class="pet-act" type="button" data-act="pat">摸摸它<span class="mono" style="font-size:12px;color:#6A4F3E">${s.pats}/5</span></button>
         <button class="pet-act" type="button" data-act="feed" ${s.coins < 10 || s.feeds >= 3 ? 'disabled' : ''}>喂点心<img src="${U('pet/drop.svg')}" alt="">10</button>
       </div>
       <p class="pet-note">${s.attach < 25 ? '它有点闷闷不乐，再这样下去会乘风溜走的。' : s.attach >= 70 ? '它在家里待得很开心。' : '它还算安心，添点家具会更黏你。'}依恋度每小时大约掉 ${this.decay().toFixed(1)}（家具越多掉得越慢），开着网页陪着它会慢慢回升。</p>`
-      : `<div class="pet-homebar"><button class="pet-act primary" type="button" data-act="quest">看线索，去找啵铃</button></div><p class="pet-note">现在可以先把家布置起来，抓回来的时候它会更安心。</p>`}</div>`;
+      : `<div class="pet-homebar"><button class="pet-act primary" type="button" data-act="quest">看线索，去找啵铃</button><button class="pet-act" type="button" data-act="pv-start">试玩：先带它回家看看</button></div><p class="pet-note">现在可以先把家布置起来，抓回来的时候它会更安心。</p>`;
+    const head = pv ? (pv.full ? '试玩 · 布置好的家' : '试玩 · 毛坯房') : owned ? `摆了 ${owned} 件家具，舒适度 ${c}` : '毛坯房';
+    const left = `<div class="pet-card shadow">${trial}<h3>我的家 <span style="font-weight:500;font-size:13px;color:#6A4F3E">· ${head}</span></h3><div class="pet-room"></div>${tip}${bar}</div>`;
     const shop = `<div class="pet-card"><h3>小铺 <span style="font-weight:500;font-size:13px;color:#6A4F3E">· 买了就直接摆进家里</span></h3><div class="pet-shop">${this.ITEMS.map((i) => {
       const own = !!s.items[i.id];
       return `<div class="pet-item${own ? ' owned' : ''}"><b>${i.name}</b><small>${i.desc} · 舒适 +${i.comfort}</small><div class="row"><span class="price"><img src="${U('pet/drop.svg')}" alt="水滴">${i.price}</span>${own ? '<span class="done">已摆放</span>' : `<button type="button" data-act="buy" data-id="${i.id}" ${s.coins < i.price ? 'disabled' : ''}>买</button>`}</div></div>`;
@@ -5482,6 +5504,9 @@ const Pet = {
     else if (a === 'hint') this.hint();
     else if (a === 'quest') this.show('quest', true);
     else if (a === 'map') this.close();
+    else if (a === 'pv-start') { this.preview = { full: false }; this.render(); }
+    else if (a === 'pv-room') { this.preview.full = b.dataset.v === '1'; this.render(); }
+    else if (a === 'pv-end') { this.preview = null; this.render(); }
   },
   // ------------------------------------------------------------- the desk pet in the corner
   updateDock() {
@@ -5497,6 +5522,348 @@ const Pet = {
   },
   // ------------------------------------------------------------- for testing (?petdebug)
   advance(hours, away = true) { this.skew += hours * 3600000; this.step(!away); this.save(); this.updateDock(); this.render(); },
+};
+
+/* ===================================================================== 啵铃在家里：走路、动作、拎起来（试玩模式也用这一套）
+   房间是等轴测的：地板上的点用 (u, v) 表示，u 朝右上的墙、v 朝右下；P(u, v, h) 换成画面坐标（viewBox 里的单位）
+   - 点地板：它沿着绕开家具的路线（网格 A* 再拉直）蹦过去
+   - 点家具：走到家具旁边做对应的事（床上睡觉、桌边吃点心、窗前看云……）
+   - 鼠标碰到它：随机翻滚、蹦跳、转圈、抖水、害羞；点它：摸摸（爱心）
+   - 按住拖动：把它拎起来晃来晃去，松手掉回地上弹一下
+   - 没人理它时自己溜达、打盹、看窗外 */
+const Room = {
+  el: null, layers: null, who: null, body: null, im: null, say: null, empty: null, stand: [], obs: [], raf: 0, lt: 0, key: '', shown: false,
+  pos: { u: 0.56, v: 0.6 }, h: 0, path: [], then: null, speed: 0.3, pose: 'front', face: 1,
+  mode: 'idle', nextIdle: 0, wakeAt: 0, zzzAt: 0, hoverAt: 0, anim: null, press: null, drag: null, fall: null, slide: null, noClick: false, ptr: null, sayT: 0,
+  POSES: ['front', 'side', 'back', 'happy', 'curious', 'sleepy'],
+  // standing furniture: r = footprint [u0, u1, v0, v1] it can't walk through; spot = where it stands to use it
+  FURN: {
+    box: { r: [0.06, 0.30, 0.10, 0.32], spot: [0.22, 0.42], act: 'peek' },
+    plant: { r: [0.04, 0.16, 0.04, 0.16], spot: [0.12, 0.26], act: 'sniff' },
+    lamp: { r: [0.84, 0.92, 0.10, 0.18], spot: [0.80, 0.28], act: 'lamp' },
+    table: { r: [0.16, 0.36, 0.60, 0.80], spot: [0.28, 0.89], act: 'eat' },
+    bed: { spot: [0.62, 0.38], act: 'nap' },
+    window: { spot: [0.88, 0.52], act: 'gaze' },
+  },
+  P(u, v, h = 0) { const g = PET_ROOM.geo; return [g.L0[0] + u * g.UA[0] + v * g.VA[0], g.L0[1] + u * g.UA[1] + v * g.VA[1] - h]; },
+  pct(p) { const b = PET_ROOM.geo.VB; return [((p[0] - b[0]) / b[2]) * 100, ((p[1] - b[1]) / b[3]) * 100]; },
+  svgXY(cx, cy) { const r = this.el.getBoundingClientRect(), b = PET_ROOM.geo.VB; return [b[0] + ((cx - r.left) / r.width) * b[2], b[1] + ((cy - r.top) / r.height) * b[3]]; },
+  toUV(p) { const g = PET_ROOM.geo, x = p[0] - g.L0[0], y = p[1] - g.L0[1], d = g.UA[0] * g.VA[1] - g.VA[0] * g.UA[1]; return [(x * g.VA[1] - g.VA[0] * y) / d, (g.UA[0] * y - g.UA[1] * x) / d]; },
+  items() { return Pet.preview ? (Pet.preview.full ? Object.fromEntries(Pet.ITEMS.map((i) => [i.id, 1])) : {}) : Pet.s.items; },
+  present() { return !!Pet.preview || Pet.s.status === 'home'; },
+  // ------------------------------------------------------------- set up
+  mount(ph) {
+    this.el = ph; this.key = null; this.shown = false; this.mode = 'idle'; this.path = []; this.drag = this.fall = this.slide = null;
+    ph.innerHTML = `<div class="room-layers"></div>
+      <button class="who" type="button" aria-label="啵铃：点一下摸摸它，按住拖动可以把它拎起来"><span class="shade" aria-hidden="true"></span><span class="body"><img alt="" draggable="false"></span></button>
+      <span class="pet-say" hidden></span><div class="empty" hidden>家里空空的——啵铃还在外面。<br>先去地图上把它找回来，或者点下面的“试玩”。</div>`;
+    this.layers = ph.querySelector('.room-layers'); this.who = ph.querySelector('.who'); this.body = ph.querySelector('.body'); this.im = ph.querySelector('.body img');
+    this.say = ph.querySelector('.pet-say'); this.empty = ph.querySelector('.empty');
+    this.POSES.forEach((n) => { const i = new Image(); i.src = Pet.img(n); });
+    this.pose = ''; this.setPose('front'); this.setFace(1);
+    ph.addEventListener('click', (e) => { if (!e.target.closest('.who')) this.roomClick(e); });
+    ph.addEventListener('pointermove', (e) => { if (e.pointerType === 'mouse') this.ptr = this.svgXY(e.clientX, e.clientY); });
+    ph.addEventListener('pointerleave', () => { this.ptr = null; });
+    const w = this.who;
+    w.addEventListener('click', () => {   // a tap pats it; on a touch screen a double tap does a trick (there's no hover)
+      if (this.noClick) { this.noClick = false; return; }
+      const t = performance.now(), dbl = this.ptype !== 'mouse' && t - (this.tapAt || 0) < 450; this.tapAt = dbl ? 0 : t;
+      if (dbl) this.react(['roll', 'hop', 'spin', 'shake'][Math.floor(Math.random() * 4)]); else Pet.pat();
+    });
+    w.addEventListener('pointerenter', (e) => this.hover(e));
+    w.addEventListener('pointerdown', (e) => { this.ptype = e.pointerType; if (!this.present() || e.button > 0) return; this.press = { x: e.clientX, y: e.clientY }; try { w.setPointerCapture(e.pointerId); } catch (er) { /* fine */ } });
+    w.addEventListener('pointermove', (e) => {
+      if (!this.press) return;
+      if (!this.drag) { if (Math.hypot(e.clientX - this.press.x, e.clientY - this.press.y) < 7) return; this.grab(e); }
+      const p = this.svgXY(e.clientX, e.clientY); this.drag.xy = [p[0] + this.drag.off[0], p[1] + this.drag.off[1]];
+    });
+    const up = () => { this.press = null; if (this.drag) { this.noClick = true; setTimeout(() => { this.noClick = false; }, 80); this.drop(); } };
+    w.addEventListener('pointerup', up); w.addEventListener('pointercancel', up);
+    this.sync();
+  },
+  layersHTML(it) {
+    const L = PET_ROOM.layers, vb = PET_ROOM.vb, g = (f, s) => (s ? `<g data-f="${f}">${s}</g>` : '');
+    const back = g('wall', it.paint ? L.walls_paint : L.walls_bare) + g('floor', it.floor ? L.floor_wood : L.floor_bare) + g('window', it.window && L.window)
+      + g('wall', it.lights && L.lights) + g('wall', it.shelf && L.shelf) + g('wall', !it.lamp && L.bulb) + g('rug', it.rug && L.rug) + g('bed', it.bed && L.bed);
+    const stand = ['box', 'plant', 'lamp', 'table'].filter((k) => (k === 'box' ? !it.table && !it.shelf : it[k]));
+    this.obs = stand.map((k) => this.FURN[k].r);
+    return `<svg class="layer" viewBox="${vb}" style="z-index:0" role="img" aria-label="我的家：${Object.keys(it).length ? '摆了 ' + Object.keys(it).length + ' 件家具' : '毛坯房'}">${back}</svg>`
+      + stand.map((k) => `<svg class="layer" viewBox="${vb}" aria-hidden="true" data-f="${k}">${g(k, L[k])}</svg>`).join('');
+  },
+  // after Pet.render(): new furniture, the pet arriving or leaving
+  sync() {
+    if (!this.el) return;
+    const it = this.items(), pres = this.present(), key = Object.keys(it).sort().join(',');
+    if (key !== this.key) {
+      this.key = key; this.layers.innerHTML = this.layersHTML(it); this.stand = [...this.layers.querySelectorAll('svg[data-f]')];
+      if (pres && this.shown && !this.free(this.pos.u, this.pos.v)) { const g = this.nearFree(this.pos.u, this.pos.v); this.walkTo(g[0], g[1]); }
+    }
+    this.who.hidden = !pres; this.empty.hidden = pres;
+    if (pres && !this.shown) {   // it drops in from above
+      this.shown = true; this.pos = { u: 0.56, v: 0.6 }; this.h = 0; this.path = []; this.mode = 'act'; this.setPose('happy');
+      const to = this.P(this.pos.u, this.pos.v); this.fall = { a: [to[0], to[1] - 170], b: to, t0: performance.now() + 150, dur: 520 }; this.who.classList.add('falling');
+      this.talk('啵～我来啦！', 2200);
+    }
+    if (!pres) { this.shown = false; this.say.hidden = true; }
+    this.start();
+  },
+  start() { if (!this.raf) { this.lt = 0; this.raf = requestAnimationFrame((t) => this.frame(t)); } },
+  stop() { cancelAnimationFrame(this.raf); this.raf = 0; },
+  // ------------------------------------------------------------- every frame
+  frame(t) {
+    if (!this.el || !this.el.isConnected || !Pet.isOpen() || Pet.tab !== 'home') { this.raf = 0; return; }
+    const dt = this.lt ? Math.min(0.25, (t - this.lt) / 1000) : 0; this.lt = t;   // real time even when frames are slow
+    if (this.present() && this.shown) {
+      if (this.fall) this.fallStep(t);
+      else if (this.slide) this.slideStep(t);
+      else if (!this.drag && this.path.length) this.walkStep(dt);
+      else if (!this.drag && this.mode === 'idle' && t > this.nextIdle) this.idle();
+      else if (this.mode === 'sleep') { if (t > this.wakeAt) this.wake(); else if (t > this.zzzAt) { this.zzzAt = t + 1400; this.fx('zzz'); } }
+      if (this.mode === 'idle' && !this.path.length && !this.anim) this.lookAtPointer();
+      const hh = !this.drag && !this.fall && this.onBed() ? 12 : 0; this.h += (hh - this.h) * Math.min(1, dt * 8);
+      this.place();
+    }
+    this.raf = requestAnimationFrame((tt) => this.frame(tt));
+  },
+  place() {
+    const xy = this.drag ? this.drag.xy : this.fall ? this.fall.xy || this.fall.a : this.P(this.pos.u, this.pos.v, this.h), [l, tp] = this.pct(xy);
+    this.who.style.left = l + '%'; this.who.style.top = tp + '%';
+    const up = this.drag || this.fall;
+    this.who.style.zIndex = up ? 40 : 3;
+    for (const s of this.stand) { const r = this.FURN[s.dataset.f].r, front = this.pos.v > r[3] - 0.01 || this.pos.u < r[0] + 0.01; s.style.zIndex = up || front ? 2 : 4; }
+    if (!this.say.hidden) { this.say.style.left = l + '%'; this.say.style.top = tp - (this.pose === 'sleepy' ? 21 : 27) + '%'; }
+  },
+  setPose(n) { if (n === this.pose) return; this.pose = n; this.im.src = Pet.img(n); this.who.classList.toggle('lying', n === 'sleepy'); },
+  setFace(f) { this.face = f; this.im.style.transform = f < 0 ? 'scaleX(-1)' : ''; },
+  heading(du, dv) {   // which way it's going on screen: back view going up, front view going down, side view otherwise
+    const g = PET_ROOM.geo, dx = du * g.UA[0] + dv * g.VA[0], dy = du * g.UA[1] + dv * g.VA[1];
+    if (dy < 0 && -dy > 1.3 * Math.abs(dx)) this.setPose('back');
+    else if (dy > 0 && dy > 1.3 * Math.abs(dx)) this.setPose('front');
+    else { this.setPose('side'); this.setFace(dx < 0 ? 1 : -1); }
+  },
+  // ------------------------------------------------------------- where it can stand
+  free(u, v) { if (u < 0.06 || u > 0.94 || v < 0.06 || v > 0.94) return false; for (const r of this.obs) if (u > r[0] - 0.03 && u < r[1] + 0.03 && v > r[2] - 0.03 && v < r[3] + 0.03) return false; return true; },
+  nearFree(u, v) {
+    u = Math.min(0.94, Math.max(0.06, u)); v = Math.min(0.94, Math.max(0.06, v));
+    if (this.free(u, v)) return [u, v];
+    for (let r = 0.02; r < 0.9; r += 0.02) for (let k = 0; k < 24; k++) { const a = (k / 24) * Math.PI * 2, p = [u + r * Math.cos(a), v + r * Math.sin(a)]; if (this.free(p[0], p[1])) return p; }
+    return [0.56, 0.6];
+  },
+  clear(a, b) { const n = Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / 0.012); for (let i = 1; i < n; i++) { const t = i / n; if (!this.free(a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t)) return false; } return true; },
+  route(s, g) {   // grid A* around the furniture, then pull the string tight
+    if (this.clear(s, g)) return [g];
+    const N = 26, id = (i, j) => i * N + j, c = (i) => (i + 0.5) / N, cl = (x) => Math.max(0, Math.min(N - 1, Math.floor(x * N)));
+    const si = cl(s[0]), sj = cl(s[1]), gi = cl(g[0]), gj = cl(g[1]);
+    const ok = (i, j) => i >= 0 && j >= 0 && i < N && j < N && ((i === gi && j === gj) || this.free(c(i), c(j)));
+    const Gs = new Map([[id(si, sj), 0]]), Fs = new Map([[id(si, sj), 0]]), from = new Map(), open = new Set([id(si, sj)]), done = new Set();
+    while (open.size) {
+      let k = -1; for (const o of open) if (k < 0 || Fs.get(o) < Fs.get(k)) k = o;
+      open.delete(k); done.add(k);
+      const i = Math.floor(k / N), j = k % N;
+      if (i === gi && j === gj) break;
+      for (const [di, dj] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]]) {
+        const ni = i + di, nj = j + dj, nk = id(ni, nj);
+        if (!ok(ni, nj) || done.has(nk) || (di && dj && (!ok(i + di, j) || !ok(i, j + dj)))) continue;
+        const ng = Gs.get(k) + (di && dj ? 1.414 : 1);
+        if (Gs.has(nk) && Gs.get(nk) <= ng) continue;
+        Gs.set(nk, ng); Fs.set(nk, ng + Math.hypot(ni - gi, nj - gj)); from.set(nk, k); open.add(nk);
+      }
+    }
+    if (!from.has(id(gi, gj))) return [g];
+    const cells = []; for (let k = id(gi, gj); k !== id(si, sj); k = from.get(k)) cells.unshift([c(Math.floor(k / N)), c(k % N)]);
+    const pts = [s, ...cells.slice(0, -1), g], out = [];
+    for (let a = 0; a < pts.length - 1;) { let far = a + 1; for (let m = pts.length - 1; m > a + 1; m--) if (this.clear(pts[a], pts[m])) { far = m; break; } out.push(pts[far]); a = far; }
+    return out;
+  },
+  onBed() { return !!this.items().bed && Math.hypot(this.pos.u - this.FURN.bed.spot[0], this.pos.v - this.FURN.bed.spot[1]) < 0.09; },
+  // ------------------------------------------------------------- moving
+  walkTo(u, v, then) {
+    if (this.mode === 'sleep') this.wake(true);
+    this.anim?.cancel(); this.anim = null; this.slide = null;
+    const s = this.free(this.pos.u, this.pos.v) ? [this.pos.u, this.pos.v] : this.nearFree(this.pos.u, this.pos.v), g = this.nearFree(u, v);
+    if (Math.hypot(g[0] - this.pos.u, g[1] - this.pos.v) < 0.012) { this.path = []; this.mode = 'idle'; if (then) then(); return; }
+    this.path = (s[0] !== this.pos.u || s[1] !== this.pos.v ? [s] : []).concat(this.route(s, g));
+    this.then = then || null; this.mode = 'walk'; this.body.classList.add('walking');
+  },
+  walkStep(dt) {
+    const tg = this.path[0], du = tg[0] - this.pos.u, dv = tg[1] - this.pos.v, d = Math.hypot(du, dv), st = this.speed * dt;
+    if (d > 1e-4) this.heading(du, dv);
+    if (d <= st) { this.pos = { u: tg[0], v: tg[1] }; this.path.shift(); if (!this.path.length) this.arrive(); }
+    else { this.pos.u += (du / d) * st; this.pos.v += (dv / d) * st; }
+  },
+  arrive() {
+    this.body.classList.remove('walking'); this.mode = 'idle';
+    const f = this.then; this.then = null;
+    if (f) f(); else { this.setPose('front'); this.nextIdle = performance.now() + 3500 + Math.random() * 5000; }
+  },
+  goto(f) {
+    const F = this.FURN[f]; if (!F) return;
+    this.walkTo(F.spot[0], F.spot[1], () => (F.act === 'nap' ? this.nap(true) : this.react(F.act)));
+  },
+  slideStep(t) {
+    const s = this.slide, k = Math.min(1, Math.max(0, (t - s.t0) / s.dur)), e = k < 0.5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2;
+    this.pos = { u: s.a[0] + (s.b[0] - s.a[0]) * e, v: s.a[1] + (s.b[1] - s.a[1]) * e };
+    if (k >= 1) this.slide = null;
+  },
+  fallStep(t) {
+    const f = this.fall, k = Math.min(1, Math.max(0, (t - f.t0) / f.dur)), e = k * k;
+    f.xy = [f.a[0] + (f.b[0] - f.a[0]) * e, f.a[1] + (f.b[1] - f.a[1]) * e];
+    if (k < 1) return;
+    this.fall = null; this.who.classList.remove('falling');
+    this.land();
+  },
+  // ------------------------------------------------------------- picked up and dropped
+  grab(e) {
+    if (this.mode === 'sleep') this.wake(true);
+    this.anim?.cancel(); this.anim = null; this.path = []; this.then = null; this.slide = null; this.body.classList.remove('walking');
+    const foot = this.P(this.pos.u, this.pos.v, this.h), p = this.svgXY(e.clientX, e.clientY);
+    this.drag = { off: [foot[0] - p[0], foot[1] - p[1] - 16], xy: [foot[0], foot[1] - 16] };
+    this.mode = 'drag'; this.setPose('front'); this.setFace(1); this.who.classList.add('held');
+    this.talk(['哇——！', '放我下来啦～', '飞起来咯！'][Math.floor(Math.random() * 3)], 1600);
+  },
+  drop() {
+    const d = this.drag; this.drag = null; this.who.classList.remove('held');
+    const uv = this.toUV(d.xy), g = this.nearFree(uv[0], uv[1]);
+    this.pos = { u: g[0], v: g[1] };
+    const to = this.P(g[0], g[1], this.onBed() ? 12 : 0); this.h = this.onBed() ? 12 : 0;
+    const drop = Math.max(10, to[1] - d.xy[1]);
+    this.fall = { a: d.xy, b: to, t0: performance.now(), dur: Math.min(560, 220 + drop * 2.2) }; this.who.classList.add('falling');
+  },
+  land() {
+    this.mode = 'act'; this.setPose('happy');
+    this.play([{ transform: 'scale(1,1)' }, { transform: 'scale(1.16,.8)', offset: 0.22 }, { transform: 'translateY(-9%) scale(.94,1.07)', offset: 0.5 }, { transform: 'scale(1.05,.95)', offset: 0.8 }, { transform: 'scale(1,1)' }], 560);
+    this.fx('dust', 3);
+  },
+  // ------------------------------------------------------------- reactions
+  play(kf, dur, origin, ease = 'ease-in-out') {
+    this.anim?.cancel();
+    this.body.style.transformOrigin = origin || '';
+    const a = (this.anim = this.body.animate(kf, { duration: reduceMotion ? Math.min(dur, 300) : dur, easing: ease }));
+    a.onfinish = () => {
+      if (this.anim !== a) return;
+      this.anim = null; this.body.style.transformOrigin = '';
+      if (this.mode === 'act') { this.mode = 'idle'; this.setPose('front'); this.nextIdle = performance.now() + 2500 + Math.random() * 4500; }
+    };
+    return a;
+  },
+  react(name) {
+    if (!this.present() || !this.shown || this.drag || this.fall) return;
+    if (this.mode === 'sleep') { this.wake(true); if (name !== 'pat') return; }
+    this.path = []; this.then = null; this.slide = null; this.body.classList.remove('walking'); this.mode = 'act';
+    const pick = (a) => a[Math.floor(Math.random() * a.length)], squash = [{ transform: 'scale(1,1)' }, { transform: 'scale(1.1,.88)', offset: 0.25 }, { transform: 'translateY(-6%) scale(.95,1.06)', offset: 0.55 }, { transform: 'scale(1,1)' }];
+    if (name === 'pat') { this.setPose('happy'); this.play(squash, 650); this.fx('heart', 3); this.talk(pick(['嘿嘿～', '再摸摸！', '好舒服～', '最喜欢你啦！'])); }
+    else if (name === 'shy') { this.setPose('happy'); this.play([{ transform: 'scale(1)' }, { transform: 'scale(1.06,.94)', offset: 0.3 }, { transform: 'scale(.97,1.03)', offset: 0.6 }, { transform: 'scale(1)' }], 700); this.fx('heart', 2); this.talk('好痒！'); }
+    else if (name === 'hop') {
+      this.setPose('happy');
+      this.play([{ transform: 'translateY(0) scale(1,1)' }, { transform: 'translateY(0) scale(1.12,.86)', offset: 0.1 }, { transform: 'translateY(-26%) scale(.93,1.08)', offset: 0.28 }, { transform: 'translateY(0) scale(1.1,.88)', offset: 0.46 },
+        { transform: 'translateY(-18%) scale(.95,1.05)', offset: 0.66 }, { transform: 'translateY(0) scale(1.06,.94)', offset: 0.86 }, { transform: 'translateY(0) scale(1,1)' }], 950, '', 'linear');
+      this.fx('sparkle', 3); this.talk(pick(['啵！', '跳跳～', '嘿！']));
+    } else if (name === 'roll') {   // a somersault across the floor, left or right wherever there's room
+      const dirs = Math.random() < 0.5 ? [1, -1] : [-1, 1];
+      let sg = dirs[0], b = null;
+      for (const s of dirs) { const t = [this.pos.u + s * 0.13, this.pos.v + s * 0.13]; if (this.clear([this.pos.u, this.pos.v], t) && this.free(t[0], t[1])) { sg = s; b = t; break; } }
+      this.setPose('front'); this.setFace(1);
+      if (b) this.slide = { a: [this.pos.u, this.pos.v], b, t0: performance.now(), dur: 800 };
+      this.play([{ transform: 'translateY(0) rotate(0deg)' }, { transform: `translateY(-20%) rotate(${sg * 180}deg)`, offset: 0.45 }, { transform: `translateY(0) rotate(${sg * 360}deg)`, offset: 0.82 },
+        { transform: `translateY(0) rotate(${sg * 360}deg) scale(1.08,.92)`, offset: 0.92 }, { transform: `translateY(0) rotate(${sg * 360}deg)` }], 950, '50% 58%');
+      this.fx('drop', 2); this.talk('咕噜咕噜～');
+    } else if (name === 'spin') {
+      this.setPose('side');
+      this.play([{ transform: 'perspective(600px) translateY(0) rotateY(0deg)' }, { transform: 'perspective(600px) translateY(-12%) rotateY(360deg)', offset: 0.5 }, { transform: 'perspective(600px) translateY(0) rotateY(720deg)' }], 900, '50% 50%');
+      this.fx('sparkle', 2); this.talk('转圈圈～');
+    } else if (name === 'shake') {   // shakes the water off its ears
+      this.setPose('curious');
+      this.play([0, -10, 10, -8, 8, -5, 5, 0].map((a) => ({ transform: `rotate(${a}deg)` })), 720);
+      this.fx('drop', 4); this.talk('抖抖～');
+    } else if (name === 'look') {
+      this.setPose('curious');
+      this.play([{ transform: 'translateY(0)' }, { transform: 'translateY(-3%)', offset: 0.5 }, { transform: 'translateY(0)' }], 2400);
+      setTimeout(() => { if (this.mode === 'act' && this.pose === 'curious') this.setFace(-this.face); }, 800);
+      setTimeout(() => { if (this.mode === 'act' && this.pose === 'curious') this.setFace(-this.face); }, 1600);
+      this.talk(pick(['嗯？', '那是什么？', '咦～']));
+    } else if (name === 'eat') {
+      this.setPose('happy'); this.setFace(1);
+      this.play([0, 1, 0, 1, 0, 1, 0].map((k) => ({ transform: k ? 'scale(1.04,.95)' : 'scale(1,1)' })), 1400);
+      this.fx('sparkle', 3); this.talk('啊呜～好吃！');
+    } else if (name === 'gaze') {
+      this.setPose('back');
+      this.play([{ transform: 'rotate(0)' }, { transform: 'rotate(-3deg)', offset: 0.3 }, { transform: 'rotate(3deg)', offset: 0.7 }, { transform: 'rotate(0)' }], 2600);
+      this.talk(pick(['外面有云！', '风好舒服～', '那朵云像我！']), 2400);
+    } else if (name === 'sniff') { this.setPose('curious'); this.setFace(1); this.play([0, -4, 0, -4, 0].map((a) => ({ transform: `rotate(${a}deg)` })), 1200); this.fx('sparkle', 2); this.talk('香香的～'); }
+    else if (name === 'lamp') { this.setPose('curious'); this.setFace(1); this.play([{ transform: 'translateY(0)' }, { transform: 'translateY(-5%)', offset: 0.5 }, { transform: 'translateY(0)' }], 1300); this.fx('sparkle', 2); this.talk('暖暖的～'); }
+    else if (name === 'peek') { this.setPose('curious'); this.setFace(1); this.play([0, 6, 0, 6, 0].map((a) => ({ transform: `rotate(${a}deg)` })), 1200); this.talk('箱子里有什么？'); }
+  },
+  nap(onBed) {
+    this.anim?.cancel(); this.anim = null; this.path = []; this.body.classList.remove('walking');
+    this.mode = 'sleep'; this.setPose('sleepy'); this.setFace(1);
+    this.wakeAt = performance.now() + 12000 + Math.random() * 10000; this.zzzAt = performance.now() + 600;
+    if (onBed) this.talk('呼～软软的', 1800);
+  },
+  wake(quiet) {
+    this.mode = 'idle'; this.setPose('front'); this.nextIdle = performance.now() + 3000 + Math.random() * 3000;
+    if (!quiet) { this.mode = 'act'; this.setPose('happy'); this.play([{ transform: 'scale(1,1)' }, { transform: 'scale(.96,1.08)', offset: 0.5 }, { transform: 'scale(1,1)' }], 700); this.talk('嗯…睡醒啦'); }
+  },
+  idle() {   // left alone: wander about, nap, look out of the window, have a snack
+    const it = this.items(), r = Math.random(), sad = !Pet.preview && Pet.s.attach < 25;
+    if (sad && r < 0.6) return this.nap();
+    if (r < 0.42) { for (let k = 0; k < 12; k++) { const u = 0.1 + Math.random() * 0.8, v = 0.1 + Math.random() * 0.8; if (this.free(u, v) && Math.hypot(u - this.pos.u, v - this.pos.v) > 0.18) return this.walkTo(u, v); } }
+    if (r < 0.54) return this.react('hop');
+    if (r < 0.64) return this.react('shake');
+    if (r < 0.74) return it.bed ? this.goto('bed') : this.nap();
+    if (r < 0.83 && it.window) return this.goto('window');
+    if (r < 0.9 && it.table) return this.goto('table');
+    this.react('look');
+  },
+  hover(e) {
+    if (e.pointerType !== 'mouse' || !this.present() || this.drag || this.fall || this.press) return;
+    const t = performance.now(); if (t < this.hoverAt || this.mode === 'act') return;
+    this.hoverAt = t + 1800;
+    if (this.mode === 'sleep') { this.wake(true); this.react('shake'); return; }
+    this.react(['roll', 'hop', 'spin', 'shake', 'shy', 'roll'][Math.floor(Math.random() * 6)]);
+  },
+  lookAtPointer() {   // the cursor comes close: it turns its head to look
+    if (!this.ptr) { if (this.pose === 'curious') this.setPose('front'); return; }
+    const f = this.P(this.pos.u, this.pos.v, this.h), d = Math.hypot(this.ptr[0] - f[0], this.ptr[1] - (f[1] - 50));
+    if (d < 150) { this.setPose('curious'); this.setFace(this.ptr[0] < f[0] ? 1 : -1); } else if (this.pose === 'curious') this.setPose('front');
+  },
+  roomClick(e) {
+    if (!this.present() || !this.shown || this.drag || this.fall) return;
+    const f = e.target.closest('[data-f]')?.dataset.f || 'floor', p = this.svgXY(e.clientX, e.clientY), uv = this.toUV(p);
+    this.ping(e);
+    if (this.FURN[f]) return this.goto(f);
+    if (f === 'floor' || f === 'rug') return this.walkTo(uv[0], uv[1]);
+    this.walkTo(uv[0], uv[1], () => this.react('look'));   // a wall: go and have a look
+  },
+  eat() { if (!this.shown) return; if (this.items().table) this.goto('table'); else this.react('eat'); },
+  // ------------------------------------------------------------- little effects
+  ping(e) {
+    const r = this.el.getBoundingClientRect(), s = document.createElement('span');
+    s.className = 'pet-ping'; s.style.left = ((e.clientX - r.left) / r.width) * 100 + '%'; s.style.top = ((e.clientY - r.top) / r.height) * 100 + '%';
+    this.el.appendChild(s); setTimeout(() => s.remove(), 800);
+  },
+  FX: {
+    heart: '<svg viewBox="0 0 24 24"><path d="M12 21C4 15 1.5 10.5 3.5 7c2-3.2 6.3-3 8.5.5C14.2 4 18.5 3.8 20.5 7c2 3.5-.5 8-8.5 14z" fill="#FF7E8C" stroke="#5A3B2A" stroke-width="1.6"/></svg>',
+    sparkle: '<svg viewBox="0 0 24 24"><path d="M12 2c1 6 3 8 10 10-7 2-9 4-10 10-1-6-3-8-10-10 7-2 9-4 10-10z" fill="#FFD66B" stroke="#5A3B2A" stroke-width="1.4" stroke-linejoin="round"/></svg>',
+    drop: '<svg viewBox="0 0 24 24"><path d="M12 3C8 9 6 12 6 15a6 6 0 0 0 12 0c0-3-2-6-6-12z" fill="#8EC3F2" stroke="#5A3B2A" stroke-width="1.6"/></svg>',
+    dust: '<svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8" fill="#F3E8DA" stroke="#C9B8A4" stroke-width="1.5"/></svg>',
+    zzz: '<b>z</b>',
+  },
+  fx(kind, n = 1) {
+    const [l, tp] = this.pct(this.P(this.pos.u, this.pos.v, this.h)), foot = kind === 'dust';
+    for (let i = 0; i < n; i++) {
+      const s = document.createElement('span');
+      s.className = 'pet-fx' + (kind === 'zzz' ? ' zzz' : '') + (foot ? ' dust' : '');
+      s.innerHTML = this.FX[kind];
+      s.style.left = l + (Math.random() - 0.5) * (foot ? 14 : 9) + '%';
+      s.style.top = tp - (foot ? 1 : this.pose === 'sleepy' ? 14 : 20) + (Math.random() - 0.5) * 4 + '%';
+      s.style.setProperty('--dx', (Math.random() - 0.5) * 50 + 'px'); s.style.animationDelay = i * 110 + 'ms';
+      this.el.appendChild(s); setTimeout(() => s.remove(), 1600 + i * 110);
+    }
+  },
+  talk(text, ms = 1700) {
+    this.say.textContent = text; this.say.hidden = false; if (this.shown) this.place();
+    clearTimeout(this.sayT); this.sayT = setTimeout(() => { this.say.hidden = true; }, ms);
+  },
 };
 
 /* ===================================================================== boot */
