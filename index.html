@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="color-scheme" content="light">
 <link rel="stylesheet" href="vendor/fonts/noto-serif-sc-700.css">
+<link rel="stylesheet" href="vendor/fonts/zcool-kuaile-400.css">
 <title>Beyond Horizons</title>
 <meta name="description" content="Beyond Horizons：Howard Leong 的个人主页，把吃过的餐厅、扫街照片、地标、日记和星空放在广州的街道地图上。">
 <style>@font-face{font-family:"JetBrains Mono";font-style:normal;font-weight:400;font-display:swap;src:url(vendor/fonts/jetbrains-mono-latin-400-normal.woff2) format("woff2")}@font-face{font-family:"JetBrains Mono";font-style:normal;font-weight:500;font-display:swap;src:url(vendor/fonts/jetbrains-mono-latin-500-normal.woff2) format("woff2")}@font-face{font-family:"JetBrains Mono";font-style:normal;font-weight:600;font-display:swap;src:url(vendor/fonts/jetbrains-mono-latin-600-normal.woff2) format("woff2")}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
@@ -669,6 +670,150 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
+
+/* ---------- 萌宠啵铃: the pet page (full screen, warm paper), the desk pet in the corner, its bubble, the catch card */
+.pet,.pet-catch{--p-ink:#4A3428;--p-ink-2:#6A4F3E;--p-line:#5A3B2A;--p-paper:#FFF9F1;--p-card:#FFFFFF;--p-soft:#F3E8DA;--p-sky:#E3F1FD;--p-sky-2:#2F6DB0;--p-peach:#FFF0DE;--p-love:#FF7E8C}
+.pet{position:fixed;inset:0;z-index:14;background:var(--p-paper);color:var(--p-ink);overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;font-family:var(--f-body)}
+.pet[hidden]{display:none}
+.pet-top{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:calc(12px + env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-right,0px)) 10px max(20px,env(safe-area-inset-left,0px));background:rgba(255,249,241,.94);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid #EFE2D2}
+.pet-back{width:40px;height:40px;flex:none;border-radius:13px;border:2px solid var(--p-line);background:var(--p-card);display:grid;place-items:center;color:var(--p-ink)}
+.pet-back svg{width:18px;height:18px}
+.pet-back:hover{background:var(--p-peach)}
+.pet-title{display:flex;flex-direction:column;min-width:0}
+.pet-title h2{margin:0;font-family:"ZCOOL KuaiLe",var(--f-body);font-weight:400;font-size:26px;line-height:1.1;color:var(--p-line)}
+.pet-title p{margin:2px 0 0;font-size:12.5px;color:var(--p-ink-2)}
+.pet-stats{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pet-chip{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 12px;border-radius:999px;border:2px solid var(--p-line);background:var(--p-card);font-weight:700;font-size:13.5px;white-space:nowrap}
+.pet-chip img{width:18px;height:18px}
+.pet-chip.coins{background:var(--p-sky)}
+.pet-meter{width:96px;height:10px;border-radius:999px;border:2px solid var(--p-line);background:#FFF0F2;overflow:hidden}
+.pet-meter i{display:block;height:100%;background:var(--p-love);transition:width .5s}
+.pet-tabs{display:flex;gap:8px;padding:12px max(20px,env(safe-area-inset-left,0px)) 0;max-width:1180px;margin:0 auto;flex-wrap:wrap}
+.pet-tabs button{height:40px;padding:0 18px;border-radius:999px;border:2px solid var(--p-line);background:var(--p-card);font-weight:700;font-size:14.5px;color:var(--p-ink);position:relative}
+.pet-tabs button[aria-selected="true"]{background:var(--p-line);color:#FFF9F1}
+.pet-tabs .dot{position:absolute;top:-3px;right:-3px;width:11px;height:11px;border-radius:50%;background:var(--p-love);border:2px solid var(--p-paper)}
+.pet-body{max-width:1180px;margin:0 auto;padding:18px max(20px,env(safe-area-inset-right,0px)) calc(40px + env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px))}
+.pet-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:22px;align-items:start}
+.pet-card{background:var(--p-card);border:2px solid var(--p-line);border-radius:24px;padding:18px 20px}
+.pet-card.shadow{box-shadow:6px 6px 0 #EADFCF}
+.pet-card h3{margin:0 0 10px;font-size:16px}
+.pet-card + .pet-card{margin-top:18px}
+.pet-hero{display:grid;place-items:center;position:relative;min-height:360px}
+.pet-hero img{width:min(100%,460px);height:auto;animation:petBob 3.2s ease-in-out infinite}
+.pet-hero .tag{position:absolute;top:14px;left:18px;font-size:12px;font-weight:700;letter-spacing:.12em;color:var(--p-ink-2)}
+.pet-name{font-family:"ZCOOL KuaiLe",var(--f-body);font-weight:400;font-size:64px;line-height:1;margin:0;color:var(--p-line)}
+.pet-pills{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.pet-pills span{padding:6px 12px;border-radius:999px;border:2px solid var(--p-line);font-weight:700;font-size:13px;background:var(--p-peach)}
+.pet-pills span:nth-child(1){background:var(--p-sky)}
+.pet-pills span:nth-child(3){background:#FDE7DE}
+.pet-lead{font-size:15.5px;line-height:1.8;margin:0 0 4px;color:#5C4334}
+.pet-feats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.pet-feats div{border:2px solid var(--p-line);border-radius:16px;padding:10px 12px;background:#FFFCF7}
+.pet-feats b{display:block;font-size:14px;margin-bottom:2px}
+.pet-feats span{font-size:13px;line-height:1.55;color:var(--p-ink-2)}
+.pet-acts{width:100%;border-collapse:collapse;font-size:13.5px}
+.pet-acts td{padding:7px 4px;border-top:1px dashed #E4D3BF;vertical-align:top}
+.pet-acts td:first-child{width:72px;font-weight:700;white-space:nowrap}
+.pet-poses{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+.pet-poses figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:4px;border:2px solid var(--p-line);border-radius:16px;padding:8px 6px;background:#FFFCF7}
+.pet-poses img{height:92px;width:auto;max-width:100%;object-fit:contain}
+.pet-poses figcaption{font-size:12.5px;font-weight:700}
+.pet-rules{margin:0;padding-left:20px;font-size:14px;line-height:1.75;color:#5C4334}
+.pet-rules b{color:var(--p-ink)}
+/* the room */
+.pet-room{position:relative;width:100%;aspect-ratio:520/470;user-select:none}
+.pet-room svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.pet-room .who{position:absolute;transform:translate(-50%,-100%);border:0;background:transparent;padding:0;cursor:pointer;width:22%;filter:drop-shadow(0 4px 4px rgba(90,59,42,.18))}
+.pet-room .who img{width:100%;height:auto;display:block;animation:petBob 2.8s ease-in-out infinite;transform-origin:50% 100%}
+.pet-room .who.wide{width:27%}
+.pet-room .who.joy img{animation:petJoy .5s ease-in-out 2}
+.pet-room .empty{position:absolute;left:50%;top:58%;transform:translate(-50%,-50%);background:rgba(255,255,255,.92);border:2px dashed var(--p-line);border-radius:16px;padding:10px 14px;font-size:13.5px;text-align:center;line-height:1.6;max-width:70%}
+.pet-heart{position:absolute;pointer-events:none;font-size:0;width:26px;height:24px;animation:petHeart 1.2s ease-out forwards}
+.pet-heart svg{width:100%;height:100%}
+.pet-homebar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:12px}
+.pet-homebar .stat{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700}
+.pet-homebar .stat .pet-meter{width:150px}
+.pet-act{height:42px;padding:0 16px;border-radius:14px;border:2px solid var(--p-line);background:var(--p-card);font-weight:700;font-size:14px;color:var(--p-ink);display:inline-flex;align-items:center;gap:6px}
+.pet-act:hover:not(:disabled){background:var(--p-peach)}
+.pet-act.primary{background:var(--p-sky-2);color:#fff}
+.pet-act.primary:hover:not(:disabled){background:#245A93}
+.pet-act:disabled{opacity:.45;cursor:not-allowed}
+.pet-act img{width:18px;height:18px}
+.pet-note{font-size:13px;line-height:1.65;color:var(--p-ink-2);margin:10px 0 0}
+.pet-shop{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.pet-item{border:2px solid var(--p-line);border-radius:16px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;background:#FFFCF7}
+.pet-item.owned{background:#F1F8EE}
+.pet-item b{font-size:14px}
+.pet-item small{font-size:12px;color:var(--p-ink-2);line-height:1.5}
+.pet-item .row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto}
+.pet-item .price{display:inline-flex;align-items:center;gap:4px;font-weight:700;font-size:13px}
+.pet-item .price img{width:16px;height:16px}
+.pet-item button{height:32px;padding:0 12px;border-radius:10px;border:2px solid var(--p-line);background:var(--p-sky-2);color:#fff;font-weight:700;font-size:12.5px}
+.pet-item button:disabled{background:#D9CFC3;color:#6A4F3E;cursor:not-allowed}
+.pet-item .done{font-size:12.5px;font-weight:700;color:#1F6B3A}
+.pet-clues{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
+.pet-clues li{display:flex;gap:10px;align-items:flex-start;font-size:14.5px;line-height:1.55}
+.pet-clues li i{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:12px;font-weight:700;background:var(--p-sky);border:2px solid var(--p-line)}
+.pet-clues li.lock{color:#8A6E5B}
+.pet-clues li.lock i{background:#F1E8DC}
+.pet-tasks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.pet-tasks li{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center}
+.pet-tasks .bar{grid-column:1/-1;height:8px;border-radius:999px;background:#F1E8DC;overflow:hidden}
+.pet-tasks .bar i{display:block;height:100%;background:#7DB9EC}
+.pet-tasks li.ok .bar i{background:#5DBB7E}
+.pet-tasks .rw{font-size:12.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--p-sky);white-space:nowrap}
+.pet-tasks li.ok .rw{background:#E3F6E8;color:#1F6B3A}
+.pet-log{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;max-height:260px;overflow:auto}
+.pet-log li{display:flex;gap:8px;font-size:13.5px;line-height:1.55}
+.pet-log time{flex:none;font-family:var(--f-mono);font-size:11.5px;color:#8A6E5B;padding-top:2px}
+.pet-status{display:flex;gap:14px;align-items:center}
+.pet-status img{width:96px;height:auto;flex:none}
+.pet-status p{margin:0;font-size:14.5px;line-height:1.7}
+@media (max-width:860px){
+  .pet-grid{grid-template-columns:minmax(0,1fr)}
+  .pet-poses{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .pet-name{font-size:52px}
+  .pet-hero{min-height:280px}
+  .pet-stats{margin-left:0;width:100%}
+}
+@media (max-width:420px){ .pet-feats,.pet-shop{grid-template-columns:minmax(0,1fr)} }
+/* the desk pet in the map's corner, and what it says */
+.pet-dock{position:fixed;z-index:5;right:calc(max(16px,env(safe-area-inset-right,0px)) + 56px);bottom:calc(14px + env(safe-area-inset-bottom,0px));width:78px;height:78px;border:0;padding:0;background:transparent;cursor:pointer;display:grid;place-items:end center}
+.pet-dock img{width:72px;height:auto;display:block;filter:drop-shadow(0 6px 8px rgba(29,78,216,.22));animation:petBob 2.6s ease-in-out infinite;transform-origin:50% 100%}
+.pet-dock .lost{width:64px;height:52px;border-radius:26px;background:var(--glass-strong);border:1px solid var(--line);box-shadow:var(--shadow);display:grid;place-items:center;font-family:"ZCOOL KuaiLe",var(--f-body);font-size:24px;color:#2F6DB0;animation:petBob 2.6s ease-in-out infinite}
+.pet-dock .tag{position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);font-size:10.5px;font-weight:700;white-space:nowrap;padding:1px 7px;border-radius:999px;background:#4A3428;color:#FFF9F1}
+.pet-dock .badge{position:absolute;top:4px;right:6px;width:12px;height:12px;border-radius:50%;background:#FF7E8C;border:2px solid #fff}
+.pet-bubble{position:fixed;z-index:6;right:calc(max(16px,env(safe-area-inset-right,0px)) + 56px);bottom:calc(100px + env(safe-area-inset-bottom,0px));width:min(300px,calc(100vw - 32px));display:flex;gap:10px;align-items:flex-start;padding:11px 12px;border-radius:18px;background:#FFFFFF;border:2px solid #5A3B2A;color:#4A3428;box-shadow:4px 4px 0 #EADFCF;text-align:left;cursor:pointer;animation:rise .28s cubic-bezier(.2,.8,.2,1)}
+.pet-bubble[hidden]{display:none}
+.pet-bubble img{width:40px;height:40px;border-radius:50%;flex:none}
+.pet-bubble b{display:block;font-size:13px}
+.pet-bubble span{display:block;font-size:13.5px;line-height:1.55}
+.pet-bubble::after{content:"";position:absolute;right:30px;bottom:-9px;width:14px;height:14px;background:#fff;border-right:2px solid #5A3B2A;border-bottom:2px solid #5A3B2A;transform:rotate(45deg)}
+body.pure .pet-dock,body.pure .pet-bubble{display:none!important}
+/* the pet on the map */
+.pet-mark{border:0;background:transparent;padding:0;cursor:pointer;width:64px;filter:drop-shadow(0 6px 6px rgba(29,78,216,.25))}
+.pet-mark img{width:100%;height:auto;display:block;animation:petPeek 1.8s ease-in-out infinite;transform-origin:50% 100%}
+.pet-mark.hop img{animation:petHop .45s ease-out}
+/* caught! */
+.pet-catch{position:fixed;inset:0;z-index:16;display:grid;place-items:center;background:rgba(14,31,64,.35);padding:20px}
+.pet-catch[hidden]{display:none}
+.pet-catch .card{width:min(380px,100%);background:#FFF9F1;border:2px solid #5A3B2A;border-radius:26px;padding:22px;text-align:center;color:#4A3428;box-shadow:6px 6px 0 #EADFCF;animation:rise .3s cubic-bezier(.2,.8,.2,1)}
+.pet-catch img{width:180px;height:auto;animation:petJoy .6s ease-in-out 3}
+.pet-catch h3{margin:8px 0 4px;font-family:"ZCOOL KuaiLe",var(--f-body);font-weight:400;font-size:30px;color:#5A3B2A}
+.pet-catch p{margin:0 0 14px;font-size:14px;line-height:1.7}
+@keyframes petBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes petJoy{0%,100%{transform:translateY(0) scale(1)}40%{transform:translateY(-14px) scale(1.04)}}
+@keyframes petPeek{0%,100%{transform:translateY(0) rotate(0)}30%{transform:translateY(-4px) rotate(-4deg)}60%{transform:translateY(0) rotate(4deg)}}
+@keyframes petHop{0%{transform:translateY(0) scale(1,1)}40%{transform:translateY(-22px) scale(.95,1.05)}100%{transform:translateY(0) scale(1,1)}}
+@keyframes petHeart{0%{opacity:0;transform:translate(-50%,0) scale(.6)}20%{opacity:1}100%{opacity:0;transform:translate(-50%,-60px) scale(1.1)}}
+@media (prefers-reduced-motion:reduce){.pet-hero img,.pet-room .who img,.pet-dock img,.pet-dock .lost,.pet-mark img{animation:none}}
+@media (max-width:1023px){
+  /* phone: sit in the row above the bottom tab bar, to the left of the zoom buttons */
+  .pet-dock{right:calc(max(8px,env(safe-area-inset-right,0px)) + 50px);bottom:calc(84px + env(safe-area-inset-bottom,0px));width:60px;height:60px}
+  .pet-dock img{width:54px}
+  .pet-dock .lost{width:52px;height:44px;font-size:20px}
+  .pet-bubble{right:max(10px,env(safe-area-inset-right,0px));bottom:calc(152px + env(safe-area-inset-bottom,0px))}
+}
 </style>
 </head>
 <body>
@@ -759,6 +904,8 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
     <span class="coord" id="coord">23°07′N 113°16′E · 视高 —</span>
     <span class="attr">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> 贡献者 · SRTM 地形</span>
   </div>
+  <button class="pet-dock" id="petDock" type="button" aria-label="萌宠啵铃"></button>
+  <button class="pet-bubble" id="petBubble" type="button" hidden></button>
 </div>
 
 <button class="pure-exit glass" id="pureExit" type="button" aria-label="退出纯享模式"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M15 20v-5h5M9 20v-5H4"/></svg>退出纯享<kbd>Esc</kbd></button>
@@ -788,6 +935,21 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
     <div class="sky-toggles" id="skyToggles" role="group" aria-label="显示选项"></div>
   </div>
 </section>
+
+<section class="pet" id="pet" hidden aria-label="萌宠啵铃">
+  <header class="pet-top">
+    <button class="pet-back" id="petClose" type="button" aria-label="返回地图"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <div class="pet-title"><h2>萌宠 · 啵铃</h2><p id="petSub">—</p></div>
+    <div class="pet-stats"><span class="pet-chip coins" id="petCoins"></span><span class="pet-chip" id="petLove"></span></div>
+  </header>
+  <div class="pet-tabs" role="tablist" aria-label="萌宠页面">
+    <button type="button" role="tab" data-tab="about" aria-selected="true">认识啵铃</button>
+    <button type="button" role="tab" data-tab="home" aria-selected="false">我的家</button>
+    <button type="button" role="tab" data-tab="quest" aria-selected="false">线索与任务<span class="dot" aria-hidden="true"></span></button>
+  </div>
+  <div class="pet-body" id="petBody" role="tabpanel"></div>
+</section>
+<div class="pet-catch" id="petCatch" hidden></div>
 
 <div class="toast" id="toast" hidden role="status"></div>
 
@@ -1246,6 +1408,7 @@ function hashStr(s) { let h = 2166136261; for (const c of s) { h ^= c.codePointA
 const AVATAR = 'data:image/jpeg;base64,' + document.getElementById('avatar-data').textContent.trim();
 
 const ICONS = {
+  pet: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7.6 10.2C4.6 10.6 2.4 8.6 3 6.3c1-1.8 3.9-1.6 5.6.6"/><path d="M16.4 10.2c3 .4 5.2-1.6 4.6-3.9-1-1.8-3.9-1.6-5.6.6"/><path d="M12 6.5a6.6 6.6 0 0 1 6.6 6.6c0 3.9-3 6.4-6.6 6.4s-6.6-2.5-6.6-6.4A6.6 6.6 0 0 1 12 6.5z"/><path d="M10.9 6.6c-.6-1.7.4-3 1.9-2.9"/><circle cx="9.6" cy="12.6" r=".9" fill="currentColor"/><circle cx="14.4" cy="12.6" r=".9" fill="currentColor"/><path d="M11 15.2q1 .8 2 0"/></svg>',
   food: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 11.5h17a8.5 8.5 0 0 1-17 0Z"/><path d="M9 3.5l2.6 6M15.8 2.8l-1.5 6.8"/><path d="M8 20.5h8"/></svg>',
   street: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2.5"/><circle cx="12" cy="13.5" r="3.6"/><path d="M8.5 7l1.4-2.6h4.2L15.5 7"/></svg>',
   landmark: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5v2.5"/><path d="M8.5 9h7L14 5H10z"/><path d="M7 14.5h10L15.6 9H8.4z"/><path d="M5 20.5h14l-1.8-6H6.8z"/><path d="M11 20.5v-3h2v3"/></svg>',
@@ -1311,8 +1474,9 @@ const MODULES = [
   { id: 'landmark', name: '地标名胜', en: 'SIGHTS', items: () => SITE.landmarks },
   { id: 'diary', name: '街巷日记', en: 'DIARY', items: () => [...SITE.diary, ...SITE.life.filter((l) => l.lnglat), ...SITE.spots.filter((l) => l.lnglat)] },
   { id: 'sky', name: '地球之外', en: 'BEYOND', items: () => [] },
+  { id: 'pet', name: '萌宠啵铃', en: 'PET', items: () => [] },
 ];
-const ICON_OF = { food: ICONS.food, street: ICONS.street, landmark: ICONS.landmark, diary: ICONS.diary, sky: ICONS.sky };
+const ICON_OF = { food: ICONS.food, street: ICONS.street, landmark: ICONS.landmark, diary: ICONS.diary, sky: ICONS.sky, pet: ICONS.pet };
 const state = { module: 'food', foodCat: 'all', active: null, city: 'gz', cityOpen: true, is3d: true, ready: false, navMin: false, cityMin: false, pure: false };
 
 /* ===================================================================== profile + socials + friends */
@@ -2977,6 +3141,7 @@ function initMap() {
       map.getSource('lmpark').setData({ type: 'FeatureCollection', features: j.parks || [] });
     }).catch(() => {});
     state.ready = true;
+    Pet.mapReady();
     map.addSource('tower', { type: 'geojson', data: cantonTower() });
     map.addLayer({ id: 'tower', type: 'fill-extrusion', source: 'tower', minzoom: 12.4,
       paint: { 'fill-extrusion-color': ['interpolate', ['linear'], ['get', 'h'], 0, '#3B82F6', 450, '#93C5FD', 600, '#DBEAFE'],
@@ -3228,10 +3393,10 @@ function renderNav() {
   for (const m of MODULES) {
     const b = document.createElement('button');
     b.className = 'nav-btn'; b.dataset.mod = m.id; b.dataset.name = m.name; b.setAttribute('aria-pressed', String(state.module === m.id));
-    const n = m.id === 'sky' ? '今夜' : String(m.items().length).padStart(2, '0');
+    const n = m.id === 'sky' ? '今夜' : m.id === 'pet' ? Pet.navLabel() : String(m.items().length).padStart(2, '0');
     b.innerHTML = `<span class="ic">${ICON_OF[m.id]}</span><span class="nm"><b>${m.name}</b><small>${m.en}</small></span><span class="ct">${n}</span>`;
     b.addEventListener('click', () => {
-      if (m.id !== 'sky' && !mq.matches) { if (Auto.on()) Auto.dismiss('nav'); else if (!state.navMin) { state.navMin = true; applyHud('set'); } }
+      if (m.id !== 'sky' && m.id !== 'pet' && !mq.matches) { if (Auto.on()) Auto.dismiss('nav'); else if (!state.navMin) { state.navMin = true; applyHud('set'); } }
       setModule(m.id);
     });
     nav.appendChild(b);
@@ -3400,6 +3565,7 @@ function applyHud(mode = 'ease') {
 
 function setModule(id, opts = {}) {
   if (id === 'sky') { Sky.open(); return; }
+  if (id === 'pet') { Pet.open(); return; }
   state.module = id; state.active = null;
   closeDetail();
   document.querySelectorAll('.nav-btn').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mod === id)));
@@ -3422,6 +3588,7 @@ function findItem(type, id) {
 function openDetail(type, id, opts = {}) {
   const item = findItem(type, id);
   if (!item) return;
+  Pet.saw(type, id);
   if (state.module !== type) setModule(type, { fit: false });
   state.active = id;
   closePops();
@@ -4025,6 +4192,7 @@ const Sky = {
   sel: null, hits: [], raf: 0, last: 0, W: 0, H: 0, dpr: 1, bodies: [], bodyT: 0, moonPhase: 0, uiT: 0, built: false,
   fromMap: false, leaving: false, anim: null, os: 0,
   async open(opts = {}) {
+    Pet.progress('sky', 'open');
     const sec = $('#sky');
     this.fromMap = !!opts.fromMap; this.leaving = false; this.anim = null; this.os = 0;
     sec.classList.remove('leaving'); sec.classList.toggle('from-map', this.fromMap);
@@ -4922,15 +5090,418 @@ $('#scrim').addEventListener('click', closeDrawer);
 $('#profileDrawer').addEventListener('click', (e) => { if (e.target.closest('[data-close-drawer]')) closeDrawer(); });
 document.addEventListener('keydown', (e) => {
   if (e.key !== 'Escape') return;
-  if (!$('#sky').hidden) Sky.close();
+  if (!$('#petCatch').hidden) $('#petCatch').hidden = true;
+  else if (!$('#pet').hidden) Pet.close();
+  else if (!$('#sky').hidden) Sky.close();
   else if ($('#profileDrawer').classList.contains('open')) closeDrawer();
   else if (!$('#detail').hidden) closeDetail();
   else if (Pure.on) Pure.set(false);
   else closePops();
 });
 
+const PET_ROOM = {"vb":"40 -50 520 470","layers":{"walls_bare":"<path d=\"M60.0 300.0 L300.0 180.0 L300.0 -30.0 L60.0 90.0 Z\" fill=\"#CFCBC4\" stroke=\"#7E7870\" stroke-width=\"3\" stroke-linejoin=\"round\"/><path d=\"M300.0 180.0 L540.0 300.0 L540.0 90.0 L300.0 -30.0 Z\" fill=\"#BEB9B1\" stroke=\"#7E7870\" stroke-width=\"3\" stroke-linejoin=\"round\"/><path d=\"M108.0 216.0 L136.8 195.6 L132.0 178.0 L103.2 198.4 Z\" fill=\"#C3BFB7\"/><path d=\"M192.0 114.0 L220.8 93.6 L216.0 76.0 L187.2 96.4 Z\" fill=\"#C3BFB7\"/><path d=\"M240.0 170.0 L268.8 149.6 L264.0 132.0 L235.2 152.4 Z\" fill=\"#C3BFB7\"/><path d=\"M372.0 136.0 L396.0 152.0 L400.8 132.4 L372.0 114.0 Z\" fill=\"#B2ADA5\"/><path d=\"M448.8 114.4 L472.8 130.4 L477.6 110.8 L448.8 92.4 Z\" fill=\"#B2ADA5\"/>","walls_paint":"<path d=\"M60.0 300.0 L300.0 180.0 L300.0 -30.0 L60.0 90.0 Z\" fill=\"#EAF3FC\" stroke=\"#6F86A3\" stroke-width=\"3\" stroke-linejoin=\"round\"/><path d=\"M300.0 180.0 L540.0 300.0 L540.0 90.0 L300.0 -30.0 Z\" fill=\"#DCEAF8\" stroke=\"#6F86A3\" stroke-width=\"3\" stroke-linejoin=\"round\"/><path d=\"M60.0 300.0 L300.0 180.0 L300.0 134.0 L60.0 254.0 Z\" fill=\"#CFE1F4\" stroke=\"#6F86A3\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M300.0 180.0 L540.0 300.0 L540.0 254.0 L300.0 134.0 Z\" fill=\"#C3D8EE\" stroke=\"#6F86A3\" stroke-width=\"2\" stroke-linejoin=\"round\"/>","floor_bare":"<path d=\"M60.0 300.0 L300.0 180.0 L540.0 300.0 L300.0 420.0 Z\" fill=\"#A7A198\" stroke=\"#7E7870\" stroke-width=\"3\" stroke-linejoin=\"round\"/><g fill=\"none\" stroke=\"#8C867D\" stroke-width=\"2.5\" stroke-linecap=\"round\"><path d=\"M276 336 L310 334 L329 348\"/><path d=\"M300 252 L329 252 L343 240\"/></g>","floor_wood":"<path d=\"M60.0 300.0 L300.0 180.0 L540.0 300.0 L300.0 420.0 Z\" fill=\"#D9B38A\" stroke=\"#6F86A3\" stroke-width=\"3\" stroke-linejoin=\"round\"/><g stroke=\"#BE9466\" stroke-width=\"2\"><path d=\"M90 285 L330 405\"/><path d=\"M120 270 L360 390\"/><path d=\"M150 255 L390 375\"/><path d=\"M180 240 L420 360\"/><path d=\"M210 225 L450 345\"/><path d=\"M240 210 L480 330\"/><path d=\"M270 195 L510 315\"/></g>","window":"<path d=\"M372.0 138.0 L477.6 190.8 L477.6 86.8 L372.0 34.0 Z\" fill=\"#BFE0FF\" stroke=\"#6F86A3\" stroke-width=\"4\" stroke-linejoin=\"round\"/><g transform=\"translate(396.0 78.0) scale(1.0)\" opacity=\"1.0\"><path d=\"M-14 6 a8 8 0 0 1 2 -14 a10 10 0 0 1 18 -2 a8 8 0 0 1 8 14 Z\" fill=\"#FFFFFF\" stroke=\"#B8CDE6\" stroke-width=\"2.0\" stroke-linejoin=\"round\"/></g><g transform=\"translate(444.0 132.0) scale(0.8)\" opacity=\"1.0\"><path d=\"M-14 6 a8 8 0 0 1 2 -14 a10 10 0 0 1 18 -2 a8 8 0 0 1 8 14 Z\" fill=\"#FFFFFF\" stroke=\"#B8CDE6\" stroke-width=\"2.5\" stroke-linejoin=\"round\"/></g><g transform=\"translate(424.8 74.4) scale(0.6)\" opacity=\"1.0\"><path d=\"M-14 6 a8 8 0 0 1 2 -14 a10 10 0 0 1 18 -2 a8 8 0 0 1 8 14 Z\" fill=\"#FFFFFF\" stroke=\"#B8CDE6\" stroke-width=\"3.3\" stroke-linejoin=\"round\"/></g><path d=\"M372.0 138.0 L477.6 190.8 L477.6 178.8 L372.0 126.0 Z\" fill=\"#A9C3E0\"/><path d=\"M425 164 L425 60\" stroke=\"#6F86A3\" stroke-width=\"3\"/>","lights":"<circle cx=\"60\" cy=\"108\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"300\" cy=\"-12\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"80\" cy=\"104\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"320\" cy=\"4\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"100\" cy=\"88\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"340\" cy=\"8\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"120\" cy=\"72\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"360\" cy=\"12\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"140\" cy=\"68\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"380\" cy=\"28\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"160\" cy=\"64\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"400\" cy=\"44\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"180\" cy=\"48\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"420\" cy=\"48\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"200\" cy=\"32\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"440\" cy=\"52\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"220\" cy=\"28\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"460\" cy=\"68\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"240\" cy=\"24\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"480\" cy=\"84\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"260\" cy=\"8\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"500\" cy=\"88\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"280\" cy=\"-8\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"520\" cy=\"92\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"300\" cy=\"-12\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"540\" cy=\"108\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/>","shelf":"<path d=\"M103.2 148.4 L184.8 107.6 L198.8 114.6 L117.2 155.4 Z\" fill=\"#B98552\" stroke=\"#6D5235\" stroke-width=\"2\" stroke-linejoin=\"round\"/><g transform=\"translate(127 124)\"><path transform=\"translate(0 0) scale(1.2)\" opacity=\"1.0\" d=\"M0 -12 C 5 -5 8 -1 8 3 a8 8 0 0 1 -16 0 C -8 -1 -5 -5 0 -12 Z\" fill=\"#8EC3F2\" stroke=\"#5A3B2A\" stroke-width=\"1.7\" stroke-linejoin=\"round\"/><path transform=\"translate(0 0) scale(1.2)\" opacity=\"1.0\" d=\"M-3 2 a3 3 0 0 0 3 3\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.3\" stroke-linecap=\"round\"/></g><rect x=\"149\" y=\"100\" width=\"24\" height=\"20\" rx=\"4\" fill=\"#9FC48A\" stroke=\"#6D5235\" stroke-width=\"2\"/>","bulb":"<path d=\"M220 10 L220 80\" stroke=\"#4A4540\" stroke-width=\"2.5\"/><circle cx=\"220\" cy=\"92\" r=\"12\" fill=\"#FFF2B8\" stroke=\"#4A4540\" stroke-width=\"2.5\"/><circle cx=\"220\" cy=\"92\" r=\"26\" fill=\"#FFF2B8\" opacity=\"0.25\"/>","box":"<path d=\"M108.0 258.8 L156.0 234.8 L199.2 256.4 L151.2 280.4 Z\" fill=\"#D7B07A\" stroke=\"#6D5235\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M108.0 304.8 L151.2 326.4 L151.2 280.4 L108.0 258.8 Z\" fill=\"#B98C55\" stroke=\"#6D5235\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M151.2 326.4 L199.2 302.4 L199.2 256.4 L151.2 280.4 Z\" fill=\"#C99C64\" stroke=\"#6D5235\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M130 270 L178 246\" stroke=\"#8E6A3E\" stroke-width=\"3\"/>","rug":"<ellipse cx=\"324.0\" cy=\"300.0\" rx=\"94.9\" ry=\"47.6\" fill=\"#9CC8F2\" stroke=\"#4F78A8\" stroke-width=\"3\"/><ellipse cx=\"324.0\" cy=\"300.0\" rx=\"67.8\" ry=\"34.0\" fill=\"#C8E2FA\"/><ellipse cx=\"324.0\" cy=\"300.0\" rx=\"33.9\" ry=\"17.0\" fill=\"#FFF3D6\"/>","plant":"<path d=\"M88.8 266.0 L108.0 256.4 L127.2 266.0 L108.0 275.6 Z\" fill=\"#C77F4B\" stroke=\"#5A4636\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M88.8 300.0 L108.0 309.6 L108.0 275.6 L88.8 266.0 Z\" fill=\"#A9643A\" stroke=\"#5A4636\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M108.0 309.6 L127.2 300.0 L127.2 266.0 L108.0 275.6 Z\" fill=\"#B87043\" stroke=\"#5A4636\" stroke-width=\"2\" stroke-linejoin=\"round\"/><g fill=\"#6FA35A\" stroke=\"#3F6B34\" stroke-width=\"2\"><ellipse cx=\"94\" cy=\"236\" rx=\"12\" ry=\"26\" transform=\"rotate(-25 94 236)\"/><ellipse cx=\"122\" cy=\"236\" rx=\"12\" ry=\"26\" transform=\"rotate(25 122 236)\"/><ellipse cx=\"108\" cy=\"224\" rx=\"12\" ry=\"30\"/></g>","lamp":"<path d=\"M305 211 L305 91\" stroke=\"#5A4636\" stroke-width=\"4\"/><path d=\"M283 93 L327 93 L319 63 L291 63 Z\" fill=\"#FFE3A8\" stroke=\"#5A4636\" stroke-width=\"3\"/><ellipse cx=\"305\" cy=\"107\" rx=\"40\" ry=\"18\" fill=\"#FFE3A8\" opacity=\"0.35\"/><ellipse cx=\"305\" cy=\"211\" rx=\"12\" ry=\"5\" fill=\"#5A4636\"/>","bed":"<g transform=\"translate(300 267) scale(1.0 0.6)\"><g fill=\"#FFFFFF\" stroke=\"#7FA6CF\" stroke-width=\"5\"><circle cx=\"-46\" cy=\"4\" r=\"26\"/><circle cx=\"-20\" cy=\"-8\" r=\"30\"/><circle cx=\"14\" cy=\"-10\" r=\"30\"/><circle cx=\"44\" cy=\"2\" r=\"26\"/><circle cx=\"0\" cy=\"12\" r=\"34\"/></g><g fill=\"#FFFFFF\"><circle cx=\"-46\" cy=\"4\" r=\"23\"/><circle cx=\"-20\" cy=\"-8\" r=\"27\"/><circle cx=\"14\" cy=\"-10\" r=\"27\"/><circle cx=\"44\" cy=\"2\" r=\"23\"/><circle cx=\"0\" cy=\"12\" r=\"31\"/></g><g fill=\"#DDEEFF\"><circle cx=\"-20\" cy=\"2\" r=\"16\"/><circle cx=\"14\" cy=\"0\" r=\"16\"/></g></g>","table":"<path d=\"M252.0 326.8 L290.4 307.6 L328.8 326.8 L290.4 346.0 Z\" fill=\"#C9935C\" stroke=\"#5A4636\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M252.0 352.8 L290.4 372.0 L290.4 346.0 L252.0 326.8 Z\" fill=\"#A87442\" stroke=\"#5A4636\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M290.4 372.0 L328.8 352.8 L328.8 326.8 L290.4 346.0 Z\" fill=\"#B98552\" stroke=\"#5A4636\" stroke-width=\"2\" stroke-linejoin=\"round\"/><ellipse cx=\"290\" cy=\"325\" rx=\"24\" ry=\"10\" fill=\"#FFFFFF\" stroke=\"#6D5235\" stroke-width=\"2\"/><circle cx=\"282\" cy=\"321\" r=\"7\" fill=\"#E7B36A\" stroke=\"#6D5235\" stroke-width=\"1.5\"/><circle cx=\"298\" cy=\"323\" r=\"7\" fill=\"#E7B36A\" stroke=\"#6D5235\" stroke-width=\"1.5\"/><path d=\"M306 303 l0 14 a7 4 0 0 0 14 0 l0 -14 Z\" fill=\"#BFE0FF\" stroke=\"#6D5235\" stroke-width=\"2\"/>"},"spots":{"floor":[55.54,74.47],"bed":[50.0,65.36],"door":[57.38,88.77]}};
+/* ===================================================================== 萌宠啵铃
+   每位访客一份自己的游戏，存在各自浏览器的 localStorage（bh-pet-v1），换设备或清缓存会从头开始：
+   - 走失：啵铃藏在地图上某个地标 / 餐厅 / 扫街点旁边，不定时发消息给线索（完成任务、花水滴也能换线索）；
+     地图放大到 15.5 级以上才看得见它，点一下它会蹦开，再点一下就抓住了
+   - 在家：住在“我的家”（玩家的家），依恋度随时间下降，家具越多降得越慢，开着网页陪它会慢慢回升；降到 0 它就乘风溜走、重新藏起来
+   - 每日任务（逛地标、看餐厅、看扫街、看星空、摸摸它）给水滴，水滴买家具、零食和提示
+   房间的各层图形在 PET_ROOM（由 tools 外的脚本按等轴测画好），宠物图片在 pet/ 目录 */
+const Pet = {
+  K: 'bh-pet-v1', s: null, mem: false, skew: 0, tab: 'about', marker: null, chatAt: 0, dockKey: '', _badge: false,
+  ITEMS: [
+    { id: 'paint', name: '刷墙', desc: '浅蓝色墙面，加一圈墙裙', price: 80, comfort: 10 },
+    { id: 'floor', name: '木地板', desc: '把水泥地换成暖色木地板', price: 100, comfort: 12 },
+    { id: 'window', name: '窗户', desc: '开一扇看得见蓝天白云的窗', price: 120, comfort: 12 },
+    { id: 'bed', name: '云朵软垫床', desc: '啵铃最喜欢的软垫，它会窝在上面', price: 150, comfort: 18 },
+    { id: 'rug', name: '圆地毯', desc: '踩上去软软的', price: 60, comfort: 8 },
+    { id: 'table', name: '小圆桌和点心', desc: '桌上常备小饼干', price: 80, comfort: 8 },
+    { id: 'plant', name: '绿植', desc: '角落里放一盆大叶子', price: 50, comfort: 6 },
+    { id: 'lamp', name: '落地灯', desc: '换掉光秃秃的灯泡', price: 60, comfort: 6 },
+    { id: 'lights', name: '串灯', desc: '沿着墙顶挂一圈小灯', price: 70, comfort: 8 },
+    { id: 'shelf', name: '置物架', desc: '摆几件小东西', price: 40, comfort: 5 },
+  ],
+  TASKS: [
+    { id: 'checkin', name: '今天来看看', goal: 1, reward: 20 },
+    { id: 'lm', name: '打开 3 张地标卡片', goal: 3, reward: 30 },
+    { id: 'food', name: '看 2 家餐厅的评价', goal: 2, reward: 15 },
+    { id: 'street', name: '看一组扫街照片', goal: 1, reward: 15 },
+    { id: 'sky', name: '去「地球之外」看一次星空', goal: 1, reward: 20 },
+    { id: 'pat', name: '摸摸啵铃 3 次', goal: 3, reward: 10 },
+  ],
+  img(n) { return U('pet/' + n + '.webp'); },
+  now() { return Date.now() + this.skew; },
+  today(t = this.now()) { const d = new Date(t); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; },
+  load() { try { const j = JSON.parse(localStorage.getItem(this.K) || 'null'); if (j && j.v === 1) return j; } catch (e) { this.mem = true; } return null; },
+  save() { if (this.mem) return; try { localStorage.setItem(this.K, JSON.stringify(this.s)); } catch (e) { this.mem = true; } },
+  fresh() {
+    const t = this.now();
+    this.s = { v: 1, status: 'wild', coins: 60, attach: 0, items: {}, spawn: null, last: t, day: '', tasks: {}, seen: {}, pats: 0, feeds: 0, caught: 0, escapes: 0, log: [], flags: {}, first: t };
+    this.newSpawn();
+  },
+  init() {
+    if (/petdebug/.test(location.search)) window.__pet = this;
+    this.s = this.load();
+    if (!this.s) this.fresh();
+    this.step(false);
+    this.save();
+    $('#petClose').addEventListener('click', () => this.close());
+    $('#pet').addEventListener('click', (e) => this.onClick(e));
+    $('#petDock').addEventListener('click', () => this.open());
+    $('#petBubble').addEventListener('click', (e) => this.open(e.currentTarget.dataset.tab));
+    document.querySelectorAll('#pet .pet-tabs [data-tab]').forEach((b) => b.addEventListener('click', () => this.show(b.dataset.tab, true)));
+    this.updateDock();
+    setInterval(() => this.tick(), 15000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) this.tick(); });
+    setTimeout(() => {   // say hello once the map has had a moment
+      const f = this.s.flags;
+      if (!f.hello && this.s.status === 'wild') { f.hello = 1; this.say(`啵～你好呀！我是啵铃，我先躲起来啦，看你能不能找到我～第一条线索：${this.s.spawn.clues[0]}`, { tab: 'quest', ms: 16000 }); }
+      else if (f.awayMsg) { this.say(f.awayMsg, { tab: 'quest', ms: 16000 }); f.awayMsg = ''; this.save(); }
+    }, 6500);
+  },
+  navLabel() { return this.s && this.s.status === 'home' ? '在家' : '走失'; },
+  // ------------------------------------------------------------- where it hides, and the clues
+  places() {
+    if (this._pl) return this._pl;
+    const c = [], inGz = (p) => p && p[0] > 113.15 && p[0] < 113.6 && p[1] > 22.9 && p[1] < 23.3;
+    SITE.landmarks.forEach((l) => inGz(l.lnglat) && c.push({ kind: 'landmark', name: l.name, p: l.lnglat, meta: l.meta || '', fresh: l.kind === 'new' }));
+    SITE.food.forEach((f) => (f.locs || []).forEach((L) => inGz(L.p) && c.push({ kind: 'food', name: f.name.replace(/[（(].*$/, ''), p: L.p, area: f.area, cat: f.cat })));
+    SITE.street.forEach((s) => inGz(s.lnglat) && c.push({ kind: 'street', name: s.title, p: s.lnglat, area: (s.place || '').split(' · ')[0] }));
+    return (this._pl = c);
+  },
+  district(pl) {
+    const D = { 越秀: [113.275, 23.13], 荔湾: [113.235, 23.115], 天河: [113.345, 23.135], 海珠: [113.31, 23.095], 白云: [113.27, 23.195], 番禺: [113.37, 22.97], 黄埔: [113.46, 23.11] };
+    if (pl.area && D[pl.area]) return pl.area;
+    let best = '越秀', bd = Infinity;
+    for (const [k, c] of Object.entries(D)) { const d = Math.hypot((c[0] - pl.p[0]) * 0.92, c[1] - pl.p[1]); if (d < bd) { bd = d; best = k; } }
+    return best;
+  },
+  clues(pl) {
+    const T = [113.3245, 23.1064], dx = (pl.p[0] - T[0]) * 111320 * Math.cos(23.1 * D2R), dy = (pl.p[1] - T[1]) * 110574, km = Math.hypot(dx, dy) / 1000;
+    const dir = ['北', '东北', '东', '东南', '南', '西南', '西', '西北'][Math.round(((Math.atan2(dx, dy) / D2R + 360) % 360) / 45) % 8];
+    const meta = /^\d{4}$/.test(pl.meta) ? `，${pl.meta} 年建成的` : /\d\s*m$/.test(pl.meta) ? `，有 ${pl.meta.replace(/\s*m$/, ' 米')}高` : '';
+    const what = pl.kind === 'food' ? `空气里飘着「${pl.cat}」的香味` : pl.kind === 'landmark' ? `旁边是一处${pl.fresh ? '城市新地标' : '名胜古迹'}${meta}` : '有人在这附近扫过街、拍过照片';
+    const chars = [...pl.name].filter((ch) => /[一-鿿]/.test(ch) && !'的店路街号广州市区中'.includes(ch));
+    const ch = chars.length ? chars[Math.floor(Math.random() * chars.length)] : [...pl.name][0];
+    return [
+      `我在${this.district(pl)}区，${what}`,
+      km < 0.6 ? '我就在广州塔脚下不远' : `从广州塔往${dir}走大约 ${km < 3 ? km.toFixed(1) : Math.round(km)} 公里，就能找到我`,
+      `我旁边那个地方，名字里有个「${ch}」字`,
+    ];
+  },
+  newSpawn() {
+    const pl = this.places(), prev = this.s.spawn && this.s.spawn.name;
+    let p = pl[0];
+    for (let i = 0; i < 20; i++) { p = pl[Math.floor(Math.random() * pl.length)]; if (p.name !== prev) break; }
+    const a = Math.random() * Math.PI * 2, r = 25 + Math.random() * 25, t = this.now();
+    const at = [p.p[0] + (r * Math.cos(a)) / (111320 * Math.cos(p.p[1] * D2R)), p.p[1] + (r * Math.sin(a)) / 110574];
+    this.s.spawn = { name: p.name, kind: p.kind, at, clues: this.clues(p), shown: 1, next: t + this.gap(), t0: t, hops: 0, near: 0 };
+    this.s.status = 'wild';
+    this.placeMarker();
+  },
+  gap() { return (70 + Math.random() * 60) * 1000; },
+  reveal(why) {
+    const sp = this.s.spawn; if (!sp || sp.shown >= 3) return;
+    sp.shown++; sp.next = this.now() + this.gap();
+    const pre = why === 'hint' ? '好吧好吧，再告诉你一条：' : why === 'task' ? '你完成了任务，奖励一条线索：' : ['啵～新线索：', '嘿嘿，提示来啦：', '我还躲着呢～给你一条：'][Math.floor(Math.random() * 3)];
+    this.say(pre + sp.clues[sp.shown - 1], { tab: 'quest' });
+  },
+  hint() {
+    const sp = this.s.spawn; if (!sp || sp.shown >= 3 || this.s.coins < 10) return;
+    this.s.coins -= 10; this.reveal('hint'); this.save(); this.render();
+  },
+  // ------------------------------------------------------------- time: hearts cool down, clues trickle in, it chats
+  step(live) {
+    const t = this.now(), dt = Math.min(24 * 30, Math.max(0, (t - (this.s.last || t)) / 3600000));
+    this.s.last = t;
+    this.daily();
+    if (this.s.status === 'home') {
+      this.s.attach = Math.min(100, Math.max(0, this.s.attach - dt * this.decay() + (live ? Math.min(dt, 0.25) * 2.4 : 0)));   // keeping it company only counts while the page is really open
+      this.mood(live);
+    } else if (this.s.spawn && live && this.s.spawn.shown < 3 && t >= this.s.spawn.next) this.reveal('time');
+  },
+  tick() {
+    this.step(!document.hidden);
+    const t = this.now();
+    if (this.s.status === 'home' && !document.hidden) {
+      if (!this.chatAt) this.chatAt = t + (120 + Math.random() * 180) * 1000;
+      else if (t >= this.chatAt) { this.chatter(); this.chatAt = t + (200 + Math.random() * 240) * 1000; }
+    }
+    this.save(); this.updateDock(); if (this.isOpen()) this.renderStats();
+  },
+  comfort() { return this.ITEMS.reduce((a, i) => a + (this.s.items[i.id] ? i.comfort : 0), 0); },
+  decay() { return 2 * (1 - this.comfort() / 110); },   // 依恋度每小时掉多少：毛坯房 2，摆满家具约 0.3
+  mood(live) {
+    const a = this.s.attach, f = this.s.flags;
+    if (a <= 0) return this.escape(live);
+    if (a < 10 && !f.w10) { f.w10 = 1; if (live) this.say('……我趴在地上发呆，好想出去吹吹风。', { tab: 'home' }); }
+    else if (a < 25 && !f.w25) { f.w25 = 1; if (live) this.say('家里有点空，我闷闷的…能陪我玩一会儿吗？', { tab: 'home' }); }
+    if (a > 35) f.w25 = 0;
+    if (a > 20) f.w10 = 0;
+  },
+  escape(live) {
+    this.s.escapes++; this.s.attach = 0; this.s.flags.w10 = this.s.flags.w25 = 0;
+    this.newSpawn();
+    const m = `${live ? '' : '你不在的时候，'}一阵风把我吹走啦！想我的话就来找我吧。线索：${this.s.spawn.clues[0]}`;
+    if (live) this.say(m, { tab: 'quest', ms: 16000 });
+    else { this.s.flags.awayMsg = m; this.log(m); }
+    this.updateDock();
+  },
+  chatter() {
+    const owned = this.ITEMS.filter((i) => this.s.items[i.id]);
+    const a = this.s.attach;
+    const lines = a < 25 ? ['家里空荡荡的，回声都听得见…', '我在数地上的裂缝，数到第三条了。']
+      : a < 70 ? ['今天也要记得来看我哦～', '我刚刚在门口晒了一会儿太阳。', owned.length ? `${owned[Math.floor(Math.random() * owned.length)].name}好好玩！` : '什么时候添点家具呀？']
+      : ['啵～最喜欢这个家啦！', '我把耳朵晾干了，软乎乎的。', owned.length ? `${owned[Math.floor(Math.random() * owned.length)].name}好舒服，我不想动了～` : '有你在就好～'];
+    this.say(lines[Math.floor(Math.random() * lines.length)], { tab: 'home', ms: 8000 });
+  },
+  // ------------------------------------------------------------- daily tasks
+  daily() {
+    const d = this.today(); if (this.s.day === d) return;
+    this.s.day = d; this.s.tasks = {}; this.s.seen = {}; this.s.pats = 0; this.s.feeds = 0;
+    setTimeout(() => this.progress('checkin', 'day'), 2500);
+  },
+  progress(id, key) {
+    const task = this.TASKS.find((t) => t.id === id), T = this.s.tasks, S = this.s.seen;
+    if (!task || (T[id] || 0) >= task.goal) return;
+    if (key != null) { const k = id + ':' + key; if (S[k]) return; S[k] = 1; }
+    T[id] = (T[id] || 0) + 1;
+    if (T[id] >= task.goal) {
+      this.s.coins += task.reward; this.log(`任务完成：${task.name}，+${task.reward} 水滴`);
+      toast(`任务完成：${task.name} · +${task.reward} 水滴`);
+      if (this.s.status === 'wild' && this.s.spawn && this.s.spawn.shown < 3 && id !== 'checkin') this.reveal('task');
+    }
+    this.save(); this.updateDock(); if (this.isOpen()) this.render();
+  },
+  saw(type, id) { if (type === 'landmark') this.progress('lm', id); else if (type === 'food') this.progress('food', id); else if (type === 'street') this.progress('street', id); },
+  // ------------------------------------------------------------- messages
+  log(m) { this.s.log.unshift({ t: this.now(), m }); if (this.s.log.length > 30) this.s.log.length = 30; },
+  say(text, o = {}) {
+    this.log(text); this.save();
+    if (this.isOpen()) { this.render(); return; }
+    const b = $('#petBubble');
+    b.innerHTML = `<img src="${this.img('avatar')}" alt=""><span><b>啵铃</b><span>${esc(text)}</span></span>`;
+    b.dataset.tab = o.tab || (this.s.status === 'wild' ? 'quest' : 'home'); b.hidden = false;
+    clearTimeout(this._bt); this._bt = setTimeout(() => { b.hidden = true; }, o.ms || 11000);
+    this._badge = true; this.updateDock();
+  },
+  // ------------------------------------------------------------- on the map
+  mapReady() {
+    this.placeMarker();
+    map.on('zoom', () => this.vis());
+    map.on('moveend', () => this.sense());
+  },
+  placeMarker() {
+    if (!map || !state.ready) return;
+    if (this.marker) { this.marker.remove(); this.marker = null; }
+    const sp = this.s.spawn; if (this.s.status !== 'wild' || !sp) return;
+    const el = document.createElement('button'); el.type = 'button'; el.className = 'pet-mark'; el.setAttribute('aria-label', '啵铃藏在这里！点它');
+    el.innerHTML = `<img src="${this.img('curious')}" alt="">`;
+    el.addEventListener('click', (e) => { e.stopPropagation(); this.tap(); });
+    this.marker = new maplibregl.Marker({ element: el, anchor: 'bottom' }).setLngLat(sp.at).addTo(map);
+    this.vis();
+  },
+  vis() { if (this.marker) this.marker.getElement().style.display = map.getZoom() >= 15.5 ? '' : 'none'; },
+  sense() {   // closer than ~1.5 km at street-ish zoom: it notices you (not during the opening flight over the city)
+    const sp = this.s.spawn; if (this.s.status !== 'wild' || !sp || !map || performance.now() < 12000 || map.getZoom() < 13.2) return;
+    const c = map.getCenter(), k = 111320 * Math.cos(c.lat * D2R), d = Math.hypot((c.lng - sp.at[0]) * k, (c.lat - sp.at[1]) * 110574);
+    if (d < 700 && map.getZoom() >= 13.8 && sp.near < 2) { sp.near = 2; this.say(map.getZoom() >= 15.5 ? '胸口的水滴亮起来了！我就在这儿附近～' : '胸口的水滴亮起来了！我就在附近，放大地图看看？', { ms: 8000 }); }
+    else if (d < 1500 && sp.near < 1) { sp.near = 1; this.say('嗯？好像有人离我不远了…', { ms: 7000 }); }
+    this.save();
+  },
+  tap() {
+    const sp = this.s.spawn; if (!sp || !this.marker) return;
+    if (sp.hops < 1) {   // first tap: it hops a few dozen metres away
+      sp.hops++;
+      const a = Math.random() * Math.PI * 2, r = 30 + Math.random() * 20;
+      sp.at = [sp.at[0] + (r * Math.cos(a)) / (111320 * Math.cos(sp.at[1] * D2R)), sp.at[1] + (r * Math.sin(a)) / 110574];
+      const el = this.marker.getElement(); el.classList.remove('hop'); void el.offsetWidth; el.classList.add('hop');
+      this.marker.setLngLat(sp.at); this.save();
+      this.say('啵！差一点点～再来！', { ms: 5000 });
+      return;
+    }
+    this.caught();
+  },
+  caught() {
+    const sp = this.s.spawn, fast = this.now() - sp.t0 < 10 * 60000, gain = 50 + (fast ? 30 : 0), first = !this.s.caught;
+    this.s.status = 'home'; this.s.spawn = null; this.s.caught++; this.s.coins += gain;
+    this.s.attach = Math.max(this.s.attach, 40); this.s.flags.w10 = this.s.flags.w25 = 0; this.chatAt = 0;
+    this.log(`抓到啵铃啦！+${gain} 水滴${fast ? '（10 分钟内抓到，多 30）' : ''}`);
+    this.save(); this.placeMarker(); $('#petBubble').hidden = true; this.updateDock();
+    const c = $('#petCatch');
+    c.innerHTML = `<div class="card" role="dialog" aria-modal="true" aria-labelledby="petCatchT"><img src="${this.img('happy')}" alt="啵铃开心地蹦起来"><h3 id="petCatchT">抓到啵铃啦！</h3>
+      <p>${first ? '它答应跟你回家了。' : '它又回到你身边了。'}奖励 <b>${gain} 水滴</b>${fast ? '（10 分钟内抓到，多给 30）' : ''}。<br>家里还${this.comfort() ? '可以再添点东西' : '是毛坯房'}，记得用水滴给它布置一下，不然它待不住。</p>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button class="pet-act primary" type="button" data-catch="home">带它回家</button><button class="pet-act" type="button" data-catch="map">继续逛地图</button></div></div>`;
+    c.hidden = false;
+    c.querySelector('[data-catch="home"]').addEventListener('click', () => { c.hidden = true; this.open('home'); });
+    c.querySelector('[data-catch="map"]').addEventListener('click', () => { c.hidden = true; });
+    c.querySelector('[data-catch="home"]').focus();
+  },
+  // ------------------------------------------------------------- at home
+  pat() {
+    if (this.s.status !== 'home') return;
+    if (this.s.pats >= 5) { toast('今天已经摸了好多次啦，啵铃的毛都要摸平了～'); return; }
+    this.s.pats++; this.s.attach = Math.min(100, this.s.attach + 3);
+    this.progress('pat'); this.save(); this.render(); this.joy();
+  },
+  feed() {
+    if (this.s.status !== 'home' || this.s.coins < 10) return;
+    if (this.s.feeds >= 3) { toast('今天吃了三份点心，吃不下啦～'); return; }
+    this.s.coins -= 10; this.s.feeds++; this.s.attach = Math.min(100, this.s.attach + 6);
+    this.save(); this.render(); this.joy();
+  },
+  buy(id) {
+    const it = this.ITEMS.find((i) => i.id === id); if (!it || this.s.items[id] || this.s.coins < it.price) return;
+    this.s.coins -= it.price; this.s.items[id] = this.now();
+    if (this.s.status === 'home') this.s.attach = Math.min(100, this.s.attach + 4);
+    this.log(`买了「${it.name}」，-${it.price} 水滴`); toast(`「${it.name}」摆好啦`);
+    this.save(); this.render(); if (this.s.status === 'home') this.joy();
+  },
+  joy() {
+    const w = $('#pet .pet-room .who'); if (!w) return;
+    w.classList.remove('joy'); void w.offsetWidth; w.classList.add('joy');
+    const h = document.createElement('span'); h.className = 'pet-heart'; h.style.left = w.style.left; h.style.top = `calc(${w.style.top} - 26%)`;
+    h.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 21 C 4 15 1.5 10.5 3.5 7 C 5.5 3.8 9.8 4 12 7.5 C 14.2 4 18.5 3.8 20.5 7 C 22.5 10.5 20 15 12 21 Z" fill="#FF7E8C" stroke="#5A3B2A" stroke-width="1.6"/></svg>';
+    w.parentNode.appendChild(h); setTimeout(() => h.remove(), 1300);
+  },
+  // ------------------------------------------------------------- the page
+  open(tab) {
+    $('#pet').hidden = false; closePops(); closeDetail();
+    $('#petBubble').hidden = true; this._badge = false; this.updateDock();
+    document.querySelectorAll('.nav-btn').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mod === 'pet')));
+    this.step(true); this.save();
+    this.show(tab || (this.s.status === 'wild' ? 'quest' : 'home'), true);
+    $('#petClose').focus({ preventScroll: true });
+  },
+  close() {
+    $('#pet').hidden = true;
+    document.querySelectorAll('.nav-btn').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mod === state.module)));
+  },
+  isOpen() { return !$('#pet').hidden; },
+  show(tab, top) {
+    this.tab = tab;
+    document.querySelectorAll('#pet .pet-tabs [data-tab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === tab)));
+    this.render(); if (top) $('#pet').scrollTop = 0;
+  },
+  renderStats() {
+    const s = this.s, home = s.status === 'home';
+    $('#petSub').textContent = home ? `和你住在一起 · 已经抓到 ${s.caught} 次` : s.caught ? '乘风溜走了，在外面躲着等你去找' : '还没被抓到，在地图上躲着';
+    $('#petCoins').innerHTML = `<img src="${U('pet/drop.svg')}" alt="">${s.coins} 水滴`;
+    $('#petLove').innerHTML = home ? `依恋度 <span class="pet-meter" aria-hidden="true"><i style="width:${Math.round(s.attach)}%"></i></span> ${Math.round(s.attach)}%` : '走失中';
+    $('#petLove').setAttribute('aria-label', home ? `依恋度 ${Math.round(s.attach)}%` : '啵铃走失中');
+    const dot = document.querySelector('#pet .pet-tabs [data-tab="quest"] .dot'); if (dot) dot.hidden = home;
+  },
+  render() {
+    if (!this.isOpen()) return;
+    this.renderStats();
+    $('#petBody').innerHTML = this.tab === 'home' ? this.homeHTML() : this.tab === 'quest' ? this.questHTML() : this.aboutHTML();
+  },
+  aboutHTML() {
+    const poses = [['front', '正面'], ['side', '侧面'], ['back', '背面'], ['happy', '开心'], ['curious', '好奇'], ['sleepy', '困困']];
+    return `<div class="pet-grid">
+      <div class="pet-card shadow pet-hero"><span class="tag">概念 v1 · 云风精灵</span><img src="${this.img('main')}" alt="啵铃：奶油色的小精灵，天蓝色云朵耳朵，额前一撮卷毛，胸口一颗水滴纹，卷尾巴末端是蓝色水滴形绒团，正举着小爪打招呼"></div>
+      <div>
+        <h3 class="pet-name">啵铃</h3>
+        <div class="pet-pills"><span>云风精灵</span><span>活泼 · 亲人 · 带点小调皮</span><span>大头小身体 · 短手短脚</span></div>
+        <p class="pet-lead">一只活泼、亲人、带一点小调皮的云风精灵。奶油色的短圆身体配天蓝色云朵耳和杏桃色腮红，远远一看，轮廓就是那对云耳和一条卷尾巴。</p>
+        <div class="pet-card" style="margin-top:14px"><h3>外形识别</h3><div class="pet-feats">
+          <div><b>云朵耳</b><span>天蓝色，带心形浅色斑；开心时扬起，好奇时一高一低</span></div>
+          <div><b>额前卷毛</b><span>一撮奶油色的卷毛，从背后看是一颗小圆球</span></div>
+          <div><b>胸口水滴纹</b><span>你靠近它藏身的地方时，水滴会亮起来</span></div>
+          <div><b>卷尾水滴绒团</b><span>尾巴卷卷的，尾尖是蓝色水滴形的绒团</span></div>
+        </div></div>
+      </div>
+    </div>
+    <div class="pet-card" style="margin-top:18px"><h3>三视图与表情</h3><div class="pet-poses">${poses.map(([n, c]) => `<figure><img src="${this.img(n)}" alt="${c}" loading="lazy"><figcaption>${c}</figcaption></figure>`).join('')}</div></div>
+    <div class="pet-grid" style="margin-top:18px">
+      <div class="pet-card"><h3>性格与动作</h3><table class="pet-acts"><tbody>
+        <tr><td>待机</td><td>身体轻轻起伏，耳朵偶尔抖动，尾尖来回晃</td></tr>
+        <tr><td>开心</td><td>原地蹦跳，举起小爪打招呼</td></tr>
+        <tr><td>好奇</td><td>歪头看向鼠标，耳朵一高一低</td></tr>
+        <tr><td>移动</td><td>短步蹦走，耳朵和尾巴稍有延迟</td></tr>
+        <tr><td>被摸</td><td>眯眼，脸颊泛红，主动靠近</td></tr>
+        <tr><td>被提起</td><td>四肢轻轻摆动，落地后弹一下</td></tr>
+        <tr><td>困倦</td><td>趴下，抱着卷尾睡觉</td></tr>
+      </tbody></table></div>
+      <div class="pet-card"><h3>怎么玩</h3><ol class="pet-rules">
+        <li><b>找它：</b>啵铃会躲在地图上某个地标、餐厅或扫街点旁边，不定时给你发消息透露线索。</li>
+        <li><b>抓它：</b>地图放大到街道级别才看得见它，点一下它会蹦开，再点一下就抓住了。越快抓到奖励越多。</li>
+        <li><b>养它：</b>抓到后它住进“我的家”。家具越多它越安心，摸摸它、喂点心也能加依恋度。</li>
+        <li><b>别冷落它：</b>依恋度会随时间慢慢掉，掉到 0 它就乘风溜走，你得重新按线索去找。</li>
+        <li><b>赚水滴：</b>每天逛地标、看餐厅、看扫街、看星空都有任务奖励。进度存在你自己的浏览器里。</li>
+      </ol></div>
+    </div>`;
+  },
+  roomHTML() {
+    const o = this.s.items, L = PET_ROOM.layers, home = this.s.status === 'home';
+    const parts = [o.paint ? L.walls_paint : L.walls_bare, o.floor ? L.floor_wood : L.floor_bare, o.window && L.window, o.lights && L.lights, o.shelf && L.shelf,
+      !o.lamp && L.bulb, !o.table && !o.shelf && L.box, o.rug && L.rug, o.plant && L.plant, o.lamp && L.lamp, o.bed && L.bed, o.table && L.table].filter(Boolean).join('');
+    let who = '';
+    if (home) {
+      const a = this.s.attach, pose = a < 25 ? 'sleepy' : a >= 70 ? 'happy' : 'front', spot = PET_ROOM.spots[o.bed ? 'bed' : 'floor'];
+      who = `<button class="who${pose === 'sleepy' ? ' wide' : ''}" type="button" data-act="pat" style="left:${spot[0]}%;top:${spot[1]}%" aria-label="摸摸啵铃"><img src="${this.img(pose)}" alt=""></button>`;
+    } else who = '<div class="empty">家里空空的——啵铃还在外面。<br>先去地图上把它找回来吧。</div>';
+    return `<div class="pet-room"><svg viewBox="${PET_ROOM.vb}" role="img" aria-label="我的家：${this.comfort() ? '已经摆了 ' + Object.keys(o).length + ' 件家具' : '还是毛坯房'}">${parts}</svg>${who}</div>`;
+  },
+  homeHTML() {
+    const s = this.s, home = s.status === 'home', c = this.comfort(), owned = Object.keys(s.items).length;
+    const left = `<div class="pet-card shadow"><h3>我的家 <span style="font-weight:500;font-size:13px;color:#6A4F3E">· ${owned ? `摆了 ${owned} 件家具，舒适度 ${c}` : '毛坯房'}</span></h3>${this.roomHTML()}
+      ${home ? `<div class="pet-homebar">
+        <span class="stat">依恋度 <span class="pet-meter" aria-hidden="true"><i style="width:${Math.round(s.attach)}%"></i></span> ${Math.round(s.attach)}%</span>
+        <button class="pet-act" type="button" data-act="pat">摸摸它<span class="mono" style="font-size:12px;color:#6A4F3E">${s.pats}/5</span></button>
+        <button class="pet-act" type="button" data-act="feed" ${s.coins < 10 || s.feeds >= 3 ? 'disabled' : ''}>喂点心<img src="${U('pet/drop.svg')}" alt="">10</button>
+      </div>
+      <p class="pet-note">${s.attach < 25 ? '它有点闷闷不乐，再这样下去会乘风溜走的。' : s.attach >= 70 ? '它在家里待得很开心。' : '它还算安心，添点家具会更黏你。'}依恋度每小时大约掉 ${this.decay().toFixed(1)}（家具越多掉得越慢），开着网页陪着它会慢慢回升。</p>`
+      : `<div class="pet-homebar"><button class="pet-act primary" type="button" data-act="quest">看线索，去找啵铃</button></div><p class="pet-note">现在可以先把家布置起来，抓回来的时候它会更安心。</p>`}</div>`;
+    const shop = `<div class="pet-card"><h3>小铺 <span style="font-weight:500;font-size:13px;color:#6A4F3E">· 买了就直接摆进家里</span></h3><div class="pet-shop">${this.ITEMS.map((i) => {
+      const own = !!s.items[i.id];
+      return `<div class="pet-item${own ? ' owned' : ''}"><b>${i.name}</b><small>${i.desc} · 舒适 +${i.comfort}</small><div class="row"><span class="price"><img src="${U('pet/drop.svg')}" alt="水滴">${i.price}</span>${own ? '<span class="done">已摆放</span>' : `<button type="button" data-act="buy" data-id="${i.id}" ${s.coins < i.price ? 'disabled' : ''}>买</button>`}</div></div>`;
+    }).join('')}</div></div>`;
+    return `<div class="pet-grid">${left}${shop}</div>`;
+  },
+  questHTML() {
+    const s = this.s, sp = s.spawn, home = s.status === 'home';
+    const status = home
+      ? `<div class="pet-card shadow"><h3>啵铃在家</h3><div class="pet-status"><img src="${this.img(s.attach < 25 ? 'sleepy' : 'front')}" alt=""><p>它现在住在你家，依恋度 ${Math.round(s.attach)}%。依恋度掉到 0 它就会乘风溜走，到时候这里会出现新的线索。</p></div></div>`
+      : `<div class="pet-card shadow"><h3>找啵铃</h3><ul class="pet-clues">${sp.clues.map((c, i) => i < sp.shown ? `<li><i>${i + 1}</i><span>${esc(c)}</span></li>` : `<li class="lock"><i>${i + 1}</i><span>${i === sp.shown ? '等它下一条消息，或者完成一个任务、花 10 水滴换提示' : '还没解锁'}</span></li>`).join('')}</ul>
+        <div class="pet-homebar"><button class="pet-act primary" type="button" data-act="map">去地图上找</button><button class="pet-act" type="button" data-act="hint" ${sp.shown >= 3 || s.coins < 10 ? 'disabled' : ''}>换一条提示<img src="${U('pet/drop.svg')}" alt="">10</button></div>
+        <p class="pet-note">找到大概位置后，把地图放大到街道级别（比例尺 100 米左右）才看得见它。离它近了，它会发消息提醒你。</p></div>`;
+    const tasks = `<div class="pet-card"><h3>今日任务 <span style="font-weight:500;font-size:13px;color:#6A4F3E">· 每天零点刷新</span></h3><ul class="pet-tasks">${this.TASKS.map((t) => {
+      const n = Math.min(t.goal, s.tasks[t.id] || 0), ok = n >= t.goal;
+      return `<li class="${ok ? 'ok' : ''}"><span>${t.name}${t.goal > 1 ? ` <span class="mono" style="font-size:12px;color:#6A4F3E">${n}/${t.goal}</span>` : ''}</span><span class="rw">${ok ? '已领 ' : '+'}${t.reward}</span><span class="bar"><i style="width:${(n / t.goal) * 100}%"></i></span></li>`;
+    }).join('')}</ul></div>`;
+    const log = `<div class="pet-card"><h3>消息</h3><ul class="pet-log">${s.log.length ? s.log.map((l) => { const d = new Date(l.t); return `<li><time>${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}</time><span>${esc(l.m)}</span></li>`; }).join('') : '<li><span>还没有消息</span></li>'}</ul></div>`;
+    return `<div class="pet-grid"><div>${status}${log}</div>${tasks}</div>`;
+  },
+  onClick(e) {
+    const b = e.target.closest('[data-act]'); if (!b || b.disabled) return;
+    const a = b.dataset.act;
+    if (a === 'buy') this.buy(b.dataset.id);
+    else if (a === 'pat') this.pat();
+    else if (a === 'feed') this.feed();
+    else if (a === 'hint') this.hint();
+    else if (a === 'quest') this.show('quest', true);
+    else if (a === 'map') this.close();
+  },
+  // ------------------------------------------------------------- the desk pet in the corner
+  updateDock() {
+    const d = $('#petDock'); if (!d) return;
+    const home = this.s.status === 'home', pose = home ? (this.s.attach < 25 ? 'sleepy' : 'front') : '';
+    const key = `${this.s.status}|${pose}|${this._badge}`;
+    if (key !== this.dockKey) {
+      this.dockKey = key;
+      d.innerHTML = (home ? `<img src="${this.img(pose)}" alt="">` : '<span class="lost" aria-hidden="true">?</span>') + `<span class="tag">${home ? '啵铃' : '走失中'}</span>` + (this._badge ? '<span class="badge" aria-hidden="true"></span>' : '');
+      d.setAttribute('aria-label', home ? '萌宠啵铃在家，点开看看' : '萌宠啵铃走失了，点开看线索');
+    }
+    const ct = document.querySelector('.nav-btn[data-mod="pet"] .ct'); if (ct) ct.textContent = this.navLabel();
+  },
+  // ------------------------------------------------------------- for testing (?petdebug)
+  advance(hours, away = true) { this.skew += hours * 3600000; this.step(!away); this.save(); this.updateDock(); this.render(); },
+};
+
 /* ===================================================================== boot */
 renderProfile();
+Pet.init();
 renderNav();
 renderCities();
 tickClock(); setInterval(tickClock, 1000);
