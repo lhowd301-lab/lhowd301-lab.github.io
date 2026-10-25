@@ -1149,6 +1149,26 @@ const SITE = {
       facts: { 通车: '1967 年', 结构: '梁桥', 全长: '701.2 m' },
       intro: '北接六二三路和康王南路、南通海珠区的跨江大桥，1965 年动工，1967 年 5 月 1 日通车。原本外观朴素，2018 年的历史文化环境艺术提升工程给它换上了欧陆风格：四角各建一座欧式桥头堡，橘红色的圆顶被街坊叫作“洋葱头”，西侧两岸的桥头堡里装了垂直电梯；桥栏用白色大理石包起来、刻着木棉花，路灯也换成了欧式铁艺灯。',
       thoughts: '写下你对人民桥的理解。', sample: true },
+    { id: 'l45', city: 'gz', kind: 'new', meta: '1987', name: '天河体育中心', en: 'Tianhe Sports Center', lnglat: [113.31935, 23.14052], zoom: 15.9, pitch: 58,
+      facts: { 落成: '1987 年', 设计: '广州市设计院', 场馆: '体育场 · 体育馆 · 游泳馆' },
+      intro: '为 1987 年第六届全运会在原天河机场旧址上建的体育中心，全国第一次同时建成体育场、体育馆、游泳馆三大场馆，也是新城市中轴线的一段。体育场的轮廓是马鞍形，两侧看台上盖着白色拱顶，固定座位约 5.3 万；体育馆外观是六边形，屋顶跨度 126 米；游泳馆有比赛池、跳水池各一个。2018 年列入“中国 20 世纪建筑遗产”。',
+      thoughts: '写下你对天河体育中心的理解。', sample: true },
+    { id: 'l46', city: 'gz', meta: '1950', name: '越秀山体育场', en: 'Yuexiushan Stadium', lnglat: [113.26081, 23.13927], zoom: 16.6, pitch: 58,
+      facts: { 启用: '1950 年', 座位: '约 1.8–2 万', 位置: '越秀山南麓 · 应元路' },
+      intro: '在越秀山南麓、镇海楼下方的山谷里，前身是观音山足球场；1950 年由时任市长叶剑英号召市民改建，同年 10 月启用。看台依山而建，场地狭长，不合田径比赛的标准，所以主要办足球，被叫作广州乃至南粤足球的“福地”。最近一次为十五运会翻新后，座椅换成了金黄色。',
+      thoughts: '写下你对越秀山体育场的理解。', sample: true },
+    { id: 'l47', city: 'gz', meta: '200 m', name: '广东电视塔', en: 'Guangdong TV Tower', lnglat: [113.26418, 23.14376], zoom: 15.6, pitch: 66,
+      facts: { 高度: '200 m（海拔 246.5 m）', 启用: '1966 年', 结构: '自立式八角形钢塔' },
+      intro: '越秀山北峰（盘龙岗）上的电视发射塔，也叫越秀山电视塔。1959 年开建，1966 年 5 月 1 日投入使用，是中国第一座钢结构自立式多功能电视发射塔，1970 年代曾是全国最高的塔。塔身 50.6 米和 98.4 米处各有一个观光平台（“星河座”和“云霄阁”），1986 年起对游客开放，2000 年后取消了观光，现在仍由广东广播电视台用来发射信号。',
+      thoughts: '写下你对广东电视塔的理解。', sample: true },
+    { id: 'l48', city: 'gz', kind: 'new', meta: '215.8 m', name: '广州电视塔', en: 'Guangzhou TV Tower', lnglat: [113.26312, 23.14724], zoom: 15.6, pitch: 66,
+      facts: { 高度: '215.8 m（海拔 250 m）', 启用: '1991 年', 结构: '四边形钢铁塔' },
+      intro: '花果山上的广播电视发射塔，和越秀山上的广东电视塔只隔一条环市中路，1991 年 1 月交付使用。塔身是四边形钢铁塔，130 米处建了一圈圆形玻璃幕墙的观光层，但投资方中途撤资，观光层一直闲置。广州台的广播频道现在仍用它播出。',
+      thoughts: '写下你对广州电视塔的理解。', sample: true },
+    { id: 'l49', city: 'gz', kind: 'new', meta: '1985', name: '花园酒店', en: 'The Garden Hotel', lnglat: [113.28032, 23.13813], zoom: 16.4, pitch: 62,
+      facts: { 开业: '1985 年', 高度: '主楼 112 m · 32 层', 设计: '贝聿铭（概念）、司徒惠' },
+      intro: '环市东路上，改革开放后第一批引进外资建的高级酒店，1985 年 8 月开业，店名是邓小平题写的。贝聿铭做了概念设计和草图，再由香港建筑师司徒惠主持设计：酒店大楼和花园大厦是两座 Y 字形的高楼；正门的圆拱形雨篷嵌着 1320 块玻璃砖，后花园有假山瀑布。2010 年亚运会时是总部酒店。',
+      thoughts: '写下你对花园酒店的理解。', sample: true },
   ],
 
   // 成长轨迹：按时间顺序排列；地图上每个阶段一种颜色（颜色在 STAGE_COL 里改），坐标取自 OpenStreetMap（WGS-84）
@@ -1686,23 +1706,23 @@ function buildCBD(THREE, K) {
     g.add(K.rods(segs, K.mat(0xf7f9fc, {}, 0.85)));
   }
 
-  // 东塔 广州周大福金融中心 (530 m): 方形平面、四角内凹；办公、公寓、酒店、塔冠四段逐级退台，
-  // 每段顶上一圈斜切的女儿墙（风车状轮流升起），立面是贯通的白色陶土竖向肋
+  // 东塔 广州周大福金融中心 (530 m)：方形平面、四角内凹，立面是贯通的白色陶土竖肋夹着蓝灰玻璃。
+  // 往上分四段（办公、公寓、酒店、塔冠）逐段收窄：西、北两面几乎一直到顶，东、南两面一段段往里退；
+  // 每段的收头不是平顶，而是整个一块斜面，四段斜面轮流朝不同方向（风车状），塔冠的斜面最高到 530 m
   {
     const ns = (w, n) => [[w, -w + n], [w, w - n], [w - n, w - n], [w - n, w], [-w + n, w], [-w + n, w - n], [-w, w - n], [-w, -w + n], [-w + n, -w + n], [-w + n, -w], [w - n, -w], [w - n, -w + n]];
-    const fac = K.mat({ bg: '#bccfea', v: 8, vc: '#fbfcfe', vw: 8 }), facD = K.mat({ bg: '#bccfea', v: 8, vc: '#fbfcfe', vw: 8 }, { side: THREE.DoubleSide });
-    const tiers = [[0, 305, 32.5, 4.5], [305, 420, 30, 4.2], [420, 478, 27.2, 3.9], [478, 518, 24.4, 3.6]];
-    for (const [z0, z1, w, n] of tiers) {
-      const r = K.place(ns(w, n), CTF_C, CTF_ROT);
-      prism(r, z0, z1, fac, { tw: 12, th: 9 });
-      // the parapet on each main face rises from one end to the other, turning round the tower like a pinwheel
-      for (const i of [0, 3, 6, 9]) {
-        const a = r[i], b = r[i + 1], lo = 1.5, hi = 12;
-        add(K.loft([[[a[0], a[1], z1], [b[0], b[1], z1]], [[a[0], a[1], z1 + lo], [b[0], b[1], z1 + hi]]], { open: true, tw: 12, th: 9 }), facD);
-      }
+    const fac = K.mat({ bg: '#8ea7cb', v: 14, vc: '#f6f8fb', vw: 4, h: 2, hc: '#a7bbd9', hw: 1 });
+    const roofG = K.mat({ bg: '#a3b9d9', v: 10, vc: '#e8eef6', vw: 3 }, { side: THREE.DoubleSide });
+    // [bottom, top at the low edge, rise across the tier, half width, corner notch, direction the slope rises (tower axes)]
+    const tiers = [[0, 300, 14, 32.5, 4.5, [1, 0]], [300, 412, 12, 28.6, 4.0, [0, 1]], [412, 470, 10, 24.8, 3.6, [-1, 0]], [470, 512, 18, 21.0, 3.2, [0, -1]]];
+    for (const [z0, zt, rise, w, n, d] of tiers) {
+      const off = (32.5 - w) * 0.85, c = K.place([[-off, off]], CTF_C, CTF_ROT)[0], loc = ns(w, n), r = K.place(loc, c, CTF_ROT);
+      const top = (i) => zt + rise * ((loc[i][0] * d[0] + loc[i][1] * d[1]) / (2 * w) + 0.5);
+      add(K.loft([r.map((p) => [p[0], p[1], z0]), r.map((p, i) => [p[0], p[1], top(i)])], { tw: 12, th: 9 }), fac);
+      add(K.cap(r.map((p, i) => [p[0], p[1], top(i)])), roofG);
     }
-    // the podium (K11), about 9 storeys
-    prism(CBD_FP.ctf, 0, 45, K.mat({ bg: '#c6d6ee', v: 10, vc: '#eef3fa', vw: 3, h: 3, hc: '#b4c7e4' }), { tw: 15, th: 15 });
+    // the podium (K11), about 9 storeys, pale stone
+    prism(CBD_FP.ctf, 0, 45, K.mat({ bg: '#dfe4ea', h: 5, hc: '#c3cbd6', hw: 3, v: 12, vc: '#eef1f5', vw: 2 }), { tw: 15, th: 15 });
   }
 
   // 珠江城大厦 (309.6 m): 透镜形平面，两个设备层各开两个贯通的风洞（装风力发电机），外遮阳形成横线条
@@ -2347,6 +2367,159 @@ function buildRenmin(THREE, K) {
   }
   return g;
 }
+// ---------------------------------------------------------------- 天河体育中心 (1987，广州市设计院)
+// 体育场：椭圆形碗状看台，外圈白色框架，轮廓是马鞍形（东西两侧高、南北两端低），东西两侧看台上盖着白色拱顶；
+// 西南的体育馆是六边形（屋顶跨度 126 m），中间一圈抬高的天窗；东南的游泳馆是一片白色拱形屋面。位置按卫星图和 OSM
+function buildTianhe(THREE, K) {
+  const g = new THREE.Group(), add = (geo, m) => g.add(K.mesh(geo, m)), DS = THREE.DoubleSide;
+  const C = [-271, 2822], N = 120;
+  const ell = (ax, ay, z, n = N) => Array.from({ length: n }, (_, i) => { const t = (i / n) * Math.PI * 2; return [C[0] + ax * Math.cos(t), C[1] + ay * Math.sin(t), typeof z === 'function' ? z(t) : z]; });
+  const rim = (t) => 20 + 12 * Math.cos(t) ** 2;   // saddle: higher along the long east and west sides
+  const outer = ell(106, 122.5, rim), outer0 = ell(106, 122.5, 0);
+  add(K.loft([outer0, outer], { tw: 8, th: 12 }), K.mat({ bg: '#7f8b9c', v: 2, vc: '#f1f3f6', vw: 30, h: 3, hc: '#f1f3f6', hw: 12 }, {}, 0.5));
+  add(K.loft([outer, ell(101, 117.5, rim)], {}), K.mat(0xeef1f5, { side: DS }));
+  // the bowl of seats, pink-red, rows as fine lines
+  add(K.loft([ell(70, 92, 2.2), ell(101, 117.5, (t) => rim(t) - 0.6)], { tw: 6, th: 0.9 }), K.mat({ bg: '#d06a6d', h: 1, hc: '#efc9c6', hw: 26 }, { side: DS }, 0));
+  // track and pitch
+  add(K.cap(ell(70, 92, 0.25)), K.mat(0xc5594d));
+  const rect = (cx, cy, hw, hh, z) => [[cx - hw, cy - hh, z], [cx + hw, cy - hh, z], [cx + hw, cy + hh, z], [cx - hw, cy + hh, z]];
+  add(K.cap(rect(C[0], C[1], 34, 52.5, 0.35)), K.mat({ bg: '#4f9a4c', h: 8, hc: '#5aa857', hw: 8 }));
+  // white arched canopies over the east and west stands: the front edge rises in the middle like an arch
+  const white = K.mat(0xf6f8fb, { side: DS }, 0.6);
+  for (const t0 of [0, Math.PI]) {
+    const rows = [];
+    for (let i = 0; i <= 6; i++) {
+      const s = i / 6, row = [];
+      for (let j = 0; j <= 24; j++) {
+        const f = j / 24 * 2 - 1, t = t0 + f * 0.95, ax = 104 - 24 * s, ay = 120.5 - 20 * s;
+        row.push([C[0] + ax * Math.cos(t), C[1] + ay * Math.sin(t), rim(t) + 2.5 + 9 * s * Math.cos(f * Math.PI / 2)]);
+      }
+      rows.push(row);
+    }
+    add(K.grid(rows), white);
+    const front = rows[6], back = rows[0];
+    add(K.loft([front.map((p) => [p[0], p[1], p[2] - 1.2]), front], { open: true }), white);
+    add(K.loft([back.map((p) => [p[0], p[1], p[2] - 2.5]), back], { open: true }), white);
+  }
+  // gymnasium: hexagon, sloping roof, a raised lantern in the middle
+  const G = [-433, 2539], hex = (r, z) => Array.from({ length: 6 }, (_, k) => { const a = (k / 6) * Math.PI * 2; return [G[0] + r * Math.cos(a), G[1] + r * Math.sin(a), z]; });
+  const roof = K.mat({ bg: '#e8ebf0', v: 14, vc: '#cdd4de', vw: 2 }, { side: DS }, 0.2);
+  add(K.loft([hex(56, 0), hex(56, 17)], { tw: 6, th: 6 }), K.mat({ bg: '#a7b6ca', v: 6, vc: '#eef2f6', vw: 9, h: 2, hc: '#dfe5ec', hw: 8 }, {}, 0.6));
+  add(K.loft([hex(63.5, 17), hex(64, 18.2)], {}), roof);
+  add(K.loft([hex(64, 18.2), hex(40, 27)], { tw: 8, th: 4 }), roof);
+  add(K.loft([hex(40, 27), hex(40, 29.5)], { tw: 4, th: 2.5 }), K.mat({ bg: '#6f8099', v: 10, vc: '#e3e8ef', vw: 3 }, {}, 0.8));
+  add(K.loft([hex(41, 29.5), hex(22, 33.5)], { tw: 8, th: 4 }), roof);
+  add(K.cap(hex(22, 33.5)), roof);
+  // natatorium: OSM outline (pointed ends east and west), a shallow white vault running east–west
+  const nf = [[-141.2, 2545.3], [-163.8, 2503.8], [-142.0, 2467.6], [-34.1, 2468.5], [-15.9, 2508.2], [-38.5, 2543.6]];
+  const y0 = 2467.6, y1 = 2545.3, vault = (y) => 16 + 9 * (1 - ((2 * (y - y0)) / (y1 - y0) - 1) ** 2);
+  const xr = (y) => { let lo = 1e9, hi = -1e9; for (let i = 0; i < nf.length; i++) { const p = nf[i], q = nf[(i + 1) % nf.length]; if ((p[1] - y) * (q[1] - y) <= 0 && p[1] !== q[1]) { const x = p[0] + ((q[0] - p[0]) * (y - p[1])) / (q[1] - p[1]); lo = Math.min(lo, x); hi = Math.max(hi, x); } } return [lo, hi]; };
+  const nrows = []; for (let i = 0; i <= 14; i++) { const y = y0 + 0.02 + ((y1 - y0 - 0.04) * i) / 14, [lo, hi] = xr(y), row = []; for (let j = 0; j <= 20; j++) row.push([lo + ((hi - lo) * j) / 20, y, vault(y)]); nrows.push(row); }
+  add(K.grid(nrows, { u: 10 }), K.mat({ bg: '#eef1f5', v: 4, vc: '#d6dce5', vw: 3 }, { side: DS }, 0.2));
+  const nring = K.ccw(nf);
+  add(K.loft([K.at(nring, 0), K.at(nring, (p) => vault(Math.min(y1, Math.max(y0, p[1]))))], { tw: 6, th: 6 }), K.mat({ bg: '#93a6c0', v: 8, vc: '#eef2f6', vw: 6 }, { side: DS }, 0.6));
+  return g;
+}
+// ---------------------------------------------------------------- 越秀山体育场 (1950)
+// 越秀山南麓山谷里的足球场：长轴大致东西（略偏），西端是依山的大弯看台，南北两侧看台上各有一片白色挑棚，
+// 东端是一栋黄墙红瓦的看台楼；2024 年翻新后座椅是金黄色，跑道蓝色。尺寸按卫星图和 OSM
+function buildYuexiushan(THREE, K) {
+  const g = new THREE.Group(), add = (geo, m) => g.add(K.mesh(geo, m)), DS = THREE.DoubleSide;
+  const C = [-6266, 2684], A = (-13 * Math.PI) / 180, ca = Math.cos(A), sa = Math.sin(A);
+  const P = (x, y, z) => [C[0] + x * ca - y * sa, C[1] + x * sa + y * ca, z];
+  const se = (t, e = 3.2) => [Math.sign(Math.cos(t)) * Math.abs(Math.cos(t)) ** (2 / e), Math.sign(Math.sin(t)) * Math.abs(Math.sin(t)) ** (2 / e)];
+  const ring = (aw, ae, bn, bs, z, n = 96) => Array.from({ length: n }, (_, i) => { const t = (i / n) * Math.PI * 2, [u, v] = se(t); return P(u * (u < 0 ? aw : ae), v * (v > 0 ? bn : bs), typeof z === 'function' ? z(t) : z); });
+  const zOut = (t) => { const c = Math.cos(t), s = Math.sin(t); return c < 0 ? 15 + 9 * c * c : s > 0 ? 14 - 4 * c * c : 16 - 6 * c * c; };
+  add(K.loft([ring(98, 98, 57, 57, 1.6), ring(120, 92, 72, 86, (t) => zOut(t) - 0.5)], { tw: 5, th: 0.85 }), K.mat({ bg: '#e7c135', h: 1, hc: '#f6e6a6', hw: 26 }, { side: DS }, 0));
+  add(K.loft([ring(120, 92, 72, 86, 0), ring(120, 92, 72, 86, zOut)], { tw: 6, th: 4 }), K.mat({ bg: '#c9c3b4', h: 2, hc: '#b4ad9c', hw: 4 }));
+  add(K.cap(ring(98, 98, 57, 57, 0.25)), K.mat(0x3f6fb5));
+  add(K.cap([P(-52.5, -34, 0.35), P(52.5, -34, 0.35), P(52.5, 34, 0.35), P(-52.5, 34, 0.35)]), K.mat({ bg: '#4f9a4c', v: 10, vc: '#5aa857', vw: 6 }));
+  // white cantilevered roofs over the north and south stands, tilting up towards the pitch
+  const white = K.mat(0xf5f7fa, { side: DS }, 0.6);
+  for (const [x0, x1, yIn, yOut] of [[-50, 52, 50, 74], [-62, 40, -54, -84]]) {
+    const rows = [0, 1].map((k) => { const y = k ? yIn : yOut, z = k ? 23 : 18.5; return [P(x0, y, z), P(x1, y, z)]; });
+    add(K.grid(rows), white);
+    add(K.loft([rows[1].map((p) => [p[0], p[1], p[2] - 1]), rows[1]], { open: true }), white);
+    g.add(K.rods([x0 + 4, (x0 + x1) / 2, x1 - 4].map((x) => [P(x, yOut + Math.sign(yOut) * -2, 0), P(x, yOut + Math.sign(yOut) * -2, 18.5), 0.5]), K.mat(0xe6eaf0), 8));
+  }
+  // east stand building: yellow walls, red tiled hip roof (OSM outline)
+  const eb = K.ccw([[-6175.9, 2693.6], [-6181.2, 2690.8], [-6175.1, 2684.5], [-6175.6, 2680.0], [-6183.5, 2641.6], [-6185.0, 2636.1], [-6190.4, 2633.2], [-6183.0, 2619.1], [-6170.8, 2626.4], [-6160.2, 2636.3], [-6153.7, 2674.2], [-6159.3, 2688.5]]);
+  add(K.loft([K.at(eb, 0), K.at(eb, 15)], { tw: 6, th: 3.6 }), K.mat({ bg: '#e9c56b', h: 1, hc: '#7a6a52', hw: 34, v: 4, vc: '#e9c56b', vw: 14 }, {}, 0.5));
+  const ec = K.centroid(eb), tile = K.mat({ bg: '#b5523a', h: 6, hc: '#9a4430', hw: 3 });
+  add(K.loft([K.at(eb, 15), K.at(K.scale(eb, ec, 0.55), 20)], { tw: 4, th: 2 }), tile); add(K.cap(K.at(K.scale(eb, ec, 0.55), 20)), tile);
+  return g;
+}
+// ---------------------------------------------------------------- 广东电视塔 (越秀山北峰，1959—1966，200 m)
+// 自立式八角形钢塔：八根塔腿在底部大幅张开、往上收拢；50.6 m 处是封闭的“星河座”大平台，98.4 m 处是“云霄阁”，
+// 上面还有几层工作平台，顶上一段红白相间的天线桅杆
+function lattice(THREE, K, C, n, rot, prof, H, step, rodMat) {
+  const R = (z) => { for (let i = 1; i < prof.length; i++) if (z <= prof[i][0]) { const [z0, r0] = prof[i - 1], [z1, r1] = prof[i]; return r0 + ((r1 - r0) * (z - z0)) / (z1 - z0); } return prof[prof.length - 1][1]; };
+  const pt = (k, z) => { const a = (k / n) * Math.PI * 2 + rot; const r = R(z); return [C[0] + r * Math.cos(a), C[1] + r * Math.sin(a), z]; };
+  const segs = [];
+  for (let z = 0; z < H - 1e-6; z += step) {
+    const z1 = Math.min(H, z + step), w = 0.55 - 0.35 * (z / H);
+    for (let k = 0; k < n; k++) {
+      segs.push([pt(k, z), pt(k, z1), w]);                                   // leg
+      segs.push([pt(k, z1), pt(k + 1, z1), w * 0.4]);                        // ring
+      segs.push([pt(k, z), pt(k + 1, z1), w * 0.28], [pt(k + 1, z), pt(k, z1), w * 0.28]);   // X bracing
+    }
+  }
+  return { mesh: K.rods(segs, rodMat, 5), R };
+}
+function buildGDTV(THREE, K) {
+  const g = new THREE.Group(), add = (geo, m) => g.add(K.mesh(geo, m)), C = [-5921, 3180];
+  const steel = K.mat(0xd8dde5, {}, 0.55), red = K.mat(0xd2483c, {}, 0.9), white = K.mat(0xf4f6f9, {}, 0.9);
+  const { mesh, R } = lattice(THREE, K, C, 8, Math.PI / 8, [[0, 27], [10, 19], [25, 13], [40, 10.2], [50.6, 9], [75, 7.2], [98.4, 6], [125, 4.6], [150, 3.2], [168, 2]], 168, 6, steel);
+  g.add(mesh);
+  const oct = (r, z) => Array.from({ length: 8 }, (_, k) => { const a = (k / 8) * Math.PI * 2 + Math.PI / 8; return [C[0] + r * Math.cos(a), C[1] + r * Math.sin(a), z]; });
+  const room = (r, z0, z1) => { add(K.loft([oct(r, z0), oct(r, z1)], { tw: 4, th: 2 }), K.mat({ bg: '#41536b', h: 2, hc: '#9fb2c9', hw: 6 }, {}, 1)); add(K.cap(oct(r + 0.8, z1)), white); add(K.loft([oct(r + 0.8, z1 - 0.4), oct(r + 0.8, z1 + 0.4)], {}), red); add(K.cap(oct(r + 0.4, z0), true), white); };
+  room(12.2, 47.5, 53.5); room(7.8, 96.5, 100.5);
+  // an invisible cone around the lattice, so the tower is easy to click
+  const hit = new THREE.Mesh(new THREE.CylinderGeometry(3, 14, 200, 8, 1, true), new THREE.MeshBasicMaterial()); hit.position.set(C[0], 100, -C[1]); hit.visible = false; g.add(hit);
+  for (const z of [125, 145, 160]) { const r = R(z) + 1.4; add(K.cap(oct(r, z)), white); add(K.loft([oct(r, z - 0.5), oct(r, z)], {}), white); }
+  // red-and-white mast
+  const mast = []; for (let k = 0; k < 8; k++) { const z0 = 168 + k * 4, z1 = z0 + 4, r = 1.1 - k * 0.1; mast.push([[C[0], C[1], z0], [C[0], C[1], z1], r, k % 2]); }
+  g.add(K.rods(mast.filter((m) => m[3]).map((m) => m.slice(0, 3)), red, 8), K.rods(mast.filter((m) => !m[3]).map((m) => m.slice(0, 3)), white, 8));
+  return g;
+}
+// ---------------------------------------------------------------- 广州电视塔 (花果山，1991，215.8 m)
+// 四边形钢铁塔，塔腿笔直往上收；约 130 m 处一圈圆形玻璃幕墙的观光层（一直没启用），顶上一段天线。按 OSM 塔基方向摆放
+function buildGZTV(THREE, K) {
+  const g = new THREE.Group(), add = (geo, m) => g.add(K.mesh(geo, m)), C = [-6030.3, 3564.6];
+  const steel = K.mat(0xe2e6ec, {}, 0.55), red = K.mat(0xd2483c, {}, 0.9), white = K.mat(0xf4f6f9, {}, 0.9);
+  const { mesh } = lattice(THREE, K, C, 4, (-42 * Math.PI) / 180 + Math.PI / 4, [[0, 25], [30, 18], [60, 13], [90, 9.6], [124, 6.6], [150, 4.6], [175, 2.6], [186, 1.6]], 186, 7, steel);
+  g.add(mesh);
+  const hit = new THREE.Mesh(new THREE.CylinderGeometry(3, 16, 215, 4, 1, true), new THREE.MeshBasicMaterial()); hit.position.set(C[0], 107.5, -C[1]); hit.visible = false; g.add(hit);   // invisible, for clicking
+  const cyl = (r, z) => Array.from({ length: 32 }, (_, k) => { const a = (k / 32) * Math.PI * 2; return [C[0] + r * Math.cos(a), C[1] + r * Math.sin(a), z]; });
+  add(K.loft([cyl(10.5, 125), cyl(10.5, 136)], { smooth: true, tw: 3, th: 2.75 }), K.mat({ bg: '#3d5876', v: 8, vc: '#a9bdd4', vw: 2, h: 2, hc: '#6e86a3', hw: 2 }, {}, 1));
+  for (const z of [124.4, 136]) { add(K.loft([cyl(11.2, z), cyl(11.2, z + 0.7)], { smooth: true }), white); add(K.cap(cyl(11.2, z + (z > 130 ? 0.7 : 0))), white); }
+  const mast = []; for (let k = 0; k < 8; k++) { const z0 = 186 + k * 3.725, r = 0.9 - k * 0.08; mast.push([[C[0], C[1], z0], [C[0], C[1], z0 + 3.725], r, k % 2]); }
+  g.add(K.rods(mast.filter((m) => m[3]).map((m) => m.slice(0, 3)), red, 8), K.rods(mast.filter((m) => !m[3]).map((m) => m.slice(0, 3)), white, 8));
+  return g;
+}
+// ---------------------------------------------------------------- 花园酒店 (1985，贝聿铭概念设计，司徒惠)
+// 两座 Y 字形高楼：西边的酒店大楼（112 m，32 层，顶上一个白色圆形顶楼）和东边稍矮的花园大厦；
+// 三翼伸出、横向带形窗，中间是白色的核心筒。位置按卫星图（扣掉斜拍的倾斜），裙楼沿用 OSM 的
+function buildGardenHotel(THREE, K) {
+  const g = new THREE.Group(), add = (geo, m) => g.add(K.mesh(geo, m));
+  const fac = K.mat({ bg: '#f0ece3', h: 3, hc: '#5a6573', hw: 13, v: 10, vc: '#f0ece3', vw: 2 }, {}, 0.8), core = K.mat({ bg: '#f4f2ec', h: 2, hc: '#e2ddd2', hw: 2 }, {}, 0.6), roofM = K.mat(0xdcd7cc);
+  const tower = (c, angs, L, W, H, dr, dh) => {
+    for (const a of angs) {
+      const t = (a * Math.PI) / 180, u = [Math.cos(t), Math.sin(t)], v = [-u[1], u[0]];
+      const r = K.ccw([[0, -W / 2], [L, -W / 2], [L, W / 2], [0, W / 2]].map(([x, y]) => [c[0] + u[0] * x + v[0] * y, c[1] + u[1] * x + v[1] * y]));
+      add(K.loft([K.at(r, 0), K.at(r, H)], { tw: 12, th: 9.6 }), fac); add(K.cap(K.at(r, H)), roofM);
+    }
+    const hx = Array.from({ length: 6 }, (_, k) => { const t = ((angs[0] + 30 + k * 60) * Math.PI) / 180; return [c[0] + W * 0.62 * Math.cos(t), c[1] + W * 0.62 * Math.sin(t)]; });
+    add(K.loft([K.at(hx, 0), K.at(hx, H + 2)], { tw: 6, th: 6 }), core);
+    const cyl = (r, z) => Array.from({ length: 32 }, (_, k) => { const t = (k / 32) * Math.PI * 2; return [c[0] + r * Math.cos(t), c[1] + r * Math.sin(t), z]; });
+    add(K.loft([cyl(dr * 0.8, H), cyl(dr * 0.8, H + 2)], { smooth: true }), core);
+    add(K.loft([cyl(dr, H + 2), cyl(dr, H + 2 + dh)], { smooth: true, tw: 4, th: dh }), K.mat({ bg: '#f6f4ef', h: 1, hc: '#4f5a68', hw: 40 }, {}, 1));
+    add(K.loft([cyl(dr + 0.6, H + 2 + dh), cyl(dr + 0.6, H + 3 + dh)], { smooth: true }), core); add(K.cap(cyl(dr + 0.6, H + 3 + dh)), roofM);
+  };
+  tower([-4268, 2558], [0, 112, 235], 50, 16.5, 102, 12, 7);
+  tower([-4167, 2513], [60, 180, 300], 45, 15.5, 84, 8, 4);
+  return g;
+}
 const ThreeModels = {
   started: false, nightTarget: 0, n: 0, last: 0, rp: 0,
   setNight(v) { this.nightTarget = v ? 1 : 0; if (map) map.triggerRepaint(); },
@@ -2372,6 +2545,11 @@ const ThreeModels = {
       { g: buildXinghai(THREE, K), z0: 13.2, z1: 14.8, l: 'l42' },
       { g: buildOiKwan(THREE, K), z0: 13.2, z1: 14.8, l: 'l43' },
       { g: buildRenmin(THREE, K), z0: 13.2, z1: 14.4, l: 'l44' },
+      { g: buildTianhe(THREE, K), z0: 13.2, z1: 14.8, l: 'l45' },
+      { g: buildYuexiushan(THREE, K), z0: 13.2, z1: 14.8, l: 'l46' },
+      { g: buildGDTV(THREE, K), z0: 12.4, z1: 13.6, l: 'l47' },
+      { g: buildGZTV(THREE, K), z0: 12.4, z1: 13.6, l: 'l48' },
+      { g: buildGardenHotel(THREE, K), z0: 13.2, z1: 14.8, l: 'l49' },
     ];
     for (const p of parts) { scene.add(p.g); p.g.traverse((o) => { o.frustumCulled = false; }); }
     // things a click can hit, each tagged with its landmark id
