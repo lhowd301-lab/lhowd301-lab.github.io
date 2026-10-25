@@ -727,7 +727,7 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
 .pet-room svg.layer g[data-f]{pointer-events:visiblePainted;cursor:pointer}
 .pet-room canvas.pet3d{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;z-index:3}
 .pet-room canvas.pet3d[hidden]{display:none}
-.pet-room .who{position:absolute;z-index:45;height:24%;width:19%;transform:translate(-50%,-100%);border:0;background:transparent;padding:0;cursor:grab;touch-action:none;border-radius:40%}
+.pet-room .who{position:absolute;z-index:45;height:27%;width:21%;transform:translate(-50%,-100%);border:0;background:transparent;padding:0;cursor:grab;touch-action:none;border-radius:40%}
 .pet-room .who[hidden]{display:none}
 .pet-room .who img{display:none;pointer-events:none;-webkit-user-drag:none}
 .pet-room .who.flat img{display:block;height:100%;width:auto;margin:0 auto;animation:petBob 2.8s ease-in-out infinite}
@@ -5155,6 +5155,12 @@ const Pet = {
     { id: 'pat', name: '摸摸啵铃 3 次', goal: 3, reward: 10 },
   ],
   img(n) { return U('pet/' + n + '.webp'); },
+  // the pictures the room's animated 啵铃 is made of (loaded once)
+  rigImgs() {
+    return this._rig || (this._rig = Promise.all(['front', 'front_blink', 'front_happy', 'side', 'side_blink', 'back', 'happy', 'curious', 'sleepy'].map((n) => new Promise((ok, no) => {
+      const im = new Image(); im.onload = () => ok([n, im]); im.onerror = no; im.src = U('pet/rig/' + n + '.webp');
+    }))).then(Object.fromEntries).catch((e) => { this._rig = null; throw e; }));
+  },
   now() { return Date.now() + this.skew; },
   today(t = this.now()) { const d = new Date(t); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; },
   load() { try { const j = JSON.parse(localStorage.getItem(this.K) || 'null'); if (j && j.v === 1) return j; } catch (e) { this.mem = true; } return null; },
@@ -5521,264 +5527,378 @@ const Pet = {
   advance(hours, away = true) { this.skew += hours * 3600000; this.step(!away); this.save(); this.updateDock(); this.render(); },
 };
 
-/* ===================================================================== 啵铃 3D
-   一个小骨架：root（地上的位置、朝向）→ lift（跳起的高度）→ spin（翻滚、转圈、被拎着晃的支点，在身体中间）→ hips（胯）
-   → chest → neck → head；胯上挂两条腿和尾巴，胸口挂两只手，头上挂两只云耳和卷毛。
-   所有动作都是每帧按时间算出来的（走路、四肢着地爬、翻跟头、转圈、抖水、被摸、吃东西、睡觉、被拎起来乱蹬……），
-   耳朵和尾巴用弹簧跟着身体晃，所以会“慢半拍”。卡通描边用的是“反面外扩”的老办法。
-   单位：模型里头的半径约 0.5，整只高约 1.75；放进房间时整体缩放到房间边长的 0.24 倍左右 */
-function makeBoling(THREE) {
-  const C = { cream: 0xfff1df, cream2: 0xffe6cc, blue: 0x9ccbf3, blue2: 0xdcedfc, drop: 0x7db9ec, peach: 0xf5b9a0, line: 0x6b4630, eye: 0x3a2116, iris: 0x8c552d, mouth: 0xb83a4b, tongue: 0xff8fa0 };
-  const grad = (() => { const d = new Uint8Array([196, 196, 196, 255, 232, 232, 232, 255, 255, 255, 255, 255]); const t = new THREE.DataTexture(d, 3, 1); t.minFilter = t.magFilter = THREE.NearestFilter; t.needsUpdate = true; return t; })();
-  const toon = (c) => new THREE.MeshToonMaterial({ color: c, gradientMap: grad });
-  const flat = (c, o = {}) => new THREE.MeshBasicMaterial(Object.assign({ color: c }, o));
-  const LINE_W = 0.032;
-  const outline = new THREE.ShaderMaterial({
-    uniforms: { c: { value: new THREE.Color(C.line) }, w: { value: LINE_W } },
-    vertexShader: 'uniform float w; void main(){ vec3 p = position + normalize(normal) * w; gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0); }',
-    fragmentShader: 'uniform vec3 c;\nvoid main() {\n  gl_FragColor = vec4(c, 1.0);\n  #include <colorspace_fragment>\n}',
-    side: THREE.BackSide,
-  });
-  const hits = [];
-  const smooth = (geo) => {
-    const g = geo.index ? geo.toNonIndexed() : geo.clone(), p = g.attributes.position, n = g.attributes.normal, acc = new Map(), key = (i) => `${p.getX(i).toFixed(4)},${p.getY(i).toFixed(4)},${p.getZ(i).toFixed(4)}`;
-    for (let i = 0; i < p.count; i++) { const k = key(i), a = acc.get(k) || [0, 0, 0]; a[0] += n.getX(i); a[1] += n.getY(i); a[2] += n.getZ(i); acc.set(k, a); }
-    for (let i = 0; i < p.count; i++) { const a = acc.get(key(i)), l = Math.hypot(...a) || 1; n.setXYZ(i, a[0] / l, a[1] / l, a[2] / l); }
-    return g;
+/* ===================================================================== 啵铃（用原画做的骨骼动画）
+   正面、侧面、背面、开心、好奇、困困 六张原画，每张铺在一张细网格上；骨骼（头、两只云耳、卷毛、手、脚、尾巴、尾巴尖）
+   带着网格弯曲——和 Live2D 一个思路。画本身一笔不改，只是被“掰”着动：
+   - 侧着走 / 四肢着地爬：身体前倾、头抬起来看路、前爪往前够、后脚交替蹬，尾巴翘着晃
+   - 转身：换成正面 / 侧面 / 背面那张图，换的一瞬间像翻纸片那样收窄再展开；朝右走时侧面图左右镜像
+   - 眨眼、开心眯眼张嘴：是在原画脸上补画的两张表情（front_blink / front_happy / side_blink）
+   - 摸摸用“开心”那张、看灯和箱子用“好奇”那张、睡觉用“困困”那张，各自也有耳朵、尾巴、呼吸的小动作
+   - 耳朵和尾巴用弹簧跟着身体晃，慢半拍
+   单位：原画 1 像素 = 1/200 个模型单位；放进房间整体再缩放 0.24 */
+const PET2D_S = 1 / 200;   // model units per image pixel
+const mirrorX = (pts, w) => pts.map(([x, y]) => [w - x, y]);
+const PET2D_RIG = (() => {
+  const F_EAR = [[0, 35], [15, 5], [55, 0], [95, 10], [112, 40], [128, 66], [124, 78], [108, 85], [93, 98], [85, 115], [80, 135], [77, 152], [55, 162], [25, 158], [5, 135], [0, 90]];
+  const F_ARM = [[98, 224], [114, 222], [120, 236], [119, 256], [114, 276], [100, 281], [84, 276], [80, 258], [86, 238]];
+  const B_EAR = [[0, 40], [20, 5], [60, 0], [95, 12], [118, 50], [124, 75], [108, 85], [95, 100], [86, 118], [80, 135], [76, 152], [50, 158], [20, 150], [2, 125], [0, 90]];
+  return {
+    front: {
+      size: [320, 323], o: [160, 320],
+      bones: {
+        root: { p: [160, 320] },
+        chest: { parent: 'root', p: [160, 296], poly: [[88, 214], [232, 214], [238, 300], [82, 300]], f: 12 },
+        head: { parent: 'chest', p: [160, 212], poly: [[68, 178], [70, 150], [80, 118], [100, 88], [128, 75], [160, 68], [192, 75], [220, 88], [240, 118], [250, 150], [252, 178], [238, 200], [205, 212], [160, 216], [115, 212], [82, 200]], f: 12 },
+        curl: { parent: 'head', p: [160, 92], circle: [160, 62, 33], f: 8 },
+        earL: { parent: 'head', p: [112, 92], poly: F_EAR, f: 10 },
+        earR: { parent: 'head', p: [208, 92], poly: mirrorX(F_EAR, 320), f: 10 },
+        armL: { parent: 'chest', p: [110, 228], poly: F_ARM, f: 6 },
+        armR: { parent: 'chest', p: [210, 228], poly: mirrorX(F_ARM, 320), f: 6 },
+        legL: { parent: 'root', p: [134, 294], poly: [[108, 293], [158, 293], [160, 323], [106, 323]], f: 8 },
+        legR: { parent: 'root', p: [186, 294], poly: [[162, 293], [212, 293], [214, 323], [160, 323]], f: 8 },
+        tail: { parent: 'root', p: [228, 300], poly: [[242, 222], [262, 212], [290, 225], [292, 260], [285, 290], [262, 308], [232, 312], [222, 305], [228, 290], [240, 280], [242, 250]], f: 6 },
+        tailTip: { parent: 'tail', p: [262, 238], poly: [[245, 195], [262, 180], [295, 178], [312, 192], [316, 220], [308, 238], [290, 245], [270, 240], [250, 228]], f: 10 },
+      },
+      order: ['earL', 'earR', 'curl', 'tailTip', 'tail', 'armL', 'armR', 'legL', 'legR', 'head', 'chest'],
+      layers: ['tailTip', 'tail', 'earL', 'earR', 'legL', 'legR', 'root', 'chest', 'armL', 'armR', 'head', 'curl'],
+    },
+    back: {
+      size: [308, 320], o: [155, 317],
+      bones: {
+        root: { p: [155, 317] },
+        chest: { parent: 'root', p: [154, 296], poly: [[85, 210], [225, 210], [230, 300], [80, 300]], f: 12 },
+        head: { parent: 'chest', p: [154, 205], poly: [[70, 175], [76, 140], [92, 105], [120, 80], [154, 72], [188, 80], [216, 105], [232, 140], [236, 175], [220, 200], [185, 210], [154, 212], [122, 210], [90, 200]], f: 12 },
+        curl: { parent: 'head', p: [154, 82], circle: [154, 55, 30], f: 8 },
+        earL: { parent: 'head', p: [112, 95], poly: B_EAR, f: 10 },
+        earR: { parent: 'head', p: [196, 95], poly: mirrorX(B_EAR, 308), f: 10 },
+        armL: { parent: 'chest', p: [104, 222], poly: [[92, 218], [112, 214], [110, 240], [100, 268], [90, 278], [80, 272], [80, 250], [85, 232]], f: 6 },
+        legL: { parent: 'root', p: [133, 294], poly: [[106, 293], [158, 293], [160, 320], [104, 320]], f: 8 },
+        legR: { parent: 'root', p: [183, 294], poly: [[160, 293], [210, 293], [212, 320], [158, 320]], f: 8 },
+        tail: { parent: 'root', p: [172, 300], poly: [[150, 300], [148, 272], [158, 240], [175, 205], [205, 180], [240, 177], [262, 185], [270, 200], [245, 205], [228, 220], [228, 262], [238, 285], [225, 302], [195, 306]], f: 6 },
+        tailTip: { parent: 'tail', p: [238, 222], poly: [[228, 205], [250, 192], [275, 198], [290, 225], [290, 255], [275, 268], [250, 268], [232, 250], [226, 228]], f: 10 },
+      },
+      order: ['earL', 'earR', 'curl', 'tailTip', 'tail', 'armL', 'legL', 'legR', 'head', 'chest'],
+      layers: ['earL', 'earR', 'legL', 'legR', 'root', 'chest', 'armL', 'head', 'curl', 'tail', 'tailTip'],
+    },
+    side: {   // drawn facing left; mirrored when it faces right
+      size: [253, 326], o: [100, 322],
+      bones: {
+        root: { p: [100, 322] },
+        chest: { parent: 'root', p: [100, 300], poly: [[28, 212], [150, 212], [150, 300], [28, 300]], f: 12 },
+        head: { parent: 'chest', p: [88, 214], poly: [[0, 175], [2, 150], [15, 115], [40, 85], [75, 62], [110, 58], [140, 75], [155, 110], [155, 160], [148, 195], [130, 212], [95, 218], [55, 215], [20, 205]], f: 24 },
+        curl: { parent: 'head', p: [40, 112], poly: [[10, 95], [20, 70], [45, 58], [62, 65], [62, 85], [52, 105], [40, 115], [20, 115]], f: 7 },
+        earL: { parent: 'head', p: [112, 120], poly: [[72, 80], [85, 50], [110, 15], [140, 0], [165, 15], [172, 45], [195, 58], [198, 95], [190, 108], [194, 130], [185, 148], [160, 156], [135, 152], [115, 145], [100, 130], [88, 110], [75, 95]], f: 9 },
+        armL: { parent: 'chest', p: [82, 232], poly: [[62, 228], [80, 225], [100, 240], [104, 262], [100, 285], [90, 296], [72, 296], [62, 282], [58, 258]], f: 6 },
+        legL: { parent: 'root', p: [86, 300], poly: [[50, 300], [108, 298], [115, 312], [112, 326], [50, 326], [46, 312]], f: 7 },
+        legR: { parent: 'root', p: [128, 296], poly: [[112, 288], [148, 290], [150, 326], [114, 326]], f: 7 },
+        tail: { parent: 'root', p: [142, 300], poly: [[150, 240], [160, 215], [190, 208], [225, 215], [245, 240], [245, 280], [235, 305], [205, 315], [160, 318], [142, 312], [142, 290], [150, 270]], f: 6 },
+        tailTip: { parent: 'tail', p: [205, 228], poly: [[190, 215], [195, 185], [215, 165], [245, 160], [253, 170], [253, 225], [240, 232], [215, 232]], f: 10 },
+      },
+      order: ['earL', 'curl', 'tailTip', 'tail', 'armL', 'legL', 'legR', 'head', 'chest'],
+      layers: ['tail', 'tailTip', 'legR', 'legL', 'root', 'chest', 'armL', 'head', 'curl', 'earL'],
+    },
+    happy: {
+      size: [279, 290], o: [118, 288],
+      bones: {
+        root: { p: [118, 288] },
+        chest: { parent: 'root', p: [120, 250], poly: [[55, 175], [200, 175], [195, 255], [60, 255]], f: 12 },
+        head: { parent: 'chest', p: [125, 185], poly: [[40, 140], [55, 95], [90, 65], [140, 55], [190, 80], [205, 120], [200, 165], [180, 185], [130, 195], [80, 185], [45, 170]], f: 12 },
+        curl: { parent: 'head', p: [160, 95], circle: [160, 65, 32], f: 8 },
+        earL: { parent: 'head', p: [90, 95], poly: [[0, 20], [30, 0], [80, 5], [105, 35], [115, 60], [95, 75], [80, 95], [70, 115], [40, 120], [15, 110], [0, 80]], f: 10 },
+        earR: { parent: 'head', p: [200, 110], poly: [[195, 75], [215, 60], [260, 62], [279, 80], [279, 150], [255, 180], [225, 178], [205, 165], [200, 140]], f: 10 },
+        armL: { parent: 'chest', p: [75, 172], poly: [[32, 135], [55, 128], [78, 145], [85, 165], [75, 180], [50, 178], [35, 160]], f: 7 },
+        armR: { parent: 'chest', p: [160, 186], poly: [[150, 170], [185, 165], [198, 180], [190, 198], [160, 200]], f: 6 },
+        legL: { parent: 'chest', p: [88, 218], poly: [[32, 200], [60, 195], [95, 205], [100, 230], [80, 245], [45, 245], [30, 225]], f: 7 },
+        legR: { parent: 'root', p: [118, 246], poly: [[98, 236], [140, 236], [140, 290], [98, 290]], f: 7 },
+      },
+      order: ['earL', 'earR', 'curl', 'armL', 'armR', 'legL', 'legR', 'head', 'chest'],
+      layers: ['earL', 'earR', 'legR', 'root', 'chest', 'legL', 'armR', 'head', 'curl', 'armL'],
+    },
+    curious: {
+      size: [286, 289], o: [148, 287],
+      bones: {
+        root: { p: [148, 287] },
+        chest: { parent: 'root', p: [145, 280], poly: [[85, 215], [205, 215], [205, 289], [85, 289]], f: 12 },
+        head: { parent: 'chest', p: [150, 212], poly: [[75, 170], [80, 120], [110, 90], [150, 80], [195, 100], [215, 140], [212, 185], [195, 210], [150, 220], [105, 215], [82, 200]], f: 12 },
+        curl: { parent: 'head', p: [110, 100], circle: [110, 75, 26], f: 8 },
+        earL: { parent: 'head', p: [100, 130], poly: [[0, 90], [20, 70], [60, 70], [90, 80], [110, 95], [100, 115], [88, 135], [85, 160], [80, 178], [50, 182], [20, 175], [0, 150]], f: 10 },
+        earR: { parent: 'head', p: [172, 92], poly: [[145, 40], [150, 10], [175, 0], [200, 5], [220, 25], [230, 60], [225, 90], [210, 110], [190, 112], [175, 95], [160, 80]], f: 10 },
+        armL: { parent: 'chest', p: [170, 262], poly: [[155, 185], [175, 180], [190, 195], [192, 225], [185, 260], [165, 265], [152, 240], [150, 205]], f: 6 },
+        tail: { parent: 'root', p: [205, 272], poly: [[200, 195], [230, 190], [260, 205], [275, 240], [265, 270], [235, 282], [205, 280], [198, 250]], f: 6 },
+        tailTip: { parent: 'tail', p: [240, 200], poly: [[222, 150], [250, 140], [280, 150], [286, 180], [275, 200], [250, 205], [228, 195]], f: 10 },
+      },
+      order: ['earL', 'earR', 'curl', 'tailTip', 'tail', 'armL', 'head', 'chest'],
+      layers: ['earR', 'earL', 'tail', 'tailTip', 'root', 'chest', 'head', 'curl', 'armL'],
+    },
+    sleepy: {
+      size: [290, 203], o: [150, 200],
+      bones: {
+        root: { p: [150, 200] },
+        chest: { parent: 'root', p: [240, 200], poly: [[195, 40], [260, 45], [290, 90], [290, 203], [200, 203]], f: 14 },
+        head: { parent: 'root', p: [110, 175], poly: [[15, 90], [40, 40], [100, 15], [170, 20], [205, 60], [200, 140], [150, 170], [60, 170], [20, 140]], f: 14 },
+        earL: { parent: 'head', p: [95, 95], poly: [[0, 60], [10, 20], [40, 5], [90, 0], [130, 10], [140, 30], [115, 50], [100, 80], [90, 110], [70, 125], [30, 128], [5, 110]], f: 10 },
+        tailTip: { parent: 'root', p: [170, 168], poly: [[140, 150], [165, 138], [200, 140], [215, 160], [210, 195], [180, 200], [150, 192], [140, 170]], f: 9 },
+      },
+      order: ['earL', 'tailTip', 'head', 'chest'],
+      layers: ['root', 'chest', 'head', 'earL', 'tailTip'],
+    },
   };
-  // a toon mesh with its own outline hull
-  const part = (geo, color, parent, pos, scl, line = true) => {   // line: true, false, or 'smooth' (rebuild normals for the outline)
-    const m = new THREE.Mesh(geo, toon(color)); if (pos) m.position.set(...pos); if (scl) m.scale.set(...scl);
-    parent.add(m); hits.push(m);
-    if (line) { const o = new THREE.Mesh(line === 'smooth' ? smooth(geo) : geo, outline); m.add(o); }
-    return m;
-  };
-  const G = () => new THREE.Group();
-  // a tube that gets thinner along a curve (curl, tail)
-  const taper = (pts, r0, r1, seg = 64, rad = 14) => {
-    const curve = new THREE.CatmullRomCurve3(pts.map((p) => new THREE.Vector3(...p))), fr = curve.computeFrenetFrames(seg, false);
-    const pos = [], nor = [], idx = [];
-    for (let i = 0; i <= seg; i++) {
-      const t = i / seg, P = curve.getPointAt(t), N = fr.normals[i], B = fr.binormals[i], r = r0 + (r1 - r0) * t;
-      for (let j = 0; j <= rad; j++) { const a = (j / rad) * Math.PI * 2, n = new THREE.Vector3().addScaledVector(N, Math.cos(a)).addScaledVector(B, Math.sin(a)); pos.push(P.x + n.x * r, P.y + n.y * r, P.z + n.z * r); nor.push(n.x, n.y, n.z); }
-    }
-    for (let i = 0; i < seg; i++) for (let j = 0; j < rad; j++) { const a = i * (rad + 1) + j, b = a + rad + 1; idx.push(a, a + 1, b, b, a + 1, b + 1); }
-    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3)); g.setIndex(idx);
-    return { geo: g, curve };
-  };
-  const sphere = (r, w = 32, h = 24) => new THREE.SphereGeometry(r, w, h);
+})();
 
-  // ------------------------------------------------------------- rig
-  const root = G(), lift = G(), spin = G(), hips = G(), chest = G(), neck = G(), head = G();
-  root.add(lift); lift.add(spin); spin.position.y = 0.62; spin.add(hips); hips.position.y = 0.33 - 0.62;
-  hips.add(chest); chest.position.y = 0.36; chest.add(neck); neck.position.y = 0.1; neck.add(head); head.position.y = 0.4;
-  // body: a soft pear
-  const bodyGeo = sphere(0.36, 40, 28);
-  { const p = bodyGeo.attributes.position; for (let i = 0; i < p.count; i++) { const y = p.getY(i), k = 1 + 0.12 * Math.max(0, -y / 0.36); p.setX(i, p.getX(i) * k); p.setZ(i, p.getZ(i) * k); } bodyGeo.computeVertexNormals(); }
-  const body = part(bodyGeo, C.cream, hips, [0, 0.21, 0], [1, 1.06, 0.92]);
-  // the water-drop mark on the chest
-  const dropShape = new THREE.Shape(); dropShape.moveTo(0, 0.07); dropShape.bezierCurveTo(0.012, 0.03, 0.05, 0.0, 0.05, -0.03); dropShape.bezierCurveTo(0.05, -0.065, 0.025, -0.08, 0, -0.08); dropShape.bezierCurveTo(-0.025, -0.08, -0.05, -0.065, -0.05, -0.03); dropShape.bezierCurveTo(-0.05, 0.0, -0.012, 0.03, 0, 0.07);
-  const chestDrop = new THREE.Mesh(new THREE.ShapeGeometry(dropShape, 16), flat(C.drop)); chestDrop.position.set(0, 0.29, 0.338); chestDrop.rotation.x = -0.18; hips.add(chestDrop);
-  const shine = new THREE.Mesh(new THREE.CircleGeometry(0.013, 10), flat(0xffffff)); shine.position.set(-0.018, -0.035, 0.002); chestDrop.add(shine);
-  // legs: short stubs with round feet and peach pads underneath
-  const mkLeg = (s) => {
-    const pv = G(); pv.position.set(0.16 * s, 0.03, 0.03); hips.add(pv);
-    part(new THREE.CapsuleGeometry(0.1, 0.1, 6, 16), C.cream, pv, [0, -0.12, 0]);
-    const foot = part(sphere(0.12, 24, 16), C.cream, pv, [0, -0.255, 0.05], [1.05, 0.72, 1.3]);
-    const pad = new THREE.Mesh(new THREE.CircleGeometry(0.06, 20), flat(C.peach)); pad.rotation.x = Math.PI / 2; pad.position.set(0, -0.121, 0.0); foot.add(pad);
-    return pv;
-  };
-  const legL = mkLeg(-1), legR = mkLeg(1);
-  // arms
-  const mkArm = (s) => {
-    const pv = G(); pv.position.set(0.25 * s, 0.0, 0.07); chest.add(pv);
-    part(new THREE.CapsuleGeometry(0.075, 0.1, 6, 14), C.cream, pv, [0, -0.11, 0]);
-    part(sphere(0.085, 20, 14), C.cream, pv, [0, -0.2, 0.01]);
-    return pv;
-  };
-  const armL = mkArm(-1), armR = mkArm(1);
-  // head: a wide soft ball with puffy cheeks
-  const headM = part(sphere(0.5, 48, 32), C.cream, head, [0, 0, 0], [1.1, 0.96, 0.98]);
-  for (const s of [-1, 1]) part(sphere(0.2, 24, 16), C.cream, head, [0.4 * s, -0.22, 0.1], [1.05, 0.82, 0.95]);
-  // eyes: dark rim, warm iris low down, pupil, two white highlights and a little blue glint
-  const mkEye = (s) => {
-    const g = G(); g.position.set(0.215 * s, -0.04, 0.442); g.rotation.set(0.05, 0.42 * s, 0); head.add(g);
-    const open = G(); g.add(open);
-    const L = (r, sx, sy, c, x, y, z) => { const m = new THREE.Mesh(sphere(r, 24, 16), flat(c)); m.scale.set(sx, sy, 0.35); m.position.set(x, y, z); open.add(m); return m; };
-    L(0.112, 1, 1.3, C.eye, 0, 0, 0);
-    L(0.085, 1, 1.12, C.iris, 0, -0.032, 0.012);
-    L(0.055, 1, 1.25, 0x24120a, 0, 0.008, 0.022);
-    L(0.036, 1, 1.05, 0xffffff, 0.034, 0.06, 0.035);
-    L(0.017, 1, 1, 0xffffff, -0.04, -0.06, 0.035);
-    L(0.022, 1.1, 1, C.drop, 0.006, -0.1, 0.03);
-    const arc = (up) => { const a = new THREE.Mesh(new THREE.TorusGeometry(0.075, 0.017, 8, 24, Math.PI), flat(C.line)); a.position.z = 0.02; if (!up) a.rotation.z = Math.PI; a.visible = false; g.add(a); return a; };
-    return { g, open, happy: arc(true), closed: arc(false) };
-  };
-  const eyes = [mkEye(-1), mkEye(1)];
-  const nose = new THREE.Mesh(sphere(0.022, 12, 8), flat(C.line)); nose.scale.set(1.3, 0.8, 0.6); nose.position.set(0, -0.155, 0.468); head.add(nose);
-  // mouth: a little “ω”, or open with a tongue
-  const mouth = G(); mouth.position.set(0, -0.245, 0.418); mouth.rotation.x = -0.5; head.add(mouth);
-  const wCurve = new THREE.CatmullRomCurve3([[-0.075, 0.012, 0], [-0.04, -0.028, 0.004], [0, 0.0, 0.006], [0.04, -0.028, 0.004], [0.075, 0.012, 0]].map((p) => new THREE.Vector3(...p)));
-  const mouthW = new THREE.Mesh(new THREE.TubeGeometry(wCurve, 24, 0.012, 6), flat(C.line)); mouth.add(mouthW);
-  const os = new THREE.Shape(); os.moveTo(-0.07, 0); os.quadraticCurveTo(0, -0.18, 0.07, 0); os.quadraticCurveTo(0.035, -0.03, 0, -0.005); os.quadraticCurveTo(-0.035, -0.03, -0.07, 0);
-  const mouthO = G(); mouth.add(mouthO);
-  mouthO.add(new THREE.Mesh(new THREE.ShapeGeometry(os, 16), flat(C.mouth)));
-  { const tg = new THREE.Mesh(new THREE.CircleGeometry(0.04, 16), flat(C.tongue)); tg.scale.set(1, 0.6, 1); tg.position.set(0, -0.085, 0.002); mouthO.add(tg); }
-  { const rim = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([[-0.07, 0, 0], [-0.035, -0.11, 0], [0, -0.128, 0], [0.035, -0.11, 0], [0.07, 0, 0]].map((p) => new THREE.Vector3(...p))), 20, 0.01, 6), flat(C.line)); rim.position.z = 0.003; mouthO.add(rim); }
-  mouthO.add(new THREE.Mesh(new THREE.TubeGeometry(wCurve, 24, 0.012, 6), flat(C.line)));
-  mouthO.visible = false;
-  // blush
-  const blushMat = flat(C.peach, { transparent: true, opacity: 0.75, depthWrite: false });
-  for (const s of [-1, 1]) { const b = new THREE.Mesh(new THREE.CircleGeometry(0.075, 24), blushMat); b.scale.set(1.3, 0.75, 1); b.position.set(0.33 * s, -0.2, 0.37); b.rotation.set(-0.3, 0.72 * s, 0); head.add(b); }
-  // the curl on top: a fat swirl that thins to a point
-  { const pts = []; const cx = 0.03, cy = 0.47, cz = 0.18; for (let i = 0; i <= 40; i++) { const t = i / 40, a = (-100 + 560 * t) * Math.PI / 180, r = 0.2 * (1 - 0.82 * t); pts.push([cx + r * Math.cos(a), cy + r * Math.sin(a), cz + 0.06 * t]); }
-    const { geo } = taper(pts, 0.105, 0.035, 80, 14); part(geo, C.cream, head); part(sphere(0.035, 12, 8), C.cream, head, pts[pts.length - 1], null, false); }
-  // ears: puffy cloud wings with a pale heart on the front
-  const cloud = (() => {
-    const circ = [[0.17, 0.1, 0.19], [0.4, 0.33, 0.24], [0.66, 0.24, 0.2], [0.66, -0.02, 0.18], [0.42, -0.1, 0.2], [0.2, -0.08, 0.15]], cx = 0.42, cy = 0.1, n = 90, pts = [];
-    for (let k = 0; k < n; k++) {
-      const a = (k / n) * Math.PI * 2, dx = Math.cos(a), dy = Math.sin(a); let best = 0.05;
-      for (const [x, y, r] of circ) { const ox = cx - x, oy = cy - y, b = ox * dx + oy * dy, c = ox * ox + oy * oy - r * r, d = b * b - c; if (d >= 0) best = Math.max(best, -b + Math.sqrt(d)); }
-      pts.push(new THREE.Vector2(cx + dx * best, cy + dy * best));
-    }
-    const sm = pts.map((p, i) => { const a = pts[(i + n - 1) % n], b = pts[(i + 1) % n]; return new THREE.Vector2((a.x + 2 * p.x + b.x) / 4, (a.y + 2 * p.y + b.y) / 4); });
-    return new THREE.Shape(sm);
-  })();
-  const earGeo = new THREE.ExtrudeGeometry(cloud, { depth: 0.05, bevelEnabled: true, bevelThickness: 0.075, bevelSize: 0.05, bevelSegments: 6, curveSegments: 4 }); earGeo.translate(0, 0, -0.025);
-  { const p = earGeo.attributes.position; for (let i = 0; i < p.count; i++) { const x = p.getX(i), y = p.getY(i); p.setZ(i, p.getZ(i) - 0.32 * x * x - 0.08 * (y - 0.1) * (y - 0.1)); } earGeo.computeVertexNormals(); }   // cupped, so seen edge-on it's a curve, not a plank
-  const heart = new THREE.Shape(); heart.moveTo(0, -0.13); heart.bezierCurveTo(-0.05, -0.08, -0.16, -0.02, -0.14, 0.06); heart.bezierCurveTo(-0.12, 0.13, -0.03, 0.13, 0, 0.06); heart.bezierCurveTo(0.03, 0.13, 0.12, 0.13, 0.14, 0.06); heart.bezierCurveTo(0.16, -0.02, 0.05, -0.08, 0, -0.13);
-  const mkEar = (s) => {
-    const pv = G(); pv.position.set(0.34 * s, 0.15, -0.13); pv.scale.set(s < 0 ? -0.84 : 0.84, 0.84, 0.84); head.add(pv);
-    const flap = G(); pv.add(flap);
-    const e = part(earGeo, C.blue, flap, [-0.08, -0.1, 0], null, 'smooth');
-    const h = new THREE.Mesh(new THREE.ShapeGeometry(heart, 16), flat(C.blue2)); h.position.set(0.42, 0.06, 0.102); h.rotation.z = -1.1; h.scale.set(1.15, 1.15, 1); e.add(h);
-    return { pv, flap, a: 0, v: 0, sw: 0 };
-  };
-  const ears = [mkEar(-1), mkEar(1)];
-  // tail: a thick curl behind, ending in a blue drop
-  const tailRoot = G(); tailRoot.position.set(0.05, 0.1, -0.27); hips.add(tailRoot);
-  const tailPts = [[0, 0, 0], [0.05, -0.04, -0.16], [0.12, 0.04, -0.32], [0.16, 0.22, -0.38], [0.15, 0.38, -0.3], [0.12, 0.42, -0.16], [0.1, 0.34, -0.08]];
-  const { geo: tailGeo, curve: tailCurve } = taper(tailPts, 0.12, 0.075, 70, 14);
-  part(tailGeo, C.cream, tailRoot);
-  const tuft = G(); tailRoot.add(tuft);
-  { const end = tailCurve.getPointAt(1), tan = tailCurve.getTangentAt(1); tuft.position.copy(end);
-    const prof = []; for (let i = 0; i <= 24; i++) { const t = i / 24, y = t * 0.3, r = 0.11 * Math.sin(Math.PI * Math.pow(t, 0.62)) * (1 - 0.15 * t); prof.push(new THREE.Vector2(Math.max(0.001, r), y)); }
-    const dm = part(new THREE.LatheGeometry(prof, 24), C.blue, tuft, [0, -0.04, 0]);
-    tuft.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(tan.x, tan.y + 0.6, tan.z + 0.4).normalize()); dm.rotation.z = 0.2; }
+function makeBolingArt(THREE, imgs, cam) {
+  const S_ = PET2D_S;
+  const root = new THREE.Group(), bb = new THREE.Group(), turn = new THREE.Group();
+  root.add(bb); bb.add(turn);
+  if (cam) bb.quaternion.copy(cam.quaternion);
+  const tex = {};
+  for (const [k, im] of Object.entries(imgs)) { const t = new THREE.Texture(im); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; t.needsUpdate = true; tex[k] = t; }
 
-  // ------------------------------------------------------------- animation
-  const S = { yaw: -Math.PI / 4, phase: 0, crawl: 0, walk: 0, blinkT: 2.5, blinkK: 0, t: 0, tailA: 0, prevLift: 0, vLift: 0, sit: 0, lie: 0, held: 0 };
+  // ---------------------------------------------------------------- build one pose: grid mesh + weights
   const sm = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
-  const lerp = (a, b, t) => a + (b - a) * t;
+  function sdPoly(poly, x, y) {   // signed distance, negative inside
+    let d = 1e9, inside = false;
+    for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+      const [xi, yi] = poly[i], [xj, yj] = poly[j];
+      if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside;
+      const ex = xj - xi, ey = yj - yi, l2 = ex * ex + ey * ey || 1, t = Math.max(0, Math.min(1, ((x - xi) * ex + (y - yi) * ey) / l2));
+      d = Math.min(d, Math.hypot(x - xi - t * ex, y - yi - t * ey));
+    }
+    return inside ? -d : d;
+  }
+  function buildPose(name, R) {
+    const [W, H] = R.size, [ox, oy] = R.o, im = imgs[name], G = 5;
+    // which cells have paint (so the empty corners carry no triangles)
+    let A = null;
+    try { const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const cx = cv.getContext('2d'); cx.drawImage(im, 0, 0, W, H); A = cx.getImageData(0, 0, W, H).data; } catch (e) { /* can't read pixels: mesh the whole picture */ }
+    const nx = Math.ceil(W / G) + 1, ny = Math.ceil(H / G) + 1, occ = new Uint8Array((nx - 1) * (ny - 1));
+    for (let j = 0; j < ny - 1; j++) for (let i = 0; i < nx - 1; i++) {
+      let hit = 0; for (let y = j * G; y < Math.min(H, (j + 1) * G) && !hit; y += 1) for (let x = i * G; x < Math.min(W, (i + 1) * G); x += 1) if (!A || A[(y * W + x) * 4 + 3] > 4) { hit = 1; break; }
+      occ[j * (nx - 1) + i] = hit;
+    }
+    const occ2 = occ.slice();   // grow by two cells so stretched parts never run out of mesh
+    for (let r = 0; r < 2; r++) { const src = occ2.slice(); for (let j = 0; j < ny - 1; j++) for (let i = 0; i < nx - 1; i++) if (!src[j * (nx - 1) + i]) for (const [a, b] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const ii = i + a, jj = j + b; if (ii >= 0 && jj >= 0 && ii < nx - 1 && jj < ny - 1 && src[jj * (nx - 1) + ii]) { occ2[j * (nx - 1) + i] = 1; break; } } }
+    // bones in parent-first order
+    const names = Object.keys(R.bones), list = [], seen = new Set();
+    const visit = (n) => { if (seen.has(n)) return; const b = R.bones[n]; if (b.parent) visit(b.parent); seen.add(n); list.push(n); };
+    names.forEach(visit);
+    const bones = list.map((n) => { const b = R.bones[n]; return { name: n, parent: b.parent ? list.indexOf(b.parent) : -1, px: (b.p[0] - ox) * S_, py: (oy - b.p[1]) * S_, M: [1, 0, 0, 1, 0, 0], q: { r: 0, x: 0, y: 0, sx: 1, sy: 1 } }; });
+    const bi = Object.fromEntries(list.map((n, i) => [n, i]));
+    // vertices and their weights
+    const nv = nx * ny, rest = new Float32Array(nv * 2), uv = new Float32Array(nv * 2), wI = new Uint8Array(nv * 3), wW = new Float32Array(nv * 3);
+    for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
+      const v = j * nx + i, x = Math.min(W, i * G), y = Math.min(H, j * G);
+      rest[v * 2] = (x - ox) * S_; rest[v * 2 + 1] = (oy - y) * S_; uv[v * 2] = x / W; uv[v * 2 + 1] = 1 - y / H;
+      let rem = 1, near = bi.root, nd = 1e9; const ws = [];
+      for (const n of R.order) {
+        const b = R.bones[n], f = b.f || 8;
+        const sd = b.circle ? Math.hypot(x - b.circle[0], y - b.circle[1]) - b.circle[2] : sdPoly(b.poly, x, y);
+        if (sd < nd) { nd = sd; near = bi[n]; }
+        const r = 1 - sm(-f / 2, f / 2, sd);
+        if (r > 0.001 && rem > 0.001) { const w = rem * r; ws.push([bi[n], w]); rem -= w; }
+      }
+      // whatever no part claims (the empty margin round the edges) goes with the nearest part, so it never gets stretched
+      if (rem > 0.001) { const e = ws.find((q) => q[0] === near); if (e) e[1] += rem; else ws.push([near, rem]); }
+      ws.sort((a, b) => b[1] - a[1]); const top = ws.slice(0, 3), tot = top.reduce((s, a) => s + a[1], 0);
+      for (let k = 0; k < 3; k++) { wI[v * 3 + k] = top[k] ? top[k][0] : 0; wW[v * 3 + k] = top[k] ? top[k][1] / tot : 0; }
+    }
+    // triangles, sorted so parts in front are drawn last
+    const tris = [];
+    const layerOf = (v) => { let best = 0, bw = -1; for (let k = 0; k < 3; k++) if (wW[v * 3 + k] > bw) { bw = wW[v * 3 + k]; best = wI[v * 3 + k]; } return best; };
+    for (let j = 0; j < ny - 1; j++) for (let i = 0; i < nx - 1; i++) {
+      if (!occ2[j * (nx - 1) + i]) continue;
+      const a = j * nx + i, b = a + 1, c = a + nx, d = c + 1;
+      const score = {}; for (const v of [a, b, c, d]) for (let k = 0; k < 3; k++) score[wI[v * 3 + k]] = (score[wI[v * 3 + k]] || 0) + wW[v * 3 + k];
+      let dom = 0, ds = -1; for (const [k, s] of Object.entries(score)) if (s > ds) { ds = s; dom = +k; }
+      const L = R.layers.indexOf(list[dom]);
+      tris.push([L < 0 ? 0 : L, a, c, b], [L < 0 ? 0 : L, b, c, d]);
+    }
+    tris.sort((p, q) => p[0] - q[0]);
+    const idx = new Uint32Array(tris.length * 3); tris.forEach((t, k) => { idx[k * 3] = t[1]; idx[k * 3 + 1] = t[2]; idx[k * 3 + 2] = t[3]; });
+    const geo = new THREE.BufferGeometry();
+    const pos = new Float32Array(nv * 3); for (let v = 0; v < nv; v++) { pos[v * 3] = rest[v * 2]; pos[v * 3 + 1] = rest[v * 2 + 1]; }
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); geo.setIndex(new THREE.BufferAttribute(idx, 1));
+    const mat = new THREE.MeshBasicMaterial({ map: tex[name], transparent: true, depthTest: false, depthWrite: false, side: THREE.DoubleSide });
+    const mesh = new THREE.Mesh(geo, mat); mesh.frustumCulled = false; mesh.visible = false; mesh.renderOrder = 2; turn.add(mesh);
+    return { name, R, mesh, geo, pos, rest, wI, wW, bones, bi, nv };
+  }
+  const poses = {}; for (const n of Object.keys(PET2D_RIG)) if (imgs[n]) poses[n] = buildPose(n, PET2D_RIG[n]);
+
+  // ---------------------------------------------------------------- pose evaluation
+  function skin(P) {
+    const B = P.bones;
+    for (const b of B) {
+      const q = b.q, c = Math.cos(q.r), s = Math.sin(q.r);
+      // local = T(p + t) · R · S · T(-p)
+      const a = c * q.sx, bb_ = s * q.sx, cc = -s * q.sy, d = c * q.sy;
+      const e = b.px + q.x - (a * b.px + cc * b.py), f = b.py + q.y - (bb_ * b.px + d * b.py);
+      if (b.parent < 0) b.M = [a, bb_, cc, d, e, f];
+      else { const m = B[b.parent].M; b.M = [m[0] * a + m[2] * bb_, m[1] * a + m[3] * bb_, m[0] * cc + m[2] * d, m[1] * cc + m[3] * d, m[0] * e + m[2] * f + m[4], m[1] * e + m[3] * f + m[5]]; }
+    }
+    const { rest, wI, wW, pos, nv } = P;
+    for (let v = 0; v < nv; v++) {
+      const x = rest[v * 2], y = rest[v * 2 + 1]; let X = 0, Y = 0;
+      for (let k = 0; k < 3; k++) { const w = wW[v * 3 + k]; if (!w) continue; const m = B[wI[v * 3 + k]].M; X += w * (m[0] * x + m[2] * y + m[4]); Y += w * (m[1] * x + m[3] * y + m[5]); }
+      pos[v * 3] = X; pos[v * 3 + 1] = Y;
+    }
+    P.geo.attributes.position.needsUpdate = true;
+  }
+  const px = (n) => n * S_;   // image pixels → model units
+
+  // ---------------------------------------------------------------- animation state
+  const S = { yaw: -Math.PI / 4, t: 0, phase: 0, crawl: 0, walk: 0, blinkT: 2.4, blinkK: 0, cur: null, mirror: 1, flipK: 1, flipFrom: null, pend: null,
+    springs: { earL: { a: 0, v: 0 }, earR: { a: 0, v: 0 }, tail: { a: 0, v: 0 }, tip: { a: 0, v: 0 } }, prevY: 0, vy: 0, held: 0, sit: 0 };
+  const VIEW = -Math.PI / 4;
   const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
-  const VIEW = -Math.PI / 4;   // facing the viewer
-  const TO_CAM = new THREE.Vector3(-Math.SQRT1_2 * Math.cos(Math.PI / 6), 0.5, Math.SQRT1_2 * Math.cos(Math.PI / 6)), _n = new THREE.Vector3(), _eu = new THREE.Euler();
-  /* I: { speed (world units/s), moveYaw, gait 'walk'|'crawl', yaw (wanted facing when not moving, or null = towards the viewer),
-          act: { name, t (s since start), k (0..1) } | null, mode: 'idle'|'walk'|'act'|'sleep'|'drag'|'fall', look: [yaw, pitch] | null } */
+  const lerp = (a, b, t) => a + (b - a) * t;
+  // which picture shows for a facing direction (screen-space: mostly sideways → profile)
+  function viewFor(yaw, prev) {
+    const dx = 2 * (Math.sin(yaw) + Math.cos(yaw)), dy = Math.cos(yaw) - Math.sin(yaw);   // screen right, screen down
+    const side = prev === 'side' ? Math.abs(dx) > Math.abs(dy) * 0.75 : Math.abs(dx) > Math.abs(dy) * 1.25;
+    return side ? ['side', dx > 0 ? -1 : 1] : [dy > 0 ? 'front' : 'back', 1];
+  }
+  function show(name, mirror, how) {
+    if (S.pend && S.pend[0] === name && S.pend[1] === mirror) return;
+    if (S.cur === name && S.mirror === mirror) { S.pend = null; return; }
+    if (!S.cur || how === 'cut') { set(name, mirror); return; }
+    S.pend = [name, mirror]; S.flipK = 0; S.flipHow = how || 'flip';
+  }
+  function set(name, mirror) {
+    for (const p of Object.values(poses)) p.mesh.visible = false;
+    poses[name].mesh.visible = true; S.cur = name; S.mirror = mirror;
+  }
+
+  /* I: { speed, moveYaw, gait, yaw, act: {name, t, k} | null, mode, look } — same as the 3D model's */
   function update(dt, I) {
     S.t += dt; const t = S.t, act = I.act, an = act && act.name, k = act ? act.k : 0, at = act ? act.t : 0;
     const moving = I.speed > 0.02;
-    // facing: where it walks, else what it's looking at, else the viewer
     const want = moving ? I.moveYaw : I.yaw != null ? I.yaw : VIEW;
-    S.yaw += wrap(want - S.yaw) * Math.min(1, dt * (moving ? 9 : 4));
-    root.rotation.y = S.yaw;
-    // gait blend
+    S.yaw += wrap(want - S.yaw) * Math.min(1, dt * (moving ? 12 : 5));
     S.crawl = lerp(S.crawl, moving && I.gait === 'crawl' ? 1 : 0, Math.min(1, dt * 6));
     S.walk = lerp(S.walk, moving && I.gait !== 'crawl' ? 1 : 0, Math.min(1, dt * 8));
-    S.sit = lerp(S.sit, an === 'eat' ? 1 : 0, Math.min(1, dt * 7));
-    S.lie = lerp(S.lie, I.mode === 'sleep' ? 1 : 0, Math.min(1, dt * 3));
     S.held = lerp(S.held, I.mode === 'drag' ? 1 : 0, Math.min(1, dt * 8));
-    if (moving) S.phase += dt * (I.gait === 'crawl' ? 2.1 : 2.6) * Math.PI * 2 * Math.min(1.4, I.speed / 0.3);
-    const ph = S.phase, sw = Math.sin(ph), cw = Math.cos(ph);
-    // ---- base pose
-    let hipY = 0.33, hRx = 0.06, hRy = 0, hRz = 0, sx = 1, sy = 1, chRx = 0, hdRx = 0, hdRy = 0, hdRz = 0, lift_ = 0;
-    let lL = 0.02, lR = -0.02, lLz = 0.06, lRz = -0.06, aL = 0.12, aR = 0.12, aLz = 0.32, aRz = 0.32, earT = 0, tailY = Math.sin(t * 1.7) * 0.18, tailX = 0;
-    let eye = 'open', mopen = false, blush = 0.75, spinX = 0, spinY = 0, spinZ = 0;
-    // idle breathing
-    const br = Math.sin(t * 2.2); sy *= 1 + 0.012 * br; sx *= 1 - 0.006 * br;
-    hdRz += Math.sin(t * 0.9) * 0.03;
-    // ---- walking: little steps, waddle, bob
-    { const w = S.walk; hipY += w * Math.abs(cw) * 0.045; hRz += w * sw * 0.09; hRx += w * 0.08; hdRz -= w * sw * 0.06;
-      lL += w * sw * 0.75; lR -= w * sw * 0.75; aL -= w * sw * 0.65; aR += w * sw * 0.65; tailY += w * sw * 0.3; }
-    // ---- crawling on all fours: body tips forward, head stays up, diagonal limbs reach
-    { const c = S.crawl, pitch = 1.05; hRx += c * pitch; hipY += c * (-0.1 + Math.abs(sw) * 0.02); hdRx -= c * 0.95; hdRy += c * sw * 0.08; hRz += c * sw * 0.06;
-      lL += c * (-1.15 - sw * 0.45); lR += c * (-1.15 + sw * 0.45);
-      aL += c * (-1.0 + sw * 0.55); aR += c * (-1.0 - sw * 0.55); aLz -= c * 0.18; aRz -= c * 0.18; tailY += c * sw * 0.35; tailX += c * 0.4; }
-    // ---- sitting (eating): bottom down, feet forward
-    { const s = S.sit; hipY -= s * 0.08; hRx -= s * 0.12; lL -= s * 1.3; lR -= s * 1.3; }
-    // ---- asleep: lying on its tummy, chin on its paws, tail wrapped round
-    { const s = S.lie; hRx += s * 1.3; hipY -= s * 0.17; hdRx -= s * 1.22; hdRz += s * 0.28; lL -= s * 1.4; lR -= s * 1.4; aL -= s * 1.5; aR -= s * 1.5; aLz -= s * 0.1; aRz -= s * 0.1;
-      earT += s * 0.55; tailY = lerp(tailY, 1.1 + Math.sin(t * 0.8) * 0.05, s); tailX += s * 0.5; if (s > 0.5) { eye = 'closed'; sy *= 1 + 0.02 * Math.sin(t * 1.6); } }
-    // ---- held up: dangling, paddling its feet, swinging
-    { const h = S.held; lL += h * Math.sin(t * 11) * 0.55; lR -= h * Math.sin(t * 11) * 0.55; aLz += h * (0.9 + Math.sin(t * 9) * 0.35); aRz += h * (0.9 - Math.sin(t * 9) * 0.35); aL -= h * 0.3; aR -= h * 0.3;
-      spinZ += h * Math.sin(t * 3.4) * 0.14; earT += h * 0.75; tailX += h * 0.9; hdRx += h * 0.2; if (h > 0.5) mopen = true; }
-    if (I.mode === 'fall') { aLz += 1.4; aRz += 1.4; lLz += 0.3; lRz -= 0.3; earT -= 0.6; mopen = true; }
+    S.sit = lerp(S.sit, an === 'eat' ? 1 : 0, Math.min(1, dt * 7));
+    if (moving) S.phase += dt * (I.gait === 'crawl' ? 2.6 : 2.3) * Math.PI * 2 * Math.min(1.4, I.speed / 0.26);
+    const ph = S.phase, sw = Math.sin(ph);
+
+    // ---- which picture
+    let [view, mir] = viewFor(S.yaw, S.cur);
+    let pose = view, face = 'n';   // n normal, b blink, h happy
+    if (I.mode === 'sleep') { pose = 'sleepy'; mir = 1; }
+    else if (I.mode === 'drag' || I.mode === 'fall') { pose = 'front'; mir = 1; face = I.mode === 'drag' ? 'h' : 'n'; }
+    else if (an === 'pat') { pose = 'happy'; mir = 1; }
+    else if (an === 'lamp' || an === 'peek' || an === 'look') { pose = 'curious'; mir = an === 'look' && Math.sin(k * Math.PI * 2) < 0 ? -1 : 1; }
+    else if (an === 'hop' || an === 'shake' || an === 'shy' || an === 'eat' || an === 'wake' || an === 'land') { if (an !== 'land') { pose = 'front'; mir = 1; } face = an === 'wake' ? (k < 0.45 ? 'b' : 'n') : an === 'land' ? 'n' : 'h'; if (an === 'eat') face = Math.sin(at * 14) > 0 ? 'h' : 'n'; }
+    else if (an === 'roll') { pose = 'side'; mir = S.mirror && S.cur === 'side' ? S.mirror : -1; }
+    else if (an === 'spin') { const seq = [['front', 1], ['side', -1], ['back', 1], ['side', 1], ['front', 1]]; const i = Math.min(4, Math.floor(Math.min(0.999, k / 0.9) * 5)); [pose, mir] = seq[i]; }
+    if (!poses[pose]) pose = 'front';
+    const cutNow = an === 'spin';
+    show(pose, mir, cutNow ? 'flip' : pose !== view && pose !== 'front' ? 'pop' : 'flip');
+    // the turn: squash to a sliver, swap the picture, open up again
+    let flipS = 1, popS = 1;
+    if (S.pend) {
+      S.flipK = Math.min(1, S.flipK + dt / (an === 'spin' ? 0.07 : 0.1));
+      if (S.flipHow === 'pop') { if (S.flipK >= 0.5 && S.cur !== S.pend[0]) set(...S.pend); popS = 1 - 0.12 * Math.sin(S.flipK * Math.PI); }
+      else { flipS = Math.max(0.08, Math.abs(Math.cos(S.flipK * Math.PI))); if (S.flipK >= 0.5 && (S.cur !== S.pend[0] || S.mirror !== S.pend[1])) set(...S.pend); }
+      if (S.flipK >= 1) { if (S.cur !== S.pend[0] || S.mirror !== S.pend[1]) set(...S.pend); S.pend = null; }
+    }
+    const P = poses[S.cur];
+    // ---- blink (front and side only)
+    S.blinkT -= dt; if (S.blinkT < 0) { S.blinkK = 0.13; S.blinkT = 2.2 + Math.random() * 3.2; }
+    if (S.blinkK > 0) { S.blinkK -= dt; if (face === 'n') face = 'b'; }
+    const texName = S.cur === 'front' ? (face === 'b' ? 'front_blink' : face === 'h' ? 'front_happy' : 'front') : S.cur === 'side' && face === 'b' ? 'side_blink' : S.cur;
+    if (tex[texName] && P.mesh.material.map !== tex[texName]) P.mesh.material.map = tex[texName];
+
+    // ---- bone targets (pixels and radians; the side picture faces left, so "forward" is +x mirrored)
+    const q = {}; for (const b of P.bones) { b.q.r = 0; b.q.x = 0; b.q.y = 0; b.q.sx = 1; b.q.sy = 1; q[b.name] = b.q; }
+    const Q = (n) => q[n] || { r: 0, x: 0, y: 0, sx: 1, sy: 1 };
+    let lift = 0, whole = 0, wholeP = [0, px(150)], sqx = 1, sqy = 1, earKick = 0, earBase = 0, tailBase = Math.sin(t * 1.7) * 0.12, tipBase = Math.sin(t * 2.3) * 0.18;
+    // breathing
+    const br = Math.sin(t * 2.2);
+    Q('chest').sy *= 1 + 0.014 * br; Q('head').y += px(0.8 * br); Q('head').r += Math.sin(t * 0.9) * 0.025;
+    if (S.cur === 'side') {
+      const c = S.crawl, w = S.walk;
+      // walking upright: legs swing, little bob
+      Q('legL').r += w * sw * 0.42; Q('legR').r -= w * sw * 0.42; Q('legL').y += w * Math.max(0, sw) * px(4); Q('legR').y += w * Math.max(0, -sw) * px(4);
+      Q('armL').r += -w * sw * 0.3; Q('root').y += w * Math.abs(Math.cos(ph)) * px(3); Q('chest').r += w * 0.06;
+      // crawling: leans right over, head comes up to look ahead, paws reach and push
+      Q('chest').r += c * (0.42 + sw * 0.03); Q('chest').sy *= 1 - c * 0.05; Q('root').y -= c * px(8);
+      Q('head').r -= c * (0.27 + Math.cos(ph * 2) * 0.03); Q('head').x -= c * px(4);
+      Q('armL').r += c * (-0.55 + sw * 0.55); Q('armL').y += c * Math.max(0, -sw) * px(5);
+      Q('legL').r += c * sw * 0.5; Q('legR').r -= c * sw * 0.5; Q('legL').y += c * Math.max(0, sw) * px(5); Q('legR').y += c * Math.max(0, -sw) * px(5);
+      Q('root').y += c * Math.abs(Math.cos(ph)) * px(2.5); tailBase += c * 0.25 + (w + c) * sw * 0.2;
+      earKick += (w + c) * Math.cos(ph * 2) * 0.6;
+    } else if (S.cur === 'front' || S.cur === 'back') {
+      const m = Math.max(S.walk, S.crawl), c = S.crawl;
+      Q('legL').y += m * Math.max(0, sw) * px(6); Q('legR').y += m * Math.max(0, -sw) * px(6); Q('legL').r += m * sw * 0.06; Q('legR').r += m * sw * 0.06;
+      Q('root').y += m * Math.abs(Math.cos(ph)) * px(3.5); whole += m * sw * 0.045; wholeP = [0, 0];
+      Q('armL').r += m * sw * 0.16; Q('armR').r += m * sw * 0.16;
+      // crawling towards / away from you: low, paws paddling
+      Q('chest').sy *= 1 - c * 0.07; Q('head').y -= c * px(10); Q('armL').y += c * Math.max(0, sw) * px(7); Q('armR').y += c * Math.max(0, -sw) * px(7);
+      tailBase += m * sw * 0.18; earKick += m * Math.cos(ph * 2) * 0.6;
+    }
+    // looking at the cursor: the head turns a little that way
+    if (I.look && !an && I.mode === 'idle' && S.cur === 'front') { const d = Math.max(-1, Math.min(1, wrap(I.look[0] - VIEW))); Q('head').x += px(d * 5); Q('head').r -= d * 0.07; Q('head').y += px(I.look[1] < 0 ? 3 : -1); }
     // ---- one-off actions
     if (an === 'hop' || an === 'land') {
       const jumps = an === 'hop' ? [[0.06, 0.44, 0.34], [0.5, 0.86, 0.22]] : [];
-      let air = 0; for (const [a, b, hgt] of jumps) if (k > a && k < b) { const u = (k - a) / (b - a); lift_ += hgt * 4 * u * (1 - u); air = 1; }
+      let air = 0; for (const [a, b, h] of jumps) if (k > a && k < b) { const u = (k - a) / (b - a); lift += h * 4 * u * (1 - u); air = 1; }
       const sq = an === 'land' ? Math.sin(Math.min(1, k / 0.45) * Math.PI) * (1 - k) : jumps.reduce((m, [a, b]) => m + Math.max(0, 1 - Math.abs(k - a) / 0.06) + Math.max(0, 1 - Math.abs(k - b) / 0.06), 0);
-      sy *= 1 - 0.18 * sq; sx *= 1 + 0.12 * sq;
-      if (air) { aLz += 1.5; aRz += 1.5; lL -= 0.35; lR -= 0.35; }
-      eye = 'happy'; mopen = true;
-    } else if (an === 'roll') {   // a real forward somersault, tucked into a ball
+      sqy *= 1 - 0.16 * sq; sqx *= 1 + 0.1 * sq;
+      if (air) { sqy *= 1.05; sqx *= 0.97; Q('armL').r -= 0.7; Q('armR').r += 0.7; Q('legL').y += px(5); Q('legR').y += px(5); earBase -= 0.35; }
+    } else if (an === 'roll') {   // a somersault: tucks into a ball and goes right over
       const e = sm(0.05, 0.85, k), tuck = Math.sin(Math.min(1, k / 0.9) * Math.PI);
-      spinX += e * Math.PI * 2; lift_ += Math.sin(k * Math.PI) * 0.16;
-      lL -= tuck * 1.6; lR -= tuck * 1.6; aL -= tuck * 1.4; aR -= tuck * 1.4; hdRx += tuck * 0.45; earT += tuck * 0.9; tailX += tuck * 0.8;
-      eye = tuck > 0.3 ? 'happy' : 'open';
+      whole += e * Math.PI * 2; wholeP = [px(5), px(150)]; lift += Math.sin(k * Math.PI) * 0.12;
+      sqy *= 1 - 0.1 * tuck; Q('head').r -= tuck * 0.25; Q('legL').r -= tuck * 0.6; Q('legR').r -= tuck * 0.4; Q('armL').r -= tuck * 0.5; tailBase += tuck * 0.5; earBase += tuck * 0.4;
     } else if (an === 'spin') {
-      spinY += sm(0, 0.92, k) * Math.PI * 2; lift_ += Math.sin(k * Math.PI) * 0.14; aLz += 1.2 * Math.sin(k * Math.PI); aRz += 1.2 * Math.sin(k * Math.PI); earT -= 0.7 * Math.sin(k * Math.PI); eye = 'happy'; mopen = true;
-    } else if (an === 'shake') {   // shakes the water off, ears flapping
-      const d = 1 - k, w = Math.sin(at * Math.PI * 2 * 7.5); hRy += w * 0.5 * d; hdRy -= w * 0.35 * d; earT += Math.sin(at * Math.PI * 2 * 7.5 + 1.2) * 0.9 * d; tailY += w * 0.8 * d; eye = 'happy';
-    } else if (an === 'pat' || an === 'shy') {
-      const p = Math.sin(Math.min(1, k * 1.2) * Math.PI); hdRz += p * 0.28; sy *= 1 - 0.1 * p; sx *= 1 + 0.07 * p; earT += Math.sin(at * 22) * 0.25 * p - 0.25 * p; blush = 0.75 + 0.25 * p; eye = 'happy'; mopen = an === 'pat';
-      tailY += Math.sin(at * 16) * 0.4 * p;
+      lift += Math.sin(k * Math.PI) * 0.1; Q('armL').r -= 0.5 * Math.sin(k * Math.PI); Q('armR').r += 0.5 * Math.sin(k * Math.PI); earBase -= 0.4 * Math.sin(k * Math.PI);
+    } else if (an === 'shake') {   // shakes the water off
+      const d = 1 - k, w = Math.sin(at * Math.PI * 2 * 7.5); Q('chest').r += w * 0.13 * d; Q('head').r -= w * 0.16 * d; Q('head').x += px(w * 4 * d); earKick += Math.sin(at * Math.PI * 2 * 7.5 + 1.2) * 2.4 * d; tailBase += w * 0.6 * d;
+    } else if (an === 'pat') {   // the happy picture: bounces on one foot, waves, kicks
+      const p = Math.sin(Math.min(1, k * 1.15) * Math.PI);
+      lift += Math.abs(Math.sin(at * 7)) * 0.035 * p; Q('armL').r += Math.sin(at * 11) * 0.28 * p; Q('armR').r -= Math.sin(at * 9) * 0.12 * p; Q('legL').r += Math.sin(at * 7) * 0.22 * p; Q('head').r += Math.sin(at * 5) * 0.06; earKick += Math.sin(at * 7) * 1.2 * p;
+      sqy *= 1 - 0.05 * Math.max(0, Math.cos(at * 14)) * p;
+    } else if (an === 'shy') {
+      const p = Math.sin(Math.min(1, k * 1.2) * Math.PI); Q('head').r += p * 0.16; Q('head').y -= px(p * 3); sqy *= 1 - 0.05 * p; Q('armL').r += p * 0.25; Q('armR').r -= p * 0.25; earBase += p * 0.35;
     } else if (an === 'eat') {
-      const nib = Math.sin(at * 16); aL -= 1.95 + nib * 0.12; aR -= 1.95 - nib * 0.12; aLz -= 0.35; aRz -= 0.35; hdRx += 0.12 + nib * 0.04; mopen = nib > 0; eye = 'happy';
-    } else if (an === 'gaze') { hdRx -= 0.3; tailY += Math.sin(at * 3) * 0.35; earT -= 0.15; }
-    else if (an === 'sniff') { hdRx += 0.25 + Math.sin(at * 14) * 0.06; hRx += 0.2; }
-    else if (an === 'lamp') { hdRx -= 0.45 * Math.sin(Math.min(1, k * 1.5) * Math.PI / 2); mopen = true; }
-    else if (an === 'peek') { hRx += 0.32 * Math.sin(Math.min(1, k * 2) * Math.PI / 2); hdRx -= 0.15; tailY += Math.sin(at * 18) * 0.5; }
-    else if (an === 'look') { hdRy += Math.sin(k * Math.PI * 2) * 0.75; hdRz += Math.sin(k * Math.PI * 2) * 0.12; }
-    else if (an === 'wake') { const s = Math.sin(k * Math.PI); aLz += s * 2.3; aRz += s * 2.3; sy *= 1 + 0.08 * s; mopen = s > 0.3; eye = s > 0.2 ? 'closed' : 'open'; }
-    // looking at something (the cursor): head turns, relative to the body
-    if (I.look && !an && I.mode === 'idle') { hdRy += Math.max(-0.9, Math.min(0.9, wrap(I.look[0] - S.yaw))); hdRx += I.look[1]; }
-    // ---- blink
-    S.blinkT -= dt; if (S.blinkT < 0) { S.blinkK = 0.16; S.blinkT = 2.2 + Math.random() * 3; }
-    let bl = 1; if (S.blinkK > 0) { S.blinkK -= dt; bl = 0.12 + 0.88 * Math.abs(S.blinkK / 0.08 - 1); }
-    // ---- ears and tail lag behind (springs), kicked by vertical motion
-    S.vLift = (lift_ - S.prevLift) / Math.max(dt, 1e-3); S.prevLift = lift_;
-    for (const [i, e] of ears.entries()) {
-      const target = earT + (moving ? Math.sin(ph + i) * 0.12 : Math.sin(t * 1.3 + i * 2) * 0.04);
-      e.v += ((target - e.a) * 70 - e.v * 9 + S.vLift * 6) * dt; e.a += e.v * dt;
+      const nib = Math.sin(at * 14); Q('head').y += px(nib * 2); Q('head').r += nib * 0.03; Q('armL').r += 0.35 + nib * 0.05; Q('armR').r -= 0.35 + nib * 0.05; Q('armL').y += px(6); Q('armR').y += px(6);
+    } else if (an === 'gaze') { Q('head').r -= 0.08; tailBase += Math.sin(at * 3) * 0.3; earBase += Math.sin(at * 1.5) * 0.08; }
+    else if (an === 'sniff') { Q('head').r += 0.15 + Math.sin(at * 16) * 0.05; Q('head').y -= px(4 + Math.sin(at * 16) * 1.5); Q('chest').r += 0.12; tailBase += Math.sin(at * 9) * 0.3; }
+    else if (an === 'lamp' || an === 'peek') { Q('head').r += Math.sin(Math.min(1, k * 2) * Math.PI / 2) * 0.12; tailBase += Math.sin(at * 12) * 0.35; Q('armL').r += Math.sin(at * 6) * 0.08; }
+    else if (an === 'look') { Q('head').r += Math.sin(k * Math.PI * 2) * 0.1; earBase += Math.sin(at * 6) * 0.1; }
+    else if (an === 'wake') { const s = Math.sin(k * Math.PI); Q('armL').r -= s * 0.9; Q('armR').r += s * 0.9; sqy *= 1 + 0.07 * s; sqx *= 1 - 0.04 * s; }
+    // held up: dangling, paddling, swinging from the scruff
+    const h = S.held;
+    if (h > 0.01 && S.cur === 'front') {
+      Q('legL').y += h * Math.sin(t * 11) * px(5); Q('legR').y -= h * Math.sin(t * 11) * px(5); Q('legL').r += h * Math.sin(t * 11) * 0.12; Q('legR').r -= h * Math.sin(t * 11) * 0.12;
+      Q('armL').r -= h * (0.55 + Math.sin(t * 9) * 0.2); Q('armR').r += h * (0.55 - Math.sin(t * 9) * 0.2); sqy *= 1 + 0.05 * h; sqx *= 1 - 0.03 * h;
+      whole += h * Math.sin(t * 3.4) * 0.16; wholeP = [0, px(290)]; earBase += h * 0.5; tailBase += h * 0.5;
     }
-    S.tailA += ((tailY - S.tailA) * 40 - 0) * dt; S.tailA = Math.max(-2, Math.min(2, S.tailA));
-    // ---- write it all to the rig
-    lift.position.y = lift_;
-    spin.rotation.set(spinX, spinY, spinZ);
-    hips.position.y = hipY - 0.62; hips.rotation.set(hRx, hRy, hRz); hips.scale.set(sx, sy, sx);
-    chest.rotation.x = chRx;
-    head.rotation.set(hdRx, hdRy, hdRz);
-    legL.rotation.set(lL, 0, lLz); legR.rotation.set(lR, 0, lRz);
-    armL.rotation.set(aL, 0, -aLz); armR.rotation.set(aR, 0, aRz);
-    tailRoot.rotation.set(0.15 + tailX * 0.6, S.tailA, 0);
-    tuft.rotation.z = Math.sin(t * 2.4) * 0.15;
-    // ears swivel so a face of the cloud (front or back) is turned to the camera, never the thin edge
-    root.updateWorldMatrix(true, true);
-    for (const e of ears) {
-      let best = 0, bs = -9;
-      for (let c = -0.8; c <= 0.81; c += 0.16) {
-        _eu.set(0.05, -0.42 + c, 0.38 - e.a); _n.set(0, 0, 1).applyEuler(_eu).transformDirection(e.pv.matrixWorld);
-        const sc = Math.abs(_n.dot(TO_CAM)) - 0.3 * c * c; if (sc > bs) { bs = sc; best = c; }
-      }
-      e.sw += (best - e.sw) * Math.min(1, dt * 5);
-      e.flap.rotation.set(0.05, -0.42 + e.sw, 0.38 - e.a);
-    }
-    for (const e of eyes) { e.open.visible = eye === 'open'; e.happy.visible = eye === 'happy'; e.closed.visible = eye === 'closed'; e.g.scale.y = eye === 'open' ? bl : 1; }
-    mouthO.visible = mopen; mouthW.visible = !mopen; blushMat.opacity = blush;
+    if (I.mode === 'fall') { Q('armL').r -= 0.8; Q('armR').r += 0.8; earBase -= 0.5; sqy *= 1.06; sqx *= 0.96; }
+    // sleeping picture: slow breathing, an ear that twitches now and then
+    if (S.cur === 'sleepy') { const b = Math.sin(t * 1.5); Q('chest').sy *= 1 + 0.025 * b; Q('chest').sx *= 1 + 0.01 * b; Q('head').y += px(1.2 * b); earBase = Math.max(0, Math.sin(t * 0.7) - 0.93) * 3; tipBase = Math.sin(t * 1.1) * 0.08; }
+    if (S.sit > 0.01) { sqy *= 1 - 0.06 * S.sit; sqx *= 1 + 0.04 * S.sit; }
+
+    // ---- springs: ears and tail lag behind the body's bounce
+    const y = lift + (Q('root').y || 0); S.vy = (y - S.prevY) / Math.max(dt, 1e-3); S.prevY = y;
+    const sp = S.springs, step = (o, target, kick) => { o.v += ((target - o.a) * 80 - o.v * 9 + kick) * dt; o.a += o.v * dt; o.a = Math.max(-1.2, Math.min(1.2, o.a)); };
+    step(sp.earL, earBase + Math.sin(t * 1.3) * 0.03, S.vy * 14 + earKick * 6);
+    step(sp.earR, earBase + Math.sin(t * 1.3 + 2) * 0.03, S.vy * 14 + earKick * 6);
+    step(sp.tail, tailBase, -S.vy * 6); step(sp.tip, tipBase, -S.vy * 8 + (sp.tail.v || 0) * 0.5);
+    // positive spring = ears droop: the left ear (sticking out left) droops anticlockwise, the right one clockwise
+    Q('earL').r += sp.earL.a * (S.cur === 'side' ? -0.5 : 0.35); Q('earR').r -= sp.earR.a * 0.35;
+    Q('tail').r += sp.tail.a * (S.cur === 'back' ? 0.6 : -0.5); Q('tailTip').r += sp.tip.a * -0.8;
+    Q('curl').r += sp.earR.a * 0.06; Q('curl').y += px(sp.earL.a * 1.5);
+
+    // ---- write: bones → mesh; whole-body squash / roll / swing → the turn group
+    Q('root').sx *= sqx; Q('root').sy *= sqy;
+    skin(P);
+    turn.scale.set(S.mirror * flipS * popS, popS === 1 ? 1 : 2 - popS, 1);
+    // rotate the whole picture about a point (the scruff while held, the middle while rolling)
+    const ang = whole * S.mirror, c = Math.cos(ang), s = Math.sin(ang), p0x = turn.scale.x * wholeP[0], p0y = turn.scale.y * wholeP[1];
+    turn.rotation.z = ang;
+    turn.position.set(p0x - (c * p0x - s * p0y), p0y - (s * p0x + c * p0y) + lift, 0);
   }
-  // mirror the left arm's sideways angle so both swing outward
-  return { root, head, hits, update, S };
+  return { root, update, S, poses };
 }
 
 // the stage: an orthographic camera lined up with the room drawing, so a point on the floor (u, v) lands exactly where the SVG draws it
@@ -5809,7 +5929,7 @@ function petStage(THREE, canvas, geo) {
 }
 
 /* ===================================================================== 啵铃在家里：爬、走、动作、拎起来（试玩模式也用这一套）
-   房间是等轴测的 SVG；啵铃是一只 3D 小模型（makeBoling），画在叠在房间上的透明 WebGL 画布里，
+   房间是等轴测的 SVG；啵铃是原画做的骨骼动画（makeBolingArt），画在叠在房间上的透明 WebGL 画布里，
    相机和 SVG 的投影完全对齐，所以地板上的点 (u, v) 正好落在 SVG 画的位置
    - 点地板：它沿着绕开家具的路线爬过去（近的就走两步）
    - 点家具：过去做对应的事（床上睡觉、桌边吃点心、窗前看云……）
@@ -5831,7 +5951,7 @@ const Room = {
     bed: { spot: [0.62, 0.38], act: 'nap' },
     window: { spot: [0.86, 0.52], act: 'gaze', yaw: Math.PI / 2 },
   },
-  DUR: { pat: 0.65, shy: 0.7, hop: 0.95, roll: 0.95, spin: 0.9, shake: 0.75, look: 2.4, eat: 1.6, gaze: 2.8, sniff: 1.3, lamp: 1.4, peek: 1.3, land: 0.56, wake: 0.8 },
+  DUR: { pat: 0.95, shy: 0.7, hop: 0.95, roll: 0.95, spin: 0.9, shake: 0.75, look: 2.4, eat: 1.6, gaze: 2.8, sniff: 1.3, lamp: 1.4, peek: 1.3, land: 0.56, wake: 0.8 },
   P(u, v, h = 0) { const g = PET_ROOM.geo; return [g.L0[0] + u * g.UA[0] + v * g.VA[0], g.L0[1] + u * g.UA[1] + v * g.VA[1] - h]; },
   pct(p) { const b = PET_ROOM.geo.VB; return [((p[0] - b[0]) / b[2]) * 100, ((p[1] - b[1]) / b[3]) * 100]; },
   svgXY(cx, cy) { const r = this.el.getBoundingClientRect(), b = PET_ROOM.geo.VB; return [b[0] + ((cx - r.left) / r.width) * b[2], b[1] + ((cy - r.top) / r.height) * b[3]]; },
@@ -5848,10 +5968,10 @@ const Room = {
     this.say = ph.querySelector('.pet-say'); this.empty = ph.querySelector('.empty');
     this.im.src = Pet.img('front');
     // the 3D pet (three.js is the same file the map's models use); without WebGL it falls back to the flat picture
-    import(THREE_URL).then((T) => {
+    Promise.all([import(THREE_URL), Pet.rigImgs()]).then(([T, imgs]) => {
       if (this.el !== ph) return;
       try {
-        this.st = petStage(T, this.canvas, PET_ROOM.geo); this.B = makeBoling(T); this.st.scene.add(this.B.root); this.B.root.scale.setScalar(0.24);
+        this.st = petStage(T, this.canvas, PET_ROOM.geo); this.B = makeBolingArt(T, imgs, this.st.cam); this.st.scene.add(this.B.root); this.B.root.scale.setScalar(0.24);
         this.three = true; ph.classList.add('is3d');
       } catch (e) { console.warn('pet 3d', e); this.three = false; }
     }).catch(() => { this.three = false; });
