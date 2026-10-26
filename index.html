@@ -1557,7 +1557,7 @@ const C = {
   rail: '#8DA2C3', text: '#1C3463', textSoft: '#5A73A3', district: '#3B82F6', blue: '#2563EB',
 };
 const HILL = [[113.115234, 23.32208], [113.510742, 23.32208], [113.510742, 22.998852], [113.115234, 22.998852]];
-const COVER = { type: 'Feature', properties: { n: '街道级细节 · 广州主城区' }, geometry: { type: 'LineString', coordinates: [[113.15, 22.92], [113.56, 22.92], [113.56, 23.28], [113.15, 23.28], [113.15, 22.92]] } };
+const COVER = { type: 'Feature', properties: { n: '街道级细节 · 广州主城区到白云机场' }, geometry: { type: 'LineString', coordinates: [[113.15, 22.92], [113.56, 22.92], [113.56, 23.46], [113.15, 23.46], [113.15, 22.92]] } };
 const FONT = ['Noto Sans Regular'];
 const HOME = () => ({ center: mq.matches ? [113.266, 23.117] : [113.274, 23.117], zoom: mq.matches ? 11.9 : 12.6, pitch: 48, bearing: 18.7 });
 const zi = (stops) => ['interpolate', ['exponential', 1.55], ['zoom'], ...stops.flat()];
@@ -1601,7 +1601,7 @@ function buildStyle() {
     sources: {
       hill: { type: 'image', url: U('map/hillshade.png'), coordinates: HILL },
       districts: { type: 'geojson', data: U('map/districts.json') },
-      osm: { type: 'vector', tiles: ['gzt://{z}/{x}/{y}'], minzoom: 8, maxzoom: 13, bounds: [113.15, 22.92, 113.56, 23.28] },
+      osm: { type: 'vector', tiles: ['gzt://{z}/{x}/{y}'], minzoom: 8, maxzoom: 13, bounds: [113.15, 22.92, 113.56, 23.46] },
       labels: { type: 'geojson', data: U('map/labels.json') },
       cover: { type: 'geojson', data: COVER },
       trail: { type: 'geojson', data: { type: 'FeatureCollection', features: [] } },
@@ -1616,6 +1616,15 @@ function buildStyle() {
       { id: 'waterway', type: 'line', source: 'osm', 'source-layer': 'waterline', minzoom: 11, layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': C.water, 'line-width': ['interpolate', ['linear'], ['zoom'], 11, ['match', ['get', 'w'], 'river', 1, 0.4], 16, ['match', ['get', 'w'], 'river', 5, 2]] } },
       { id: 'dist-line', type: 'line', source: 'districts', filter: ['!=', ['geometry-type'], 'Point'], paint: { 'line-color': C.district, 'line-width': ['interpolate', ['linear'], ['zoom'], 8, 0.9, 13, 1.6], 'line-dasharray': [3, 2], 'line-opacity': ['interpolate', ['linear'], ['zoom'], 8, 0.55, 14, 0.22] } },
       { id: 'cover-line', type: 'line', source: 'cover', maxzoom: 13.4, paint: { 'line-color': C.blue, 'line-width': 1.1, 'line-dasharray': [1, 2.4], 'line-opacity': ['interpolate', ['linear'], ['zoom'], 11.5, 0.55, 13.3, 0] } },
+      // 机场（白云机场、岑村机场）：场区、停机坪、滑行道、跑道（宽度按真实米数随缩放变化）
+      { id: 'aero-area', type: 'fill', source: 'osm', 'source-layer': 'aero', minzoom: 9, filter: ['==', ['get', 'a'], 'area-aerodrome'], paint: { 'fill-color': '#E9EEF5', 'fill-opacity': ['interpolate', ['linear'], ['zoom'], 9, 0.5, 12, 0.85] } },
+      { id: 'aero-apron', type: 'fill', source: 'osm', 'source-layer': 'aero', minzoom: 11, filter: ['match', ['get', 'a'], ['area-apron', 'area-taxiway', 'area-runway'], true, false], paint: { 'fill-color': '#D8E0EC' } },
+      { id: 'aero-taxi', type: 'line', source: 'osm', 'source-layer': 'aero', minzoom: 12, filter: ['match', ['get', 'a'], ['taxiway', 'stopway'], true, false], layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: { 'line-color': '#CBD5E4', 'line-width': ['interpolate', ['exponential', 2], ['zoom'], 12, 0.6, 14, ['*', ['get', 'w'], 0.114], 18, ['*', ['get', 'w'], 1.825]] } },
+      { id: 'aero-runway', type: 'line', source: 'osm', 'source-layer': 'aero', minzoom: 9, filter: ['==', ['get', 'a'], 'runway'], layout: { 'line-cap': 'butt' },
+        paint: { 'line-color': '#9FAABD', 'line-width': ['interpolate', ['exponential', 2], ['zoom'], 9, 1.1, 12, ['*', ['get', 'w'], 0.0285], 18, ['*', ['get', 'w'], 1.825]] } },
+      { id: 'aero-runway-line', type: 'line', source: 'osm', 'source-layer': 'aero', minzoom: 13.5, filter: ['==', ['get', 'a'], 'runway'],
+        paint: { 'line-color': '#FFFFFF', 'line-width': ['interpolate', ['linear'], ['zoom'], 13.5, 0.6, 18, 2.4], 'line-dasharray': [5, 4], 'line-opacity': 0.9 } },
       { id: 'rail-case', type: 'line', source: 'osm', 'source-layer': 'rail', minzoom: 12, filter: ['==', ['get', 'k'], 'main'], paint: { 'line-color': C.rail, 'line-width': ['interpolate', ['linear'], ['zoom'], 12, 1.2, 17, 4] } },
       { id: 'rail-dash', type: 'line', source: 'osm', 'source-layer': 'rail', minzoom: 13, filter: ['==', ['get', 'k'], 'main'], paint: { 'line-color': '#FFFFFF', 'line-width': ['interpolate', ['linear'], ['zoom'], 13, 0.6, 17, 2.4], 'line-dasharray': [3, 3] } },
       { id: 'rail-metro', type: 'line', source: 'osm', 'source-layer': 'rail', minzoom: 12.5, filter: ['!=', ['get', 'k'], 'main'], paint: { 'line-color': '#7A9BD6', 'line-width': ['interpolate', ['linear'], ['zoom'], 12.5, 0.8, 17, 2.6], 'line-dasharray': [2, 1.5] } },
@@ -1628,6 +1637,12 @@ function buildStyle() {
       { id: 'road-label-minor', type: 'symbol', source: 'osm', 'source-layer': 'roads', minzoom: 15.4, filter: ['all', ['has', 'n'], ['match', ['get', 'c'], ['street', 'lane'], true, false]],
         layout: { 'symbol-placement': 'line', 'text-field': ['get', 'n'], 'text-font': FONT, 'text-size': ['interpolate', ['linear'], ['zoom'], 15.4, 10.5, 18, 13], 'symbol-spacing': 260, 'text-max-angle': 32, 'text-padding': 2 },
         paint: { 'text-color': C.textSoft, 'text-halo-color': '#FFFFFF', 'text-halo-width': 1.4 } },
+      { id: 'aero-ref', type: 'symbol', source: 'osm', 'source-layer': 'aero', minzoom: 13.2, filter: ['all', ['==', ['get', 'a'], 'runway'], ['has', 'n']],
+        layout: { 'symbol-placement': 'line-center', 'text-field': ['concat', '跑道 ', ['get', 'n']], 'text-font': FONT, 'text-size': 11, 'text-padding': 2 },
+        paint: { 'text-color': '#5B6B86', 'text-halo-color': '#FFFFFF', 'text-halo-width': 1.4 } },
+      { id: 'aero-label', type: 'symbol', source: 'osm', 'source-layer': 'aero', minzoom: 10, maxzoom: 15.5, filter: ['==', ['get', 'a'], 'label'],
+        layout: { 'text-field': ['get', 'n'], 'text-font': FONT, 'text-size': ['interpolate', ['linear'], ['zoom'], 10, 12, 14, 15], 'text-letter-spacing': 0.15, 'text-padding': 6 },
+        paint: { 'text-color': '#1D4ED8', 'text-halo-color': 'rgba(255,255,255,0.92)', 'text-halo-width': 2, 'text-opacity': ['interpolate', ['linear'], ['zoom'], 10, 0, 10.4, 1, 15, 1, 15.5, 0] } },
       { id: 'place-label', type: 'symbol', source: 'osm', 'source-layer': 'place', minzoom: 12.2, maxzoom: 15,
         layout: { 'text-field': ['get', 'n'], 'text-font': FONT, 'text-size': ['interpolate', ['linear'], ['zoom'], 12.2, 11.5, 14, 13], 'text-letter-spacing': 0.15, 'text-padding': 8 },
         paint: { 'text-color': '#4D6EA8', 'text-halo-color': 'rgba(255,255,255,0.9)', 'text-halo-width': 1.6, 'text-opacity': ['interpolate', ['linear'], ['zoom'], 12.2, 0, 12.6, 0.9, 14.5, 0.9, 15, 0] } },
@@ -3139,7 +3154,7 @@ function initMap() {
         'fill-extrusion-opacity': ['interpolate', ['linear'], ['zoom'], 13.2, 0, 14, 0.9],
         'fill-extrusion-vertical-gradient': true,
       } }, 'trail');
-    map.addSource('bridges', { type: 'vector', tiles: ['gzb://{z}/{x}/{y}'], minzoom: 13, maxzoom: 13, bounds: [113.15, 22.92, 113.56, 23.28] });
+    map.addSource('bridges', { type: 'vector', tiles: ['gzb://{z}/{x}/{y}'], minzoom: 13, maxzoom: 13, bounds: [113.15, 22.92, 113.56, 23.46] });
     map.addLayer({ id: 'bridge-3d', type: 'fill-extrusion', source: 'bridges', 'source-layer': 'bridges', minzoom: 13.2,
       paint: {
         'fill-extrusion-color': ['match', ['get', 'k'], 'pi', '#A9BBD6', 'm', '#B4D0F7', 'p', '#CCDDF8', 'x', '#BCCADF', 'f', '#D3DDEB', '#E6EDF8'],
@@ -5014,6 +5029,8 @@ const NIGHT_PAINT = [
   ['road-label', 'text-color', '#C3D2EC'], ['road-label-minor', 'text-color', '#8FA3C6'], ['place-label', 'text-color', '#9DB8E8'],
   ['poi-label', 'text-color', '#BCD3FB'], ['bridge-label', 'text-color', '#9FB2D4'], ['area-label', 'text-color', '#8FB2F5'],
   ['dist-label', 'text-color', '#7AA7FF'], ['cover-label', 'text-color', '#7AA7FF'],
+  ['aero-area', 'fill-color', '#0F1B31'], ['aero-apron', 'fill-color', '#18253D'], ['aero-taxi', 'line-color', '#1F2E4A'], ['aero-runway', 'line-color', '#2A3B5C'],
+  ['aero-runway-line', 'line-color', '#B9C9E6'], ['aero-label', 'text-color', '#8FB2F5'], ['aero-ref', 'text-color', '#9FB2D4'],
   ['poi-dot', 'circle-color', '#60A5FA'], ['poi-dot', 'circle-stroke-color', '#0A1426'],
   ['bld', 'fill-extrusion-color', NIGHT_BLD], ['models-fb', 'fill-extrusion-color', NIGHT_BLD],
   ['bld', 'fill-extrusion-pattern', ['match', ['%', ['floor', ['*', ['get', 'h'], 7]], 3], 0, 'nw0', 1, 'nw1', 'nw2']],
