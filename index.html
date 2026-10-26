@@ -102,13 +102,13 @@ body.lifted .look-hint{opacity:0;pointer-events:none}
 .col-right > *{pointer-events:auto}
 
 /* ---------- profile */
-.profile{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:10px 10px 10px 10px;border-radius:var(--r-lg)}
+.profile{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px 10px 10px 10px;border-radius:var(--r-lg)}
 .avatar-btn{position:relative;width:54px;height:54px;border-radius:14px;border:0;padding:0;overflow:hidden;background:var(--ice);box-shadow:0 0 0 2px var(--white),0 0 0 3.5px var(--ice)}
 .avatar-btn img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s}
 .avatar-btn:hover img{transform:scale(1.07)}
 .avatar-btn::after{content:"";position:absolute;right:4px;bottom:4px;width:9px;height:9px;border-radius:50%;background:#22C55E;box-shadow:0 0 0 2px var(--white)}
 .who{min-width:0}
-.who h1{margin:0;font-family:var(--f-display);font-weight:900;font-size:18px;letter-spacing:0;line-height:1.2;white-space:nowrap;color:var(--blue)}
+.who h1{margin:0;font-family:var(--f-display);font-weight:900;font-size:20px;letter-spacing:0;line-height:1.1;color:var(--blue);overflow-wrap:normal;word-break:keep-all}
 .who p{margin:4px 0 0;font-family:var(--f-mono);font-size:11px;line-height:1.35;color:var(--ink);letter-spacing:.06em}
 .socials{display:grid;grid-template-columns:repeat(2,30px);gap:5px}
 .socials a{width:30px;height:30px;display:grid;place-items:center;border-radius:9px;background:var(--ice-2);color:var(--blue);text-decoration:none;position:relative;transition:background .2s,color .2s,transform .2s}
@@ -1159,6 +1159,8 @@ const SITE = {
       note: '天刚黑的时候在杨箕梅东路拍的，头顶是内环路高架，路牌指向东华南路和江湾大桥。', photos: [{ src: 'photos/meidong-01.jpg', thumb: 'photos/meidong-01-s.jpg', cap: '内环路高架和亮起来的路灯' }] },
     { id: 's19', city: 'gz', title: '大佛寺', place: '越秀 · 惠福东路', lnglat: [113.26278, 23.12509], date: '',
       note: '在大佛寺拍的，普觉楼的回廊挂满了红灯笼，楼前一树粉花开得正好。', photos: [{ src: 'photos/dafosi-01.jpg', thumb: 'photos/dafosi-01-s.jpg', cap: '普觉楼和满树粉花' }] },
+    { id: 's20', city: 'gz', title: '环市东路 · 天桥', place: '越秀 · 环市东路', lnglat: [113.29449, 23.13712], date: '',
+      note: '站在环市东路的天桥上拍的，桥边的簕杜鹃开得正盛，桥下的车流一路钻进两旁的树荫里。', photos: [{ src: 'photos/huanshi-01.jpg', thumb: 'photos/huanshi-01-s.jpg', cap: '白里透粉的簕杜鹃，底下是环市东路' }, { src: 'photos/huanshi-02.jpg', thumb: 'photos/huanshi-02-s.jpg', cap: '另一边是玫红的一片，阳光从路的尽头照过来' }] },
   ],
 
   // 地标名胜 —— 我整理的 26 处；介绍为公开资料整理，thoughts（我的理解）请换成你自己的话
