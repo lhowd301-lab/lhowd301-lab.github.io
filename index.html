@@ -109,7 +109,7 @@ body.lifted .look-hint{opacity:0;pointer-events:none}
 .avatar-btn::after{content:"";position:absolute;right:4px;bottom:4px;width:9px;height:9px;border-radius:50%;background:#22C55E;box-shadow:0 0 0 2px var(--white)}
 .who{min-width:0}
 .who h1{margin:0;font-family:var(--f-display);font-weight:900;font-size:18px;letter-spacing:0;line-height:1.2;white-space:nowrap}
-.who p{margin:4px 0 0;font-family:var(--f-mono);font-size:10.5px;line-height:1.35;color:var(--blue);letter-spacing:.12em;text-transform:uppercase}
+.who p{margin:4px 0 0;font-family:var(--f-mono);font-size:11px;line-height:1.35;color:var(--blue);letter-spacing:.06em}
 .socials{display:grid;grid-template-columns:repeat(2,30px);gap:5px}
 .socials a{width:30px;height:30px;display:grid;place-items:center;border-radius:9px;background:var(--ice-2);color:var(--blue);text-decoration:none;position:relative;transition:background .2s,color .2s,transform .2s}
 .socials a:hover{background:var(--blue);color:var(--white);transform:translateY(-1px)}
@@ -1524,8 +1524,8 @@ const state = { module: 'food', foodCat: 'all', active: null, city: 'gz', cityOp
 function renderProfile() {
   const o = SITE.owner;
   $('#avatarImg').src = AVATAR;
-  $('#ownerName').textContent = o.name;
-  $('#ownerSub').textContent = o.site;
+  $('#ownerName').textContent = o.site;   // the site's name is the headline, the owner's name sits under it
+  $('#ownerSub').textContent = o.name;
   const sIcon = (s) => s.glyph ? `<i class="sg" aria-hidden="true" style="-webkit-mask-image:url('${esc(s.glyph)}');mask-image:url('${esc(s.glyph)}')"></i>` : s.icon ? `<img src="${esc(s.icon)}" alt="">` : (ICONS[s.id] || ICONS.link);
   $('#socials').innerHTML = SITE.socials.map((s) => `<a href="${esc(s.url)}" target="_blank" rel="noopener" data-label="${esc(s.label)}" aria-label="${esc(s.label)}">${sIcon(s)}</a>`).join('');
   const friendRows = SITE.friends.map((f) => {
