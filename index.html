@@ -84,6 +84,82 @@ body.lifted #ui > *{pointer-events:none}
 .look-hint.dark{background:rgba(8,18,40,.72);border-color:rgba(147,197,253,.3);color:#DBEAFE}
 .look-hint.dark .ring{background:rgba(37,99,235,.3);color:#DBEAFE}
 body.lifted .look-hint{opacity:0;pointer-events:none}
+/* ---------- 城市之下：the metro under the streets */
+#subLines,#subTrains{position:fixed;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;opacity:0}
+body.sunk{background:#03070F}
+body.sunk #ui{opacity:0;pointer-events:none}
+body.sunk #ui > *{pointer-events:none}
+body.sunk .maplibregl-marker,body.sunk .look-hint{visibility:hidden}
+.sink-hint{left:50%;bottom:calc(110px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);border:1px solid rgba(147,197,253,.28);background:rgba(8,18,40,.8);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);color:#DBEAFE;box-shadow:0 10px 26px -10px rgba(2,6,15,.55)}
+.sink-hint .ring{background:rgba(37,99,235,.3);color:#DBEAFE}
+.sink-hint .ring i{animation-name:nudgeDown}
+@keyframes nudgeDown{0%,100%{transform:none}50%{transform:translateY(3px)}}
+.sub{position:fixed;inset:0;z-index:4;pointer-events:none;color:var(--star)}
+.sub[hidden]{display:none}
+.sub > *{animation:skyIn .5s ease .2s both}
+.sub.leaving > *{animation:skyOut .3s ease both}
+.sub > .sub-info{animation:none}
+.sub::before{content:"";position:absolute;inset:0 0 auto;height:120px;background:linear-gradient(rgba(3,7,16,.82),rgba(3,7,16,0));pointer-events:none}
+.sub-top{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));display:flex;align-items:center;flex-wrap:wrap;gap:10px 12px;pointer-events:none}
+.sub-top > *{pointer-events:auto}
+.sub-back{display:flex;align-items:center;gap:6px;padding:0 14px 0 10px}
+.sub-back svg{width:16px;height:16px}
+.sub-title{pointer-events:none}
+.sub-clock{display:flex;align-items:baseline;gap:8px;padding:7px 14px;border-radius:14px;background:rgba(8,18,40,.62);border:1px solid rgba(147,197,253,.2);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);margin-left:auto}
+.sub-clock b{font-family:var(--f-mono);font-weight:500;font-size:16px;color:#fff}
+.sub-clock span{font-size:12.5px;color:#C9DAF8}
+.sub-clock small{font-size:11.5px;color:#8FB0EA}
+.sub-speed{display:flex;gap:6px}
+.sub-lines{position:absolute;left:max(16px,env(safe-area-inset-left,0px));top:calc(78px + env(safe-area-inset-top,0px));width:250px;max-height:calc(100% - 128px);overflow:auto;display:flex;flex-direction:column;gap:1px;padding:8px;border-radius:16px;background:rgba(8,18,40,.62);border:1px solid rgba(147,197,253,.18);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);pointer-events:auto;scrollbar-width:thin;scrollbar-color:rgba(147,197,253,.3) transparent}
+.sub-line{display:grid;grid-template-columns:auto auto minmax(0,1fr);align-items:center;gap:8px;padding:5px 8px;border-radius:10px;border:0;background:none;color:#DCE7FA;text-align:left;font-size:12.5px;cursor:pointer}
+.sub-line i{width:18px;height:6px;border-radius:3px}
+.sub-lines-h{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:2px 8px 6px;border:0;background:none;color:#8FB0EA;font-size:11px;letter-spacing:.14em;cursor:pointer;text-align:left}
+.sub-lines-h small{letter-spacing:.04em;color:#6F86AD;margin-left:4px}
+.sub-lines-h svg{width:15px;height:15px;transition:transform .2s}
+.sub-lines.min .sub-line{display:none}
+.sub-lines.min .sub-lines-h{padding-bottom:2px}
+.sub-lines.min .sub-lines-h svg{transform:rotate(-90deg)}
+.sub-line b{font-weight:600;white-space:nowrap}
+.sub-line small{font-size:11px;color:#8FA6CC;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sub-line:hover{background:rgba(59,130,246,.18)}
+.sub-line[aria-pressed="true"]{background:rgba(37,99,235,.5);color:#fff}
+.sub-line[aria-pressed="true"] small{color:#DBEAFE}
+.sub-info{position:absolute;right:max(16px,env(safe-area-inset-right,0px));top:calc(78px + env(safe-area-inset-top,0px));width:min(300px,calc(100% - 32px));padding:14px 16px;border-radius:16px;background:rgba(8,18,40,.8);border:1px solid rgba(147,197,253,.22);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);pointer-events:auto}
+.sub-info[hidden]{display:none}
+.sub-info h3{margin:3px 0 0;font-family:var(--f-display);font-size:20px;letter-spacing:.06em;padding-right:26px}
+.sub-info .k{display:flex;align-items:center;flex-wrap:wrap;gap:6px;font-size:11.5px;letter-spacing:.06em;color:#8FB0EA;padding-right:30px}
+.sub-info i{display:inline-block;width:14px;height:5px;border-radius:3px;vertical-align:middle;margin-right:7px}
+.sub-info .k i{margin-right:0}
+.sub-info .sub-now{margin:8px 0 2px;font-size:13px;line-height:1.5;color:#fff}
+.sub-info table{width:100%;border-collapse:collapse;margin:6px 0 10px;font-size:12.5px}
+.sub-info td{padding:5px 0;border-bottom:1px solid rgba(147,197,253,.1);color:#C9DAF8}
+.sub-info td:last-child{text-align:right;font-family:var(--f-mono);font-size:12px;color:#fff;white-space:nowrap;padding-left:10px}
+.sub-info .x{position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:9px}
+.sub-info .x svg{width:15px;height:15px}
+.sub-note{position:absolute;left:50%;top:calc(80px + env(safe-area-inset-top,0px));transform:translateX(-50%);display:flex;align-items:center;gap:10px;margin:0;padding:5px 5px 5px 14px;border-radius:999px;background:rgba(8,18,40,.8);border:1px solid rgba(147,197,253,.22);font-size:12.5px;color:#DCE7FA;white-space:nowrap;pointer-events:auto}
+.sub-note[hidden]{display:none}
+.sub-src{position:absolute;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(10px + env(safe-area-inset-bottom,0px));margin:0;font-size:10.5px;color:rgba(169,193,236,.72);text-align:right;pointer-events:none}
+@media (max-width:1023px){
+  .sub-top{gap:8px}
+  .sub-title{flex:1 1 calc(100% - 150px);min-width:0}
+  .sub-title p{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sub-clock{order:3;flex:1 1 150px;min-width:0;margin-left:0;padding:5px 11px;overflow:hidden}
+  .sub-clock span{display:none}
+  .sub-clock b{font-size:14px}
+  .sub-clock small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  .sub-speed{order:4;flex:none;gap:4px}
+  .sub-speed .sky-pill{height:30px;padding:0 9px}
+  .sub-lines{top:auto;bottom:calc(26px + env(safe-area-inset-bottom,0px));left:0;right:0;width:auto;max-height:none;flex-direction:row;gap:6px;overflow-x:auto;border-radius:0;padding:6px max(12px,env(safe-area-inset-left,0px));background:none;border:0;-webkit-backdrop-filter:none;backdrop-filter:none;scrollbar-width:none}
+  .sub-lines::-webkit-scrollbar{display:none}
+  .sub-line{grid-template-columns:auto auto;flex:none;background:rgba(8,18,40,.78);border:1px solid rgba(147,197,253,.18);padding:6px 10px}
+  .sub-line small{display:none}
+  .sub-lines-h{display:none}
+  .sub-lines.min .sub-line{display:grid}
+  .sub-info{top:auto;bottom:calc(76px + env(safe-area-inset-bottom,0px));left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));width:auto}
+  .sub-note{top:auto;bottom:calc(80px + env(safe-area-inset-bottom,0px));white-space:normal;width:max-content;max-width:calc(100% - 24px)}
+  .sub-src{right:auto;left:max(12px,env(safe-area-inset-left,0px));bottom:calc(8px + env(safe-area-inset-bottom,0px));font-size:10px}
+  .sink-hint{bottom:calc(150px + env(safe-area-inset-bottom,0px))}
+}
 
 /* ---------- HUD grid */
 #ui{position:fixed;inset:0;z-index:2;pointer-events:none;display:grid;
@@ -848,6 +924,21 @@ body.pure .pet-dock,body.pure .pet-bubble{display:none!important}
 <canvas id="skyDay" aria-hidden="true"></canvas>
 <canvas id="skyDome" aria-hidden="true"></canvas>
 <button class="pull-hint look-hint" id="lookHint" type="button" tabindex="-1"><span class="ring" aria-hidden="true"><svg viewBox="0 0 30 30"><circle class="trk" cx="15" cy="15" r="12"/><circle class="prog" cx="15" cy="15" r="12"/></svg><i>↑</i></span><b>抬头看星空</b><span id="lookHow">按住右键继续往上拖</span></button>
+<canvas id="subLines" aria-hidden="true"></canvas>
+<canvas id="subTrains" aria-hidden="true"></canvas>
+<button class="pull-hint sink-hint" id="sinkHint" type="button" tabindex="-1"><span class="ring" aria-hidden="true"><svg viewBox="0 0 30 30"><circle class="trk" cx="15" cy="15" r="12"/><circle class="prog" cx="15" cy="15" r="12"/></svg><i>↓</i></span><b>潜入城市之下</b><span id="sinkHow">按住右键继续往下拖</span></button>
+<section class="sub" id="sub" hidden aria-label="城市之下：广州地铁模拟运行">
+  <div class="sub-top">
+    <button class="sky-pill sub-back" id="subBack" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>回到地面</button>
+    <div class="sky-title sub-title"><h2>城市之下</h2><p id="subStat">广州地铁</p></div>
+    <div class="sub-clock"><span id="subDay">—</span><b id="subTime">--:--:--</b><small id="subRun">—</small></div>
+    <div class="sub-speed" role="group" aria-label="模拟速度"><button type="button" class="sky-pill" data-speed="1" aria-pressed="true">1×</button><button type="button" class="sky-pill" data-speed="10" aria-pressed="false">10×</button><button type="button" class="sky-pill" data-speed="60" aria-pressed="false">60×</button><button type="button" class="sky-pill" id="subNow" hidden aria-label="回到现在">现在</button></div>
+  </div>
+  <div class="sub-lines" id="subLinesList" role="list" aria-label="线路：点一条只看它"></div>
+  <p class="sub-note" id="subNote" hidden></p>
+  <div class="sub-info" id="subInfo" hidden></div>
+  <p class="sub-src">线路与车站：OpenStreetMap · 列车按各线常见班次和速度模拟，不是官方时刻表</p>
+</section>
 <div class="veil" id="veil"><div><b>Beyond Horizons</b><span>正在铺开广州的街道…</span></div></div>
 
 <div id="ui">
@@ -1455,6 +1546,7 @@ function hashStr(s) { let h = 2166136261; for (const c of s) { h ^= c.codePointA
 const AVATAR = 'data:image/jpeg;base64,' + document.getElementById('avatar-data').textContent.trim();
 
 const ICONS = {
+  metro: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2.8" width="14" height="14.4" rx="3.6"/><path d="M5 10h14"/><path d="M8.6 13.6h.01M15.4 13.6h.01"/><path d="M8.4 21l1.8-3.8M15.6 21l-1.8-3.8"/></svg>',
   pet: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7.6 10.2C4.6 10.6 2.4 8.6 3 6.3c1-1.8 3.9-1.6 5.6.6"/><path d="M16.4 10.2c3 .4 5.2-1.6 4.6-3.9-1-1.8-3.9-1.6-5.6.6"/><path d="M12 6.5a6.6 6.6 0 0 1 6.6 6.6c0 3.9-3 6.4-6.6 6.4s-6.6-2.5-6.6-6.4A6.6 6.6 0 0 1 12 6.5z"/><path d="M10.9 6.6c-.6-1.7.4-3 1.9-2.9"/><circle cx="9.6" cy="12.6" r=".9" fill="currentColor"/><circle cx="14.4" cy="12.6" r=".9" fill="currentColor"/><path d="M11 15.2q1 .8 2 0"/></svg>',
   food: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 11.5h17a8.5 8.5 0 0 1-17 0Z"/><path d="M9 3.5l2.6 6M15.8 2.8l-1.5 6.8"/><path d="M8 20.5h8"/></svg>',
   street: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2.5"/><circle cx="12" cy="13.5" r="3.6"/><path d="M8.5 7l1.4-2.6h4.2L15.5 7"/></svg>',
@@ -1520,10 +1612,11 @@ const MODULES = [
   { id: 'street', name: '扫街地图', en: 'STREET', items: () => SITE.street },
   { id: 'landmark', name: '地标名胜', en: 'SIGHTS', items: () => SITE.landmarks },
   { id: 'diary', name: '街巷日记', en: 'DIARY', items: () => [...SITE.diary, ...SITE.life.filter((l) => l.lnglat), ...SITE.spots.filter((l) => l.lnglat)] },
+  { id: 'metro', name: '城市之下', en: 'BENEATH', items: () => [] },
   { id: 'sky', name: '地球之外', en: 'BEYOND', items: () => [] },
   { id: 'pet', name: '萌宠啵铃', en: 'PET', items: () => [] },
 ];
-const ICON_OF = { food: ICONS.food, street: ICONS.street, landmark: ICONS.landmark, diary: ICONS.diary, sky: ICONS.sky, pet: ICONS.pet };
+const ICON_OF = { food: ICONS.food, street: ICONS.street, landmark: ICONS.landmark, diary: ICONS.diary, metro: ICONS.metro, sky: ICONS.sky, pet: ICONS.pet };
 const state = { module: 'food', foodCat: 'all', active: null, city: 'gz', cityOpen: true, is3d: true, ready: false, navMin: false, cityMin: false, pure: false };
 
 /* ===================================================================== profile + socials + friends */
@@ -3445,15 +3538,15 @@ function initMap() {
   map.on('pitch', () => map.getContainer().classList.toggle('tilted', map.getPitch() > 30));
   // 点建模也能打开地标卡片
   const lmId = (e) => { const id = e.features[0] && e.features[0].properties.l; return SITE.landmarks.some((l) => l.id === id) ? id : null; };
-  map.on('click', 'lm-3d', (e) => { if (state.pure) return; const id = lmId(e); if (id) openDetail('landmark', id); });
-  map.on('mousemove', 'lm-3d', (e) => { map.getCanvas().style.cursor = lmId(e) ? 'pointer' : ''; });
+  map.on('click', 'lm-3d', (e) => { if (state.pure || Metro.on) return; const id = lmId(e); if (id) openDetail('landmark', id); });
+  map.on('mousemove', 'lm-3d', (e) => { if (!Metro.on) map.getCanvas().style.cursor = lmId(e) ? 'pointer' : ''; });
   map.on('mouseleave', 'lm-3d', () => { map.getCanvas().style.cursor = ''; });
   // three.js 建模（广州塔、珠江新城、博物馆、猎德大桥……）：点到哪座就开哪座的地标卡片
   const onPin = (e) => e.originalEvent && e.originalEvent.target && e.originalEvent.target.closest && e.originalEvent.target.closest('.maplibregl-marker, .maplibregl-popup');
-  map.on('click', (e) => { if (state.pure || onPin(e)) return; const id = ThreeModels.pick(e.point); if (id) openDetail('landmark', id); });
+  map.on('click', (e) => { if (state.pure || Metro.on || onPin(e)) return; const id = ThreeModels.pick(e.point); if (id) openDetail('landmark', id); });
   let pickQ = null, pickBusy = false, pickHot = false;
   map.on('mousemove', (e) => {
-    if (state.pure || !ThreeModels.pickables) return;
+    if (state.pure || Metro.on || !ThreeModels.pickables) return;
     pickQ = e.point;
     if (pickBusy) return;
     pickBusy = true;
@@ -3467,6 +3560,7 @@ function initMap() {
   map.on('pitchend', () => { state.is3d = map.getPitch() > 5; });
   map.on('move', () => { if (state.module === 'landmark' && !lmDQ) lmDQ = requestAnimationFrame(() => { lmDQ = 0; lmDeclutter(); }); });
   LookUp.init();
+  Metro.init();
   map.on('move', syncAltitude);
   map.on('mousemove', (e) => { state.cursor = e.lngLat; syncAltitude(); });
   syncCompass();
@@ -3669,10 +3763,10 @@ function renderNav() {
   for (const m of MODULES) {
     const b = document.createElement('button');
     b.className = 'nav-btn'; b.dataset.mod = m.id; b.dataset.name = m.name; b.setAttribute('aria-pressed', String(state.module === m.id));
-    const n = m.id === 'sky' ? '今夜' : m.id === 'pet' ? Pet.navLabel() : String(m.items().length).padStart(2, '0');
+    const n = m.id === 'sky' ? '今夜' : m.id === 'metro' ? '实时' : m.id === 'pet' ? Pet.navLabel() : String(m.items().length).padStart(2, '0');
     b.innerHTML = `<span class="ic">${ICON_OF[m.id]}</span><span class="nm"><b>${m.name}</b><small>${m.en}</small></span><span class="ct">${n}</span>`;
     b.addEventListener('click', () => {
-      if (m.id !== 'sky' && m.id !== 'pet' && !mq.matches) { if (Auto.on()) Auto.dismiss('nav'); else if (!state.navMin) { state.navMin = true; applyHud('set'); } }
+      if (m.id !== 'sky' && m.id !== 'pet' && m.id !== 'metro' && !mq.matches) { if (Auto.on()) Auto.dismiss('nav'); else if (!state.navMin) { state.navMin = true; applyHud('set'); } }
       setModule(m.id);
     });
     nav.appendChild(b);
@@ -3841,6 +3935,7 @@ function applyHud(mode = 'ease') {
 
 function setModule(id, opts = {}) {
   if (id === 'sky') { Sky.open(); return; }
+  if (id === 'metro') { Metro.go(); return; }
   if (id === 'pet') { Pet.open(); return; }
   state.module = id; state.active = null;
   closeDetail();
@@ -5179,7 +5274,7 @@ const LookUp = {
     $('#lookHint').addEventListener('click', () => this.go());
   },
   push(dy) {
-    if (this.busy) return;
+    if (this.busy || Metro.on || Metro.p > 0) return;
     if (!this.atTop()) { if (this.acc) this.set(0); return; }
     if (map.getPitch() >= 80) SkyDome.ensureData();
     this.set(Math.max(0, this.acc + dy));
@@ -5223,6 +5318,549 @@ const LookUp = {
     if (map) map.jumpTo({ bearing: ((az + 540) % 360) - 180, pitch: map.getMaxPitch() });
     document.body.classList.remove('lifted');
     if (map) setTimeout(() => map.easeTo({ pitch: 66, duration: reduceMotion ? 0 : 1500, essential: true }), reduceMotion ? 0 : 650);
+  },
+};
+
+/* ===================================================================== 城市之下：往下拉，看见地底的地铁
+   With the map looking straight down, keep pulling downward: the streets dim to a ghost and the real
+   Guangzhou metro comes up from below them, trains running on it. Every train leaves its terminus on a
+   timetable, speeds up, cruises, brakes into the next station and waits there; the clock is Guangzhou
+   time. Track and stations are OpenStreetMap's (tools/metro.py → map/metro.json); headways and speeds
+   are typical values for each line, not the operator's own timetable. */
+const GZ_OFF = 8 * 3600e3;   // Guangzhou is UTC+8 whatever the visitor's clock says
+const Metro = {
+  D: null, loading: null, on: false, busy: false, acc: 0, p: 0, drag: null, DEAD: 50, TH: 210,
+  lines: [], svcs: [], stations: [], inter: new Set(), speed: 1, sim: 0, wall: 0, raf: 0,
+  base: { sim: 0, wall: 0 }, sel: null, selSt: null, follow: false, hi: null, key: '', trains: [], hits: [], stHits: [], uiT: 0, wasNight: false,
+  DEPTH: 30,   // how far below the streets the tunnels sit on screen, in px (shows once the map is tilted)
+  atBottom() { return !!map && map.getPitch() <= map.getMinPitch() + 0.6; },
+  init() {
+    const el = map.getCanvasContainer();
+    $('#sinkHow').textContent = matchMedia('(pointer: coarse)').matches ? '双指继续往下拉' : '按住右键继续往下拖';
+    el.addEventListener('mousedown', (e) => { if (e.button === 2 || (e.button === 0 && e.ctrlKey)) this.drag = { y: e.clientY }; });
+    window.addEventListener('mousemove', (e) => { if (!this.drag || this.drag.touch) return; const dy = e.clientY - this.drag.y; this.drag.y = e.clientY; this.push(dy); });
+    window.addEventListener('mouseup', () => { if (this.drag && !this.drag.touch) { this.drag = null; this.release(); } });
+    const mid = (t) => (t[0].clientY + t[1].clientY) / 2;
+    el.addEventListener('touchstart', (e) => { if (e.touches.length === 2) this.drag = { y: mid(e.touches), touch: true }; else if (this.drag) { this.drag = null; this.release(); } }, { passive: true });
+    el.addEventListener('touchmove', (e) => { if (!this.drag || !this.drag.touch || e.touches.length !== 2) return; const y = mid(e.touches); const dy = y - this.drag.y; this.drag.y = y; this.push(dy * 1.4); }, { passive: true });
+    const tend = (e) => { if (this.drag && this.drag.touch && e.touches.length < 2) { this.drag = null; this.release(); } };
+    el.addEventListener('touchend', tend, { passive: true }); el.addEventListener('touchcancel', tend, { passive: true });
+    el.addEventListener('keydown', (e) => { if (e.shiftKey && e.key === 'ArrowDown' && this.atBottom() && !this.on) { this.push(60); clearTimeout(this._kt); this._kt = setTimeout(() => this.release(), 900); } });
+    $('#sinkHint').addEventListener('click', () => this.go());
+    map.on('move', () => this.place());
+    // the first time the map is laid flat, say once that there is something underneath
+    map.on('pitchend', () => {
+      if (this.told || this.on || !this.atBottom() || !state.ready || !$('#sky').hidden) return;
+      this.told = true; this.flash = true; this.place();
+      setTimeout(() => { this.flash = false; this.place(); }, 3200);
+    });
+    map.on('click', (e) => { if (this.on) this.click(e.point); });
+    map.on('mousemove', (e) => { if (!this.on) return; const h = this.hit(e.point); map.getCanvas().style.cursor = h ? 'pointer' : ''; });
+    map.on('dragstart', () => { if (this.follow) this.setFollow(false); });
+    this.buildUI();
+  },
+  // ------------------------------------------------------------- the pull
+  push(dy) {
+    if (this.busy || this.on || LookUp.p > 0) return;
+    if (!this.atBottom()) { if (this.acc) this.set(0); return; }
+    this.ensureData();
+    this.set(Math.max(0, this.acc + dy));
+    if (this.acc >= this.TH) this.go();
+  },
+  set(a) {
+    this.acc = a; this.p = Math.min(1, Math.max(0, (a - this.DEAD) / (this.TH - this.DEAD)));
+    if (this.p > 0.002) this.start(); this.place();
+  },
+  release() {
+    if (this.busy || this.on || !this.acc) return;
+    const a0 = this.acc, t0 = performance.now();
+    const step = (now) => { if (this.busy || this.drag || this.on) return; const k = Math.min(1, (now - t0) / 360); this.set(a0 * (1 - k * (2 - k))); if (k < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  },
+  place() {   // the hint sits low on the screen, only while you are pulling with the map flat
+    const h = $('#sinkHint'); if (!map || !state.ready) return;
+    const show = !this.busy && !this.on && (this.acc > this.DEAD * 0.6 || this.flash) && this.atBottom() && !document.body.classList.contains('lifted');
+    h.classList.toggle('show', show);
+    if (show) h.querySelector('.prog').style.strokeDashoffset = (75.4 * (1 - this.p)).toFixed(1);
+  },
+  anim(from, to, ms) {
+    return new Promise((res) => {
+      if (reduceMotion || ms <= 0) { this.p = to; res(); return; }
+      const t0 = performance.now();
+      const step = (now) => { const k = Math.min(1, (now - t0) / ms), e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2; this.p = from + (to - from) * e; if (k < 1) requestAnimationFrame(step); else res(); };
+      requestAnimationFrame(step);
+    });
+  },
+  async go() {   // the pull went far enough (or the nav button / hint was clicked): go under
+    if (this.busy || this.on || !map || !state.ready) return;
+    this.busy = true; this.drag = null; closePops(); this.place();
+    if (!(await this.ensureData())) { this.busy = false; this.set(0); toast('地铁数据没能加载，请刷新重试。'); return; }
+    if (!$('#sky').hidden) Sky.close();
+    closeDetail();
+    if (map.getPitch() > 1 || map.getZoom() < 10.6) {
+      map.easeTo({ pitch: 0, zoom: Math.max(10.6, map.getZoom()), duration: reduceMotion ? 0 : 650, essential: true });
+      await new Promise((r) => setTimeout(r, reduceMotion ? 0 : 680));
+    }
+    this.start();
+    // underground the panels are different: centre the view in the space they leave
+    const pad = mq.matches ? { top: 110, bottom: 60, left: 0, right: 0 } : { top: 60, bottom: 20, left: 270, right: 0 };
+    map.easeTo({ padding: pad, duration: reduceMotion ? 0 : 900, essential: true });
+    await this.anim(this.p, 1, 900);
+    this.on = true; this.busy = false; this.acc = 0; this.place();
+    this.wasNight = Night.on; if (!Night.on) Night.set(true, false);
+    document.body.classList.add('sunk'); $('#sub').hidden = false; $('#sub').classList.remove('leaving');
+    document.querySelectorAll('.nav-btn').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mod === 'metro')));
+    Pet.progress('metro', 'open');
+    this.ui(true);
+  },
+  async exit() {
+    if (!this.on || this.busy) return;
+    this.busy = true; this.select(null); this.setFollow(false); this.highlight(null);
+    $('#sub').classList.add('leaving'); document.body.classList.remove('sunk');
+    if (!this.wasNight) Night.set(false, false);
+    map.easeTo({ padding: hudPadding(), duration: reduceMotion ? 0 : 700, essential: true });
+    await this.anim(1, 0, 700);
+    $('#sub').hidden = true; this.on = false; this.busy = false; this.acc = 0;
+    document.querySelectorAll('.nav-btn').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mod === state.module)));
+    map.getCanvas().style.cursor = '';
+  },
+  // ------------------------------------------------------------- data
+  ensureData() {
+    if (this.D) return Promise.resolve(true);
+    if (!this.loading) this.loading = fetch(U('map/metro.json')).then((r) => r.json()).then((d) => { this.prep(d); this.D = d; this.fillUI(); return true; }).catch((e) => { console.error(e); this.loading = null; return false; });
+    return this.loading;
+  },
+  vis(hex) {   // the line's own colour, lifted where it would vanish on the dark ground
+    const n = parseInt(hex.slice(1), 16); let r = (n >> 16) / 255, g = ((n >> 8) & 255) / 255, b = (n & 255) / 255;
+    const mx = Math.max(r, g, b), mn = Math.min(r, g, b); let h = 0, s = 0, l = (mx + mn) / 2;
+    if (mx !== mn) { const d = mx - mn; s = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn); h = mx === r ? (g - b) / d + (g < b ? 6 : 0) : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h /= 6; }
+    if (l >= 0.47) return hex;
+    l = 0.47 + (0.47 - l) * 0.25; s = Math.min(1, s * 1.1 + 0.08);
+    const f = (t) => { t = (t + 1) % 1; return t < 1 / 6 ? p + (q - p) * 6 * t : t < 0.5 ? q : t < 2 / 3 ? p + (q - p) * (2 / 3 - t) * 6 : p; };
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s, p = 2 * l - q;
+    return '#' + [f(h + 1 / 3), f(h), f(h - 1 / 3)].map((v) => Math.round(v * 255).toString(16).padStart(2, '0')).join('');
+  },
+  prep(D) {
+    const KX = 111320 * Math.cos(23.12 * D2R), KY = 110574;
+    const mY = (lat) => (180 - (180 / Math.PI) * Math.log(Math.tan(Math.PI / 4 + lat * D2R / 2))) / 360;
+    this.hours = D.hours; this.lines = []; this.svcs = [];
+    const named = new Map();
+    for (const L of D.lines) {
+      const line = { id: L.id, name: L.name, kind: L.kind, color: L.color, vis: this.vis(L.color), tlen: L.tlen, v: (L.vmax / 3.6) * (L.kind === 'tram' ? 0.72 : 0.9), a: L.acc, svc: [], box: [1, 1, 0, 0] };
+      L.svc.forEach((S, si) => {
+        const n = S.p.length / 2, mx = new Float64Array(n), my = new Float64Array(n), cs = new Float64Array(n);
+        let X = 0, Y = 0, pl = 0, pt = 0;
+        for (let i = 0; i < n; i++) {
+          X += S.p[2 * i]; Y += S.p[2 * i + 1]; const lng = X / 1e5, lat = Y / 1e5;
+          mx[i] = (lng + 180) / 360; my[i] = mY(lat);
+          if (i) cs[i] = cs[i - 1] + Math.hypot((lng - pl) * KX, (lat - pt) * KY);
+          pl = lng; pt = lat;
+          line.box = [Math.min(line.box[0], mx[i]), Math.min(line.box[1], my[i]), Math.max(line.box[2], mx[i]), Math.max(line.box[3], my[i])];
+        }
+        const svc = { line, si, mx, my, cs, L: cs[n - 1], st: S.st, loop: S.loop, open: S.open, hw: S.hw, a: S.a, b: S.b, deps: {} };
+        for (const [s, name] of S.st) { const q = this.at(svc, s); if (!named.has(name)) named.set(name, []); named.get(name).push({ line, x: q[0], y: q[1] }); }
+        line.svc.push(svc); this.svcs.push(svc);
+      });
+      this.lines.push(line);
+    }
+    // one marker per station: the lines that meet there, at the middle of their platforms
+    this.stations = []; this.inter = new Set();
+    for (const [name, arr] of named) {
+      const groups = [];
+      for (const o of arr) {
+        const g = groups.find((g) => Math.hypot(g.x - o.x, g.y - o.y) < 3e-5);
+        if (g) { g.pts.push(o); g.x = g.pts.reduce((s, q) => s + q.x, 0) / g.pts.length; g.y = g.pts.reduce((s, q) => s + q.y, 0) / g.pts.length; } else groups.push({ x: o.x, y: o.y, pts: [o] });
+      }
+      for (const g of groups) {
+        const lines = [...new Set(g.pts.map((q) => q.line))];
+        const st = { name, x: g.x, y: g.y, lines, inter: new Set(lines.map((l) => l.id)).size > 1, metro: lines.some((l) => l.kind !== 'tram') };
+        if (st.inter) this.inter.add(name);
+        this.stations.push(st);
+      }
+    }
+    this.stations.sort((a, b) => b.inter - a.inter || b.lines.length - a.lines.length);
+    for (const svc of this.svcs) svc.trip = [this.trip(svc, 0), this.trip(svc, 1)];
+  },
+  at(svc, s) {   // mercator point s metres along a service's track
+    const cs = svc.cs; s = Math.max(0, Math.min(svc.L, s));
+    let lo = 0, hi = cs.length - 1;
+    while (hi - lo > 1) { const m = (lo + hi) >> 1; if (cs[m] <= s) lo = m; else hi = m; }
+    const t = (s - cs[lo]) / ((cs[hi] - cs[lo]) || 1);
+    return [svc.mx[lo] + (svc.mx[hi] - svc.mx[lo]) * t, svc.my[lo] + (svc.my[hi] - svc.my[lo]) * t, lo, hi];
+  },
+  trip(svc, dir) {   // one run from end to end: when it reaches and leaves every station
+    const line = svc.line, v = line.v, a = line.a, dA = (v * v) / (2 * a), L = svc.L;
+    let st = svc.st.map(([s, n]) => ({ u: s, n }));
+    if (svc.loop) st.push({ u: st[0].u + L, n: st[0].n });
+    if (svc.open[0]) st.unshift({ u: 0, n: null });
+    if (svc.open[1]) st.push({ u: L, n: null });
+    if (dir) st = st.reverse().map((o) => ({ u: L - o.u, n: o.n }));
+    const m = st.length, u = new Float64Array(m), arr = new Float64Array(m), dep = new Float64Array(m);
+    const run = (d) => (d >= 2 * dA ? d / v + v / a : 2 * Math.sqrt(d / a));
+    const dwell = (o) => (!o.n ? 0 : line.kind === 'tram' ? 20 : line.kind === 'apm' ? 25 : this.inter.has(o.n) ? 45 : 30);
+    const END = svc.loop ? 30 : 75;
+    for (let i = 0; i < m; i++) {
+      u[i] = st[i].u;
+      arr[i] = i ? dep[i - 1] + run(u[i] - u[i - 1]) : 0;
+      dep[i] = i === 0 ? 0 : arr[i] + (i === m - 1 ? (st[i].n ? END : 0) : dwell(st[i]));
+    }
+    return { st, u, arr, dep, T: dep[m - 1], pre: st[0].n ? END : 0, v, a, dA, to: svc.loop ? (dir ? '内环' : '外环') : dir ? svc.a : svc.b };
+  },
+  pos(tr, tau) {   // where a train is tau seconds after leaving its first station
+    const n = tr.u.length;
+    if (tau < 0) return { u: tr.u[0], k: 0, stop: true, v: 0 };
+    let lo = 0, hi = n - 1;
+    while (lo < hi) { const m = (lo + hi + 1) >> 1; if (tr.arr[m] <= tau) lo = m; else hi = m - 1; }
+    const i = lo;
+    if (i === n - 1 || tau < tr.dep[i]) return { u: tr.u[i], k: i, stop: true, v: 0 };
+    const d = tr.u[i + 1] - tr.u[i], e = tau - tr.dep[i], v = tr.v, a = tr.a, dA = tr.dA;
+    let x, sp;
+    if (d >= 2 * dA) {
+      const ta = v / a, tc = (d - 2 * dA) / v;
+      if (e < ta) { x = 0.5 * a * e * e; sp = a * e; } else if (e < ta + tc) { x = dA + v * (e - ta); sp = v; } else { const f = e - ta - tc; x = dA + v * tc + v * f - 0.5 * a * f * f; sp = v - a * f; }
+    } else {
+      const vp = Math.sqrt(a * d), tp = vp / a;
+      if (e < tp) { x = 0.5 * a * e * e; sp = a * e; } else { const f = e - tp; x = d / 2 + vp * f - 0.5 * a * f * f; sp = vp - a * f; }
+    }
+    return { u: tr.u[i] + Math.min(d, Math.max(0, x)), k: i, stop: false, v: Math.max(0, sp) };
+  },
+  hwAt(svc, t, wk) {
+    const h = t / 3600;
+    if (!wk && ((h >= 7.5 && h < 9.5) || (h >= 17 && h < 19.5))) return svc.hw[0];
+    if (h >= (wk ? 8 : 9.5) && h < 21.5) return svc.hw[1];
+    return svc.hw[2];
+  },
+  deps(svc, dir, wk) {   // the day's departures from this direction's first station (seconds after midnight)
+    const k = dir * 2 + wk; if (svc.deps[k]) return svc.deps[k];
+    const [h0, h1] = (this.hours[svc.line.kind] || this.hours.metro).map((s) => { const [h, m] = s.split(':'); return h * 3600 + m * 60; });
+    const out = []; let t = h0 + ((dir ? 0.45 : 0) + svc.si * 0.5) * svc.hw[2] * 60;
+    while (t <= h1) { out.push(t); t += this.hwAt(svc, t, wk) * 60; }
+    return (svc.deps[k] = Float64Array.from(out));
+  },
+  clock() {   // the simulated moment as Guangzhou day number + seconds
+    const day = Math.floor(this.sim / 864e5), sec = (this.sim - day * 864e5) / 1000, w = (day + 4) % 7;
+    return { day, sec, w, wk: w === 0 || w === 6 ? 1 : 0 };
+  },
+  wkOf(day) { const w = (day + 4) % 7; return w === 0 || w === 6 ? 1 : 0; },
+  update() {   // every train that is out on the network right now
+    const { day, sec } = this.clock(), out = this.trains; out.length = 0;
+    for (const svc of this.svcs) for (let dir = 0; dir < 2; dir++) {
+      const tr = svc.trip[dir];
+      for (let back = 0; back < 2; back++) {
+        const dd = day - back, t = sec + back * 86400, deps = this.deps(svc, dir, this.wkOf(dd)), t0 = t - tr.T;
+        let lo = 0, hi = deps.length;
+        while (lo < hi) { const m = (lo + hi) >> 1; if (deps[m] < t0) lo = m + 1; else hi = m; }
+        for (let i = lo; i < deps.length && deps[i] <= t + tr.pre; i++) {
+          const tau = t - deps[i]; if (tau < -tr.pre || tau > tr.T) continue;
+          out.push({ svc, dir, tr, tau, q: this.pos(tr, tau), id: `${svc.line.id}.${svc.si}.${dir}.${dd}.${deps[i]}` });
+        }
+      }
+    }
+    return out;
+  },
+  sOf(svc, dir, u) { let s = dir ? svc.L - u : u; if (svc.loop) s = ((s % svc.L) + svc.L) % svc.L; return s; },
+  // ------------------------------------------------------------- drawing
+  setClock(sim, speed) { this.base = { sim, wall: Date.now() }; this.speed = speed; this.sim = sim; },
+  start() {
+    if (this.raf) return;
+    if (!this.on) this.setClock(Date.now() + GZ_OFF, 1);
+    this.wall = performance.now(); this.key = '';
+    this.raf = requestAnimationFrame(this.frame);
+  },
+  stop() {
+    cancelAnimationFrame(this.raf); this.raf = 0;
+    for (const id of ['#subLines', '#subTrains']) { const c = $(id); c.style.opacity = 0; c.getContext('2d').clearRect(0, 0, c.width, c.height); }
+  },
+  frame(now) {
+    const M_ = Metro; M_.raf = 0;
+    if (!M_.on && !M_.busy && M_.p <= 0.002) { M_.stop(); return; }
+    M_.raf = requestAnimationFrame(M_.frame);
+    M_.wall = now; M_.sim = M_.base.sim + (Date.now() - M_.base.wall) * M_.speed;
+    if (!M_.D) return;
+    try { M_.draw(); } catch (e) { console.error(e); }
+  },
+  canvas(id) {
+    const cv = $(id), W = cv.clientWidth, H = cv.clientHeight, dpr = Math.min(2, window.devicePixelRatio || 1);
+    if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); this.key = ''; }
+    const ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); return { cv, ctx, W, H };
+  },
+  view() {   // camera for this frame: MapLibre's own pixel matrix, so the tunnels sit exactly under the streets
+    const tr = map.transform, c = map.getCenter(), z = map.getZoom(), pitch = map.getPitch();
+    const mpp = (40075016.686 * Math.cos(c.lat * D2R)) / tr.worldSize;
+    return { M: tr.pixelMatrix, ws: tr.worldSize, z, pitch, mpp, depth: -this.DEPTH * mpp * (1 + 3.2 * (1 - this.p)) };
+  },
+  draw() {
+    const V = this.view(), p = this.p;
+    const lines = this.canvas('#subLines'), trains = this.canvas('#subTrains');
+    lines.cv.style.opacity = trains.cv.style.opacity = '1';
+    const key = [V.M[0], V.M[1], V.M[4], V.M[5], V.M[12], V.M[13], V.M[8], lines.W, lines.H, p.toFixed(3), this.hi ? this.hi.id : '', this.selSt ? this.selSt.name : '', Night.on].join(',');
+    if (key !== this.key) { this.key = key; this.drawLines(lines.ctx, lines.W, lines.H, V); }
+    this.drawTrains(trains.ctx, trains.W, trains.H, V);
+    if (this.on && performance.now() - this.uiT > 250) { this.uiT = performance.now(); this.ui(); }
+  },
+  P(V, x, y, z) {
+    const M = V.M, X = x * V.ws, Y = y * V.ws, w = M[3] * X + M[7] * Y + M[11] * z + M[15];
+    if (w < 1e-3) return null;
+    return [(M[0] * X + M[4] * Y + M[8] * z + M[12]) / w, (M[1] * X + M[5] * Y + M[9] * z + M[13]) / w];
+  },
+  widths(V) { const w = Math.max(1.5, Math.min(6.5, (V.z - 8.6) * 0.95)); return { w, tw: Math.max(1, w * 0.55) }; },
+  drawLines(ctx, W, H, V) {
+    const p = this.p, k = Math.min(1, p * 1.25);
+    ctx.clearRect(0, 0, W, H);
+    // the veil: the city above turns to a ghost
+    ctx.fillStyle = `rgba(3,7,16,${(0.82 * Math.min(1, p * 1.1)).toFixed(3)})`; ctx.fillRect(0, 0, W, H);
+    if (k <= 0.01) return;
+    const { w, tw } = this.widths(V), D = V.depth, hi = this.hi;
+    // shafts from the street down to the platforms, once the map is tilted
+    if (V.pitch > 3 && V.z > 11.5) {
+      ctx.strokeStyle = `rgba(147,197,253,${(0.32 * Math.min(1, V.pitch / 45) * k).toFixed(3)})`; ctx.lineWidth = 1; ctx.beginPath();
+      for (const s of this.stations) {
+        if (!s.inter && V.z < 13) continue;
+        const a = this.P(V, s.x, s.y, 0), b = this.P(V, s.x, s.y, D);
+        if (!a || !b || b[0] < -20 || b[0] > W + 20 || b[1] < -20 || b[1] > H + 20) continue;
+        ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]);
+      }
+      ctx.stroke();
+    }
+    // the lines: a soft glow, then the line in its colour; trams thinner
+    const pass = (glow) => {
+      for (const kind of ['tram', 'metro']) for (const line of this.lines) {
+        if ((line.kind === 'tram') !== (kind === 'tram')) continue;
+        const dim = hi && hi !== line ? 0.16 : 1, lw = line.kind === 'tram' ? tw : w;
+        ctx.strokeStyle = line.vis; ctx.globalAlpha = k * dim * (glow ? 0.2 : 1); ctx.lineWidth = glow ? lw * 3.4 : lw;
+        for (const svc of line.svc) {
+          ctx.beginPath(); let pen = false;
+          for (let i = 0; i < svc.mx.length; i++) {
+            const q = this.P(V, svc.mx[i], svc.my[i], D);
+            if (!q) { pen = false; continue; }
+            if (pen) ctx.lineTo(q[0], q[1]); else { ctx.moveTo(q[0], q[1]); pen = true; }
+          }
+          ctx.stroke();
+        }
+      }
+    };
+    ctx.lineCap = ctx.lineJoin = 'round';
+    pass(true); pass(false); ctx.globalAlpha = 1;
+    // stations and their names
+    this.stHits.length = 0;
+    const font = this.font || (this.font = getComputedStyle(document.body).fontFamily), boxes = [];
+    const showAll = V.z >= 13.4, showInter = V.z >= 11.6;
+    ctx.textBaseline = 'middle';
+    for (const s of this.stations) {
+      if (!s.inter && V.z < 12.2) continue;
+      if (!s.metro && V.z < 13) continue;
+      const q = this.P(V, s.x, s.y, D); if (!q || q[0] < -40 || q[0] > W + 40 || q[1] < -40 || q[1] > H + 40) continue;
+      const dim = hi && !s.lines.includes(hi) ? 0.18 : 1;
+      const r = s.inter ? Math.max(3.2, w * 0.95) : Math.max(2, w * 0.62);
+      ctx.globalAlpha = k * dim;
+      ctx.beginPath(); ctx.arc(q[0], q[1], r, 0, Math.PI * 2);
+      ctx.fillStyle = s.inter ? '#F8FBFF' : '#0A1426'; ctx.fill();
+      ctx.lineWidth = s.inter ? 1.6 : Math.max(1.2, w * 0.36); ctx.strokeStyle = s.inter ? '#0A1426' : s.lines[0].vis; ctx.stroke();
+      if (this.selSt === s) { ctx.beginPath(); ctx.arc(q[0], q[1], r + 5, 0, Math.PI * 2); ctx.lineWidth = 2; ctx.strokeStyle = '#93C5FD'; ctx.stroke(); }
+      this.stHits.push([q[0], q[1], s]);
+      if (!(showAll || (showInter && s.inter)) || dim < 1) continue;
+      const fs = s.inter ? 12 : 11; ctx.font = `${s.inter ? 600 : 500} ${fs}px ${font}`;
+      const tw2 = ctx.measureText(s.name).width, bx = [q[0] + r + 4, q[1] - fs / 2 - 1, tw2 + 2, fs + 2];
+      if (bx[0] + bx[2] > W - 4 || boxes.some((b) => bx[0] < b[0] + b[2] && b[0] < bx[0] + bx[2] && bx[1] < b[1] + b[3] && b[1] < bx[1] + bx[3])) continue;
+      boxes.push(bx);
+      ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(3,7,16,.92)'; ctx.strokeText(s.name, bx[0], q[1]);
+      ctx.fillStyle = s.inter ? '#F1F6FF' : '#B9CBEA'; ctx.fillText(s.name, bx[0], q[1]);
+    }
+    ctx.globalAlpha = 1;
+  },
+  seg(svc, s0, s1) {   // the track between two distances, as mercator points
+    const a = this.at(svc, s0), b = this.at(svc, s1), out = [[a[0], a[1]]];
+    for (let i = a[3]; i <= b[2]; i++) out.push([svc.mx[i], svc.my[i]]);
+    out.push([b[0], b[1]]); return out;
+  },
+  drawTrains(ctx, W, H, V) {
+    const k = Math.min(1, this.p * 1.25);
+    ctx.clearRect(0, 0, W, H);
+    this.hits.length = 0;
+    if (k <= 0.01) return;
+    const trains = this.update(), { w, tw } = this.widths(V), D = V.depth, hi = this.hi;
+    const selT = this.sel ? trains.find((t) => t.id === this.sel) : null;
+    this.selTrain = selT; this.running = trains.length;
+    ctx.lineCap = ctx.lineJoin = 'round';
+    for (const t of trains) {
+      const svc = t.svc, line = svc.line, half = line.tlen / 2, s = this.sOf(svc, t.dir, t.q.u);
+      let s0 = s - half, s1 = s + half;
+      if (!svc.loop) { s0 = Math.max(0, s0); s1 = Math.min(svc.L, s1); }
+      const c = this.P(V, ...this.at(svc, s).slice(0, 2), D);
+      if (!c || c[0] < -60 || c[0] > W + 60 || c[1] < -60 || c[1] > H + 60) continue;
+      const pts = (svc.loop && (s0 < 0 || s1 > svc.L) ? [Math.max(0, s0), Math.min(svc.L, s1)] : [s0, s1]);
+      const geo = this.seg(svc, pts[0], pts[1]).map((m) => this.P(V, m[0], m[1], D)).filter(Boolean);
+      if (geo.length < 2) continue;
+      // which way it is heading on screen, so it can keep to its own track (the right-hand one)
+      let hx = geo[geo.length - 1][0] - geo[0][0], hy = geo[geo.length - 1][1] - geo[0][1];
+      if (t.dir) { hx = -hx; hy = -hy; }
+      const hl = Math.hypot(hx, hy) || 1, nx = -hy / hl, ny = hx / hl;
+      const lw = line.kind === 'tram' ? tw : w, off = Math.max(1.6, lw * 0.62), tw_ = Math.max(2.6, lw + 1.4);
+      const dim = hi && hi !== line ? 0.2 : 1;
+      ctx.globalAlpha = k * dim;
+      ctx.beginPath();
+      geo.forEach((g, i) => { const x = g[0] - nx * off, y = g[1] - ny * off; if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y); });
+      if (hl < 2.5) {   // too far out to see its length: a dot
+        ctx.arc(c[0] - nx * off, c[1] - ny * off, tw_ / 2 + 0.6, 0, Math.PI * 2);
+        ctx.fillStyle = line.vis; ctx.fill(); ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(255,255,255,.85)'; ctx.stroke();
+      } else {
+        ctx.lineWidth = tw_ + 2; ctx.strokeStyle = 'rgba(255,255,255,.88)'; ctx.stroke();
+        ctx.lineWidth = tw_; ctx.strokeStyle = line.vis; ctx.stroke();
+        if (hl > 14) {   // a lit cab at the front
+          const f = t.dir ? geo[0] : geo[geo.length - 1];
+          ctx.beginPath(); ctx.arc(f[0] - nx * off, f[1] - ny * off, Math.max(1.2, tw_ * 0.32), 0, Math.PI * 2); ctx.fillStyle = '#FFF7D6'; ctx.fill();
+        }
+      }
+      const hx2 = c[0] - nx * off, hy2 = c[1] - ny * off;
+      this.hits.push([hx2, hy2, t]);
+      if (t === selT) t.scr = [hx2, hy2];
+    }
+    ctx.globalAlpha = 1;
+    if (selT) {
+      if (selT.scr) {
+        const r = 12 + 2 * Math.sin(performance.now() / 260), [x, y] = selT.scr;
+        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.lineWidth = 2; ctx.strokeStyle = '#F8FBFF'; ctx.stroke();
+        ctx.beginPath(); ctx.arc(x, y, r + 4, 0, Math.PI * 2); ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(147,197,253,.6)'; ctx.stroke();
+      }
+      if (this.follow) { const m = this.at(selT.svc, this.sOf(selT.svc, selT.dir, selT.q.u)); map.jumpTo({ center: new maplibregl.MercatorCoordinate(m[0], m[1]).toLngLat() }); }
+    } else if (this.sel && this.on) this.select(null);
+  },
+  // ------------------------------------------------------------- picking
+  hit(pt) {   // the nearest train or station under the pointer
+    const R = matchMedia('(pointer: coarse)').matches ? 20 : 12;
+    let best = null, bd = R;
+    for (const [x, y, t] of this.hits) { const d = Math.hypot(x - pt.x, y - pt.y); if (d < bd) { bd = d; best = { train: t }; } }
+    for (const [x, y, s] of this.stHits) { const d = Math.hypot(x - pt.x, y - pt.y) + 2; if (d < bd) { bd = d; best = { st: s }; } }
+    return best;
+  },
+  click(pt) {
+    const h = this.hit(pt);
+    if (!h) { this.select(null); return; }
+    if (h.train) this.select(h.train.id); else this.selectStation(h.st);
+  },
+  select(id) {
+    this.sel = id; this.selSt = null; this.key = '';
+    if (!id) { this.setFollow(false); $('#subInfo').hidden = true; return; }
+    this.selTrain = this.trains.find((t) => t.id === id) || null;
+    $('#subInfo').hidden = false; this.ui(true);
+  },
+  selectStation(s) {
+    this.sel = null; this.setFollow(false); this.selSt = s; this.key = '';
+    $('#subInfo').hidden = false; this.ui(true);
+  },
+  setFollow(v) {
+    this.follow = !!v && !!this.sel;
+    const b = $('#subInfo').querySelector('[data-follow]'); if (b) { b.setAttribute('aria-pressed', String(this.follow)); b.textContent = this.follow ? '停止跟随' : '跟着这列车'; }
+    if (this.follow && map.getZoom() < 14.2) map.easeTo({ zoom: 14.6, duration: 600 });
+  },
+  highlight(line) {
+    this.hi = line && this.hi !== line ? line : null; this.key = '';
+    document.querySelectorAll('.sub-line').forEach((b) => b.setAttribute('aria-pressed', String(!!this.hi && b.dataset.line === this.hi.id)));
+    if (this.hi) {
+      const b = this.hi.box, c0 = new maplibregl.MercatorCoordinate(b[0], b[3]).toLngLat(), c1 = new maplibregl.MercatorCoordinate(b[2], b[1]).toLngLat();
+      const pad = mq.matches ? { top: 150, bottom: 150, left: 30, right: 30 } : { top: 90, bottom: 70, left: 290, right: 60 };
+      map.fitBounds([[c0.lng, c0.lat], [c1.lng, c1.lat]], { padding: pad, duration: reduceMotion ? 0 : 900, maxZoom: 13.6 });
+    }
+  },
+  // ------------------------------------------------------------- the HUD
+  buildUI() {
+    $('#subBack').addEventListener('click', () => this.exit());
+    $('#sub').querySelectorAll('[data-speed]').forEach((b) => b.addEventListener('click', () => {
+      this.setClock(this.sim, +b.dataset.speed); this.ui(true);
+    }));
+    $('#subNow').addEventListener('click', () => { this.setClock(Date.now() + GZ_OFF, 1); this.ui(true); });
+    $('#subInfo').addEventListener('click', (e) => {
+      if (e.target.closest('[data-x]')) this.select(null);
+      else if (e.target.closest('[data-follow]')) this.setFollow(!this.follow);
+    });
+    $('#subNote').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-skip]'); if (!b) return;
+      const { day, sec } = this.clock(); const to = sec < 7 * 3600 ? day : day + 1;
+      this.setClock(to * 864e5 + 7 * 3600e3 - 60e3, 10); this.ui(true);
+    });
+  },
+  fillUI() {
+    const list = $('#subLinesList'); list.innerHTML = '';
+    const h = document.createElement('button'); h.type = 'button'; h.className = 'sub-lines-h'; h.setAttribute('aria-expanded', 'true');
+    h.innerHTML = `<span>线路 <small>点一条只看它</small></span>${ICONS.down}`;
+    h.addEventListener('click', () => { const min = list.classList.toggle('min'); h.setAttribute('aria-expanded', String(!min)); });
+    list.appendChild(h);
+    for (const line of this.lines) {
+      const b = document.createElement('button');
+      b.className = 'sub-line'; b.type = 'button'; b.dataset.line = line.id; b.setAttribute('aria-pressed', 'false'); b.setAttribute('role', 'listitem');
+      const svc = line.svc[0], ends = line.svc.length > 1 && line.id === '14' ? '含知识城支线' : svc.loop ? '环线' : `${svc.a} ⇄ ${svc.b}`;
+      b.innerHTML = `<i style="background:${line.vis}"></i><b>${line.name}</b><small>${ends}</small>`;
+      b.addEventListener('click', () => this.highlight(line));
+      list.appendChild(b);
+    }
+    const nMetro = this.lines.filter((l) => l.kind !== 'tram').length, nSt = this.stations.length;
+    $('#subStat').textContent = `广州地铁 · ${nMetro} 条线路 · 有轨电车 3 条 · ${nSt} 座车站`;
+  },
+  period(sec, wk, n) {
+    const h = sec / 3600;
+    if (h < 6 || h >= 23.6) return n ? '末班车' : '收车';
+    if (!wk && h >= 7.5 && h < 9.5) return '早高峰';
+    if (!wk && h >= 17 && h < 19.5) return '晚高峰';
+    if (h >= (wk ? 8 : 9.5) && h < 21.5) return wk ? '周末' : '平峰';
+    return h < 9 ? '早间' : '夜间';
+  },
+  fmt(sec) { sec = Math.max(0, Math.round(sec)); return sec < 60 ? `${sec} 秒` : `${Math.floor(sec / 60)} 分 ${String(sec % 60).padStart(2, '0')} 秒`; },
+  ui(force) {
+    if (!this.D) return;
+    const { day, sec, w, wk } = this.clock(), hh = Math.floor(sec / 3600), mm = Math.floor((sec % 3600) / 60), ss = Math.floor(sec % 60);
+    $('#subTime').textContent = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`;
+    $('#subDay').textContent = WEEK[w];
+    const n = this.running || 0;
+    const live = Math.abs(this.sim - (Date.now() + GZ_OFF)) < 90e3 && this.speed === 1;
+    $('#subRun').textContent = `${live ? '实时 · ' : ''}${this.period(sec, wk, n)} · ${n} 列在跑`;
+    $('#subNow').hidden = live;
+    $('#sub').querySelectorAll('[data-speed]').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.speed === this.speed)));
+    const note = $('#subNote'), quiet = n === 0;
+    note.hidden = !quiet;
+    if (quiet && (force || !note.dataset.on)) { note.dataset.on = '1'; note.innerHTML = `已经收车了，首班车 6:00 从各线起点站发出 <button type="button" class="sky-pill" data-skip>快进到明早 7:00</button>`; }
+    if (!quiet) delete note.dataset.on;
+    const box = $('#subInfo'); if (box.hidden) return;
+    if (this.sel) {
+      const t = this.selTrain; if (!t) return;
+      const line = t.svc.line, tr = t.tr, q = t.q;
+      let now = '';
+      if (q.stop) {
+        const o = tr.st[q.k];
+        now = t.tau < 0 ? `在 ${o.n} 等候发车 · ${this.fmt(-t.tau)}后开` : q.k === tr.st.length - 1 ? `到达终点 ${o.n || '（地图外）'}` : `停靠 ${o.n} · ${this.fmt(tr.dep[q.k] - t.tau)}后开`;
+      } else {
+        let j = q.k + 1; while (j < tr.st.length - 1 && !tr.st[j].n) j++;
+        now = tr.st[j].n ? `下一站 ${tr.st[j].n} · 约 ${this.fmt(tr.arr[j] - t.tau)}` : '开往地图外的下一站';
+      }
+      const left = tr.st.slice(q.k + (q.stop ? 0 : 1)).filter((o) => o.n).length;
+      box.innerHTML = `<button class="sky-btn x" data-x aria-label="关闭">${ICONS.close}</button>
+        <div class="k"><i style="background:${line.vis}"></i>${line.name}${t.svc.loop ? '' : ' · 开往'}</div><h3>${tr.to}</h3>
+        <p class="sub-now">${now}</p>
+        <table><tr><td>速度</td><td>${Math.round(q.v * 3.6)} km/h</td></tr><tr><td>列车长</td><td>约 ${line.tlen} 米</td></tr><tr><td>还剩</td><td>${left} 站</td></tr></table>
+        <button type="button" class="sky-pill" data-follow aria-pressed="${this.follow}">${this.follow ? '停止跟随' : '跟着这列车'}</button>`;
+    } else if (this.selSt) {
+      const s = this.selSt, rows = this.board(s);
+      box.innerHTML = `<button class="sky-btn x" data-x aria-label="关闭">${ICONS.close}</button>
+        <div class="k">${s.lines.map((l) => `<i style="background:${l.vis}"></i>`).join('')}${s.lines.map((l) => l.name).join(' · ')}</div><h3>${s.name}</h3>
+        <table>${rows.length ? rows.map((r) => `<tr><td><i style="background:${r.line.vis}"></i>往 ${r.to}</td><td>${r.eta < 30 ? '进站中' : r.eta < 3600 ? Math.ceil(r.eta / 60) + ' 分钟' : `${r.first ? '首班 ' : ''}${String(Math.floor(r.at / 3600) % 24).padStart(2, '0')}:${String(Math.floor((r.at % 3600) / 60)).padStart(2, '0')}`}</td></tr>`).join('') : '<tr><td>今天的车已经开完了</td><td></td></tr>'}</table>`;
+    }
+  },
+  board(s) {   // the next train each way at a station
+    const { day, sec } = this.clock(), best = new Map();
+    for (const svc of this.svcs) {
+      if (!s.lines.includes(svc.line)) continue;
+      for (let dir = 0; dir < 2; dir++) {
+        const tr = svc.trip[dir], j = tr.st.findIndex((o, i) => o.n === s.name && i < tr.st.length - 1);
+        if (j < 0) continue;
+        for (let back = 0; back < 2; back++) {
+          const deps = this.deps(svc, dir, this.wkOf(day - back)), t = sec + back * 86400 - tr.arr[j];
+          let lo = 0, hi = deps.length; while (lo < hi) { const m = (lo + hi) >> 1; if (deps[m] < t) lo = m + 1; else hi = m; }
+          if (lo >= deps.length) continue;
+          const eta = deps[lo] - t, k = svc.line.id + '>' + tr.to;
+          if (!best.has(k) || best.get(k).eta > eta) best.set(k, { line: svc.line, to: tr.to, eta, first: lo === 0 && !back, at: deps[lo] + tr.arr[j] });
+        }
+      }
+    }
+    return [...best.values()].sort((a, b) => this.lines.indexOf(a.line) - this.lines.indexOf(b.line) || a.eta - b.eta);
   },
 };
 
@@ -5371,6 +6009,7 @@ document.addEventListener('keydown', (e) => {
   if (!$('#petCatch').hidden) $('#petCatch').hidden = true;
   else if (!$('#pet').hidden) Pet.close();
   else if (!$('#sky').hidden) Sky.close();
+  else if (Metro.on) { if (!$('#subInfo').hidden) Metro.select(null); else Metro.exit(); }
   else if ($('#profileDrawer').classList.contains('open')) closeDrawer();
   else if (!$('#detail').hidden) closeDetail();
   else if (Pure.on) Pure.set(false);
@@ -5405,6 +6044,7 @@ const Pet = {
     { id: 'food', name: '看 2 家餐厅的评价', goal: 2, reward: 15 },
     { id: 'street', name: '看一组扫街照片', goal: 1, reward: 15 },
     { id: 'sky', name: '去「地球之外」看一次星空', goal: 1, reward: 20 },
+    { id: 'metro', name: '潜入「城市之下」看一次地铁', goal: 1, reward: 20 },
     { id: 'pat', name: '摸摸啵铃 3 次', goal: 3, reward: 10 },
   ],
   img(n) { return U('pet/' + n + '.webp'); },
