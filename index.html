@@ -94,12 +94,12 @@ body.sunk .maplibregl-marker,body.sunk .look-hint{visibility:hidden}
 .sink-hint .ring{background:rgba(37,99,235,.3);color:#DBEAFE}
 .sink-hint .ring i{animation-name:nudgeDown}
 @keyframes nudgeDown{0%,100%{transform:none}50%{transform:translateY(3px)}}
-.sub{position:fixed;inset:0;z-index:4;pointer-events:none;color:var(--star)}
-.sub[hidden]{display:none}
-.sub > *{animation:skyIn .5s ease .2s both}
-.sub.leaving > *{animation:skyOut .3s ease both}
-.sub > .sub-info{animation:none}
-.sub::before{content:"";position:absolute;inset:0 0 auto;height:120px;background:linear-gradient(rgba(3,7,16,.82),rgba(3,7,16,0));pointer-events:none}
+.subway{position:fixed;inset:0;z-index:4;pointer-events:none;color:var(--star)}
+.subway[hidden]{display:none}
+.subway > *{animation:skyIn .5s ease .2s both}
+.subway.leaving > *{animation:skyOut .3s ease both}
+.subway > .sub-info{animation:none}
+.subway::before{content:"";position:absolute;inset:0 0 auto;height:120px;background:linear-gradient(rgba(3,7,16,.82),rgba(3,7,16,0));pointer-events:none}
 .sub-top{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));display:flex;align-items:center;flex-wrap:wrap;gap:10px 12px;pointer-events:none}
 .sub-top > *{pointer-events:auto}
 .sub-back{display:flex;align-items:center;gap:6px;padding:0 14px 0 10px}
@@ -927,7 +927,7 @@ body.pure .pet-dock,body.pure .pet-bubble{display:none!important}
 <canvas id="subLines" aria-hidden="true"></canvas>
 <canvas id="subTrains" aria-hidden="true"></canvas>
 <button class="pull-hint sink-hint" id="sinkHint" type="button" tabindex="-1"><span class="ring" aria-hidden="true"><svg viewBox="0 0 30 30"><circle class="trk" cx="15" cy="15" r="12"/><circle class="prog" cx="15" cy="15" r="12"/></svg><i>↓</i></span><b>潜入城市之下</b><span id="sinkHow">按住右键继续往下拖</span></button>
-<section class="sub" id="sub" hidden aria-label="城市之下：广州地铁模拟运行">
+<section class="subway" id="sub" hidden aria-label="城市之下：广州地铁模拟运行">
   <div class="sub-top">
     <button class="sky-pill sub-back" id="subBack" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>回到地面</button>
     <div class="sky-title sub-title"><h2>城市之下</h2><p id="subStat">广州地铁</p></div>
@@ -5349,8 +5349,9 @@ const Metro = {
     $('#sinkHint').addEventListener('click', () => this.go());
     map.on('move', () => this.place());
     // the first time the map is laid flat, say once that there is something underneath
-    map.on('pitchend', () => {
-      if (this.told || this.on || !this.atBottom() || !state.ready || !$('#sky').hidden) return;
+    map.on('pitchend', (e) => {
+      const byHand = (e && e.originalEvent) || this.userFlat; this.userFlat = false;
+      if (!byHand || this.told || this.on || !this.atBottom() || !state.ready || !$('#sky').hidden) return;
       this.told = true; this.flash = true; this.place();
       setTimeout(() => { this.flash = false; this.place(); }, 3200);
     });
@@ -5869,6 +5870,7 @@ $('#zIn').addEventListener('click', () => map && map.zoomIn());
 $('#zOut').addEventListener('click', () => map && map.zoomOut());
 $('#t3d').addEventListener('click', () => {
   if (!map) return; state.is3d = map.getPitch() < 5;
+  Metro.userFlat = !state.is3d;
   map.easeTo({ pitch: state.is3d ? 55 : 0, duration: 700 });
 });
 $('#zHome').addEventListener('click', () => map && map.flyTo({ ...HOME(), essential: true }));
