@@ -5329,7 +5329,7 @@ const LookUp = {
    are typical values for each line, not the operator's own timetable. */
 const GZ_OFF = 8 * 3600e3;   // Guangzhou is UTC+8 whatever the visitor's clock says
 const Metro = {
-  D: null, loading: null, on: false, busy: false, acc: 0, p: 0, drag: null, DEAD: 50, TH: 210,
+  D: null, loading: null, on: false, busy: false, acc: 0, p: 0, drag: null, DEAD: 100, TH: 300, t0: 0,   // px: nothing shows until DEAD, it goes under at TH
   lines: [], svcs: [], stations: [], inter: new Set(), speed: 1, sim: 0, wall: 0, raf: 0,
   base: { sim: 0, wall: 0 }, sel: null, selSt: null, follow: false, hi: null, key: '', trains: [], hits: [], stHits: [], uiT: 0, wasNight: false,
   DEPTH: 30,   // how far below the streets the tunnels sit on screen, in px (shows once the map is tilted)
@@ -5370,6 +5370,8 @@ const Metro = {
   },
   set(a) {
     this.acc = a; this.p = Math.min(1, Math.max(0, (a - this.DEAD) / (this.TH - this.DEAD)));
+    // the hint only comes up once you have been pulling for a moment, not on a small nudge
+    if (a > 0 && !this.t0) { this.t0 = performance.now(); clearTimeout(this._ht); this._ht = setTimeout(() => this.place(), 460); } else if (a <= 0) this.t0 = 0;
     if (this.p > 0.002) this.start(); this.place();
   },
   release() {
@@ -5380,7 +5382,8 @@ const Metro = {
   },
   place() {   // the hint sits low on the screen, only while you are pulling with the map flat
     const h = $('#sinkHint'); if (!map || !state.ready) return;
-    const show = !this.busy && !this.on && (this.acc > this.DEAD * 0.6 || this.flash) && this.atBottom() && !document.body.classList.contains('lifted');
+    const pulled = this.acc > this.DEAD && this.t0 && performance.now() - this.t0 > 450;
+    const show = !this.busy && !this.on && (pulled || this.flash) && this.atBottom() && !document.body.classList.contains('lifted');
     h.classList.toggle('show', show);
     if (show) h.querySelector('.prog').style.strokeDashoffset = (75.4 * (1 - this.p)).toFixed(1);
   },
