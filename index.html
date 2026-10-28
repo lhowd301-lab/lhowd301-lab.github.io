@@ -1099,8 +1099,9 @@ const SITE = {
   ],
   cities: [
     { id: 'gz', name: '广州', en: 'GUANGZHOU', center: [113.29, 23.118], zoom: 12.6, ready: true },
-    { id: 'sz', name: '深圳', en: 'SHENZHEN', ready: false },
-    { id: 'fs', name: '佛山', en: 'FOSHAN', ready: false },
+    { id: 'fs', name: '佛山', en: 'FOSHAN', center: [113.13, 23.0], zoom: 12.2, ready: true },
+    { id: 'dg', name: '东莞', en: 'DONGGUAN', center: [113.752, 23.022], zoom: 12.9, ready: true },
+    { id: 'sz', name: '深圳', en: 'SHENZHEN', center: [114.03, 22.54], zoom: 12.3, ready: true },
     { id: 'hk', name: '香港', en: 'HONG KONG', ready: false },
     { id: 'mo', name: '澳门', en: 'MACAU', ready: false },
   ],
@@ -1654,7 +1655,13 @@ const C = {
   rail: '#8DA2C3', text: '#1C3463', textSoft: '#5A73A3', district: '#3B82F6', blue: '#2563EB',
 };
 const HILL = [[113.115234, 23.32208], [113.510742, 23.32208], [113.510742, 22.998852], [113.115234, 22.998852]];
-const COVER = { type: 'Feature', properties: { n: '街道级细节 · 广州主城区到白云机场' }, geometry: { type: 'LineString', coordinates: [[113.15, 22.92], [113.56, 22.92], [113.56, 23.46], [113.15, 23.46], [113.15, 22.92]] } };
+// 街道级细节覆盖的范围：广州主城区到白云机场，连着佛山主城区；东莞、深圳主城区各自一块
+const COVER = { type: 'FeatureCollection', features: [
+  { type: 'Feature', properties: { n: '街道级细节 · 广州主城区到白云机场 · 佛山主城区' }, geometry: { type: 'LineString', coordinates: [[112.98, 22.74], [113.33, 22.74], [113.33, 22.92], [113.56, 22.92], [113.56, 23.46], [113.15, 23.46], [113.15, 23.14], [112.98, 23.14], [112.98, 22.74]] } },
+  { type: 'Feature', properties: { n: '街道级细节 · 东莞主城区' }, geometry: { type: 'LineString', coordinates: [[113.66, 22.94], [113.84, 22.94], [113.84, 23.10], [113.66, 23.10], [113.66, 22.94]] } },
+  { type: 'Feature', properties: { n: '街道级细节 · 深圳主城区' }, geometry: { type: 'LineString', coordinates: [[113.86, 22.47], [114.18, 22.47], [114.18, 22.62], [113.86, 22.62], [113.86, 22.47]] } },
+] };
+const DATA_BOUNDS = [112.98, 22.47, 114.18, 23.46];
 const FONT = ['Noto Sans Regular'];
 const HOME = () => ({ center: mq.matches ? [113.266, 23.117] : [113.274, 23.117], zoom: mq.matches ? 11.9 : 12.6, pitch: 48, bearing: 18.7 });
 const zi = (stops) => ['interpolate', ['exponential', 1.55], ['zoom'], ...stops.flat()];
@@ -1698,7 +1705,7 @@ function buildStyle() {
     sources: {
       hill: { type: 'image', url: U('map/hillshade.png'), coordinates: HILL },
       districts: { type: 'geojson', data: U('map/districts.json') },
-      osm: { type: 'vector', tiles: ['gzt://{z}/{x}/{y}'], minzoom: 8, maxzoom: 13, bounds: [113.15, 22.92, 113.56, 23.46] },
+      osm: { type: 'vector', tiles: ['gzt://{z}/{x}/{y}'], minzoom: 8, maxzoom: 13, bounds: DATA_BOUNDS },
       labels: { type: 'geojson', data: U('map/labels.json') },
       cover: { type: 'geojson', data: COVER },
       trail: { type: 'geojson', data: { type: 'FeatureCollection', features: [] } },
@@ -3420,7 +3427,7 @@ function initMap() {
   const pack = (n) => (packs[n] ||= fetch(U(`tilepack/${n}.json`)).then((r) => (r.ok ? r.json() : {})).catch(() => ({})));
   maplibregl.addProtocol('gzt', async (params) => {
     const key = params.url.slice('gzt://'.length); const [z, x, y] = key.split('/').map(Number);
-    const name = z <= 11 ? 'lo' : `z${z}-${x >> 2}-${y >> 2}`;
+    const name = z <= 10 ? 'lo' : `z${z}-${x >> 2}-${y >> 2}`;
     if (!(await packNames).has(name)) return { data: new ArrayBuffer(0) };
     const s64 = (await pack(name))[key];
     if (!s64) return { data: new ArrayBuffer(0) };
@@ -3465,7 +3472,7 @@ function initMap() {
         'fill-extrusion-opacity': ['interpolate', ['linear'], ['zoom'], 13.2, 0, 14, 0.9],
         'fill-extrusion-vertical-gradient': true,
       } }, 'trail');
-    map.addSource('bridges', { type: 'vector', tiles: ['gzb://{z}/{x}/{y}'], minzoom: 13, maxzoom: 13, bounds: [113.15, 22.92, 113.56, 23.46] });
+    map.addSource('bridges', { type: 'vector', tiles: ['gzb://{z}/{x}/{y}'], minzoom: 13, maxzoom: 13, bounds: DATA_BOUNDS });
     map.addLayer({ id: 'bridge-3d', type: 'fill-extrusion', source: 'bridges', 'source-layer': 'bridges', minzoom: 13.2,
       paint: {
         'fill-extrusion-color': ['match', ['get', 'k'], 'pi', '#A9BBD6', 'm', '#B4D0F7', 'p', '#CCDDF8', 'x', '#BCCADF', 'f', '#D3DDEB', '#E6EDF8'],
@@ -5383,7 +5390,7 @@ const Metro = {
   place() {   // the hint sits low on the screen, only while you are pulling with the map flat
     const h = $('#sinkHint'); if (!map || !state.ready) return;
     const pulled = this.acc > this.DEAD && this.t0 && performance.now() - this.t0 > 450;
-    const show = !this.busy && !this.on && (pulled || this.flash) && this.atBottom() && !document.body.classList.contains('lifted');
+    const show = !!(!this.busy && !this.on && (pulled || this.flash) && this.atBottom() && !document.body.classList.contains('lifted'));
     h.classList.toggle('show', show);
     if (show) h.querySelector('.prog').style.strokeDashoffset = (75.4 * (1 - this.p)).toFixed(1);
   },
