@@ -1478,6 +1478,71 @@ const SITE = {
       facts: { T1启用: '2004 年 8 月', T2启用: '2018 年 4 月', T3启用: '2025 年 10 月 30 日', 跑道: '5 条' },
       intro: '广州的空港，在白云区人和镇和花都区之间。2004 年 8 月旧白云机场整体搬到这里，T1 航站楼启用：主楼夹在东西两条长长的连接楼之间，连接楼伸出一条条指廊。2018 年北边的 T2 启用，主楼正对着 T1，两侧的长臂一路向南和 T1 接上。2025 年 10 月 30 日，东南边的 T3 和第五条跑道一起投运，机场从此有“五条跑道、三座航站楼”。T3 的造型叫“羊城花冠”：中间大厅向四面伸出四条弯成花瓣的指廊，约 31 万平方米的金属屋面用白色的连续着色不锈钢，像云朵也像花瓣；大厅由三排“花冠柱”撑起，玻璃穹顶做成花蕾的样子，值机大厅里还有一座可以俯看整个机场的观景瞭望塔。',
       thoughts: '写下你对白云机场的理解。', sample: true },
+    // 香港 · 维港两岸（建模见 buildHK*）
+    { id: 'l55', city: 'hk', kind: 'new', meta: '2003', name: '国际金融中心', en: 'International Finance Centre', lnglat: [114.15928, 22.2853], zoom: 15.3, pitch: 62,
+      facts: { 二期: '415.8 米 · 88 层', 一期: '210 米', 设计: '西萨·佩里' },
+      intro: '中环海旁的国际金融中心（IFC），由一期、二期两座写字楼、国际金融中心商场和四季酒店组成，压在机场快线香港站上面。二期 2003 年落成，高 415.8 米，是当时香港最高的楼，直到 2010 年被对岸的环球贸易广场超过。塔身方形、四角内凹，白色竖条一路拉到顶，越往上越收，最后四角翘起，像一顶皇冠。商场顶上有一片空中花园，正对着维港。',
+      thoughts: '写下你对国际金融中心的理解。', sample: true },
+    { id: 'l56', city: 'hk', kind: 'new', meta: '1990', name: '中银大厦', en: 'Bank of China Tower', lnglat: [114.16157, 22.27927], zoom: 15.5, pitch: 62,
+      facts: { 高度: '367.4 米（含天线）', 落成: '1990 年', 设计: '贝聿铭' },
+      intro: '贝聿铭设计的中国银行香港总部，1990 年落成，连两根天线高 367.4 米，是当时亚洲最高的建筑。正方形的平面沿对角线分成四个三角柱，在不同高度斜切收顶，越往上越少，最后只剩一根，取竹子“节节高升”的意思。立面上白色的框勾出一个个巨大的“X”，对应的正是大楼承重的斜撑。',
+      thoughts: '写下你对中银大厦的理解。', sample: true },
+    { id: 'l57', city: 'hk', kind: 'new', meta: '1992', name: '中环广场', en: 'Central Plaza', lnglat: [114.17364, 22.27996], zoom: 15.5, pitch: 62,
+      facts: { 高度: '374 米（含塔尖）', 落成: '1992 年', 层数: '78 层' },
+      intro: '名字叫中环，其实在湾仔海旁。1992 年落成，连塔尖高 374 米，落成后取代中银大厦成为亚洲最高的建筑，也是当时世界上最高的钢筋混凝土大楼。平面是切了角的三角形，金色和银色的玻璃一层层相间，顶上是玻璃金字塔和塔尖。入夜后塔顶的霓虹灯带每 15 分钟换一种颜色，懂得看的人能从颜色读出时间。',
+      thoughts: '写下你对中环广场的理解。', sample: true },
+    { id: 'l58', city: 'hk', kind: 'new', meta: '1985', name: '汇丰总行大厦', en: 'HSBC Main Building', lnglat: [114.15954, 22.28028], zoom: 16, pitch: 60,
+      facts: { 高度: '178.8 米', 落成: '1985 年', 设计: '诺曼·福斯特' },
+      intro: '皇后大道中 1 号，福斯特设计，1985 年落成。电梯、楼梯这些服务核心被挪到两侧，8 根钢柱和 5 层“衣架”一样的悬挂桁架把一层层楼板吊起来，所以地面一层完全架空，成了行人可以穿过的广场，抬头还能望进十层高的中庭。门前那对铜狮比大楼还老，叫“史提芬”和“施迪”。',
+      thoughts: '写下你对汇丰总行大厦的理解。', sample: true },
+    { id: 'l59', city: 'hk', kind: 'new', meta: '1999', name: '长江集团中心', en: 'Cheung Kong Center', lnglat: [114.16056, 22.27952], zoom: 15.7, pitch: 62,
+      facts: { 高度: '283 米', 落成: '1999 年', 设计: '西萨·佩里' },
+      intro: '夹在中银大厦和汇丰总行之间，1999 年落成，高 283 米，原址是希尔顿酒店。设计国际金融中心的西萨·佩里也设计了它：方方正正的玻璃盒子外面罩一层不锈钢方格，在两位造型张扬的邻居中间显得很克制。入夜后外墙的方格会亮起灯来。',
+      thoughts: '写下你对长江集团中心的理解。', sample: true },
+    { id: 'l60', city: 'hk', kind: 'new', meta: '1988', name: '力宝中心', en: 'Lippo Centre', lnglat: [114.16351, 22.27937], zoom: 16, pitch: 60,
+      facts: { 高度: '172 米 · 186 米', 落成: '1988 年', 设计: '保罗·鲁道夫' },
+      intro: '金钟的力宝中心，美国建筑师保罗·鲁道夫设计，1988 年落成，原名奔达中心，由澳洲商人邦德兴建，后来转手才改了名。两座八角形的塔楼一高一矮，深色玻璃的凸窗一簇簇向外伸出，远看像几只树熊抱着树干往上爬，所以有“树熊抱树”的外号。',
+      thoughts: '写下你对力宝中心的理解。', sample: true },
+    { id: 'l61', city: 'hk', kind: 'new', meta: '1973', name: '怡和大厦', en: 'Jardine House', lnglat: [114.15915, 22.283], zoom: 16, pitch: 60,
+      facts: { 高度: '178.5 米', 落成: '1973 年', 原名: '康乐大厦' },
+      intro: '中环的怡和大厦，1973 年落成，原名康乐大厦，是当时香港最高的楼。外墙开了一千七百多个圆窗，外号“千孔大厦”。它落成时就站在海边，后来中环一次次填海，前面才长出了交易广场和国际金融中心。',
+      thoughts: '写下你对怡和大厦的理解。', sample: true },
+    { id: 'l62', city: 'hk', kind: 'new', meta: '1980', name: '合和中心', en: 'Hopewell Centre', lnglat: [114.17159, 22.27467], zoom: 16, pitch: 60,
+      facts: { 高度: '216 米 · 64 层', 落成: '1980 年', 发展商: '胡应湘（合和实业）' },
+      intro: '湾仔皇后大道东的合和中心，1980 年落成，64 层、高 216 米，圆柱形的塔楼当了将近十年香港最高的楼，直到中银大厦出现。白色横带夹着一圈圈深色玻璃，外墙挂着观光电梯，顶层是会转的旋转餐厅。大楼建在山坡上，后门在 17 楼，直通半山的坚尼地道。',
+      thoughts: '写下你对合和中心的理解。', sample: true },
+    { id: 'l63', city: 'hk', kind: 'new', meta: '1997', name: '香港会议展览中心', en: 'Hong Kong Convention and Exhibition Centre', lnglat: [114.173, 22.28337], zoom: 15.8, pitch: 55,
+      facts: { 新翼落成: '1997 年', 交接仪式: '1997 年 7 月 1 日零时' },
+      intro: '湾仔海旁的会展中心新翼，1997 年建在填海出来的人工岛上，铝板屋顶一层叠一层，像展开翅膀的海鸟。1997 年 6 月 30 日深夜到 7 月 1 日零时，香港回归的交接仪式就在新翼的大会堂举行。门前的金紫荆广场立着金紫荆雕塑和回归纪念碑。',
+      thoughts: '写下你对会展中心的理解。', sample: true },
+    { id: 'l64', city: 'hk', kind: 'new', meta: '2014', name: '香港摩天轮', en: 'Hong Kong Observation Wheel', lnglat: [114.16177, 22.28533], zoom: 16.6, pitch: 55,
+      facts: { 高度: '60 米', 启用: '2014 年 12 月', 车厢: '42 个' },
+      intro: '中环海滨长廊上的摩天轮，2014 年 12 月启用，高 60 米，挂着 42 个车厢。转到最高处，对岸尖沙咀、西九龙的天际线和整片维港就在眼前；晚上轮圈亮起灯，是中环海边新的地标。',
+      thoughts: '写下你对香港摩天轮的理解。', sample: true },
+    { id: 'l65', city: 'hk', kind: 'new', meta: '2010', name: '环球贸易广场', en: 'International Commerce Centre', lnglat: [114.16023, 22.30338], zoom: 15.1, pitch: 62,
+      facts: { 高度: '484 米 · 118 层', 落成: '2010 年', 设计: 'KPF' },
+      intro: '西九龙的环球贸易广场（ICC），2010 年落成，118 层、高 484 米，是香港最高的楼。脚下是机场快线九龙站和圆方商场；100 楼是观景台“天际 100”，最高的十几层是丽思卡尔顿酒店。玻璃幕墙四角内凹、底部微微外撇；外墙装满了 LED，夜里会上演灯光汇演。',
+      thoughts: '写下你对环球贸易广场的理解。', sample: true },
+    { id: 'l66', city: 'hk', kind: 'new', meta: '1989', name: '香港文化中心', en: 'Hong Kong Cultural Centre', lnglat: [114.17034, 22.29381], zoom: 16.2, pitch: 55,
+      facts: { 开幕: '1989 年', 场馆: '音乐厅 · 大剧院 · 剧场' },
+      intro: '尖沙咀海旁的香港文化中心，1989 年开幕，建在旧九广铁路尖沙咀总站的原址上，里面有音乐厅、大剧院和剧场。外墙贴着粉红色瓷砖、几乎不开窗，弧形的屋顶一路斜落，当年因为“背对维港”惹过不少争议。门前的海滨长廊是看对岸港岛夜景的好位置。',
+      thoughts: '写下你对香港文化中心的理解。', sample: true },
+    { id: 'l67', city: 'hk', kind: 'new', meta: '1980', name: '香港太空馆', en: 'Hong Kong Space Museum', lnglat: [114.17202, 22.29426], zoom: 16.6, pitch: 55,
+      facts: { 开馆: '1980 年 10 月', 位置: '尖沙咀梳士巴利道' },
+      intro: '尖沙咀的香港太空馆，1980 年 10 月开馆，最显眼的是那个蛋形的白色圆顶，里面是天象厅，可以仰躺着看星空节目和全天域电影；旁边的展览厅讲天文和太空探索。',
+      thoughts: '写下你对香港太空馆的理解。', sample: true },
+    { id: 'l68', city: 'hk', kind: 'new', meta: '2021', name: 'M+ 博物馆', en: 'M+', lnglat: [114.15916, 22.30083], zoom: 16.2, pitch: 58,
+      facts: { 开馆: '2021 年 11 月', 设计: '赫尔佐格和德梅隆', 位置: '西九文化区' },
+      intro: '西九文化区的 M+，以视觉文化为主题的博物馆，2021 年 11 月开馆，由赫尔佐格和德梅隆设计。建筑像一个倒转的“T”：横向的展厅基座上立着一块薄薄的板楼，外面挂着深绿色的陶砖。朝维港的一面是一整块 LED 幕墙，晚上播放艺术家的影像作品，隔着海从港岛也看得见。',
+      thoughts: '写下你对 M+ 的理解。', sample: true },
+    { id: 'l69', city: 'hk', kind: 'new', meta: '2022', name: '香港故宫文化博物馆', en: 'Hong Kong Palace Museum', lnglat: [114.15546, 22.30151], zoom: 16.2, pitch: 58,
+      facts: { 开馆: '2022 年 7 月', 设计: '严迅奇', 位置: '西九文化区' },
+      intro: '西九文化区西端的香港故宫文化博物馆，2022 年 7 月开馆，展出北京故宫博物院借来的文物。严迅奇的设计从古代青铜器“鼎”得到灵感：下窄上宽，红褐色的外墙一层层向外挑出；建筑的中轴线对着维港，呼应紫禁城的中轴。',
+      thoughts: '写下你对香港故宫文化博物馆的理解。', sample: true },
+    { id: 'l70', city: 'hk', meta: '1915', name: '尖沙咀钟楼', en: 'Former Kowloon-Canton Railway Clock Tower', lnglat: [114.16954, 22.29359], zoom: 17, pitch: 60,
+      facts: { 落成: '1915 年', 高度: '44 米', 法定古迹: '1990 年' },
+      intro: '尖沙咀海旁的钟楼，是前九广铁路尖沙咀总站留下的唯一部分，1915 年落成，高 44 米，红砖墙夹着花岗岩横带，四面有钟，顶上一座小圆亭。1975 年火车总站搬去红磡，旧站房 1978 年拆掉，只留下了这座钟楼，1990 年列为法定古迹。',
+      thoughts: '写下你对尖沙咀钟楼的理解。', sample: true },
   ],
 
   // 成长轨迹：按时间顺序排列；地图上每个阶段一种颜色（颜色在 STAGE_COL 里改），坐标取自 OpenStreetMap（WGS-84）
@@ -1874,6 +1939,8 @@ function modelFallback() {
   for (const r of [[[3152.7, -1369.5], [3621.4, -1385.3], [3628.9, -1174.6], [3440.0, -1168.7], [3443.3, -1060.8], [3162.5, -1052.2]], [[3693.0, -1391.8], [3984.1, -1396.0], [3989.2, -1080.0], [3731.0, -1074.0], [3728.7, -1193.3], [3697.0, -1192.8]], [[3448.9, -1737.8], [3776.5, -1748.5], [3779.1, -1594.5], [3453.5, -1583.9]], [[2593.6, -1350.2], [3105.6, -1366.1], [3116.2, -983.3], [2973.6, -978.2], [2967.5, -1154.1], [2605.4, -1144.6]]])
     f.push({ type: 'Feature', properties: { h: 30 }, geometry: { type: 'Polygon', coordinates: [[...r, r[0]].map(mToLngLat)] } });   // 广交会展馆
   for (const [k, h] of [['t1m', 30], ['t1a', 20], ['t1b', 20], ['t2', 26], ['t3', 32], ['remote', 11], ['atcb', 22], ['atc2', 95], ['look', 42]]) { const r = BY_GEO.FP[k]; f.push({ type: 'Feature', properties: { h }, geometry: { type: 'Polygon', coordinates: [[...r, r[0]].map(mToLngLat)] } }); }   // 白云机场
+  const hkLL = ([x, y]) => [+(HK_O[0] + x / HKX).toFixed(7), +(HK_O[1] + y / HKY).toFixed(7)];
+  for (const [k, h] of [['ifc2', 412], ['ifc1', 210], ['ifcmall', 24], ['boc', 315], ['cplaza', 309], ['hsbc', 178.8], ['ckc', 283], ['lippopod', 32], ['lippo1', 172], ['lippo2', 186], ['jardine', 178.5], ['hopewell', 216], ['hkcec', 34], ['icc', 484], ['hkcc', 34], ['clock', 44], ['space', 26], ['spacew', 12], ['mplusp', 30], ['mplust', 94], ['palace', 44]]) { const r = HK_FP[k]; f.push({ type: 'Feature', properties: { h }, geometry: { type: 'Polygon', coordinates: [[...r, r[0]].map(hkLL)] } }); }   // 香港维港两岸
   return { type: 'FeatureCollection', features: f };
 }
 function modelKit(THREE) {
@@ -3310,6 +3377,338 @@ function buildBaiyun(THREE, K) {
     tube.count = n; tube.instanceMatrix.needsUpdate = true; g.add(tube); g.add(K.rods(legs, dark, 6)); }
   return g;
 }
+// ---------------------------------------------------------------- 香港 · 维港两岸
+// These models sit in their own local frame: metres east / north of HK_O, scaled for Hong Kong's latitude,
+// and ThreeModels hangs them under an anchor placed at HK_O, so they line up with the map ~130 km from the Guangzhou origin.
+// Footprints are OpenStreetMap's (HK_FP); heights are the published ones.
+const HK_O = [114.165, 22.29];
+const HKX = 111320 * Math.cos(HK_O[1] * Math.PI / 180), HKY = 110574;
+// OSM footprints (metres from HK_O, counter-clockwise where it matters)
+const HK_FP = {"ifcmall":[[-816.9,-548.3],[-795.6,-514.9],[-764.3,-466.4],[-772.4,-461.3],[-798.7,-444.8],[-775.0,-394.2],[-740.3,-412.1],[-670.2,-449.2],[-668.2,-450.3],[-621.9,-474.8],[-597.4,-490.4],[-620.9,-525.8],[-557.7,-565.4],[-573.3,-587.5],[-576.1,-585.8],[-579.8,-591.8],[-583.9,-598.4],[-591.0,-609.9],[-596.7,-619.1],[-597.4,-620.4],[-599.7,-624.1],[-605.3,-633.3],[-602.7,-634.8],[-605.0,-638.7],[-611.7,-649.3],[-613.2,-651.6],[-615.6,-655.6],[-618.2,-659.8],[-631.9,-663.0],[-653.8,-649.5],[-662.5,-644.1],[-701.5,-619.9],[-703.0,-619.0],[-705.3,-617.6],[-707.4,-616.2],[-709.2,-615.1],[-711.1,-614.0],[-712.7,-613.0],[-716.0,-610.9],[-717.0,-610.3],[-722.0,-607.2],[-753.3,-587.8],[-782.5,-569.8],[-783.6,-569.0],[-799.7,-559.1],[-802.2,-557.4]],"ifc2":[[-582.0,-553.6],[-574.2,-545.9],[-572.8,-546.5],[-564.8,-535.0],[-558.1,-523.0],[-559.8,-521.6],[-556.0,-511.7],[-563.4,-504.9],[-563.0,-502.8],[-574.0,-495.8],[-586.0,-489.1],[-587.5,-490.8],[-597.0,-485.8],[-605.0,-494.2],[-606.0,-493.8],[-614.0,-504.8],[-620.0,-516.7],[-618.9,-517.7],[-623.0,-527.8],[-615.3,-535.4],[-616.0,-536.7],[-605.0,-544.7],[-593.0,-550.7],[-592.0,-549.7]],"icc":[[-487.2,1439.2],[-451.6,1478.4],[-453.6,1479.0],[-455.8,1481.0],[-453.8,1483.0],[-451.8,1483.9],[-490.9,1519.5],[-491.3,1517.5],[-493.4,1515.3],[-495.6,1517.4],[-496.4,1519.3],[-532.0,1480.3],[-529.8,1479.7],[-527.9,1477.6],[-529.7,1475.5],[-531.9,1474.6],[-492.7,1439.2],[-492.2,1441.1],[-490.1,1443.3],[-487.8,1441.2]],"boc":[[-371.7,-1154.0],[-386.4,-1204.9],[-335.2,-1219.5],[-320.5,-1168.4]],"hkcec":[[752.6,-807.1],[751.3,-805.3],[742.0,-789.4],[737.0,-781.0],[737.5,-769.2],[738.1,-752.3],[739.7,-735.3],[740.2,-728.9],[742.8,-711.2],[747.6,-693.3],[753.6,-675.7],[755.4,-671.0],[759.2,-661.1],[761.8,-654.9],[765.1,-647.3],[774.3,-636.9],[779.2,-635.0],[781.0,-625.4],[782.2,-620.0],[783.4,-614.3],[784.7,-611.4],[785.6,-608.7],[788.5,-603.8],[791.8,-599.3],[792.3,-598.6],[795.6,-594.4],[799.1,-591.7],[803.1,-589.0],[808.2,-586.5],[813.2,-585.7],[818.9,-585.7],[824.0,-587.4],[827.7,-589.6],[831.4,-592.2],[835.5,-595.2],[836.2,-595.9],[839.4,-599.8],[839.8,-600.2],[843.7,-605.1],[846.2,-608.2],[849.4,-612.2],[852.5,-617.2],[854.9,-622.3],[858.5,-634.7],[864.9,-636.1],[871.7,-643.9],[881.5,-656.9],[889.2,-669.9],[899.0,-685.8],[905.5,-704.2],[910.1,-721.8],[912.2,-740.3],[911.7,-759.0],[909.6,-773.7],[904.8,-794.4],[902.5,-802.1],[886.3,-833.0],[878.4,-843.0],[867.0,-851.2],[808.7,-855.8],[794.2,-857.1],[788.2,-850.5],[778.3,-838.3]],"cplaza":[[915.7,-1125.4],[916.1,-1130.4],[867.9,-1134.0],[867.5,-1129.1],[865.6,-1126.5],[863.8,-1123.9],[859.3,-1121.7],[861.1,-1118.0],[880.1,-1078.5],[884.6,-1080.6],[888.0,-1080.4],[891.3,-1080.2],[895.4,-1077.3],[922.6,-1116.9],[918.5,-1119.7],[917.1,-1122.5]],"clock":[[462.4,397.0],[464.6,399.6],[467.0,402.3],[472.5,397.5],[467.8,392.2]],"hkcc":[[470.7,461.1],[472.8,429.0],[504.7,421.3],[514.2,418.2],[522.5,413.9],[529.3,409.1],[534.6,404.1],[538.6,399.1],[541.8,393.6],[561.4,353.9],[603.1,357.7],[595.9,446.8],[578.0,469.7]],"spacew":[[661.1,472.5],[681.0,474.4],[692.0,475.1],[698.5,475.7],[701.9,475.7],[701.9,474.3],[702.3,470.4],[703.1,466.6],[704.4,463.0],[706.2,459.5],[708.2,456.3],[709.3,455.1],[702.6,454.7],[701.9,454.6],[697.7,449.8],[684.8,448.8],[684.9,447.9],[683.1,447.8],[663.1,446.3]],"jardine":[[-633.3,-775.3],[-590.4,-801.8],[-587.4,-801.8],[-574.4,-780.9],[-570.6,-774.7],[-571.2,-772.7],[-588.3,-762.0],[-589.5,-761.3],[-596.4,-756.9],[-597.3,-756.3],[-614.7,-745.5],[-616.6,-746.2],[-629.2,-766.1],[-633.2,-772.2]],"lippopod":[[-202.5,-1170.1],[-181.4,-1185.6],[-166.0,-1184.4],[-158.7,-1190.0],[-156.9,-1205.9],[-135.6,-1221.7],[-130.7,-1225.4],[-101.6,-1189.8],[-108.8,-1183.9],[-129.6,-1167.3],[-130.5,-1160.4],[-169.4,-1131.1],[-175.8,-1126.7],[-202.1,-1159.9],[-202.9,-1161.0]],"ckc":[[-424.0,-1158.5],[-457.4,-1125.1],[-470.4,-1137.9],[-491.2,-1158.4],[-472.6,-1177.1],[-457.7,-1191.9]],"hopewell":[[676.8,-1717.7],[680.5,-1717.7],[684.2,-1717.1],[687.7,-1715.9],[691.0,-1714.1],[693.9,-1711.9],[696.5,-1709.3],[698.6,-1706.2],[700.1,-1702.8],[701.1,-1699.3],[701.5,-1695.5],[701.3,-1691.9],[700.5,-1688.4],[699.1,-1684.9],[697.2,-1681.7],[694.8,-1679.0],[692.1,-1676.6],[689.1,-1674.8],[685.5,-1673.3],[681.8,-1672.4],[678.1,-1672.3],[674.4,-1672.7],[670.7,-1673.6],[667.5,-1675.2],[664.3,-1677.2],[661.6,-1679.7],[659.3,-1682.7],[657.6,-1685.9],[656.2,-1690.0],[655.7,-1694.3],[655.7,-1696.6],[656.0,-1699.1],[656.6,-1701.4],[657.4,-1703.6],[658.4,-1705.7],[659.6,-1707.8],[661.1,-1709.7],[662.6,-1711.4],[665.9,-1713.9],[669.5,-1715.9],[673.1,-1717.1]],"lippo1":[[-126.7,-1172.4],[-145.2,-1173.6],[-157.3,-1188.7],[-155.2,-1205.6],[-142.8,-1215.1],[-124.2,-1213.9],[-113.8,-1200.4],[-114.9,-1181.8]],"lippo2":[[-165.6,-1140.8],[-183.7,-1142.0],[-195.5,-1156.6],[-193.0,-1174.4],[-181.2,-1183.6],[-163.6,-1182.8],[-151.7,-1167.8],[-153.3,-1150.6]],"ifc1":[[-803.1,-552.8],[-823.7,-568.5],[-825.1,-566.6],[-828.5,-569.2],[-830.3,-566.9],[-834.3,-566.4],[-836.6,-568.1],[-839.3,-564.7],[-841.1,-566.1],[-856.9,-545.8],[-855.0,-544.4],[-857.7,-540.9],[-855.4,-539.2],[-854.9,-535.2],[-856.7,-533.0],[-853.2,-530.3],[-854.6,-528.4],[-834.1,-512.7],[-832.7,-514.6],[-829.3,-512.0],[-827.5,-514.3],[-823.5,-514.7],[-821.1,-513.1],[-818.6,-516.5],[-816.7,-515.1],[-800.8,-535.4],[-802.7,-536.8],[-800.1,-540.3],[-802.4,-541.9],[-802.9,-546.0],[-801.1,-548.2],[-804.5,-550.9]],"space":[[703.4,485.6],[704.8,488.4],[706.1,490.0],[706.9,490.8],[709.4,492.7],[712.2,494.2],[715.2,495.0],[718.4,495.3],[721.5,494.7],[725.3,493.6],[728.9,491.9],[732.3,490.0],[735.4,487.5],[738.3,484.8],[740.8,481.8],[743.0,478.5],[744.7,474.8],[745.8,470.9],[746.2,467.0],[745.8,463.0],[744.6,459.1],[742.5,455.6],[740.0,452.5],[736.8,450.0],[733.2,448.2],[729.3,447.2],[725.1,446.8],[721.1,447.4],[717.3,448.7],[713.8,450.7],[710.7,453.4],[709.3,455.1],[708.2,456.3],[706.2,459.5],[704.4,463.0],[703.1,466.6],[702.3,470.4],[701.9,474.3],[701.9,475.7],[702.0,478.1],[702.4,481.9]],"hsbc":[[-586.7,-1038.5],[-541.4,-1050.3],[-531.0,-1053.1],[-523.8,-1055.0],[-525.2,-1060.4],[-526.9,-1060.0],[-527.2,-1061.1],[-525.5,-1061.4],[-527.9,-1070.2],[-529.4,-1069.8],[-529.7,-1071.0],[-528.1,-1071.5],[-529.6,-1077.0],[-531.3,-1076.5],[-531.6,-1077.5],[-529.8,-1078.0],[-532.2,-1086.7],[-533.9,-1086.4],[-534.2,-1087.5],[-532.5,-1087.9],[-534.0,-1093.5],[-535.6,-1093.0],[-535.9,-1094.0],[-534.2,-1094.5],[-536.4,-1103.3],[-538.2,-1102.9],[-538.5,-1104.1],[-536.7,-1104.5],[-538.2,-1109.7],[-545.4,-1108.0],[-555.8,-1105.4],[-601.1,-1093.6],[-599.7,-1088.0],[-599.3,-1088.0],[-599.1,-1087.1],[-600.7,-1086.7],[-598.4,-1077.9],[-596.9,-1078.3],[-596.6,-1077.1],[-596.8,-1077.1],[-595.3,-1071.6],[-594.6,-1071.8],[-595.1,-1070.6],[-595.3,-1068.8],[-595.3,-1067.1],[-595.1,-1065.7],[-592.9,-1061.7],[-592.3,-1061.3],[-591.4,-1060.8],[-592.5,-1060.5],[-591.1,-1055.1],[-589.4,-1055.5],[-589.1,-1054.4],[-590.8,-1054.0],[-588.4,-1045.1],[-586.8,-1045.6],[-586.5,-1044.5],[-588.1,-1044.0]],"wheel":[[-351.8,-502.4],[-349.3,-499.2],[-346.4,-496.4],[-343.0,-494.0],[-339.3,-492.2],[-334.4,-490.7],[-331.9,-490.5],[-330.1,-494.9],[-327.1,-493.9],[-313.3,-533.3],[-337.9,-541.8]],"mplus":[[-656.4,1128.0],[-660.2,1183.5],[-660.3,1185.0],[-665.4,1259.5],[-546.1,1267.5],[-536.5,1136.0],[-540.0,1135.8],[-600.1,1131.8],[-645.6,1128.7]],"palaceo":[[-876.5,1327.2],[-878.9,1319.0],[-881.8,1315.2],[-895.9,1296.6],[-897.7,1294.3],[-899.8,1291.4],[-904.8,1284.9],[-908.3,1279.2],[-911.3,1273.4],[-914.2,1265.5],[-916.1,1257.4],[-917.0,1249.2],[-916.9,1240.8],[-929.4,1237.1],[-936.0,1237.7],[-957.1,1236.4],[-959.6,1236.2],[-971.3,1235.2],[-977.6,1234.4],[-985.5,1233.5],[-999.5,1231.1],[-1013.5,1228.3],[-1027.3,1224.8],[-1042.2,1222.0],[-1058.5,1226.6],[-1064.0,1229.0],[-1069.5,1232.3],[-1074.4,1236.4],[-1078.6,1241.1],[-1078.6,1249.8],[-1076.0,1249.8],[-1075.4,1325.0],[-1073.1,1325.0],[-1071.0,1324.9],[-1069.7,1324.9],[-1064.0,1324.9],[-1060.4,1324.9],[-1048.4,1324.9],[-1025.9,1324.8],[-1002.1,1325.0],[-991.8,1325.1],[-948.2,1325.5],[-948.0,1334.6],[-948.0,1341.4],[-947.9,1347.1],[-944.5,1350.4],[-927.8,1350.3],[-921.1,1350.2],[-910.9,1350.1],[-894.9,1350.0],[-890.1,1349.8],[-885.9,1348.6],[-885.8,1343.0],[-885.6,1327.1],[-883.5,1327.1],[-881.6,1327.1]],"mplust":[[-650.5,1199.5],[-544.9,1206.7],[-544.2,1195.7],[-649.7,1188.6]],"mplusp":[[-654.2,1254.2],[-650.5,1199.5],[-649.7,1188.6],[-649.5,1185.7],[-645.6,1128.7],[-600.1,1131.8],[-540.0,1135.8],[-544.2,1195.7],[-544.9,1206.7],[-548.7,1261.3],[-622.0,1256.5]],"palace":[[-970.9,1243.6],[-968.0,1242.9],[-965.0,1242.1],[-963.1,1241.1],[-962.1,1239.4],[-960.6,1237.5],[-959.5,1235.1],[-959.5,1232.7],[-960.5,1230.1],[-962.3,1227.9],[-984.0,1215.9],[-982.2,1212.8],[-980.8,1210.5],[-979.4,1208.6],[-977.1,1203.3],[-975.8,1199.6],[-974.4,1197.4],[-973.8,1196.4],[-970.9,1193.9],[-968.3,1191.9],[-965.1,1190.6],[-961.3,1189.9],[-956.6,1189.6],[-950.8,1190.0],[-942.2,1190.9],[-932.1,1192.4],[-931.9,1196.2],[-929.3,1197.3],[-931.2,1201.2],[-933.9,1209.2],[-935.5,1216.6],[-935.8,1221.1],[-936.0,1225.9],[-936.1,1227.3],[-936.1,1229.6],[-936.2,1230.7],[-936.2,1233.2],[-936.2,1233.9],[-936.0,1237.7],[-935.7,1240.1],[-935.4,1244.7],[-934.3,1253.1],[-933.2,1261.1],[-932.0,1269.1],[-930.6,1274.7],[-930.1,1277.0],[-927.9,1283.2],[-927.4,1284.6],[-924.2,1291.4],[-921.1,1296.6],[-915.4,1305.9],[-899.5,1325.5],[-948.2,1325.5],[-991.8,1325.1],[-1002.1,1325.0],[-1002.0,1316.8],[-1001.9,1311.3],[-1060.8,1311.0],[-1060.7,1288.4],[-1060.5,1269.5],[-1060.4,1245.1],[-982.9,1245.4]]};
+const hkAxis = (r) => { let best = 0, a = 0; for (let i = 0; i < r.length; i++) { const p = r[i], q = r[(i + 1) % r.length], L = Math.hypot(q[0] - p[0], q[1] - p[1]); if (L > best) { best = L; a = Math.atan2(q[1] - p[1], q[0] - p[0]); } } return a; };
+const hkAxisEW = (r) => { let best = 0, a = 0; for (let i = 0; i < r.length; i++) { const p = r[i], q = r[(i + 1) % r.length]; let t = Math.atan2(q[1] - p[1], q[0] - p[0]); while (t > Math.PI / 2) t -= Math.PI; while (t <= -Math.PI / 2) t += Math.PI; const L = Math.hypot(q[0] - p[0], q[1] - p[1]); if (Math.abs(t) < Math.PI / 4 && L > best) { best = L; a = t; } } return a; };
+const hkLocal = (r, c, a) => r.map(([x, y]) => { const dx = x - c[0], dy = y - c[1]; return [dx * Math.cos(a) + dy * Math.sin(a), -dx * Math.sin(a) + dy * Math.cos(a)]; });
+const hkWorld = (p, c, a) => [c[0] + p[0] * Math.cos(a) - p[1] * Math.sin(a), c[1] + p[0] * Math.sin(a) + p[1] * Math.cos(a)];
+// walls with setbacks: stages = [[z, scale], …, [ztop]]; every stage is capped, the next one stands on it
+function hkStack(K, add, r, stages, wall, roof, o = {}) {
+  const c = K.centroid(r);
+  for (let i = 0; i < stages.length - 1; i++) {
+    const [z0, s] = stages[i], z1 = stages[i + 1][0], q = K.scale(r, c, s);
+    add(K.loft([K.at(q, z0), K.at(q, z1)], { tw: o.tw || 9, th: o.th || 8 }), wall);
+    add(K.cap(K.at(q, z1)), roof);
+  }
+}
+// a facade of round windows (怡和大厦), drawn by hand: the kit only draws straight lines
+function hkPortholes(THREE, K) {
+  const day = document.createElement('canvas'), night = document.createElement('canvas'); day.width = day.height = night.width = night.height = 128;
+  const g = day.getContext('2d'), n = night.getContext('2d'), r = rng(77);
+  g.fillStyle = '#E8ECF0'; g.fillRect(0, 0, 128, 128); n.fillStyle = '#05080E'; n.fillRect(0, 0, 128, 128);
+  for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) {
+    const x = 16 + i * 32, y = 16 + j * 32;
+    g.fillStyle = '#5B6E83'; g.beginPath(); g.arc(x, y, 11, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = '#C4CCD5'; g.lineWidth = 2; g.stroke();
+    if (r() < 0.5) { n.fillStyle = r() < 0.75 ? 'rgba(255,214,160,.85)' : 'rgba(214,230,255,.8)'; n.beginPath(); n.arc(x, y, 10, 0, Math.PI * 2); n.fill(); }
+  }
+  const t = new THREE.CanvasTexture(day), tn = new THREE.CanvasTexture(night);
+  for (const x of [t, tn]) { x.wrapS = x.wrapT = THREE.RepeatWrapping; x.colorSpace = THREE.SRGBColorSpace; x.anisotropy = 8; }
+  return K.lit(new THREE.MeshLambertMaterial({ map: t }), tn, 0.9);
+}
+
+// 国际金融中心 (二期 415.8 m · 一期 210 m · 商场)：方形平面四角内收，银灰玻璃上粗白竖线，往上几次退台，顶上四角竖起“爪”
+function buildHKIFC(THREE, K) {
+  const g = new THREE.Group(), add = (geo, m) => g.add(K.mesh(geo, m));
+  const glass = K.mat({ bg: '#93a8bf', v: 7, vc: '#f1f5f9', vw: 5, h: 2, hc: '#b4c3d3', hw: 1 }, {}, 0.6), roof = K.mat(0xdfe5ec);
+  const crown = (r, z0, z1, m) => {   // four fins at the corners of the top setback, sloping down towards the middle
+    const c = K.centroid(r), a = hkAxis(r), loc = hkLocal(r, c, a);
+    for (const [sx, sy] of [[1, 1], [-1, 1], [-1, -1], [1, -1]]) {
+      let best = loc[0]; for (const p of loc) if (p[0] * sx + p[1] * sy > best[0] * sx + best[1] * sy) best = p;
+      const u = [-sx, -sy].map((v) => v / Math.SQRT2), w = [-u[1], u[0]], L = Math.hypot(best[0], best[1]) * 0.42, t = 2.2;
+      const P = (d, e) => hkWorld([best[0] + u[0] * d + w[0] * e, best[1] + u[1] * d + w[1] * e], c, a);
+      const base = [P(0, -t), P(0, t), P(L, t), P(L, -t)];
+      add(K.loft([K.at(base, z0), base.map((p, i) => [p[0], p[1], i < 2 ? z1 : z1 - (z1 - z0) * 0.55])]), m);
+      add(K.cap(base.map((p, i) => [p[0], p[1], i < 2 ? z1 : z1 - (z1 - z0) * 0.55])), m);
+    }
+  };
+  const r2 = K.ccw(HK_FP.ifc2), r1 = K.ccw(HK_FP.ifc1);
+  hkStack(K, add, r2, [[0, 1], [262, 0.975], [318, 0.945], [356, 0.9], [384, 0.85], [398]], glass, roof);
+  crown(K.scale(r2, K.centroid(r2), 0.85), 398, 415.8, K.mat(0xeef2f6, {}, 0.6));
+  hkStack(K, add, r1, [[0, 1], [168, 0.95], [190, 0.88], [200]], glass, roof);
+  crown(K.scale(r1, K.centroid(r1), 0.88), 200, 210, K.mat(0xeef2f6, {}, 0.6));
+  // the mall and the roof garden on it
+  const mall = K.ccw(HK_FP.ifcmall);
+  add(K.loft([K.at(mall, 0), K.at(mall, 24)], { tw: 14, th: 12 }), K.mat({ bg: '#cfd6de', h: 4, hc: '#aab6c3', hw: 3, v: 10, vc: '#e3e8ee', vw: 2 }));
+  add(K.cap(K.at(mall, 24)), K.mat(0xbfcdb8));
+  return g;
+}
+
+// 中银大厦 (367.4 m)：正方形平面沿对角线分成四个三角柱，分别停在不同高度，顶上是斜玻璃面；
+// 立面白色铝框做出的大“X”斜撑，每 13 层一个；最高的三角柱顶上两根天线
+function buildHKBOC(THREE, K) {
+  const g = new THREE.Group(), add = (geo, m) => g.add(K.mesh(geo, m));
+  const sq = K.ccw(HK_FP.boc), O = K.centroid(sq), PEAK = [134, 190, 246, 315], RISE = 24;
+  const wall = K.mat({ bg: '#506a86', v: 8, vc: '#6f8aa6', vw: 2, h: 13, hc: '#61799a', hw: 1 }, {}, 0.6);
+  const slope = K.mat({ bg: '#a8bdd1', v: 6, vc: '#d9e4ee', vw: 2 }, { side: THREE.DoubleSide }, 0.5);
+  const segs = [], R = 0.85;
+  for (let i = 0; i < 4; i++) {
+    const A = sq[i], B = sq[(i + 1) % 4], tri = [A, B, O], hi = PEAK[i], lo = hi - RISE;
+    const top = tri.map((p, k) => [p[0], p[1], k < 2 ? lo : hi]);
+    add(K.loft([K.at(tri, 0), top], { tw: 10, th: 8 }), wall);
+    add(K.cap(top), slope);
+    // the X braces on the outer face, one per square module
+    const L = Math.hypot(B[0] - A[0], B[1] - A[1]);
+    for (let z = 0; z < lo - 1; z += L) {
+      const z1 = Math.min(z + L, lo), f = (z1 - z) / L;
+      const M = (t, zz) => [A[0] + (B[0] - A[0]) * t, A[1] + (B[1] - A[1]) * t, zz];
+      segs.push([M(0, z), M(f, z1), R], [M(1, z), M(1 - f, z1), R], [M(0, z), M(1, z), R]);
+    }
+    segs.push([[A[0], A[1], lo], [B[0], B[1], lo], R], [[A[0], A[1], lo], [O[0], O[1], hi], R], [[B[0], B[1], lo], [O[0], O[1], hi], R]);
+    segs.push([[A[0], A[1], 0], [A[0], A[1], lo], R * 1.3]);
+  }
+  segs.push([[O[0], O[1], 0], [O[0], O[1], PEAK[3]], R]);
+  g.add(K.rods(segs, K.mat(0xf4f6f8, {}, 1.0), 6));
+  // the two masts on the top shaft
+  const A = sq[3], B = sq[0], mid = [(A[0] + B[0]) / 2, (A[1] + B[1]) / 2];
+  const m1 = [O[0] + (mid[0] - O[0]) * 0.35, O[1] + (mid[1] - O[1]) * 0.35];
+  g.add(K.rods([[[O[0], O[1], PEAK[3]], [O[0], O[1], 367.4], 0.7], [[m1[0], m1[1], PEAK[3] - 8], [m1[0], m1[1], 360], 0.6]], K.mat(0xe8ecf0, {}, 0.8), 6));
+  return g;
+}
+
+// 中环广场 (374 m)：三角形平面切角，金银两色的玻璃横带，顶上玻璃金字塔和天线；
+// 晚上塔顶的霓虹光带每 15 分钟换一次颜色报时（这里加快了）
+function buildHKCPlaza(THREE, K) {
+  const g = new THREE.Group(), add = (geo, m) => g.add(K.mesh(geo, m));
+  const r = K.ccw(HK_FP.cplaza), c = K.centroid(r);
+  const glass = K.mat({ bg: '#c5b48d', h: 4, hc: '#ede3c9', hw: 4, v: 9, vc: '#b49f74', vw: 1 }, {}, 0.75);
+  add(K.loft([K.at(r, 0), K.at(r, 286)], { tw: 10, th: 9 }), glass);
+  const band = new THREE.MeshLambertMaterial({ color: 0xd9cfb5 }); K.lit(band, null, 1, 0xffffff);
+  const rb = K.scale(r, c, 1.006);
+  add(K.loft([K.at(rb, 262), K.at(rb, 284)], { tw: 10, th: 4 }), band);
+  const rings = []; for (let k = 0; k <= 6; k++) rings.push(K.at(K.scale(r, c, 1 - k / 6 * 0.98), 286 + (k / 6) * 23));
+  add(K.loft(rings, { tw: 8, th: 6 }), K.mat({ bg: '#d8ccb0', v: 8, vc: '#efe6d0', vw: 2 }, {}, 0.7));
+  g.add(K.rods([[[c[0], c[1], 300], [c[0], c[1], 374], 0.9]], K.mat(0xe9e6df, {}, 0.6), 6));
+  const COL = [0xff3b30, 0xffffff, 0xffcc00, 0x34c759];
+  g.userData.night = (n, t) => { band.emissive.setHex(COL[Math.floor(t / 8) % 4]); band.emissiveIntensity = n * 1.2; };
+  return g;
+}
+
+// 汇丰总行大厦 (178.8 m)：福斯特的“衣架”结构，三段高度不一的楼板挂在八根钢柱和五层桁架上，底层架空成广场
+function buildHKHSBC(THREE, K) {
+  const g = new THREE.Group(), add = (geo, m) => g.add(K.mesh(geo, m));
+  const r = K.ccw(HK_FP.hsbc), c = K.centroid(r), a = hkAxisEW(r), loc = hkLocal(r, c, a);
+  const xs = loc.map((p) => p[0]), ys = loc.map((p) => p[1]), x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+  const glass = K.mat({ bg: '#94a1ae', v: 14, vc: '#d3d9df', vw: 2, h: 7, hc: '#aeb8c2', hw: 1 }, {}, 0.6), roof = K.mat(0xc9d0d8);
+  const steel = K.mat(0x8c969f, {}, 0.35), segs = [];
+  const H = [140, 178.8, 160], W = (x1 - x0) / 3;
+  for (let b = 0; b < 3; b++) {
+    const bx0 = x0 + b * W, bx1 = bx0 + W, q = [[bx0, y0], [bx1, y0], [bx1, y1], [bx0, y1]].map((p) => hkWorld(p, c, a));
+    add(K.loft([K.at(q, 12), K.at(q, H[b])], { tw: 6, th: 4.2 }), glass);
+    add(K.cap(K.at(q, H[b])), roof);
+    add(K.cap(K.at(q, 12), true), roof);
+  }
+  // masts (pairs of columns) at the bay edges, on both long faces, down to the street
+  const zs = [36, 72, 108, 140, 172];
+  for (let b = 0; b <= 3; b++) {
+    const x = x0 + b * W, h = Math.max(H[Math.min(b, 2)], H[Math.max(b - 1, 0)]);
+    for (const y of [y0 - 1.5, y1 + 1.5]) for (const dx of [-2, 2]) segs.push([[...hkWorld([x + dx, y], c, a), 0], [...hkWorld([x + dx, y], c, a), h + 4], 0.9]);
+  }
+  // the coat-hanger trusses
+  for (let b = 0; b < 3; b++) for (const z of zs) {
+    if (z > H[b] - 4) continue;
+    const xa = x0 + b * W, xb = xa + W, xm = (xa + xb) / 2;
+    for (const y of [y0 - 1.5, y1 + 1.5]) {
+      const P = (x, zz) => [...hkWorld([x, y], c, a), zz];
+      segs.push([P(xa, z), P(xb, z), 0.7], [P(xa, z + 9), P(xm, z), 0.6], [P(xb, z + 9), P(xm, z), 0.6], [P(xa, z + 9), P(xb, z + 9), 0.6]);
+    }
+  }
+  g.add(K.rods(segs, steel, 6));
+  return g;
+}
+
+// 长江集团中心 (283 m)：方正的玻璃盒子，外面一层不锈钢方格；晚上整面幕墙的格子会亮
+function buildHKCKC(THREE, K) {
+  const g = new THREE.Group(), add = (geo, m) => g.add(K.mesh(geo, m));
+  const r = K.ccw(HK_FP.ckc);
+  hkStack(K, add, r, [[0, 1], [276, 0.94], [283]], K.mat({ bg: '#7b8b9c', v: 9, vc: '#e6ebf1', vw: 3, h: 7, hc: '#e6ebf1', hw: 3 }, {}, 0.7), K.mat(0xc7d0da), { tw: 10, th: 8 });
+  return g;
+}
+
+// 力宝中心 (172 m · 186 m)：保罗·鲁道夫设计的两座八角形塔，玻璃凸窗一簇簇挂在塔身上，像抱着树的树熊
+function buildHKLippo(THREE, K) {
+  const g = new THREE.Group(), add = (geo, m) => g.add(K.mesh(geo, m));
+  const glass = K.mat({ bg: '#2e4157', v: 6, vc: '#4b6684', vw: 2, h: 3, hc: '#3b5069', hw: 1 }, {}, 0.7), roof = K.mat(0xaeb9c5);
+  const pod = K.ccw(HK_FP.lippopod);
+  add(K.loft([K.at(pod, 0), K.at(pod, 32)], { tw: 10, th: 7 }), K.mat({ bg: '#8f9aa6', h: 4, hc: '#6f7b88', hw: 2 })); add(K.cap(K.at(pod, 32)), roof);
+  for (const [k, H] of [['lippo1', 172], ['lippo2', 186]]) {
+    const r = K.ccw(HK_FP[k]), c = K.centroid(r), rings = [K.at(K.scale(r, c, 0.9), 32)];
+    for (let z = 37; z < H - 12; z += 13) {
+      const out = K.scale(r, c, 1.04), inn = K.scale(r, c, 0.9);
+      rings.push(K.at(inn, z), K.at(out, z), K.at(out, z + 9), K.at(inn, z + 9));
+    }
+    rings.push(K.at(K.scale(r, c, 0.9), H));
+    add(K.loft(rings, { tw: 8, th: 6 }), glass);
+    add(K.cap(rings[rings.length - 1]), roof);
+  }
+  return g;
+}
+
+// 怡和大厦 (178.5 m)：1973 年落成，曾是香港最高的楼，外墙一千多个圆窗
+function buildHKJardine(THREE, K) {
+  const g = new THREE.Group(), add = (geo, m) => g.add(K.mesh(geo, m));
+  const r = K.ccw(HK_FP.jardine);
+  add(K.loft([K.at(r, 0), K.at(r, 178.5)], { tw: 6.4, th: 6.4 }), hkPortholes(THREE, K));
+  add(K.cap(K.at(r, 178.5)), K.mat(0xd8dde3));
+  return g;
+}
+
+// 合和中心 (216 m)：圆柱形塔楼，白色横带夹深色窗，顶层是旋转餐厅
+function buildHKHopewell(THREE, K) {
+  const g = new THREE.Group(), add = (geo, m) => g.add(K.mesh(geo, m));
+  const r = K.ccw(K.resample(HK_FP.hopewell, 48)), c = K.centroid(r);
+  const body = K.mat({ bg: '#516274', h: 4, hc: '#dfe4ea', hw: 12, v: 16, vc: '#6b7b8c', vw: 1 }, {}, 0.8), roof = K.mat(0xd6dce3);
+  add(K.loft([K.at(r, 0), K.at(r, 196)], { smooth: true, tw: 8, th: 13 }), body);
+  const drum = K.scale(r, c, 1.1);
+  add(K.loft([K.at(r, 196), K.at(drum, 198), K.at(drum, 207), K.at(K.scale(r, c, 0.8), 210)], { smooth: true, tw: 6, th: 4 }), K.mat({ bg: '#5f7690', v: 24, vc: '#dfe5ec', vw: 2 }, {}, 1.0));
+  add(K.cap(K.at(K.scale(r, c, 0.8), 210)), roof);
+  g.add(K.rods([[[c[0], c[1], 210], [c[0], c[1], 216], 1.2]], K.mat(0xd6dce3), 8));
+  return g;
+}
+
+// 香港会议展览中心新翼：填海伸进维港，铝板屋顶像一只展翅的海鸟；1997 年回归交接仪式在这里举行
+function buildHKCEC(THREE, K) {
+  const g = new THREE.Group(), add = (geo, m) => g.add(K.mesh(geo, m));
+  const r = K.ccw(K.resample(HK_FP.hkcec, 96)), c = K.centroid(r);
+  add(K.loft([K.at(r, 0), K.at(r, 20)], { smooth: true, tw: 9, th: 5 }), K.mat({ bg: '#6d98ad', v: 12, vc: '#c9dbe5', vw: 2, h: 3, hc: '#8fb1c2', hw: 1 }, {}, 0.8));
+  // the roof: three overlapping aluminium shells, each lifted above the one below like layered wings
+  const shell = K.mat({ bg: '#d5dbe1', v: 22, vc: '#bec7d0', vw: 1 }, { side: THREE.DoubleSide }, 0), lip = K.mat(0xc3cbd3), clere = K.mat({ bg: '#4f6f84', v: 10, vc: '#a9bfcc', vw: 2 }, {}, 0.9);
+  for (const [s0, z0, rise] of [[1.05, 20, 8], [0.78, 26, 7], [0.5, 31, 5]]) {
+    const rings = []; for (let k = 0; k <= 6; k++) { const t = k / 6; rings.push(K.at(K.scale(r, c, s0 * (1 - 0.92 * t)), z0 + rise * Math.sin((t * Math.PI) / 2))); }
+    add(K.loft([K.at(K.scale(r, c, s0), z0 - (s0 < 1 ? 4 : 1.5)), rings[0]], { smooth: true, tw: 10, th: 4 }), s0 < 1 ? clere : lip);
+    add(K.loft(rings, { smooth: true, tw: 10, th: 10 }), shell);
+  }
+  return g;
+}
+
+// 香港摩天轮 (60 m)：中环海滨，42 个车厢
+function buildHKWheel(THREE, K) {
+  const g = new THREE.Group();
+  const r = HK_FP.wheel, c = K.centroid(K.ccw(r)), a = hkAxis(r) + Math.PI / 2, R = 27, ZC = 32.5, N = 48;
+  const P = (t, rad = R, off = 0) => { const p = hkWorld([Math.cos(t) * rad, off], c, a); return [p[0], p[1], ZC + Math.sin(t) * rad]; };
+  const rim = [], spokes = [], legs = [];
+  for (let i = 0; i < N; i++) { const t0 = (i / N) * Math.PI * 2, t1 = ((i + 1) / N) * Math.PI * 2; for (const o of [-1.2, 1.2]) rim.push([P(t0, R, o), P(t1, R, o), 0.45]); }
+  for (let i = 0; i < 24; i++) { const t = (i / 24) * Math.PI * 2; spokes.push([P(t, 2, 0), P(t, R, 0), 0.12]); }
+  for (const o of [-7, 7]) for (const d of [-14, 14]) { const top = P(0, 0, o * 0.25), foot = hkWorld([d, o], c, a); legs.push([[foot[0], foot[1], 0], [top[0], top[1], ZC], 0.8]); }
+  const lights = K.mat(0xf2f5f8, {}, 1.0);
+  g.add(K.rods(rim, lights, 6)); g.add(K.rods(spokes, K.mat(0xdfe5ea, {}, 0.6), 4)); g.add(K.rods(legs, K.mat(0xe6eaee), 8));
+  const cab = new THREE.InstancedMesh(new THREE.BoxGeometry(2.6, 3.2, 3.6), K.mat({ bg: '#9fc3dc', v: 2, vc: '#f0f4f8', vw: 8 }, {}, 0.9), 42), M = new THREE.Matrix4();
+  for (let i = 0; i < 42; i++) { const t = (i / 42) * Math.PI * 2, p = P(t, R + 2.2); M.makeTranslation(p[0], p[2] - 1.6, -p[1]); cab.setMatrixAt(i, M); }
+  g.add(cab);
+  return g;
+}
+
+// 环球贸易广场 ICC (484 m)：香港最高楼，方形平面四角内凹，底部微微外撇，顶上斜切；
+// 100 楼是天际 100 观景台；外墙满布 LED，晚上和“幻彩咏香江”一起变色
+function buildHKICC(THREE, K) {
+  const g = new THREE.Group(), add = (geo, m) => g.add(K.mesh(geo, m));
+  const r = K.ccw(HK_FP.icc), c = K.centroid(r), a = hkAxis(r);
+  const glass = K.mat({ bg: '#8aa3bc', v: 9, vc: '#dfe8f1', vw: 3, h: 2, hc: '#a9bccf', hw: 1 }, {}, 0.8);
+  const S = [[0, 1.03], [20, 1], [45, 0.955], [80, 0.93], [430, 0.93], [470, 0.86]];
+  const rings = S.map(([z, s]) => K.at(K.scale(r, c, s), z));
+  add(K.loft(rings, { tw: 9, th: 8 }), glass);
+  // the slanted top: highest at one edge
+  const top = K.scale(r, c, 0.86), dir = [Math.cos(a), Math.sin(a)], w = Math.max(...top.map((p) => (p[0] - c[0]) * dir[0] + (p[1] - c[1]) * dir[1]));
+  const tz = (p) => 470 + 14 * (0.5 + ((p[0] - c[0]) * dir[0] + (p[1] - c[1]) * dir[1]) / (2 * w));
+  add(K.loft([K.at(top, 470), top.map((p) => [p[0], p[1], tz(p)])], { tw: 9, th: 8 }), glass);
+  add(K.cap(top.map((p) => [p[0], p[1], tz(p)])), K.mat({ bg: '#b6c7d8', v: 6, vc: '#e6edf4', vw: 2 }, {}, 0.6));
+  // LED skin for the light show: a thin shell just outside the glass, lit only at night
+  // (LED strips down every mullion; a texture 160 m tall with a bright band in it, slid upwards so light runs up the tower)
+  const cv = document.createElement('canvas'); cv.width = 64; cv.height = 256; const cg = cv.getContext('2d');
+  for (let y = 0; y < 256; y++) { const d = Math.min(Math.abs(y - 128), 256 - Math.abs(y - 128)), a = 0.3 + 0.7 * Math.exp(-((d / 34) ** 2)); cg.fillStyle = `rgba(255,255,255,${a.toFixed(3)})`; for (let x = 0; x < 64; x += 16) cg.fillRect(x, y, 8, 1); }
+  const lt = new THREE.CanvasTexture(cv); lt.wrapS = lt.wrapT = THREE.RepeatWrapping;
+  const led = new THREE.MeshBasicMaterial({ map: lt, color: 0x66ccff, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending });
+  const shell = rings.slice(3).map((q) => K.at(K.scale(q, c, 1.006), q[0][2]));
+  add(K.loft(shell, { tw: 6, th: 160 }), led);
+  g.userData.night = (n, t) => { led.opacity = n * 0.9; led.visible = n > 0.01; lt.offset.y = -t * 0.12; led.color.setHSL((t * 0.025) % 1, 0.9, 0.62); };
+  return g;
+}
+
+// 香港文化中心：外墙没有窗，粉色瓷砖，屋顶是一道弧形的斜坡
+function buildHKCulture(THREE, K) {
+  const g = new THREE.Group(), add = (geo, m) => g.add(K.mesh(geo, m));
+  const r = K.ccw(K.resample(HK_FP.hkcc, 64)), ys = r.map((p) => p[1]), y0 = Math.min(...ys), y1 = Math.max(...ys);
+  const z = (p) => 16 + 30 * Math.pow((p[1] - y0) / (y1 - y0), 1.8);
+  const tiles = K.mat({ bg: '#d8b4a3', h: 16, hc: '#c99f8d', hw: 1, v: 16, vc: '#cfa896', vw: 1 }, {}, 0);
+  add(K.loft([K.at(r, 0), r.map((p) => [p[0], p[1], z(p)])], { tw: 10, th: 10 }), tiles);
+  add(K.cap(r.map((p) => [p[0], p[1], z(p)])), K.mat({ bg: '#d6ad9c', v: 20, vc: '#c49a88', vw: 1 }, {}, 0));
+  return g;
+}
+
+// 尖沙咀钟楼 (44 m)：1915 年九广铁路尖沙咀总站留下的钟楼，红砖夹花岗岩横带，四面钟，顶上小圆亭
+function buildHKClock(THREE, K) {
+  const g = new THREE.Group(), add = (geo, m) => g.add(K.mesh(geo, m));
+  const t = K.ccw(HK_FP.clock), tc = K.centroid(t), brick = K.mat({ bg: '#b0573f', h: 8, hc: '#e8e1d4', hw: 2 }, {}, 0), stone = K.mat(0xe9e3d6);
+  add(K.loft([K.at(t, 0), K.at(t, 33)], { tw: 4, th: 4 }), brick);
+  const t2 = K.scale(t, tc, 1.06); add(K.loft([K.at(t2, 33), K.at(t2, 38)], { tw: 4, th: 5 }), stone); add(K.cap(K.at(t2, 38)), stone);
+  const oct = Array.from({ length: 8 }, (_, i) => [tc[0] + 3.2 * Math.cos((i / 8) * Math.PI * 2), tc[1] + 3.2 * Math.sin((i / 8) * Math.PI * 2)]);
+  add(K.loft([K.at(oct, 38), K.at(oct, 41), K.at(K.scale(oct, tc, 0.05), 44)], { tw: 4, th: 4 }), K.mat(0x7d8b86));
+  const face = K.mat(0xf6f3ea, {}, 0.9); const a = hkAxis(t);
+  for (let i = 0; i < 4; i++) { const d = [Math.cos(a + (i * Math.PI) / 2), Math.sin(a + (i * Math.PI) / 2)]; const p = [tc[0] + d[0] * 5.4, tc[1] + d[1] * 5.4]; const disc = new THREE.Mesh(new THREE.CylinderGeometry(1.7, 1.7, 0.4, 24), face); disc.position.set(p[0], 35.5, -p[1]); disc.rotation.set(Math.PI / 2, 0, -(a + (i * Math.PI) / 2)); disc.rotateZ(Math.PI / 2); g.add(disc); }
+  return g;
+}
+
+// 香港太空馆：蛋形的白色穹顶天象厅，旁边是展览馆
+function buildHKSpace(THREE, K) {
+  const g = new THREE.Group(), add = (geo, m) => g.add(K.mesh(geo, m));
+  const r = K.ccw(K.resample(HK_FP.space, 64)), c = K.centroid(r), rings = [K.at(r, 0), K.at(r, 4)];
+  for (let k = 1; k <= 12; k++) { const t = (k / 12) * (Math.PI / 2); rings.push(K.at(K.scale(r, c, Math.max(0.02, Math.cos(t))), 4 + 22 * Math.sin(t))); }
+  add(K.loft(rings, { smooth: true, tw: 5, th: 30 }), K.mat({ bg: '#f2f0ea', v: 24, vc: '#ddd9cf', vw: 2 }, {}, 0));
+  const w = K.ccw(HK_FP.spacew);
+  add(K.loft([K.at(w, 0), K.at(w, 12)], { tw: 8, th: 6 }), K.mat({ bg: '#d9d3c6', h: 3, hc: '#bfb7a7', hw: 2 })); add(K.cap(K.at(w, 12)), K.mat(0xcfc8ba));
+  return g;
+}
+
+// M+ 视觉文化博物馆：横向的展厅基座上立一块薄板，深绿色陶片百叶；朝海一面是 LED 幕墙，晚上播放影像
+function buildHKMplus(THREE, K) {
+  const g = new THREE.Group(), add = (geo, m) => g.add(K.mesh(geo, m));
+  const p = K.ccw(HK_FP.mplusp), t = K.ccw(HK_FP.mplust);
+  const louvre = K.mat({ bg: '#3d4b47', h: 26, hc: '#56655f', hw: 2 }, {}, 0.3), roof = K.mat(0x9fb39a);
+  add(K.loft([K.at(p, 0), K.at(p, 30)], { tw: 10, th: 10 }), K.mat({ bg: '#7d8a86', h: 6, hc: '#9aa6a1', hw: 2, v: 18, vc: '#5d6a66', vw: 1 }, {}, 0.6)); add(K.cap(K.at(p, 30)), roof);
+  add(K.loft([K.at(t, 30), K.at(t, 94)], { tw: 6, th: 6 }), louvre); add(K.cap(K.at(t, 94)), K.mat(0x55625d));
+  // the media facade on the harbour side (south face of the slab)
+  const ys = t.map((q) => q[1]), i0 = ys.indexOf(Math.min(...ys)), A = t[i0], others = t.filter((_, i) => i !== i0), B = others.reduce((b, q) => (Math.abs(q[1] - A[1]) < Math.abs(b[1] - A[1]) ? q : b));
+  // the picture on it: a few soft blobs of colour seen through the LED grid, drifting sideways
+  const cv = document.createElement('canvas'); cv.width = 256; cv.height = 128; const cg = cv.getContext('2d'), rr = rng(2021);
+  cg.fillStyle = '#0b0f1e'; cg.fillRect(0, 0, 256, 128);
+  for (let i = 0; i < 9; i++) { const x = rr() * 256, y = rr() * 128, R = 20 + rr() * 50, gr = cg.createRadialGradient(x, y, 0, x, y, R); gr.addColorStop(0, `hsla(${Math.floor(rr() * 360)},85%,60%,.95)`); gr.addColorStop(1, 'hsla(0,0%,0%,0)'); for (const dx of [-256, 0, 256]) { cg.save(); cg.translate(dx, 0); cg.fillStyle = gr; cg.fillRect(x - R, y - R, 2 * R, 2 * R); cg.restore(); } }
+  cg.fillStyle = 'rgba(0,0,0,.55)'; for (let x = 0; x < 256; x += 4) cg.fillRect(x, 0, 1, 128); for (let y = 0; y < 128; y += 4) cg.fillRect(0, y, 256, 1);
+  const st = new THREE.CanvasTexture(cv); st.wrapS = st.wrapT = THREE.RepeatWrapping; st.colorSpace = THREE.SRGBColorSpace;
+  const scr = new THREE.MeshBasicMaterial({ map: st, transparent: true, opacity: 0, side: THREE.DoubleSide });
+  const tc = K.centroid(t), n = [A[1] - B[1], B[0] - A[0]], L = Math.hypot(n[0], n[1]) || 1, out = n[0] * ((A[0] + B[0]) / 2 - tc[0]) + n[1] * ((A[1] + B[1]) / 2 - tc[1]) > 0 ? 1 : -1, o = [(out * n[0] / L) * 0.4, (out * n[1] / L) * 0.4];
+  const quad = [[A[0] + o[0], A[1] + o[1]], [B[0] + o[0], B[1] + o[1]]];
+  const SW = Math.hypot(B[0] - A[0], B[1] - A[1]);
+  add(K.loft([quad.map((q) => [q[0], q[1], 38]), quad.map((q) => [q[0], q[1], 90])], { open: true, tw: SW, th: 52 }), scr);
+  g.userData.night = (nn, tt) => { scr.opacity = nn * 0.9; scr.visible = nn > 0.01; st.offset.set(tt * 0.01, -38 / 52); };
+  return g;
+}
+
+// 香港故宫文化博物馆：严迅奇设计，底宽上收的方体，屋顶朝外翻出、取意鼎器，外墙铜红色
+function buildHKPalace(THREE, K) {
+  const g = new THREE.Group(), add = (geo, m) => g.add(K.mesh(geo, m));
+  const r = K.ccw(K.resample(HK_FP.palace, 72)), c = K.centroid(r);
+  add(K.loft([K.at(K.scale(r, c, 0.96), 0), K.at(K.scale(r, c, 0.96), 8)], { tw: 8, th: 4 }), K.mat({ bg: '#a7b4bf', v: 14, vc: '#d6dde3', vw: 2 }, {}, 0.8));
+  const S = [[8, 0.955], [22, 0.935], [32, 0.95], [40, 0.985], [44, 1.0]];
+  add(K.loft(S.map(([z, s]) => K.at(K.scale(r, c, s), z)), { tw: 6, th: 6 }), K.mat({ bg: '#a5543a', h: 10, hc: '#c88a52', hw: 2, v: 30, vc: '#93472f', vw: 1 }, {}, 0.3));
+  add(K.cap(K.at(r, 44)), K.mat(0x8f4a35));
+  return g;
+}
+
+// which builders go on the map and the 地标 card each opens; all of them are drawn only while Victoria Harbour (HK_LL) is on screen
+const HK_LL = [[114.12, 22.24], [114.21, 22.34]];
+const HK_PARTS = [
+  [buildHKIFC, 'l55'], [buildHKBOC, 'l56'], [buildHKCPlaza, 'l57'], [buildHKHSBC, 'l58'], [buildHKCKC, 'l59'], [buildHKLippo, 'l60'],
+  [buildHKJardine, 'l61'], [buildHKHopewell, 'l62'], [buildHKCEC, 'l63'], [buildHKWheel, 'l64'], [buildHKICC, 'l65'], [buildHKCulture, 'l66'],
+  [buildHKSpace, 'l67'], [buildHKMplus, 'l68'], [buildHKPalace, 'l69'], [buildHKClock, 'l70'],
+];
+
 const ThreeModels = {
   started: false, nightTarget: 0, n: 0, last: 0, rp: 0,
   setNight(v) { this.nightTarget = v ? 1 : 0; if (map) map.triggerRepaint(); },
@@ -3346,7 +3745,14 @@ const ThreeModels = {
       { g: buildGZEast(THREE, K), z0: 13.2, z1: 14.8, l: 'l53' },
       { g: buildBaiyun(THREE, K), z0: 12.6, z1: 13.8, l: 'l54', ll: [[113.262, 23.355], [113.335, 23.43]] },   // far from the city: drawn only when on screen
     ];
-    for (const p of parts) { scene.add(p.g); p.g.traverse((o) => { o.frustumCulled = false; }); }
+    for (const p of parts) p.ll ||= [[113.1, 22.85], [113.55, 23.35]];   // 广州的模型只在广州出现在屏幕上时才画
+    // 香港维港两岸：挂在自己的锚点下（以 HK_O 为原点、按香港的纬度把米换成墨卡托单位），否则离广州一百多公里，误差会有几百米
+    const hk = new THREE.Group(); hk.matrixAutoUpdate = false; scene.add(hk);
+    for (const [f, l] of HK_PARTS) parts.push({ g: f(THREE, K), z0: 13.2, z1: 14.8, l, ll: HK_LL, hk: true });
+    for (const p of parts) { (p.hk ? hk : scene).add(p.g); p.g.traverse((o) => { o.frustumCulled = false; }); }
+    // 香港的模型入夜后把白天的颜色压暗，免得在深色地图上发灰（亮着的窗和灯光不受影响）
+    const hkMats = new Set(); for (const p of parts) if (p.hk) p.g.traverse((o) => { if (o.material && o.material.isMeshLambertMaterial) hkMats.add(o.material); });
+    for (const m of hkMats) m.userData.day = m.color.clone();
     // things a click can hit, each tagged with its landmark id
     const inPoly = (pt, r) => { let c = false; for (let i = 0, j = r.length - 1; i < r.length; j = i++) { const [xi, yi] = r[i], [xj, yj] = r[j]; if ((yi > pt[1]) !== (yj > pt[1]) && pt[0] < ((xj - xi) * (pt[1] - yi)) / (yj - yi) + xi) c = !c; } return c; };
     const cbdCen = Object.fromEntries(Object.keys(CBD_FP).map((k) => [k, K.centroid(K.ccw(CBD_FP[k]))]));
@@ -3374,11 +3780,15 @@ const ThreeModels = {
       const n = this.n;
       hemi.intensity = 2.1 * (1 - 0.86 * n); sun.intensity = 1.9 * (1 - 0.94 * n);
       for (const m of K.mats) m.emissiveIntensity = n * m.userData.glow;
+      for (const m of hkMats) m.color.copy(m.userData.day).multiplyScalar(1 - 0.55 * n);
       for (const p of parts) if (p.g.userData.night) p.g.userData.night(n, now / 1000);
       if ((n > 0 || this.n !== this.nightTarget) && !this.rp) this.rp = setTimeout(() => { this.rp = 0; map.triggerRepaint(); }, n === this.nightTarget ? 40 : 16);
     };
     const mc = maplibregl.MercatorCoordinate.fromLngLat(MODEL_O, 0), sc = mc.meterInMercatorCoordinateUnits();
     const l = new THREE.Matrix4().makeTranslation(mc.x, mc.y, mc.z).scale(new THREE.Vector3(sc, -sc, sc)).multiply(new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(1, 0, 0), Math.PI / 2));
+    const mh = maplibregl.MercatorCoordinate.fromLngLat(HK_O, 0), sh = mh.meterInMercatorCoordinateUnits();
+    const lh = new THREE.Matrix4().makeTranslation(mh.x, mh.y, mh.z).scale(new THREE.Vector3(sh, -sh, sh)).multiply(new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(1, 0, 0), Math.PI / 2));
+    hk.matrix.copy(l.clone().invert().multiply(lh)); hk.matrixWorldNeedsUpdate = true;
     const camera = new THREE.Camera(); let renderer = null;
     map.addLayer({
       id: 'models-3d', type: 'custom', renderingMode: '3d',
