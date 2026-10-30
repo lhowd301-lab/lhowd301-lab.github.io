@@ -525,18 +525,37 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
 .shot:hover .cap,.shot:focus-visible .cap{transform:none}
 .shot.lifted{visibility:hidden}
 .shots-hint{margin:-2px 0 0;font-size:11.5px;color:var(--ink-3)}
+/* 扫街卡片：只有照片。按每张照片的长宽比排成等高的行（像相册的拼版），照片冲洗一样从模糊里显影出来，然后慢慢推拉 */
+.st{padding:10px 10px 0}
+.st-grid{display:flex;flex-wrap:wrap;gap:6px;perspective:900px}
+.st-grid .shot{flex:var(--ar) 1 calc(var(--ar) * 128px);aspect-ratio:var(--ar);border-radius:10px;animation:develop 1s cubic-bezier(.2,.8,.2,1) backwards;animation-delay:calc(var(--i) * 120ms + 60ms)}
+.st-grid.n1 .shot{flex:none;width:min(100%, calc(56vh * var(--ar)));margin:0 auto}
+.st-grid .shot::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 38%,rgba(255,255,255,.42) 50%,transparent 62%) 160% 0/260% 100% no-repeat;animation:sheen 1.5s cubic-bezier(.3,.7,.3,1) backwards;animation-delay:calc(var(--i) * 120ms + 650ms)}
+.st-grid .shot:nth-child(even) .ph{animation-name:drift2}
+.st-foot{display:flex;align-items:center;gap:10px;padding:10px 4px 12px 6px}
+.st-title{flex:1;min-width:0;font-family:var(--f-display);font-size:15px;font-weight:700;letter-spacing:.06em;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;animation:fadeUp .6s ease-out backwards;animation-delay:.25s}
+.st-nav{display:flex;gap:6px}
+.st-nav .icon-btn{width:32px;height:32px;border-radius:50%;cursor:pointer;transition:transform .2s,background .2s}
+.st-nav .icon-btn:hover{transform:translateY(-1px);background:var(--line)}
+.st-nav .icon-btn svg{width:16px;height:16px}
+@keyframes develop{from{opacity:0;transform:translateY(12px) scale(.965);filter:blur(10px) saturate(.2) brightness(1.25)}}
+@keyframes sheen{from{background-position:160% 0}to{background-position:-60% 0}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}}
+@keyframes drift2{from{transform:scale(1.03) translate(0,0)}to{transform:scale(1.1) translate(1.6%,1.2%)}}
 @keyframes shotIn{from{opacity:0;transform:translateY(18px) scale(.88) rotate(var(--r,0deg));filter:blur(5px)}}
 @keyframes shimmer{to{background-position:-250% 0}}
-@keyframes drift{from{transform:scale(1.02) translate(0,0)}to{transform:scale(1.08) translate(-1.6%,-1.2%)}}
+@keyframes drift{from{transform:scale(1.03) translate(0,0)}to{transform:scale(1.1) translate(-1.6%,-1.2%)}}
 @media (hover:none){.shot .cap{transform:none;font-size:10.5px;padding:16px 7px 5px}}
-@media (prefers-reduced-motion:reduce){.shot,.shot .ph,.shot::before{animation:none!important}.shot{transform:none!important}.shot img{transition:none}}
+@media (prefers-reduced-motion:reduce){.shot,.shot .ph,.shot::before,.shot::after,.st-title,.pin-photo .pin-in{animation:none!important}.shot{transform:none!important}.shot img,.pin-photo .pb img{transition:none!important}}
 .d-cap{margin:-4px 0 0;font-size:12px;color:var(--ink-3)}
 .d-hero.zoomable img{cursor:zoom-in}
 .zoom-hint{position:absolute;right:10px;bottom:10px;padding:2px 8px;border-radius:999px;background:rgba(8,18,40,.55);color:#fff;font-family:var(--f-mono);font-size:11px}
 .zoom-hint:empty{display:none}
 .viewer{position:fixed;inset:0;z-index:30;background:rgba(4,10,24,.92);display:grid;place-items:center;padding:56px 16px 64px;cursor:zoom-out}
 .viewer img{max-width:100%;max-height:100%;object-fit:contain;border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,.5);will-change:transform;user-select:none;-webkit-user-select:none}
-.viewer .vcap{position:absolute;left:0;right:0;bottom:22px;text-align:center;color:#DBEAFE;font-size:13px}
+.viewer .vcap{position:absolute;left:0;right:0;bottom:24px;display:flex;justify-content:center;gap:6px;pointer-events:none}
+.viewer .vcap i{width:6px;height:6px;border-radius:3px;background:rgba(219,234,254,.35);transition:width .35s cubic-bezier(.2,.8,.2,1),background .35s}
+.viewer .vcap i.on{width:20px;background:#fff}
 .viewer button{position:absolute;width:42px;height:42px;border-radius:50%;border:1px solid rgba(219,234,254,.25);background:rgba(15,30,60,.6);color:#fff;display:grid;place-items:center;cursor:pointer}
 .viewer button svg{width:18px;height:18px}
 .viewer .vclose{top:14px;right:14px}
@@ -559,8 +578,13 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
 .pin-food.is-active .pb{background:var(--blue)}
 .pin-food.is-active .pb b,.pin-food.is-active .pb span{color:var(--white)}
 .pin-food.is-active .pb i{background:var(--white);color:var(--blue)}
-.pin-photo .pb{width:46px;height:46px;border-radius:14px;overflow:hidden;border:3px solid var(--white);background:var(--ice);transform:rotate(-4deg)}
-.pin-photo .pb img{width:100%;height:100%;object-fit:cover;display:block}
+.pin-photo .pin-in{position:relative;animation:pinPop .6s cubic-bezier(.2,1.5,.4,1) backwards;animation-delay:var(--d,0ms)}
+.pin-photo .pb{position:relative;width:46px;height:46px;border-radius:14px;overflow:hidden;border:3px solid var(--white);background:var(--ice);transform:rotate(-4deg)}
+.pin-photo .pb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;opacity:0;transform:scale(1.14);transition:opacity 1s ease,transform 4.5s cubic-bezier(.2,.7,.3,1)}
+.pin-photo .pb img.on{opacity:1;transform:scale(1)}
+.pin-photo .pk{position:absolute;top:0;left:50%;width:46px;height:46px;margin-left:-23px;border-radius:14px;background:var(--white);box-shadow:0 2px 6px rgba(15,37,87,.18);transform:rotate(8deg) translate(5px,-1px);transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+.pin-photo.multi:hover .pk,.pin-photo.multi.is-active .pk{transform:rotate(16deg) translate(11px,-3px)}
+@keyframes pinPop{from{opacity:0;transform:translateY(10px) scale(.55)}}
 .pin-photo.is-active .pb{border-color:var(--blue)}
 .pin-mark .pb{display:flex;align-items:center;gap:0;padding:5px;border-radius:10px;background:var(--blue);color:var(--white);font-size:12.5px;font-weight:500;white-space:nowrap;border:1.5px solid var(--white);transition:gap .2s,padding .2s}
 .pin-mark .pb svg{width:15px;height:15px;flex:none}
@@ -1210,49 +1234,72 @@ const SITE = {
   // 扫街地图 —— photos 里的 src 换成你的照片（上传到网站同目录，或图床地址）
   street: [
     { id: 's1', city: 'gz', title: '西湖花街', place: '越秀 · 西湖路', lnglat: [113.2615, 23.12575], date: '2024-02 · 春节',
-      note: '过年逛越秀西湖花市时拍的。', photos: [{ src: 'photos/xihu-02.jpg', thumb: 'photos/xihu-02-s.jpg', cap: '花街入口' }, { src: 'photos/xihu-01.jpg', thumb: 'photos/xihu-01-s.jpg', cap: '灯笼下的花档' }, { src: 'photos/xihu-04.jpg', thumb: 'photos/xihu-04-s.jpg', cap: '骑在肩上看花灯' }, { src: 'photos/xihu-05.jpg', thumb: 'photos/xihu-05-s.jpg', cap: '写挥春' }] },
+      note: '过年逛越秀西湖花市时拍的。', photos: [{ src: 'photos/xihu-02.jpg', thumb: 'photos/xihu-02-s.jpg', cap: '花街入口', ar: 1.603 }, { src: 'photos/xihu-01.jpg', thumb: 'photos/xihu-01-s.jpg', cap: '灯笼下的花档', ar: 1.5 }, { src: 'photos/xihu-04.jpg', thumb: 'photos/xihu-04-s.jpg', cap: '骑在肩上看花灯', ar: 1.603 }, { src: 'photos/xihu-05.jpg', thumb: 'photos/xihu-05-s.jpg', cap: '写挥春', ar: 1.5 }] },
     { id: 's2', city: 'gz', title: '教育路 75 号 · 风车', place: '越秀 · 教育路 75 号', lnglat: [113.26032, 23.12538], date: '2024-02 · 春节',
-      note: '过年逛越秀西湖花市时拍的。', photos: [{ src: 'photos/xihu-03.jpg', thumb: 'photos/xihu-03-s.jpg', cap: '门口挂满风车' }] },
+      note: '过年逛越秀西湖花市时拍的。', photos: [{ src: 'photos/xihu-03.jpg', thumb: 'photos/xihu-03-s.jpg', cap: '门口挂满风车', ar: 1.294 }] },
     { id: 's3', city: 'gz', title: '仁济路 56 号 · 挥春与香烛', place: '越秀 · 仁济路 56 号', lnglat: [113.25032, 23.11292], date: '2024-02 · 春节',
-      note: '过年逛越秀西湖花市时拍的。', photos: [{ src: 'photos/xihu-06.jpg', thumb: 'photos/xihu-06-s.jpg', cap: '挥春和福字' }, { src: 'photos/xihu-07.jpg', thumb: 'photos/xihu-07-s.jpg', cap: '强记' }] },
+      note: '过年逛越秀西湖花市时拍的。', photos: [{ src: 'photos/xihu-06.jpg', thumb: 'photos/xihu-06-s.jpg', cap: '挥春和福字', ar: 1.5 }, { src: 'photos/xihu-07.jpg', thumb: 'photos/xihu-07-s.jpg', cap: '强记', ar: 1.5 }] },
     { id: 's4', city: 'gz', title: '花市旁的街巷', place: '越秀 · 西湖路一带', lnglat: [113.26262, 23.12668], approx: true, date: '2024-02 · 春节',
-      note: '过年逛越秀西湖花市时拍的。', photos: [{ src: 'photos/xihu-08.jpg', thumb: 'photos/xihu-08-s.jpg', cap: '巷子里拿着花的街坊' }, { src: 'photos/xihu-09.jpg', thumb: 'photos/xihu-09-s.jpg', cap: '椰子冻店门口的风车' }, { src: 'photos/xihu-10.jpg', thumb: 'photos/xihu-10-s.jpg', cap: '风车档' }] },
+      note: '过年逛越秀西湖花市时拍的。', photos: [{ src: 'photos/xihu-08.jpg', thumb: 'photos/xihu-08-s.jpg', cap: '巷子里拿着花的街坊', ar: 1.5 }, { src: 'photos/xihu-09.jpg', thumb: 'photos/xihu-09-s.jpg', cap: '椰子冻店门口的风车', ar: 1.269 }, { src: 'photos/xihu-10.jpg', thumb: 'photos/xihu-10-s.jpg', cap: '风车档', ar: 1.5 }] },
     // 文明路一带（没有拍摄日期，date 留空；知道日期的话补上，比如 '2025-11'）
     { id: 's5', city: 'gz', title: '鲁迅纪念馆', place: '越秀 · 文明路', lnglat: [113.27165, 23.1267], date: '',
-      note: '在文明路一带扫街时拍的。黄色那栋是鲁迅纪念馆。', photos: [{ src: 'photos/wenming-01.jpg', thumb: 'photos/wenming-01-s.jpg', cap: '鲁迅纪念馆的黄色外廊' }] },
+      note: '在文明路一带扫街时拍的。黄色那栋是鲁迅纪念馆。', photos: [{ src: 'photos/wenming-01.jpg', thumb: 'photos/wenming-01-s.jpg', cap: '鲁迅纪念馆的黄色外廊', ar: 1.5 }] },
     { id: 's6', city: 'gz', title: '定安里', place: '越秀 · 文明路', lnglat: [113.2708, 23.12505], date: '',
-      note: '在文明路一带扫街时拍的。', photos: [{ src: 'photos/wenming-09.jpg', thumb: 'photos/wenming-09-s.jpg', cap: '定安里的门楼' }, { src: 'photos/wenming-08.jpg', thumb: 'photos/wenming-08-s.jpg', cap: '楼上的回纹和花窗' }] },
+      note: '在文明路一带扫街时拍的。', photos: [{ src: 'photos/wenming-09.jpg', thumb: 'photos/wenming-09-s.jpg', cap: '定安里的门楼', ar: 1.175 }, { src: 'photos/wenming-08.jpg', thumb: 'photos/wenming-08-s.jpg', cap: '楼上的回纹和花窗', ar: 1.5 }] },
     { id: 's7', city: 'gz', title: '文明路骑楼', place: '越秀 · 文明路', lnglat: [113.2690, 23.12545], approx: true, date: '',
-      note: '在文明路一带扫街时拍的。', photos: [{ src: 'photos/wenming-05.jpg', thumb: 'photos/wenming-05-s.jpg', cap: '骑楼下的店铺' }] },
+      note: '在文明路一带扫街时拍的。', photos: [{ src: 'photos/wenming-05.jpg', thumb: 'photos/wenming-05-s.jpg', cap: '骑楼下的店铺', ar: 1.5 }] },
     { id: 's8', city: 'gz', title: '文明路一带的巷子', place: '越秀 · 文明路一带', lnglat: [113.2699, 23.1243], approx: true, date: '',
-      note: '在文明路一带扫街时拍的。', photos: [{ src: 'photos/wenming-02.jpg', thumb: 'photos/wenming-02-s.jpg', cap: '骑电单车穿过窄巷' }, { src: 'photos/wenming-07.jpg', thumb: 'photos/wenming-07-s.jpg', cap: '门洞尽头推车的人' }] },
+      note: '在文明路一带扫街时拍的。', photos: [{ src: 'photos/wenming-02.jpg', thumb: 'photos/wenming-02-s.jpg', cap: '骑电单车穿过窄巷', ar: 1.5 }, { src: 'photos/wenming-07.jpg', thumb: 'photos/wenming-07-s.jpg', cap: '门洞尽头推车的人', ar: 1.5 }] },
     { id: 's9', city: 'gz', title: '解放大桥', place: '越秀 · 解放大桥北桥头', lnglat: [113.2584, 23.1161], approx: true, date: '',
-      note: '在文明路一带扫街时拍的。', photos: [{ src: 'photos/wenming-03.jpg', thumb: 'photos/wenming-03-s.jpg', cap: '红色拱桥下望海珠桥' }, { src: 'photos/wenming-04.jpg', thumb: 'photos/wenming-04-s.jpg', cap: '桥头的保安' }] },
+      note: '在文明路一带扫街时拍的。', photos: [{ src: 'photos/wenming-03.jpg', thumb: 'photos/wenming-03-s.jpg', cap: '红色拱桥下望海珠桥', ar: 1.5 }, { src: 'photos/wenming-04.jpg', thumb: 'photos/wenming-04-s.jpg', cap: '桥头的保安', ar: 1.5 }] },
     { id: 's10', city: 'gz', title: '圆洞里的石室', place: '越秀 · 一德路', lnglat: [113.2548, 23.1168], approx: true, date: '',
-      note: '在文明路一带扫街时拍的。', photos: [{ src: 'photos/wenming-06.jpg', thumb: 'photos/wenming-06-s.jpg', cap: '透过圆洞看石室' }] },
+      note: '在文明路一带扫街时拍的。', photos: [{ src: 'photos/wenming-06.jpg', thumb: 'photos/wenming-06-s.jpg', cap: '透过圆洞看石室', ar: 1.5 }] },
     { id: 's11', city: 'gz', title: '宏城公园', place: '珠江边 · 临江大道', lnglat: [113.3116, 23.1131], approx: true, date: '',
-      note: '在宏城公园拍的，草坪对着珠江新城，花丛后面就是广州塔。', photos: [{ src: 'photos/hongcheng-03.jpg', thumb: 'photos/hongcheng-03-s.jpg', cap: '千日红花田和广州塔' }, { src: 'photos/hongcheng-01.jpg', thumb: 'photos/hongcheng-01-s.jpg', cap: '草坪上放风筝' }, { src: 'photos/hongcheng-02.jpg', thumb: 'photos/hongcheng-02-s.jpg', cap: '千日红和蜜蜂' }, { src: 'photos/hongcheng-04.jpg', thumb: 'photos/hongcheng-04-s.jpg', cap: '月季和广州塔' }] },
+      note: '在宏城公园拍的，草坪对着珠江新城，花丛后面就是广州塔。', photos: [{ src: 'photos/hongcheng-03.jpg', thumb: 'photos/hongcheng-03-s.jpg', cap: '千日红花田和广州塔', ar: 1.501 }, { src: 'photos/hongcheng-01.jpg', thumb: 'photos/hongcheng-01-s.jpg', cap: '草坪上放风筝', ar: 0.666 }, { src: 'photos/hongcheng-02.jpg', thumb: 'photos/hongcheng-02-s.jpg', cap: '千日红和蜜蜂', ar: 1.501 }, { src: 'photos/hongcheng-04.jpg', thumb: 'photos/hongcheng-04-s.jpg', cap: '月季和广州塔', ar: 0.666 }] },
     { id: 's12', city: 'gz', title: '海心桥', place: '珠江 · 海心桥', lnglat: [113.3139, 23.1110], date: '',
-      note: '在海心桥上拍的，对岸是珠江新城和海心沙。', photos: [{ src: 'photos/haixin-01.jpg', thumb: 'photos/haixin-01-s.jpg', cap: '从海心桥望珠江新城和海心沙' }] },
+      note: '在海心桥上拍的，对岸是珠江新城和海心沙。', photos: [{ src: 'photos/haixin-01.jpg', thumb: 'photos/haixin-01-s.jpg', cap: '从海心桥望珠江新城和海心沙', ar: 1.501 }] },
     { id: 's13', city: 'gz', title: '琶洲大桥', place: '珠江 · 琶洲大桥', lnglat: [113.36858, 23.11011], date: '',
-      note: '在琶洲大桥上往西看，左边是广州塔，右边是珠江新城，从日落一直拍到天黑。', photos: [{ src: 'photos/pazhoubr-01.jpg', thumb: 'photos/pazhoubr-01-s.jpg', cap: '日落' }, { src: 'photos/pazhoubr-02.jpg', thumb: 'photos/pazhoubr-02-s.jpg', cap: '晚霞' }, { src: 'photos/pazhoubr-03.jpg', thumb: 'photos/pazhoubr-03-s.jpg', cap: '华灯初上' }] },
+      note: '在琶洲大桥上往西看，左边是广州塔，右边是珠江新城，从日落一直拍到天黑。', photos: [{ src: 'photos/pazhoubr-01.jpg', thumb: 'photos/pazhoubr-01-s.jpg', cap: '日落', ar: 1.333 }, { src: 'photos/pazhoubr-02.jpg', thumb: 'photos/pazhoubr-02-s.jpg', cap: '晚霞', ar: 1.501 }, { src: 'photos/pazhoubr-03.jpg', thumb: 'photos/pazhoubr-03-s.jpg', cap: '华灯初上', ar: 1.333 }] },
     // 东山口（晚上扫街；第一张的具体是哪条街没标，图钉放在东山口洋楼一带）
     { id: 's14', city: 'gz', title: '东山口的夜', place: '越秀 · 东山口', lnglat: [113.2928, 23.1247], approx: true, date: '',
-      note: '晚上在东山口扫街时拍的。一边是红砖楼，另一边的墙头开满了簕杜鹃。', photos: [{ src: 'photos/dongshan-01.jpg', thumb: 'photos/dongshan-01-s.jpg', cap: '红砖楼和墙头的簕杜鹃' }] },
+      note: '晚上在东山口扫街时拍的。一边是红砖楼，另一边的墙头开满了簕杜鹃。', photos: [{ src: 'photos/dongshan-01.jpg', thumb: 'photos/dongshan-01-s.jpg', cap: '红砖楼和墙头的簕杜鹃', ar: 1.362 }] },
     { id: 's15', city: 'gz', title: '基督教东山堂', place: '越秀 · 寺贝通津', lnglat: [113.2919, 23.12535], date: '',
-      note: '晚上在东山口扫街时路过基督教东山堂。', photos: [{ src: 'photos/dongshan-02.jpg', thumb: 'photos/dongshan-02-s.jpg', cap: '东山堂的大门' }] },
+      note: '晚上在东山口扫街时路过基督教东山堂。', photos: [{ src: 'photos/dongshan-02.jpg', thumb: 'photos/dongshan-02-s.jpg', cap: '东山堂的大门', ar: 1.333 }] },
     // 广工东风路校区（具体在哪栋楼拍的没标，图钉放在校园里，和“办公地点”那颗错开一点）
     { id: 's16', city: 'gz', title: '广工 · 东风路校区', place: '越秀 · 东风东路 729 号', lnglat: [113.2953, 23.1352], approx: true, date: '',
-      note: '在广东工业大学东风路校区拍的，三张都是傍晚天刚暗下来的时候。', photos: [{ src: 'photos/gdut-dongfeng-01.jpg', thumb: 'photos/gdut-dongfeng-01-s.jpg', cap: '楼上望出去：羊城同创汇，远处是广州塔' }, { src: 'photos/gdut-dongfeng-02.jpg', thumb: 'photos/gdut-dongfeng-02-s.jpg', cap: '10 楼楼梯间的拱窗' }, { src: 'photos/gdut-dongfeng-03.jpg', thumb: 'photos/gdut-dongfeng-03-s.jpg', cap: '抬头是树影和楼' }] },
+      note: '在广东工业大学东风路校区拍的，三张都是傍晚天刚暗下来的时候。', photos: [{ src: 'photos/gdut-dongfeng-01.jpg', thumb: 'photos/gdut-dongfeng-01-s.jpg', cap: '楼上望出去：羊城同创汇，远处是广州塔', ar: 0.75 }, { src: 'photos/gdut-dongfeng-02.jpg', thumb: 'photos/gdut-dongfeng-02-s.jpg', cap: '10 楼楼梯间的拱窗', ar: 1.333 }, { src: 'photos/gdut-dongfeng-03.jpg', thumb: 'photos/gdut-dongfeng-03-s.jpg', cap: '抬头是树影和楼', ar: 1.0 }] },
     // 中和广场（图钉和同一栋楼里的“星龙吟”错开一点）
     { id: 's17', city: 'gz', title: '中和广场', place: '天河 · 临江大道 57 号', lnglat: [113.32322, 23.11662], date: '',
-      note: '在中和广场楼上拍的。往西是珠江新城的中轴线，脚下就是广东省博物馆；往西南是珠江、海心沙和对岸的广州塔。', photos: [{ src: 'photos/zhonghe-01.jpg', thumb: 'photos/zhonghe-01-s.jpg', cap: '晚霞下的珠江新城：西塔、大剧院和省博' }, { src: 'photos/zhonghe-02.jpg', thumb: 'photos/zhonghe-02-s.jpg', cap: '珠江对岸的广州塔，前面是海心沙' }] },
+      note: '在中和广场楼上拍的。往西是珠江新城的中轴线，脚下就是广东省博物馆；往西南是珠江、海心沙和对岸的广州塔。', photos: [{ src: 'photos/zhonghe-01.jpg', thumb: 'photos/zhonghe-01-s.jpg', cap: '晚霞下的珠江新城：西塔、大剧院和省博', ar: 1.333 }, { src: 'photos/zhonghe-02.jpg', thumb: 'photos/zhonghe-02-s.jpg', cap: '珠江对岸的广州塔，前面是海心沙', ar: 1.328 }] },
     { id: 's18', city: 'gz', title: '杨箕 · 梅东路', place: '越秀 · 梅东路', lnglat: [113.3023, 23.1335], approx: true, date: '',
-      note: '天刚黑的时候在杨箕梅东路拍的，头顶是内环路高架，路牌指向东华南路和江湾大桥。', photos: [{ src: 'photos/meidong-01.jpg', thumb: 'photos/meidong-01-s.jpg', cap: '内环路高架和亮起来的路灯' }] },
+      note: '天刚黑的时候在杨箕梅东路拍的，头顶是内环路高架，路牌指向东华南路和江湾大桥。', photos: [{ src: 'photos/meidong-01.jpg', thumb: 'photos/meidong-01-s.jpg', cap: '内环路高架和亮起来的路灯', ar: 1.373 }] },
     { id: 's19', city: 'gz', title: '大佛寺', place: '越秀 · 惠福东路', lnglat: [113.26278, 23.12509], date: '',
-      note: '在大佛寺拍的，普觉楼的回廊挂满了红灯笼，楼前一树粉花开得正好。', photos: [{ src: 'photos/dafosi-01.jpg', thumb: 'photos/dafosi-01-s.jpg', cap: '普觉楼和满树粉花' }] },
+      note: '在大佛寺拍的，普觉楼的回廊挂满了红灯笼，楼前一树粉花开得正好。', photos: [{ src: 'photos/dafosi-01.jpg', thumb: 'photos/dafosi-01-s.jpg', cap: '普觉楼和满树粉花', ar: 1.333 }] },
     { id: 's20', city: 'gz', title: '环市东路 · 天桥', place: '越秀 · 环市东路', lnglat: [113.29449, 23.13712], date: '',
-      note: '站在环市东路的天桥上拍的，桥边的簕杜鹃开得正盛，桥下的车流一路钻进两旁的树荫里。走到桥底再抬头，花从桥沿垂下来，整座桥都被盖住了。', photos: [{ src: 'photos/huanshi-01.jpg', thumb: 'photos/huanshi-01-s.jpg', cap: '白里透粉的簕杜鹃，底下是环市东路' }, { src: 'photos/huanshi-02.jpg', thumb: 'photos/huanshi-02-s.jpg', cap: '另一边是玫红的一片，阳光从路的尽头照过来' }, { src: 'photos/huanshi-03.jpg', thumb: 'photos/huanshi-03-s.jpg', cap: '从桥下看，花沿着桥边垂下来，电动车从限高 4.3 米的桥底穿过' }, { src: 'photos/huanshi-04.jpg', thumb: 'photos/huanshi-04-s.jpg', cap: '桥头一大丛玫红，和桥上白里透粉的花连成一片' }] },
+      note: '站在环市东路的天桥上拍的，桥边的簕杜鹃开得正盛，桥下的车流一路钻进两旁的树荫里。走到桥底再抬头，花从桥沿垂下来，整座桥都被盖住了。', photos: [{ src: 'photos/huanshi-01.jpg', thumb: 'photos/huanshi-01-s.jpg', cap: '白里透粉的簕杜鹃，底下是环市东路', ar: 0.75 }, { src: 'photos/huanshi-02.jpg', thumb: 'photos/huanshi-02-s.jpg', cap: '另一边是玫红的一片，阳光从路的尽头照过来', ar: 1.333 }, { src: 'photos/huanshi-03.jpg', thumb: 'photos/huanshi-03-s.jpg', cap: '从桥下看，花沿着桥边垂下来，电动车从限高 4.3 米的桥底穿过', ar: 0.75 }, { src: 'photos/huanshi-04.jpg', thumb: 'photos/huanshi-04-s.jpg', cap: '桥头一大丛玫红，和桥上白里透粉的花连成一片', ar: 1.333 }] },
+    // 香港扫街（没有拍摄日期，date 留空；approx 的图钉是大概位置）
+    { id: 's21', city: 'hk', title: '广东道 · 平安福音堂', place: '油麻地 · 广东道 847–865 号', lnglat: [114.16895, 22.3143], approx: true, date: '',
+      note: '在广东道扫街时拍的，正对着永发大厦：外墙挂满红底大字“主耶稣爱世人 主钉十架救罪人”，招牌上写着“广东道平安福音堂”，楼下是长春护老中心，四周的唐楼全是窗和冷气机。', photos: [{ src: 'photos/hk-canton-01.jpg', thumb: 'photos/hk-canton-01-s.jpg', cap: '广东道平安福音堂的红字招牌', ar: 0.666 }] },
+    { id: 's22', city: 'hk', title: '湾仔海滨 · 圣诞树', place: '湾仔 · 海滨', lnglat: [114.179, 22.2826], approx: true, date: '',
+      note: '晚上在湾仔海滨拍的。会展中心的弧形屋顶后面是国际金融中心，路边立着一棵满身彩灯的圣诞树。', photos: [{ src: 'photos/hk-wanchai-01.jpg', thumb: 'photos/hk-wanchai-01-s.jpg', cap: '会展的屋顶、国际金融中心和彩灯圣诞树', ar: 0.666 }] },
+    { id: 's23', city: 'hk', title: '太平山顶', place: '山顶 · 凌霄阁一带', lnglat: [114.15016, 22.2713], approx: true, date: '',
+      note: '天刚黑的时候在太平山顶拍的，维港两岸的灯一盏盏亮起来：左边是国际金融中心，中间是中银大厦，右边金顶的是中环广场，对岸是尖沙咀和九龙。', photos: [{ src: 'photos/hk-peak-01.jpg', thumb: 'photos/hk-peak-01-s.jpg', cap: '从山顶望维港', ar: 1.334 }] },
+    { id: 's24', city: 'hk', title: '长洲', place: '离岛 · 长洲', lnglat: [114.02837, 22.20871], date: '',
+      note: '坐渡轮去长洲。码头蓝色的铁闸上挂着“欢迎莅临长洲”；岛上的石滩外面就是开阔的海，远处还有一串小岛。', photos: [{ src: 'photos/hk-cheungchau-01.jpg', thumb: 'photos/hk-cheungchau-01-s.jpg', cap: '长洲的石滩，外面就是大海', ar: 1.333 }, { src: 'photos/hk-cheungchau-02.jpg', thumb: 'photos/hk-cheungchau-02-s.jpg', cap: '长洲码头：欢迎莅临长洲', ar: 1.333 }] },
+    { id: 's25', city: 'hk', title: '赤柱', place: '南区 · 赤柱市场道', lnglat: [114.21207, 22.21874], approx: true, date: '',
+      note: '在赤柱扫街时拍的。赤柱市场道转角一栋黄色的房子，墙上画着一只戴王冠、捧着饮料的猫；附近的楼梯每一级都画上了不同品种的猫和狗。', photos: [{ src: 'photos/hk-stanley-01.jpg', thumb: 'photos/hk-stanley-01-s.jpg', cap: '赤柱市场道转角的黄房子和戴王冠的猫', ar: 1.333 }, { src: 'photos/hk-stanley-02.jpg', thumb: 'photos/hk-stanley-02-s.jpg', cap: '每一级写着一个猫狗品种的彩色楼梯', ar: 0.75 }] },
+    { id: 's26', city: 'hk', title: '香港中文大学', place: '沙田 · 马料水', lnglat: [114.20694, 22.42005], approx: true, date: '',
+      note: '在香港中文大学拍的，校园建在山坡上，路边全是树，一辆绿色的新界的士正开上坡。', photos: [{ src: 'photos/hk-cuhk-01.jpg', thumb: 'photos/hk-cuhk-01-s.jpg', cap: '中大校园里的绿色的士', ar: 1.479 }] },
+    { id: 's27', city: 'hk', title: '弥敦道 660 号', place: '旺角 · 弥敦道', lnglat: [114.16955, 22.31893], date: '',
+      note: '在旺角弥敦道拍的，一栋旧楼的二楼是足球球衣店，一楼的窗上贴着大大的“香港会计报税”。', photos: [{ src: 'photos/hk-nathan-01.jpg', thumb: 'photos/hk-nathan-01-s.jpg', cap: '球衣店和“香港会计报税”', ar: 1.561 }] },
+    { id: 's28', city: 'hk', title: '油尖旺 · 等灯', place: '油尖旺', lnglat: [114.1717, 22.3048], approx: true, date: '',
+      note: '在油尖旺一带拍的，红色的士、电单车和一辆红色小巴并排停在斑马线前等灯，小巴的牌子上写着“暂停载客”。', photos: [{ src: 'photos/hk-ytm-01.jpg', thumb: 'photos/hk-ytm-01-s.jpg', cap: '等灯的红色的士和小巴', ar: 1.351 }] },
+    { id: 's29', city: 'hk', title: '尖沙咀码头巴士总站', place: '尖沙咀 · 海港城旁', lnglat: [114.16895, 22.29425], date: '',
+      note: '在海港城旁边的尖沙咀码头巴士总站，坐在九巴上拍的，车窗那一格亮着“6 荔枝角 LAI CHI KOK”。', photos: [{ src: 'photos/hk-starferry-01.jpg', thumb: 'photos/hk-starferry-01-s.jpg', cap: '6 号线，开往荔枝角', ar: 1.5 }] },
+    { id: 's30', city: 'hk', title: '香港艺术馆', place: '尖沙咀 · 梳士巴利道', lnglat: [114.17203, 22.29353], date: '',
+      note: '在香港艺术馆看展时拍的，展厅里一只掐丝珐琅大缸，上方挂着一幅金绿色的水波画。', photos: [{ src: 'photos/hk-hkma-01.jpg', thumb: 'photos/hk-hkma-01-s.jpg', cap: '掐丝珐琅大缸和金绿色的水波画', ar: 1.499 }] },
+    { id: 's31', city: 'hk', title: '汇丰总行大厦', place: '中环 · 皇后大道中 1 号', lnglat: [114.15954, 22.28028], date: '',
+      note: '在汇丰总行大厦里拍的，玻璃幕墙上是反过来的“HSBC”，扶手电梯黑色的侧板上映着圣诞树的小灯。', photos: [{ src: 'photos/hk-hsbc-01.jpg', thumb: 'photos/hk-hsbc-01-s.jpg', cap: '扶手电梯、反写的 HSBC 和圣诞树的灯', ar: 1.5 }] },
   ],
 
   // 地标名胜 —— 我整理的 26 处；介绍为公开资料整理，thoughts（我的理解）请换成你自己的话
@@ -4062,8 +4109,10 @@ function pinEl(type, item, loc) {
     el.innerHTML = `<span class="pin-in"><span class="pb"><i>${ICONS.food}</i><b>${scoreTxt(item)}</b><span>${esc(lbl)}</span></span><span class="pin-tail"></span></span>`;
     el.setAttribute('aria-label', `${lbl}，${item.score != null ? item.score.toFixed(1) + ' 分' : '未打分'}`);
   } else if (type === 'street') {
-    el.className = 'pin pin-photo';
-    el.innerHTML = `<span class="pin-in"><span class="pb"><img src="${item.photos[0].thumb || item.photos[0].src}" alt="" loading="lazy"></span><span class="pin-tail"></span></span>`;
+    const ph = item.photos.slice(0, 4), multi = ph.length > 1;
+    el.className = 'pin pin-photo' + (multi ? ' multi' : '');
+    el.style.setProperty('--d', `${(hashStr(item.id) % 9) * 45}ms`);   // pins pop up one after another
+    el.innerHTML = `<span class="pin-in">${multi ? '<span class="pk"></span>' : ''}<span class="pb">${ph.map((p, k) => `<img ${k ? 'data-src' : 'class="on" loading="lazy" src'}="${p.thumb || p.src}" alt="">`).join('')}</span><span class="pin-tail"></span></span>`;
     el.setAttribute('aria-label', `扫街：${item.title}`);
   } else if (type === 'landmark') {
     el.className = 'pin pin-mark';
@@ -4144,7 +4193,27 @@ function showMarkers(type) {
   ensureMarkers(type).forEach((x) => { const e = x.m.getElement(); const l = e.dataset.label || e.getAttribute('aria-label'); e.dataset.label = l; x.m.addTo(map); e.setAttribute('aria-label', l); });
   if (type === 'food') FoodGroups.show(); else FoodGroups.hide();
   if (type === 'landmark') lmDeclutter();
+  if (type === 'street') PinCycle.start();
 }
+// 扫街图钉：一个地方拍了好几张的，图钉上的照片隔几秒换一张（只换屏幕上看得见的，其余的照片要用到时才下载）
+const PinCycle = {
+  t: 0, k: 0,
+  start() { if (this.t || reduceMotion) return; this.t = setInterval(() => this.tick(), 3400); },
+  tick() {
+    if (document.hidden || state.module !== 'street') return;
+    this.k++;
+    const W = window.innerWidth, H = window.innerHeight;
+    markers.street.forEach((x, j) => {
+      const el = x.m.getElement();
+      if (!el.isConnected || !el.classList.contains('multi') || (this.k + j) % 2) return;   // half of them each time, so they don't all flip together
+      const r = el.getBoundingClientRect(); if (r.right < 0 || r.left > W || r.bottom < 0 || r.top > H) return;
+      const imgs = [...el.querySelectorAll('.pb img')], cur = Math.max(0, imgs.findIndex((m) => m.classList.contains('on'))), nx = imgs[(cur + 1) % imgs.length];
+      const swap = () => { imgs.forEach((m) => m.classList.toggle('on', m === nx)); };
+      if (!nx.getAttribute('src')) { nx.addEventListener('load', swap, { once: true }); nx.src = nx.dataset.src; }
+      else if (nx.complete) swap();
+    });
+  },
+};
 // 珠江新城几座写字楼（minor）挨得近：缩小时图钉和别的地标叠在一起，就先藏起来，放大分开了再出现
 let lmDQ = 0;
 function lmDeclutter() {
@@ -4236,8 +4305,9 @@ function renderCities() {
   html += '</ul>';
   panel.innerHTML = html;
   const cityName = SITE.cities.find((c) => c.id === state.city).name;
-  $('#cityToggle').innerHTML = `<b>${cityName}</b><span>${mod.name}</span><span class="ct">${total}</span>`;
-  $('#cityPill').innerHTML = `<b>${cityName}</b><span class="sub">${mod.name}</span><span class="ct">${String(total).padStart(2, '0')}</span>${ICONS.down}`;
+  const here = mod.id === 'diary' ? total : itemsFor(mod.id, state.city).length;   // 胶囊上的数字只算当前城市
+  $('#cityToggle').innerHTML = `<b>${cityName}</b><span>${mod.name}</span><span class="ct">${here}</span>`;
+  $('#cityPill').innerHTML = `<b>${cityName}</b><span class="sub">${mod.name}</span><span class="ct">${String(here).padStart(2, '0')}</span>${ICONS.down}`;
   $('#cityPill').setAttribute('aria-label', `展开城市选择：${cityName} · ${mod.name}`);
 }
 $('#cityPanel').addEventListener('click', (e) => {
@@ -4408,7 +4478,7 @@ function bindShots(d, item) {
   const hover = !reduceMotion && window.matchMedia('(hover: hover)').matches;
   tiles.forEach((t, k) => {
     const img = t.querySelector('img');
-    const ok = () => t.classList.add('ok');
+    const ok = () => { t.classList.add('ok'); if (!item.photos[k].ar && img.naturalWidth) t.style.setProperty('--ar', (img.naturalWidth / img.naturalHeight).toFixed(3)); };
     if (img.complete && img.naturalWidth) ok(); else { img.addEventListener('load', ok, { once: true }); img.addEventListener('error', ok, { once: true }); }
     t.addEventListener('click', () => openViewer(item.photos, k, tiles));
     if (!hover) return;
@@ -4433,7 +4503,7 @@ function openViewer(photos, i = 0, tiles = null) {
   const fit = (img) => { const ar = arOf(i); const W = window.innerWidth - 32, H = window.innerHeight - 120; const w = Math.min(W, H * ar); img.style.width = `${w}px`; img.style.height = `${w / ar}px`; };
   const show = (dir = 0) => {
     const p = photos[i];
-    v.innerHTML = `<img class="vimg" src="${p.thumb || p.src}" alt="${esc(p.cap)}" draggable="false"><div class="vcap">${esc(p.cap)}${many ? ` · ${i + 1} / ${photos.length}` : ''}</div>${many ? `<button class="vnav prev" aria-label="上一张">${ICONS.prev}</button><button class="vnav next" aria-label="下一张">${ICONS.next}</button>` : ''}<button class="vclose" aria-label="关闭">${ICONS.close}</button>`;
+    v.innerHTML = `<img class="vimg" src="${p.thumb || p.src}" alt="${esc(p.cap)}" draggable="false"><div class="vcap" aria-label="${i + 1} / ${photos.length}">${many ? photos.map((_, k) => `<i class="${k === i ? 'on' : ''}"></i>`).join('') : ''}</div>${many ? `<button class="vnav prev" aria-label="上一张">${ICONS.prev}</button><button class="vnav next" aria-label="下一张">${ICONS.next}</button>` : ''}<button class="vclose" aria-label="关闭">${ICONS.close}</button>`;
     const img = v.querySelector('.vimg'); fit(img);
     if (p.thumb && p.thumb !== p.src) { const full = new Image(); full.onload = () => { if (img.isConnected) img.src = p.src; }; full.src = p.src; }
     if (dir && anim) img.animate([{ opacity: 0, transform: `translateX(${dir * 40}px) scale(.97)` }, { opacity: 1, transform: 'none' }], { duration: 360, easing: 'cubic-bezier(.2,.8,.2,1)' });
@@ -4538,14 +4608,12 @@ function detailHTML(type, it) {
       ${navRow(list, it)}</div>`;
   }
   if (type === 'street') {
-    const n = it.photos.length, tilt = ['-3deg', '2.5deg', '-2deg', '3deg', '-2.5deg', '2deg'];
-    return `<div class="d-body" style="padding-top:20px">
-      <div class="d-kicker">${it.sample ? SAMPLE : ''}<span>${esc(it.place)}</span>${it.date ? `<span class="mono">${esc(it.date)}</span>` : ''}<span class="mono">${n} 张</span></div>
-      <h2 class="d-title">${esc(it.title)}</h2>
-      <div class="shots n${Math.min(n, 5)}">${it.photos.map((p, i) => `<button class="shot" style="--i:${i};--r:${tilt[i % tilt.length]}" aria-label="查看照片：${esc(p.cap)}"><span class="ph"><img src="${p.thumb || p.src}" alt="" draggable="false"></span><span class="gl"></span><span class="cap">${esc(p.cap)}</span></button>`).join('')}</div>
-      <p class="d-text">${esc(it.note)}</p>
-      ${it.exif ? `<div class="exif">${esc(it.exif)}</div>` : ''}${it.approx ? '<p class="d-note">地图上标的是大致位置。</p>' : ''}
-      ${navRow(SITE.street, it)}</div>`;
+    // 只放照片：标题一行小字，加上一上一下和定位三个小按钮（照片说明留在数据里，给读屏用）
+    const n = it.photos.length, L = SITE.street, k = L.findIndex((x) => x.id === it.id);
+    const prev = L[(k - 1 + L.length) % L.length], next = L[(k + 1) % L.length];
+    return `<div class="st">
+      <div class="st-grid n${Math.min(n, 5)}">${it.photos.map((p, i) => `<button class="shot" style="--i:${i};--ar:${p.ar || 1.333}" aria-label="查看照片：${esc(p.cap || it.title)}"><span class="ph"><img src="${p.thumb || p.src}" alt="${esc(p.cap || '')}" draggable="false"></span><span class="gl"></span></button>`).join('')}</div>
+      <div class="st-foot"><h2 class="st-title">${esc(it.title)}</h2><span class="st-nav"><button class="icon-btn" data-go="${prev.id}" aria-label="上一个">${ICONS.prev}</button>${it.lnglat ? `<button class="icon-btn" data-fly aria-label="在地图上定位">${ICONS.target}</button>` : ''}<button class="icon-btn" data-go="${next.id}" aria-label="下一个">${ICONS.next}</button></span></div></div>`;
   }
   if (type === 'landmark') {
     const facts = Object.entries(it.facts).map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('');
