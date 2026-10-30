@@ -507,26 +507,36 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
 .gallery img{width:100%;height:100%;object-fit:cover;display:block}
 .exif{font-family:var(--f-mono);font-size:11px;color:var(--ink-3);letter-spacing:.04em}
 /* 扫街卡片：直接一组小图，带入场、悬停倾斜/高光、缓慢呼吸的动态效果；点开后从小图放大成全屏 */
-/* 扫街卡片：只有照片，按长宽比拼成等高的行。打开时不做花样，鼠标碰到哪张，哪张才轻轻浮起、放大一点、跟着鼠标微微倾斜 */
-.st{padding:10px 10px 0}
-.st-grid{display:flex;flex-wrap:wrap;gap:6px;perspective:1000px}
-.shot{--rx:0deg;--ry:0deg;--ty:0px;position:relative;display:block;padding:0;border:0;border-radius:10px;overflow:hidden;background:var(--ice);cursor:zoom-in;flex:var(--ar) 1 calc(var(--ar) * 128px);aspect-ratio:var(--ar);transform:translateY(var(--ty)) rotateX(var(--rx)) rotateY(var(--ry));transition:transform .5s cubic-bezier(.2,.8,.2,1),box-shadow .5s;box-shadow:0 1px 4px rgba(15,37,87,.08);outline-offset:2px}
-.st-grid.n1 .shot{flex:none;width:min(100%, calc(56vh * var(--ar)));margin:0 auto}
-.shot .ph{position:absolute;inset:0}
-.shot img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .35s ease,transform .7s cubic-bezier(.2,.8,.2,1)}
-.shot.ok img{opacity:1}
-.shot .gl{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at var(--gx,50%) var(--gy,30%),rgba(255,255,255,.28),transparent 60%);opacity:0;transition:opacity .4s;mix-blend-mode:soft-light}
-.shot:hover,.shot:focus-visible{--ty:-2px;box-shadow:0 12px 24px -14px rgba(15,37,87,.5)}
-.shot.ok:hover img{transform:scale(1.035)}
-.shot:hover .gl{opacity:1}
-.shot.lifted{visibility:hidden}
-.st-foot{display:flex;justify-content:center;padding:8px 0 10px}
-.st-nav{display:flex;gap:8px}
-.st-nav .icon-btn{width:32px;height:32px;border-radius:50%;cursor:pointer;transition:transform .2s,background .2s}
-.st-nav .icon-btn:hover{transform:translateY(-1px);background:var(--line)}
+/* 扫街卡片：一张大图铺满卡片顶部，背后是这张照片本身放大、虚化成的氛围色；下面一排小样，鼠标碰到哪张大图就淡入换成哪张。
+   只在鼠标碰到时有一点动静：大图慢慢放大一丝，小样轻轻浮起 */
+.detail.is-street{width:400px}
+.detail.is-street .close{background:rgba(255,255,255,.62);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);color:var(--ink)}
+.stc{position:relative;isolation:isolate}
+.stc-amb{position:absolute;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+.stc-amb img{position:absolute;left:-25%;top:-25%;width:150%;height:150%;object-fit:cover;filter:blur(34px) saturate(1.6);opacity:.5;transition:opacity .7s ease}
+.stc-amb img.out{opacity:0}
+.stc-hero{position:relative;display:block;width:100%;aspect-ratio:var(--box);padding:0;border:0;background:transparent;cursor:zoom-in;overflow:hidden}
+.stc-hero img{position:absolute;inset:0;margin:auto;max-width:100%;max-height:100%;display:block;user-select:none;-webkit-user-select:none;transition:opacity .5s ease,transform 1.2s cubic-bezier(.2,.8,.2,1);box-shadow:0 10px 30px -12px rgba(8,18,40,.45)}
+.stc-hero img.out{opacity:0}
+.stc-hero:hover img{transform:scale(1.025)}
+.stc-hero::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at var(--gx,50%) var(--gy,40%),rgba(255,255,255,.18),transparent 55%);opacity:0;transition:opacity .5s}
+.stc-hero:hover::after{opacity:1}
+.stc-bar{display:flex;align-items:center;gap:10px;padding:12px 12px 14px}
+.stc-strip{flex:1;min-width:0;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:3px 2px}
+.stc-strip::-webkit-scrollbar{display:none}
+.stc-th{flex:none;height:52px;aspect-ratio:var(--ar);padding:0;border:0;border-radius:8px;overflow:hidden;background:var(--ice);cursor:pointer;opacity:.62;box-shadow:0 2px 6px rgba(8,18,40,.18);transition:opacity .3s,transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .3s}
+.stc-th img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s cubic-bezier(.2,.8,.2,1)}
+.stc-th:hover,.stc-th:focus-visible{opacity:1;transform:translateY(-3px)}
+.stc-th:hover img{transform:scale(1.08)}
+.stc-th.on{opacity:1;box-shadow:0 0 0 2px var(--white),0 6px 14px -4px rgba(8,18,40,.35)}
+.stc-bar .st-nav{margin-left:auto}
+.st-nav{display:flex;gap:6px}
+.st-nav .icon-btn{width:32px;height:32px;border-radius:50%;cursor:pointer;background:rgba(255,255,255,.6);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:var(--ink-2);transition:transform .25s,background .25s,color .25s}
+.st-nav .icon-btn:hover{transform:translateY(-2px);background:var(--white);color:var(--blue)}
 .st-nav .icon-btn svg{width:16px;height:16px}
+.lifted{visibility:hidden}
 .sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
-@media (prefers-reduced-motion:reduce){.shot,.shot img,.shot .gl{transition:none!important}.shot{transform:none!important}.pin-photo .pin-in{animation:none!important}.pin-photo .pb img{transition:none!important}}
+@media (prefers-reduced-motion:reduce){.stc-hero img,.stc-th,.stc-th img,.stc-amb img{transition:none!important}.stc-hero:hover img,.stc-th:hover,.stc-th:hover img{transform:none!important}.pin-photo .pin-in{animation:none!important}.pin-photo .pb img{transition:none!important}}
 .d-cap{margin:-4px 0 0;font-size:12px;color:var(--ink-3)}
 .d-hero.zoomable img{cursor:zoom-in}
 .zoom-hint{position:absolute;right:10px;bottom:10px;padding:2px 8px;border-radius:999px;background:rgba(8,18,40,.55);color:#fff;font-family:var(--f-mono);font-size:11px}
@@ -4427,6 +4437,7 @@ function openDetail(type, id, opts = {}) {
   state.active = id;
   closePops();
   const d = $('#detail');
+  d.classList.toggle('is-street', type === 'street');
   d.innerHTML = `<button class="icon-btn close" id="detailClose" aria-label="关闭">${ICONS.close}</button><div class="detail-scroll">${detailHTML(type, item)}</div>`;
   d.hidden = false; d.style.animation = 'none'; void d.offsetWidth; d.style.animation = '';
   $('#detailClose').addEventListener('click', closeDetail);
@@ -4454,32 +4465,45 @@ function flyToItem(item, force) {
 }
 // 扫街小图：图片加载完再淡入；鼠标移动时轻微倾斜 + 高光；点开全屏
 function bindShots(d, item) {
-  const tiles = [...d.querySelectorAll('.shot')];
-  const hover = !reduceMotion && window.matchMedia('(hover: hover)').matches;
-  tiles.forEach((t, k) => {
-    const img = t.querySelector('img');
-    const ok = () => { t.classList.add('ok'); if (!item.photos[k].ar && img.naturalWidth) t.style.setProperty('--ar', (img.naturalWidth / img.naturalHeight).toFixed(3)); };
-    if (img.complete && img.naturalWidth) ok(); else { img.addEventListener('load', ok, { once: true }); img.addEventListener('error', ok, { once: true }); }
-    t.addEventListener('click', () => openViewer(item.photos, k, tiles));
-    if (!hover) return;
-    t.addEventListener('pointermove', (e) => {
-      const r = t.getBoundingClientRect(); const x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
-      t.style.setProperty('--rx', `${((0.5 - y) * 4).toFixed(2)}deg`); t.style.setProperty('--ry', `${((x - 0.5) * 5).toFixed(2)}deg`);
-      t.style.setProperty('--gx', `${(x * 100).toFixed(1)}%`); t.style.setProperty('--gy', `${(y * 100).toFixed(1)}%`);
-    });
-    t.addEventListener('pointerleave', () => { t.style.setProperty('--rx', '0deg'); t.style.setProperty('--ry', '0deg'); });
+  const ph = item.photos, hero = d.querySelector('.stc-hero'), amb = d.querySelector('.stc-amb'), ths = [...d.querySelectorAll('.stc-th')];
+  if (!hero) return;
+  let cur = 0;
+  const full = (img, p) => { if (p.thumb && p.thumb !== p.src) { const f = new Image(); f.onload = () => { if (img.isConnected && img.dataset.k === String(ph.indexOf(p))) img.src = p.src; }; f.src = p.src; } };
+  const heroImg = () => hero.querySelector('img:not(.out)');
+  heroImg().dataset.k = '0'; full(heroImg(), ph[0]);
+  // cross-fade the big picture (and the colour glow behind it) to photo k
+  const select = (k) => {
+    if (k === cur) return; cur = k; const p = ph[k];
+    ths.forEach((t, n) => t.classList.toggle('on', n === k));
+    for (const [box, cls] of [[hero, ''], [amb, '']]) {
+      const old = [...box.querySelectorAll('img')], im = document.createElement('img');
+      im.src = p.thumb || p.src; im.alt = box === hero ? p.cap || '' : ''; im.draggable = false; im.className = 'out'; im.dataset.k = String(k);
+      box.appendChild(im);
+      const show = () => { requestAnimationFrame(() => { im.classList.remove('out'); old.forEach((o) => { o.classList.add('out'); setTimeout(() => o.remove(), 700); }); }); };
+      if (im.complete) show(); else im.addEventListener('load', show, { once: true });
+      if (box === hero) full(im, p);
+    }
+  };
+  const hover = window.matchMedia('(hover: hover)').matches;
+  ths.forEach((t, k) => {
+    if (hover) t.addEventListener('pointerenter', () => select(k));
+    // mouse: hovering already showed it, a click opens it big; touch: the first tap shows it, a second opens it
+    t.addEventListener('click', () => { if (k !== cur) { select(k); if (!hover) return; } openViewer(ph, k, heroImg, select); });
   });
+  hero.addEventListener('click', () => openViewer(ph, cur, heroImg, select));
+  if (hover && !reduceMotion) hero.addEventListener('pointermove', (e) => { const r = hero.getBoundingClientRect(); hero.style.setProperty('--gx', `${(((e.clientX - r.left) / r.width) * 100).toFixed(1)}%`); hero.style.setProperty('--gy', `${(((e.clientY - r.top) / r.height) * 100).toFixed(1)}%`); });
 }
 // full-screen photo viewer for 扫街 photos: opens by growing out of the tapped thumbnail and shrinks back into it on close;
 // click / Esc closes, arrows or swipe step through
-function openViewer(photos, i = 0, tiles = null) {
+function openViewer(photos, i = 0, tiles = null, onStep = null) {
   i = Math.max(0, i); let v = $('#viewer');
   if (!v) { v = document.createElement('div'); v.id = 'viewer'; v.className = 'viewer'; v.setAttribute('role', 'dialog'); v.setAttribute('aria-modal', 'true'); v.setAttribute('aria-label', '查看照片'); document.body.appendChild(v); }
   v.getAnimations({ subtree: true }).forEach((a) => a.cancel());
   const anim = !reduceMotion, many = photos.length > 1;
   let closing = false;
-  const tileOf = (k) => (tiles && tiles[k] && tiles[k].isConnected ? tiles[k] : null);
-  const arOf = (k) => { const t = tileOf(k)?.querySelector('img'); return t && t.naturalWidth ? t.naturalWidth / t.naturalHeight : 1.5; };
+  const tileAt = typeof tiles === 'function' ? () => tiles() : (k) => tiles && tiles[k];   // a function: the card's big picture, whichever photo it shows
+  const tileOf = (k) => { const t = tileAt(k); return t && t.isConnected ? t : null; };
+  const arOf = (k) => { if (photos[k].ar) return photos[k].ar; const t0 = tileOf(k), t = t0 && (t0.tagName === 'IMG' ? t0 : t0.querySelector('img')); return t && t.naturalWidth ? t.naturalWidth / t.naturalHeight : 1.5; };
   const fit = (img) => { const ar = arOf(i); const W = window.innerWidth - 32, H = window.innerHeight - 120; const w = Math.min(W, H * ar); img.style.width = `${w}px`; img.style.height = `${w / ar}px`; };
   const show = (dir = 0) => {
     const p = photos[i];
@@ -4499,12 +4523,12 @@ function openViewer(photos, i = 0, tiles = null) {
     const big = { transform: 'translate(0px, 0px) scale(1)', clipPath: 'inset(0px 0px round 6px)' };
     return img.animate(back ? [big, small] : [small, big], { duration: back ? 340 : 460, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'forwards' });
   };
-  const go = (step) => { i = (i + step + photos.length) % photos.length; show(step); };
+  const go = (step) => { i = (i + step + photos.length) % photos.length; show(step); if (onStep) onStep(i); };
   const close = () => {
     if (closing) return; closing = true;
     document.removeEventListener('keydown', key, true); window.removeEventListener('resize', onResize);
     const t = tileOf(i), img = v.querySelector('.vimg');
-    const done = () => { v.hidden = true; v.getAnimations({ subtree: true }).forEach((a) => a.cancel()); tiles?.forEach((x) => x.classList.remove('lifted')); (t || tiles?.[0])?.focus({ preventScroll: true }); };
+    const done = () => { v.hidden = true; v.getAnimations({ subtree: true }).forEach((a) => a.cancel()); document.querySelectorAll('.lifted').forEach((x) => x.classList.remove('lifted')); (t || tileAt(0))?.focus?.({ preventScroll: true }); };
     if (!anim || !img) { done(); return; }
     v.animate([{ backgroundColor: 'rgba(4,10,24,.92)' }, { backgroundColor: 'rgba(4,10,24,0)' }], { duration: 320, fill: 'forwards' });
     v.querySelectorAll('button,.vcap').forEach((e) => e.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 160, fill: 'forwards' }));
@@ -4588,12 +4612,15 @@ function detailHTML(type, it) {
       ${navRow(list, it)}</div>`;
   }
   if (type === 'street') {
-    // 只放照片：标题一行小字，加上一上一下和定位三个小按钮（照片说明留在数据里，给读屏用）
-    const n = it.photos.length, L = SITE.street, k = L.findIndex((x) => x.id === it.id);
+    // 只有照片：大图 + 一排小样 + 上一个 / 定位 / 下一个（标题和说明只给读屏用）
+    const ph = it.photos, L = SITE.street, k = L.findIndex((x) => x.id === it.id);
     const prev = L[(k - 1 + L.length) % L.length], next = L[(k + 1) % L.length];
-    return `<div class="st">
-      <div class="st-grid n${Math.min(n, 5)}">${it.photos.map((p, i) => `<button class="shot" style="--i:${i};--ar:${p.ar || 1.333}" aria-label="查看照片：${esc(p.cap || it.title)}"><span class="ph"><img src="${p.thumb || p.src}" alt="${esc(p.cap || '')}" draggable="false"></span><span class="gl"></span></button>`).join('')}</div>
-      <h2 class="sr">${esc(it.title)}</h2><div class="st-foot"><span class="st-nav"><button class="icon-btn" data-go="${prev.id}" aria-label="上一个">${ICONS.prev}</button>${it.lnglat ? `<button class="icon-btn" data-fly aria-label="在地图上定位">${ICONS.target}</button>` : ''}<button class="icon-btn" data-go="${next.id}" aria-label="下一个">${ICONS.next}</button></span></div></div>`;
+    const box = Math.min(1.6, Math.max(0.8, ph[0].ar || 1.333));
+    return `<div class="stc" style="--box:${box}">
+      <div class="stc-amb" aria-hidden="true"><img src="${ph[0].thumb || ph[0].src}" alt=""></div>
+      <h2 class="sr">${esc(it.title)}</h2>
+      <button class="stc-hero" aria-label="查看大图"><img src="${ph[0].thumb || ph[0].src}" alt="${esc(ph[0].cap || '')}" draggable="false"></button>
+      <div class="stc-bar">${ph.length > 1 ? `<div class="stc-strip">${ph.map((p, i) => `<button class="stc-th${i ? '' : ' on'}" data-k="${i}" style="--ar:${p.ar || 1.333}" aria-label="第 ${i + 1} 张：${esc(p.cap || '')}"><img src="${p.thumb || p.src}" alt="" draggable="false"></button>`).join('')}</div>` : ''}<span class="st-nav"><button class="icon-btn" data-go="${prev.id}" aria-label="上一个">${ICONS.prev}</button>${it.lnglat ? `<button class="icon-btn" data-fly aria-label="在地图上定位">${ICONS.target}</button>` : ''}<button class="icon-btn" data-go="${next.id}" aria-label="下一个">${ICONS.next}</button></span></div></div>`;
   }
   if (type === 'landmark') {
     const facts = Object.entries(it.facts).map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('');
