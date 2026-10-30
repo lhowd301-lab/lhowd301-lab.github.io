@@ -1785,7 +1785,7 @@ function roadLayers(bridge) {
   ];
   for (const [c, fill, cas, minz] of spec) {
     L.push({ id: `rc-${c}${sfx}`, type: 'line', source: 'osm', 'source-layer': 'roads', minzoom: minz, filter: f(c), layout: { 'line-cap': bridge ? 'butt' : 'round', 'line-join': 'round' },
-      paint: { 'line-color': cas, 'line-width': zi(caseW(ROAD_W[c], c === 'motorway' || c === 'primary' ? 2.2 : 1.6)), 'line-opacity': c === 'lane' ? ['interpolate', ['linear'], ['zoom'], 13.5, 0, 14.5, tun(1)] : tun(1) } });
+      paint: { 'line-color': cas, 'line-width': zi(caseW(ROAD_W[c], c === 'motorway' || c === 'primary' ? 2.2 : 1.6)), 'line-opacity': c === 'lane' ? ['interpolate', ['linear'], ['zoom'], 13.5, 0, 14, tun(1)] : tun(1) } });
   }
   for (const [c, fill, , minz] of spec) {
     L.push({ id: `rf-${c}${sfx}`, type: 'line', source: 'osm', 'source-layer': 'roads', minzoom: c === 'motorway' || c === 'primary' ? minz : minz + 0.5, filter: f(c), layout: { 'line-cap': 'round', 'line-join': 'round' },
@@ -1804,6 +1804,8 @@ function buildStyle() {
       hill: { type: 'image', url: U('map/hillshade.png'), coordinates: HILL },
       districts: { type: 'geojson', data: U('map/districts.json') },
       osm: { type: 'vector', tiles: ['gzt://{z}/{x}/{y}'], minzoom: 8, maxzoom: 13, bounds: DATA_BOUNDS },
+      // the same tiles again, for what has to be laid out afresh at every zoom: text labels, and lines whose width depends on both zoom and the feature (rivers, runways)
+      osml: { type: 'vector', tiles: ['gzt://{z}/{x}/{y}'], minzoom: 8, maxzoom: 13, bounds: DATA_BOUNDS },
       labels: { type: 'geojson', data: U('map/labels.json') },
       cover: { type: 'geojson', data: COVER },
       trail: { type: 'geojson', data: { type: 'FeatureCollection', features: [] } },
@@ -1815,17 +1817,17 @@ function buildStyle() {
       { id: 'green', type: 'fill', source: 'osm', 'source-layer': 'green', minzoom: 10, paint: { 'fill-color': ['match', ['get', 'k'], 'forest', C.forest, 'sport', C.sport, 'grass', C.grass, 'farm', '#E6F0E2', C.park], 'fill-opacity': ['interpolate', ['linear'], ['zoom'], 10, 0.5, 13, 1] } },
       { id: 'water', type: 'fill', source: 'osm', 'source-layer': 'water', paint: { 'fill-color': C.water, 'fill-antialias': true } },
       { id: 'water-line', type: 'line', source: 'osm', 'source-layer': 'water', minzoom: 11, paint: { 'line-color': C.waterLine, 'line-width': ['interpolate', ['linear'], ['zoom'], 11, 0.3, 16, 1.2], 'line-opacity': 0.55 } },
-      { id: 'waterway', type: 'line', source: 'osm', 'source-layer': 'waterline', minzoom: 11, layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': C.water, 'line-width': ['interpolate', ['linear'], ['zoom'], 11, ['match', ['get', 'w'], 'river', 1, 0.4], 16, ['match', ['get', 'w'], 'river', 5, 2]] } },
+      { id: 'waterway', type: 'line', source: 'osml', 'source-layer': 'waterline', minzoom: 11, layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': C.water, 'line-width': ['interpolate', ['linear'], ['zoom'], 11, ['match', ['get', 'w'], 'river', 1, 0.4], 16, ['match', ['get', 'w'], 'river', 5, 2]] } },
       { id: 'dist-line', type: 'line', source: 'districts', filter: ['!=', ['geometry-type'], 'Point'], paint: { 'line-color': C.district, 'line-width': ['interpolate', ['linear'], ['zoom'], 8, 0.9, 13, 1.6], 'line-dasharray': [3, 2], 'line-opacity': ['interpolate', ['linear'], ['zoom'], 8, 0.55, 14, 0.22] } },
       { id: 'cover-line', type: 'line', source: 'cover', maxzoom: 13.4, paint: { 'line-color': C.blue, 'line-width': 1.1, 'line-dasharray': [1, 2.4], 'line-opacity': ['interpolate', ['linear'], ['zoom'], 11.5, 0.55, 13.3, 0] } },
       // 机场（白云机场、岑村机场）：场区、停机坪、滑行道、跑道（宽度按真实米数随缩放变化）
       { id: 'aero-area', type: 'fill', source: 'osm', 'source-layer': 'aero', minzoom: 9, filter: ['==', ['get', 'a'], 'area-aerodrome'], paint: { 'fill-color': '#E9EEF5', 'fill-opacity': ['interpolate', ['linear'], ['zoom'], 9, 0.5, 12, 0.85] } },
       { id: 'aero-apron', type: 'fill', source: 'osm', 'source-layer': 'aero', minzoom: 11, filter: ['match', ['get', 'a'], ['area-apron', 'area-taxiway', 'area-runway'], true, false], paint: { 'fill-color': '#D8E0EC' } },
-      { id: 'aero-taxi', type: 'line', source: 'osm', 'source-layer': 'aero', minzoom: 12, filter: ['match', ['get', 'a'], ['taxiway', 'stopway'], true, false], layout: { 'line-cap': 'round', 'line-join': 'round' },
+      { id: 'aero-taxi', type: 'line', source: 'osml', 'source-layer': 'aero', minzoom: 12, filter: ['match', ['get', 'a'], ['taxiway', 'stopway'], true, false], layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: { 'line-color': '#CBD5E4', 'line-width': ['interpolate', ['exponential', 2], ['zoom'], 12, 0.6, 14, ['*', ['get', 'w'], 0.114], 18, ['*', ['get', 'w'], 1.825]] } },
-      { id: 'aero-runway', type: 'line', source: 'osm', 'source-layer': 'aero', minzoom: 9, filter: ['==', ['get', 'a'], 'runway'], layout: { 'line-cap': 'butt' },
+      { id: 'aero-runway', type: 'line', source: 'osml', 'source-layer': 'aero', minzoom: 9, filter: ['==', ['get', 'a'], 'runway'], layout: { 'line-cap': 'butt' },
         paint: { 'line-color': '#9FAABD', 'line-width': ['interpolate', ['exponential', 2], ['zoom'], 9, 1.1, 12, ['*', ['get', 'w'], 0.0285], 18, ['*', ['get', 'w'], 1.825]] } },
-      { id: 'aero-runway-line', type: 'line', source: 'osm', 'source-layer': 'aero', minzoom: 13.5, filter: ['==', ['get', 'a'], 'runway'],
+      { id: 'aero-runway-line', type: 'line', source: 'osml', 'source-layer': 'aero', minzoom: 13.5, filter: ['==', ['get', 'a'], 'runway'],
         paint: { 'line-color': '#FFFFFF', 'line-width': ['interpolate', ['linear'], ['zoom'], 13.5, 0.6, 18, 2.4], 'line-dasharray': [5, 4], 'line-opacity': 0.9 } },
       { id: 'rail-case', type: 'line', source: 'osm', 'source-layer': 'rail', minzoom: 12, filter: ['==', ['get', 'k'], 'main'], paint: { 'line-color': C.rail, 'line-width': ['interpolate', ['linear'], ['zoom'], 12, 1.2, 17, 4] } },
       { id: 'rail-dash', type: 'line', source: 'osm', 'source-layer': 'rail', minzoom: 13, filter: ['==', ['get', 'k'], 'main'], paint: { 'line-color': '#FFFFFF', 'line-width': ['interpolate', ['linear'], ['zoom'], 13, 0.6, 17, 2.4], 'line-dasharray': [3, 3] } },
@@ -1833,19 +1835,19 @@ function buildStyle() {
       ...roadLayers(false),
       ...roadLayers(true),
       { id: 'trail', type: 'line', source: 'trail', layout: { visibility: 'none', 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': C.blue, 'line-width': ['interpolate', ['linear'], ['zoom'], 10, 1.5, 16, 3.5], 'line-dasharray': [0.6, 1.8], 'line-opacity': 0.85 } },
-      { id: 'road-label', type: 'symbol', source: 'osm', 'source-layer': 'roads', minzoom: 13.6, filter: ['all', ['has', 'n'], ['match', ['get', 'c'], ['primary', 'motorway', 'secondary'], true, false]],
+      { id: 'road-label', type: 'symbol', source: 'osml', 'source-layer': 'roads', minzoom: 13.6, filter: ['all', ['has', 'n'], ['match', ['get', 'c'], ['primary', 'motorway', 'secondary'], true, false]],
         layout: { 'symbol-placement': 'line', 'text-field': ['get', 'n'], 'text-font': FONT, 'text-size': ['interpolate', ['linear'], ['zoom'], 14, 11, 18, 14.5], 'symbol-spacing': 340, 'text-max-angle': 32, 'text-padding': 4 },
         paint: { 'text-color': C.text, 'text-halo-color': '#FFFFFF', 'text-halo-width': 1.6 } },
-      { id: 'road-label-minor', type: 'symbol', source: 'osm', 'source-layer': 'roads', minzoom: 15.4, filter: ['all', ['has', 'n'], ['match', ['get', 'c'], ['street', 'lane'], true, false]],
+      { id: 'road-label-minor', type: 'symbol', source: 'osml', 'source-layer': 'roads', minzoom: 15.4, filter: ['all', ['has', 'n'], ['match', ['get', 'c'], ['street', 'lane'], true, false]],
         layout: { 'symbol-placement': 'line', 'text-field': ['get', 'n'], 'text-font': FONT, 'text-size': ['interpolate', ['linear'], ['zoom'], 15.4, 10.5, 18, 13], 'symbol-spacing': 260, 'text-max-angle': 32, 'text-padding': 2 },
         paint: { 'text-color': C.textSoft, 'text-halo-color': '#FFFFFF', 'text-halo-width': 1.4 } },
-      { id: 'aero-ref', type: 'symbol', source: 'osm', 'source-layer': 'aero', minzoom: 13.2, filter: ['all', ['==', ['get', 'a'], 'runway'], ['has', 'n']],
+      { id: 'aero-ref', type: 'symbol', source: 'osml', 'source-layer': 'aero', minzoom: 13.2, filter: ['all', ['==', ['get', 'a'], 'runway'], ['has', 'n']],
         layout: { 'symbol-placement': 'line-center', 'text-field': ['concat', '跑道 ', ['get', 'n']], 'text-font': FONT, 'text-size': 11, 'text-padding': 2 },
         paint: { 'text-color': '#5B6B86', 'text-halo-color': '#FFFFFF', 'text-halo-width': 1.4 } },
-      { id: 'aero-label', type: 'symbol', source: 'osm', 'source-layer': 'aero', minzoom: 10, maxzoom: 15.5, filter: ['==', ['get', 'a'], 'label'],
+      { id: 'aero-label', type: 'symbol', source: 'osml', 'source-layer': 'aero', minzoom: 10, maxzoom: 15.5, filter: ['==', ['get', 'a'], 'label'],
         layout: { 'text-field': ['get', 'n'], 'text-font': FONT, 'text-size': ['interpolate', ['linear'], ['zoom'], 10, 12, 14, 15], 'text-letter-spacing': 0.15, 'text-padding': 6 },
         paint: { 'text-color': '#1D4ED8', 'text-halo-color': 'rgba(255,255,255,0.92)', 'text-halo-width': 2, 'text-opacity': ['interpolate', ['linear'], ['zoom'], 10, 0, 10.4, 1, 15, 1, 15.5, 0] } },
-      { id: 'place-label', type: 'symbol', source: 'osm', 'source-layer': 'place', minzoom: 12.2, maxzoom: 15,
+      { id: 'place-label', type: 'symbol', source: 'osml', 'source-layer': 'place', minzoom: 12.2, maxzoom: 15,
         layout: { 'text-field': ['get', 'n'], 'text-font': FONT, 'text-size': ['interpolate', ['linear'], ['zoom'], 12.2, 11.5, 14, 13], 'text-letter-spacing': 0.15, 'text-padding': 8 },
         paint: { 'text-color': '#4D6EA8', 'text-halo-color': 'rgba(255,255,255,0.9)', 'text-halo-width': 1.6, 'text-opacity': ['interpolate', ['linear'], ['zoom'], 12.2, 0, 12.6, 0.9, 14.5, 0.9, 15, 0] } },
       { id: 'poi-dot', type: 'circle', source: 'labels', minzoom: 13.8, filter: ['all', ['==', ['get', 'd'], 0], ['!=', ['get', 'sub'], 'Bridge']],
@@ -3738,8 +3740,7 @@ function buildHKPalace(THREE, K) {
   return g;
 }
 
-// which builders go on the map and the 地标 card each opens; all of them are drawn only while Victoria Harbour (HK_LL) is on screen
-const HK_LL = [[114.12, 22.24], [114.21, 22.34]];
+// which builders go on the map and the 地标 card each opens
 const HK_PARTS = [
   [buildHKIFC, 'l55'], [buildHKBOC, 'l56'], [buildHKCPlaza, 'l57'], [buildHKHSBC, 'l58'], [buildHKCKC, 'l59'], [buildHKLippo, 'l60'],
   [buildHKJardine, 'l61'], [buildHKHopewell, 'l62'], [buildHKCEC, 'l63'], [buildHKWheel, 'l64'], [buildHKICC, 'l65'], [buildHKCulture, 'l66'],
@@ -3782,10 +3783,14 @@ const ThreeModels = {
       { g: buildGZEast(THREE, K), z0: 13.2, z1: 14.8, l: 'l53' },
       { g: buildBaiyun(THREE, K), z0: 12.6, z1: 13.8, l: 'l54', ll: [[113.262, 23.355], [113.335, 23.43]] },   // far from the city: drawn only when on screen
     ];
-    for (const p of parts) p.ll ||= [[113.1, 22.85], [113.55, 23.35]];   // 广州的模型只在广州出现在屏幕上时才画
+    // 每座模型只在它自己那一小块地图出现在屏幕上时才画（范围按模型的外框加上一圈余量，高楼的余量大一些）
+    const bx = new THREE.Box3();
+    const llBox = (p, toLL) => { p.g.updateMatrixWorld(true); bx.setFromObject(p.g); const m = Math.max(120, bx.max.y * 0.9); return [toLL([bx.min.x - m, -bx.max.z - m]), toLL([bx.max.x + m, -bx.min.z + m])]; };
+    for (const p of parts) p.ll ||= llBox(p, mToLngLat);
     // 香港维港两岸：挂在自己的锚点下（以 HK_O 为原点、按香港的纬度把米换成墨卡托单位），否则离广州一百多公里，误差会有几百米
     const hk = new THREE.Group(); hk.matrixAutoUpdate = false; scene.add(hk);
-    for (const [f, l] of HK_PARTS) parts.push({ g: f(THREE, K), z0: 13.2, z1: 14.8, l, ll: HK_LL, hk: true });
+    const hkLL = ([x, y]) => [HK_O[0] + x / HKX, HK_O[1] + y / HKY];
+    for (const [f, l] of HK_PARTS) { const p = { g: f(THREE, K), z0: 13.2, z1: 14.8, l, hk: true }; p.ll = llBox(p, hkLL); parts.push(p); }
     for (const p of parts) { (p.hk ? hk : scene).add(p.g); p.g.traverse((o) => { o.frustumCulled = false; }); }
     // 香港的模型入夜后把白天的颜色压暗，免得在深色地图上发灰（亮着的窗和灯光不受影响）
     const hkMats = new Set(); for (const p of parts) if (p.hk) p.g.traverse((o) => { if (o.material && o.material.isMeshLambertMaterial) hkMats.add(o.material); });
@@ -3819,7 +3824,8 @@ const ThreeModels = {
       for (const m of K.mats) m.emissiveIntensity = n * m.userData.glow;
       for (const m of hkMats) m.color.copy(m.userData.day).multiplyScalar(1 - 0.55 * n);
       for (const p of parts) if (p.g.userData.night) p.g.userData.night(n, now / 1000);
-      if ((n > 0 || this.n !== this.nightTarget) && !this.rp) this.rp = setTimeout(() => { this.rp = 0; map.triggerRepaint(); }, n === this.nightTarget ? 40 : 16);
+      const live = n > 0.01 && parts.some((p) => p.g.visible && p.g.userData.night && p.g.userData.night.length > 1);   // (n, t): it moves with time
+      if ((live || this.n !== this.nightTarget) && !this.rp) this.rp = setTimeout(() => { this.rp = 0; map.triggerRepaint(); }, n === this.nightTarget ? 40 : 16);
     };
     const mc = maplibregl.MercatorCoordinate.fromLngLat(MODEL_O, 0), sc = mc.meterInMercatorCoordinateUnits();
     const l = new THREE.Matrix4().makeTranslation(mc.x, mc.y, mc.z).scale(new THREE.Vector3(sc, -sc, sc)).multiply(new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(1, 0, 0), Math.PI / 2));
@@ -3868,14 +3874,21 @@ function initMap() {
   const packNames = fetch(U('tilepack/index.json')).then((r) => r.json()).then((l) => new Set(l)).catch(() => new Set());
   const packs = {};
   const pack = (n) => (packs[n] ||= fetch(U(`tilepack/${n}.json`)).then((r) => (r.ok ? r.json() : {})).catch(() => ({})));
+  // 解码过的瓦片留一份（底图和文字两个数据源会各要一次），每次交出去一份拷贝
+  const tcache = new Map();
+  const unpack = async (s64) => { const bs = atob(s64), n = bs.length, u = new Uint8Array(n); for (let i = 0; i < n; i++) u[i] = bs.charCodeAt(i); return new Response(new Blob([u]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer(); };
   maplibregl.addProtocol('gzt', async (params) => {
     const key = params.url.slice('gzt://'.length); const [z, x, y] = key.split('/').map(Number);
     const name = z <= 9 ? 'lo' : `z${z}-${x >> 2}-${y >> 2}`;
     if (!(await packNames).has(name)) return { data: new ArrayBuffer(0) };
-    const s64 = (await pack(name))[key];
-    if (!s64) return { data: new ArrayBuffer(0) };
-    const bin = Uint8Array.from(atob(s64), (c) => c.charCodeAt(0));
-    return { data: await new Response(new Blob([bin]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer() };
+    let hit = tcache.get(key);
+    if (!hit) {
+      const s64 = (await pack(name))[key];
+      if (!s64) return { data: new ArrayBuffer(0) };
+      hit = unpack(s64); tcache.set(key, hit);
+      if (tcache.size > 40) tcache.delete(tcache.keys().next().value);
+    } else { tcache.delete(key); tcache.set(key, hit); }
+    return { data: (await hit).slice(0) };
   });
   // 3D 桥梁：桥面 + 桥墩，单独打包在 bridgepack/（只有 z13 一级，放大时复用）
   const bridgeNames = fetch(U('bridgepack/index.json')).then((r) => r.json()).then((a) => new Set(a)).catch(() => new Set());
@@ -3886,8 +3899,7 @@ function initMap() {
     if (!(await bridgeNames).has(name)) return { data: new ArrayBuffer(0) };
     const s64 = (await (bpacks[name] ||= fetch(U(`bridgepack/${name}.json`)).then((r) => (r.ok ? r.json() : {})).catch(() => ({}))))[key];
     if (!s64) return { data: new ArrayBuffer(0) };
-    const bin = Uint8Array.from(atob(s64), (c) => c.charCodeAt(0));
-    return { data: await new Response(new Blob([bin]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer() };
+    return { data: await unpack(s64) };
   });
   maplibregl.addProtocol('gzglyph', async (params) => {
     const range = decodeURIComponent(params.url).split('/').pop();
@@ -3910,17 +3922,21 @@ function initMap() {
     map.addLayer({ id: 'bld', type: 'fill-extrusion', source: 'osm', 'source-layer': 'buildings', minzoom: 13.2,
       paint: {
         'fill-extrusion-color': ['interpolate', ['linear'], ['get', 'h'], 0, '#E7EEF9', 24, '#DCE7F7', 60, '#C9DBF6', 150, '#AECAF4', 300, '#8FB5F0', 500, '#5E93EA'],
-        'fill-extrusion-height': ['interpolate', ['linear'], ['zoom'], 13.2, 0, 14.8, ['get', 'h']],
-        'fill-extrusion-base': ['interpolate', ['linear'], ['zoom'], 13.2, 0, 14.8, ['coalesce', ['get', 'b'], 0]],
+        // （13 级以上直接放大 13 级的瓦片，按楼高变化的表达式只在 13、14 两级取值，所以长高要在 14 级前完成）
+        'fill-extrusion-height': ['interpolate', ['linear'], ['zoom'], 13.2, 0, 14, ['get', 'h']],
+        'fill-extrusion-base': ['interpolate', ['linear'], ['zoom'], 13.2, 0, 14, ['coalesce', ['get', 'b'], 0]],
         'fill-extrusion-opacity': ['interpolate', ['linear'], ['zoom'], 13.2, 0, 14, 0.9],
         'fill-extrusion-vertical-gradient': true,
       } }, 'trail');
+    // 放大到 13 级以上时直接把 13 级的瓦片放大来画，不再每一级重新切一遍（以前一放大就要把同一块瓦片重算十几次，楼房出来得慢）
+    map.getSource('osm').reparseOverscaled = false;
     map.addSource('bridges', { type: 'vector', tiles: ['gzb://{z}/{x}/{y}'], minzoom: 13, maxzoom: 13, bounds: DATA_BOUNDS });
+    map.getSource('bridges').reparseOverscaled = false;
     map.addLayer({ id: 'bridge-3d', type: 'fill-extrusion', source: 'bridges', 'source-layer': 'bridges', minzoom: 13.2,
       paint: {
         'fill-extrusion-color': ['match', ['get', 'k'], 'pi', '#A9BBD6', 'm', '#B4D0F7', 'p', '#CCDDF8', 'x', '#BCCADF', 'f', '#D3DDEB', '#E6EDF8'],
-        'fill-extrusion-height': ['interpolate', ['linear'], ['zoom'], 13.2, 0, 14.4, ['get', 'h']],
-        'fill-extrusion-base': ['interpolate', ['linear'], ['zoom'], 13.2, 0, 14.4, ['get', 'b']],
+        'fill-extrusion-height': ['interpolate', ['linear'], ['zoom'], 13.2, 0, 14, ['get', 'h']],
+        'fill-extrusion-base': ['interpolate', ['linear'], ['zoom'], 13.2, 0, 14, ['get', 'b']],
         'fill-extrusion-opacity': ['interpolate', ['linear'], ['zoom'], 13.2, 0, 13.8, 0.97],
         'fill-extrusion-vertical-gradient': true,
       } }, 'bld');
