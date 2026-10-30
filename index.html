@@ -507,46 +507,26 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
 .gallery img{width:100%;height:100%;object-fit:cover;display:block}
 .exif{font-family:var(--f-mono);font-size:11px;color:var(--ink-3);letter-spacing:.04em}
 /* 扫街卡片：直接一组小图，带入场、悬停倾斜/高光、缓慢呼吸的动态效果；点开后从小图放大成全屏 */
-.shots{display:grid;gap:8px;grid-template-columns:repeat(3,1fr);perspective:800px}
-.shots.n1{grid-template-columns:1fr;width:68%}
-.shots.n2,.shots.n4{grid-template-columns:1fr 1fr}
-.shot{--rx:0deg;--ry:0deg;--ty:0px;position:relative;display:block;padding:0;border:0;border-radius:12px;overflow:hidden;aspect-ratio:1/1;background:var(--ice);cursor:zoom-in;transform:translateY(var(--ty)) rotateX(var(--rx)) rotateY(var(--ry));transition:transform .4s cubic-bezier(.2,.8,.2,1),box-shadow .4s;box-shadow:0 2px 8px rgba(15,37,87,.10);animation:shotIn .75s cubic-bezier(.2,.8,.2,1) backwards;animation-delay:calc(var(--i) * 90ms + 120ms);outline-offset:2px}
-.shots.n1 .shot,.shots.n2 .shot,.shots.n4 .shot{aspect-ratio:4/3}
-.shot::before{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.7) 50%,transparent 70%) 0 0/250% 100%;animation:shimmer 1.3s linear infinite}
-.shot.ok::before{display:none}
-.shot .ph{position:absolute;inset:0;animation:drift 18s ease-in-out infinite alternate;animation-delay:calc(var(--i) * -4.5s)}
-.shot img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transform:scale(1.14);transition:opacity .7s ease,transform 1.1s cubic-bezier(.2,.8,.2,1)}
-.shot.ok img{opacity:1;transform:scale(1)}
-.shot .gl{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at var(--gx,50%) var(--gy,30%),rgba(255,255,255,.55),transparent 58%);opacity:0;transition:opacity .35s;mix-blend-mode:soft-light}
-.shot .cap{position:absolute;left:0;right:0;bottom:0;padding:22px 9px 7px;background:linear-gradient(rgba(8,18,40,0),rgba(8,18,40,.7));color:#fff;font-size:11.5px;line-height:1.35;text-align:left;transform:translateY(102%);transition:transform .35s cubic-bezier(.2,.8,.2,1)}
-.shot:hover,.shot:focus-visible{--ty:-4px;box-shadow:0 16px 30px -12px rgba(15,37,87,.5)}
-.shot.ok:hover img{transform:scale(1.07)}
-.shot:hover .gl{opacity:1}
-.shot:hover .cap,.shot:focus-visible .cap{transform:none}
-.shot.lifted{visibility:hidden}
-.shots-hint{margin:-2px 0 0;font-size:11.5px;color:var(--ink-3)}
-/* 扫街卡片：只有照片。按每张照片的长宽比排成等高的行（像相册的拼版），照片冲洗一样从模糊里显影出来，然后慢慢推拉 */
+/* 扫街卡片：只有照片，按长宽比拼成等高的行。打开时不做花样，鼠标碰到哪张，哪张才轻轻浮起、放大一点、跟着鼠标微微倾斜 */
 .st{padding:10px 10px 0}
-.st-grid{display:flex;flex-wrap:wrap;gap:6px;perspective:900px}
-.st-grid .shot{flex:var(--ar) 1 calc(var(--ar) * 128px);aspect-ratio:var(--ar);border-radius:10px;animation:develop 1s cubic-bezier(.2,.8,.2,1) backwards;animation-delay:calc(var(--i) * 120ms + 60ms)}
+.st-grid{display:flex;flex-wrap:wrap;gap:6px;perspective:1000px}
+.shot{--rx:0deg;--ry:0deg;--ty:0px;position:relative;display:block;padding:0;border:0;border-radius:10px;overflow:hidden;background:var(--ice);cursor:zoom-in;flex:var(--ar) 1 calc(var(--ar) * 128px);aspect-ratio:var(--ar);transform:translateY(var(--ty)) rotateX(var(--rx)) rotateY(var(--ry));transition:transform .5s cubic-bezier(.2,.8,.2,1),box-shadow .5s;box-shadow:0 1px 4px rgba(15,37,87,.08);outline-offset:2px}
 .st-grid.n1 .shot{flex:none;width:min(100%, calc(56vh * var(--ar)));margin:0 auto}
-.st-grid .shot::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 38%,rgba(255,255,255,.42) 50%,transparent 62%) 160% 0/260% 100% no-repeat;animation:sheen 1.5s cubic-bezier(.3,.7,.3,1) backwards;animation-delay:calc(var(--i) * 120ms + 650ms)}
-.st-grid .shot:nth-child(even) .ph{animation-name:drift2}
-.st-foot{display:flex;align-items:center;gap:10px;padding:10px 4px 12px 6px}
-.st-title{flex:1;min-width:0;font-family:var(--f-display);font-size:15px;font-weight:700;letter-spacing:.06em;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;animation:fadeUp .6s ease-out backwards;animation-delay:.25s}
-.st-nav{display:flex;gap:6px}
+.shot .ph{position:absolute;inset:0}
+.shot img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .35s ease,transform .7s cubic-bezier(.2,.8,.2,1)}
+.shot.ok img{opacity:1}
+.shot .gl{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at var(--gx,50%) var(--gy,30%),rgba(255,255,255,.28),transparent 60%);opacity:0;transition:opacity .4s;mix-blend-mode:soft-light}
+.shot:hover,.shot:focus-visible{--ty:-2px;box-shadow:0 12px 24px -14px rgba(15,37,87,.5)}
+.shot.ok:hover img{transform:scale(1.035)}
+.shot:hover .gl{opacity:1}
+.shot.lifted{visibility:hidden}
+.st-foot{display:flex;justify-content:center;padding:8px 0 10px}
+.st-nav{display:flex;gap:8px}
 .st-nav .icon-btn{width:32px;height:32px;border-radius:50%;cursor:pointer;transition:transform .2s,background .2s}
 .st-nav .icon-btn:hover{transform:translateY(-1px);background:var(--line)}
 .st-nav .icon-btn svg{width:16px;height:16px}
-@keyframes develop{from{opacity:0;transform:translateY(12px) scale(.965);filter:blur(10px) saturate(.2) brightness(1.25)}}
-@keyframes sheen{from{background-position:160% 0}to{background-position:-60% 0}}
-@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}}
-@keyframes drift2{from{transform:scale(1.03) translate(0,0)}to{transform:scale(1.1) translate(1.6%,1.2%)}}
-@keyframes shotIn{from{opacity:0;transform:translateY(18px) scale(.88) rotate(var(--r,0deg));filter:blur(5px)}}
-@keyframes shimmer{to{background-position:-250% 0}}
-@keyframes drift{from{transform:scale(1.03) translate(0,0)}to{transform:scale(1.1) translate(-1.6%,-1.2%)}}
-@media (hover:none){.shot .cap{transform:none;font-size:10.5px;padding:16px 7px 5px}}
-@media (prefers-reduced-motion:reduce){.shot,.shot .ph,.shot::before,.shot::after,.st-title,.pin-photo .pin-in{animation:none!important}.shot{transform:none!important}.shot img,.pin-photo .pb img{transition:none!important}}
+.sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+@media (prefers-reduced-motion:reduce){.shot,.shot img,.shot .gl{transition:none!important}.shot{transform:none!important}.pin-photo .pin-in{animation:none!important}.pin-photo .pb img{transition:none!important}}
 .d-cap{margin:-4px 0 0;font-size:12px;color:var(--ink-3)}
 .d-hero.zoomable img{cursor:zoom-in}
 .zoom-hint{position:absolute;right:10px;bottom:10px;padding:2px 8px;border-radius:999px;background:rgba(8,18,40,.55);color:#fff;font-family:var(--f-mono);font-size:11px}
@@ -4484,7 +4464,7 @@ function bindShots(d, item) {
     if (!hover) return;
     t.addEventListener('pointermove', (e) => {
       const r = t.getBoundingClientRect(); const x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
-      t.style.setProperty('--rx', `${((0.5 - y) * 10).toFixed(2)}deg`); t.style.setProperty('--ry', `${((x - 0.5) * 12).toFixed(2)}deg`);
+      t.style.setProperty('--rx', `${((0.5 - y) * 4).toFixed(2)}deg`); t.style.setProperty('--ry', `${((x - 0.5) * 5).toFixed(2)}deg`);
       t.style.setProperty('--gx', `${(x * 100).toFixed(1)}%`); t.style.setProperty('--gy', `${(y * 100).toFixed(1)}%`);
     });
     t.addEventListener('pointerleave', () => { t.style.setProperty('--rx', '0deg'); t.style.setProperty('--ry', '0deg'); });
@@ -4613,7 +4593,7 @@ function detailHTML(type, it) {
     const prev = L[(k - 1 + L.length) % L.length], next = L[(k + 1) % L.length];
     return `<div class="st">
       <div class="st-grid n${Math.min(n, 5)}">${it.photos.map((p, i) => `<button class="shot" style="--i:${i};--ar:${p.ar || 1.333}" aria-label="查看照片：${esc(p.cap || it.title)}"><span class="ph"><img src="${p.thumb || p.src}" alt="${esc(p.cap || '')}" draggable="false"></span><span class="gl"></span></button>`).join('')}</div>
-      <div class="st-foot"><h2 class="st-title">${esc(it.title)}</h2><span class="st-nav"><button class="icon-btn" data-go="${prev.id}" aria-label="上一个">${ICONS.prev}</button>${it.lnglat ? `<button class="icon-btn" data-fly aria-label="在地图上定位">${ICONS.target}</button>` : ''}<button class="icon-btn" data-go="${next.id}" aria-label="下一个">${ICONS.next}</button></span></div></div>`;
+      <h2 class="sr">${esc(it.title)}</h2><div class="st-foot"><span class="st-nav"><button class="icon-btn" data-go="${prev.id}" aria-label="上一个">${ICONS.prev}</button>${it.lnglat ? `<button class="icon-btn" data-fly aria-label="在地图上定位">${ICONS.target}</button>` : ''}<button class="icon-btn" data-go="${next.id}" aria-label="下一个">${ICONS.next}</button></span></div></div>`;
   }
   if (type === 'landmark') {
     const facts = Object.entries(it.facts).map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('');
