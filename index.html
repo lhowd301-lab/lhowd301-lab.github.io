@@ -1120,6 +1120,9 @@ const SITE = {
     { id: 'zs', name: '中山', en: 'ZHONGSHAN', center: [113.385, 22.52], zoom: 12.4, ready: true },
     { id: 'zh', name: '珠海', en: 'ZHUHAI', center: [113.555, 22.255], zoom: 12.4, ready: true },
     { id: 'mo', name: '澳门', en: 'MACAU', center: [113.555, 22.165], zoom: 13.1, ready: true },
+    { id: 'jm', name: '江门', en: 'JIANGMEN', center: [113.083, 22.585], zoom: 12.6, ready: true },
+    { id: 'zq', name: '肇庆', en: 'ZHAOQING', center: [112.468, 23.055], zoom: 12.6, ready: true },
+    { id: 'hz', name: '惠州', en: 'HUIZHOU', center: [114.405, 23.09], zoom: 12.5, ready: true },
   ],
 
   // 吃饭地图 —— 广州，按菜式整理；score 满分 10，没打分的写 null
@@ -1759,14 +1762,14 @@ const C = {
   rail: '#8DA2C3', text: '#1C3463', textSoft: '#5A73A3', district: '#3B82F6', blue: '#2563EB',
 };
 const HILL = [[113.115234, 23.32208], [113.510742, 23.32208], [113.510742, 22.998852], [113.115234, 22.998852]];
-// 街道级细节覆盖的范围：广州主城区到白云机场、佛山主城区、东莞、深圳、香港全境，加上伶仃洋西岸的南沙、中山、珠海、澳门，连成一片
-const COVER = { type: 'Feature', properties: { n: '街道级细节 · 广州 · 佛山 · 东莞 · 深圳 · 香港 · 中山 · 珠海 · 澳门' }, geometry: { type: 'LineString', coordinates: [[113.25, 21.95], [113.82, 21.95], [113.82, 22.13], [114.45, 22.13], [114.45, 22.58], [114.18, 22.58], [114.18, 22.61], [114.19, 22.61], [114.19, 22.95], [113.84, 22.95], [113.84, 23.1], [113.67, 23.1], [113.67, 23.12], [113.56, 23.12], [113.56, 23.46], [113.15, 23.46], [113.15, 23.14], [112.98, 23.14], [112.98, 22.74], [113.25, 22.74], [113.25, 21.95]] } };
-const DATA_BOUNDS = [112.98, 21.95, 114.45, 23.46];
+// 街道级细节覆盖整个粤港澳大湾区（广州、深圳、珠海、佛山、江门、肇庆、惠州、东莞、中山、香港、澳门）；
+// 大湾区以外的陆地盖一层淡淡的雾（map/veil.json），只留大路和河流做参照。湾区的边界、城市分界来自 map/gba.json
+const DATA_BOUNDS = [111.35, 21.45, 115.45, 24.45];
 const FONT = ['Noto Sans Regular'];
 const HOME = () => ({ center: mq.matches ? [113.266, 23.117] : [113.274, 23.117], zoom: mq.matches ? 11.9 : 12.6, pitch: 48, bearing: 18.7 });
 const zi = (stops) => ['interpolate', ['exponential', 1.55], ['zoom'], ...stops.flat()];
 const ROAD_W = {
-  motorway: [[9, 0.8], [12, 2.2], [14, 5], [16, 12], [18, 32]],
+  motorway: [[7, 0.5], [9, 0.8], [12, 2.2], [14, 5], [16, 12], [18, 32]],
   primary: [[9, 0.5], [12, 1.8], [14, 4.4], [16, 10.5], [18, 28]],
   secondary: [[11, 0.4], [13, 1.4], [15, 4], [17, 10], [18, 18]],
   street: [[12, 0.25], [14, 1.1], [16, 4.2], [18, 13]],
@@ -1783,11 +1786,11 @@ function roadLayers(bridge) {
     ['street', '#FFFFFF', C.caseMinor, 12],
     ['secondary', '#FFFFFF', C.caseMid, 11],
     ['primary', C.primary, C.primaryCase, 9],
-    ['motorway', C.motor, C.motorCase, 8],
+    ['motorway', C.motor, C.motorCase, 7],
   ];
   for (const [c, fill, cas, minz] of spec) {
     L.push({ id: `rc-${c}${sfx}`, type: 'line', source: 'osm', 'source-layer': 'roads', minzoom: minz, filter: f(c), layout: { 'line-cap': bridge ? 'butt' : 'round', 'line-join': 'round' },
-      paint: { 'line-color': cas, 'line-width': zi(caseW(ROAD_W[c], c === 'motorway' || c === 'primary' ? 2.2 : 1.6)), 'line-opacity': c === 'lane' ? ['interpolate', ['linear'], ['zoom'], 13.5, 0, 14, tun(1)] : tun(1) } });
+      paint: { 'line-color': cas, 'line-width': zi(caseW(ROAD_W[c], c === 'motorway' || c === 'primary' ? 2.2 : 1.6)), 'line-opacity': c === 'lane' ? ['interpolate', ['linear'], ['zoom'], 13.5, 0, 14, tun(1)] : c === 'motorway' ? ['interpolate', ['linear'], ['zoom'], 7, tun(0.35), 10, tun(1)] : tun(1) } });
   }
   for (const [c, fill, , minz] of spec) {
     L.push({ id: `rf-${c}${sfx}`, type: 'line', source: 'osm', 'source-layer': 'roads', minzoom: c === 'motorway' || c === 'primary' ? minz : minz + 0.5, filter: f(c), layout: { 'line-cap': 'round', 'line-join': 'round' },
@@ -1805,18 +1808,19 @@ function buildStyle() {
     sources: {
       hill: { type: 'image', url: U('map/hillshade.png'), coordinates: HILL },
       districts: { type: 'geojson', data: U('map/districts.json') },
-      osm: { type: 'vector', tiles: ['gzt://{z}/{x}/{y}'], minzoom: 8, maxzoom: 13, bounds: DATA_BOUNDS },
+      osm: { type: 'vector', tiles: ['gzt://{z}/{x}/{y}'], minzoom: 7, maxzoom: 13, bounds: DATA_BOUNDS },
       // the same tiles again, for what has to be laid out afresh at every zoom: text labels, and lines whose width depends on both zoom and the feature (rivers, runways)
-      osml: { type: 'vector', tiles: ['gzt://{z}/{x}/{y}'], minzoom: 8, maxzoom: 13, bounds: DATA_BOUNDS },
+      osml: { type: 'vector', tiles: ['gzt://{z}/{x}/{y}'], minzoom: 7, maxzoom: 13, bounds: DATA_BOUNDS },
       labels: { type: 'geojson', data: U('map/labels.json') },
       seaout: { type: 'geojson', data: U('map/sea-out.json'), maxzoom: 12, tolerance: 0.6 },   // the sea beyond the street-level area (Natural Earth, ~50 m)
-      cover: { type: 'geojson', data: COVER },
+      gba: { type: 'geojson', data: U('map/gba.json') },
+      veil: { type: 'geojson', data: U('map/veil.json'), tolerance: 0.5 },
       trail: { type: 'geojson', data: { type: 'FeatureCollection', features: [] } },
     },
     layers: [
       { id: 'bg', type: 'background', paint: { 'background-color': C.land } },
       { id: 'hill', type: 'raster', source: 'hill', paint: { 'raster-opacity': ['interpolate', ['linear'], ['zoom'], 9, 0.5, 13, 0.65, 15, 0.4], 'raster-fade-duration': 0, 'raster-resampling': 'linear' } },
-      { id: 'dist-fill', type: 'fill', source: 'districts', filter: ['!=', ['geometry-type'], 'Point'], paint: { 'fill-color': '#FFFFFF', 'fill-opacity': ['interpolate', ['linear'], ['zoom'], 8, 0.4, 12, 0] } },
+      { id: 'dist-fill', type: 'fill', source: 'gba', filter: ['==', ['get', 'k'], 'city'], paint: { 'fill-color': '#FFFFFF', 'fill-opacity': ['interpolate', ['linear'], ['zoom'], 8, 0.45, 12, 0], 'fill-antialias': false } },
       // 海：OSM 只画海岸线，海面由 tools/sea.py 按海岸线拼出来（街道级范围内），范围外用 Natural Earth 的粗略海岸补齐。
       // 沿岸一圈浅色的柔光像浅水，靠近岸边颜色浅、往外渐深
       { id: 'sea-out', type: 'fill', source: 'seaout', paint: { 'fill-color': C.sea, 'fill-antialias': false } },
@@ -1829,7 +1833,8 @@ function buildStyle() {
       { id: 'water-line', type: 'line', source: 'osm', 'source-layer': 'water', minzoom: 11, paint: { 'line-color': C.waterLine, 'line-width': ['interpolate', ['linear'], ['zoom'], 11, 0.3, 16, 1.2], 'line-opacity': 0.55 } },
       { id: 'waterway', type: 'line', source: 'osml', 'source-layer': 'waterline', minzoom: 11, layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': C.water, 'line-width': ['interpolate', ['linear'], ['zoom'], 11, ['match', ['get', 'w'], 'river', 1, 0.4], 16, ['match', ['get', 'w'], 'river', 5, 2]] } },
       { id: 'dist-line', type: 'line', source: 'districts', filter: ['!=', ['geometry-type'], 'Point'], paint: { 'line-color': C.district, 'line-width': ['interpolate', ['linear'], ['zoom'], 8, 0.9, 13, 1.6], 'line-dasharray': [3, 2], 'line-opacity': ['interpolate', ['linear'], ['zoom'], 8, 0.55, 14, 0.22] } },
-      { id: 'cover-line', type: 'line', source: 'cover', maxzoom: 13.4, paint: { 'line-color': C.blue, 'line-width': 1.1, 'line-dasharray': [1, 2.4], 'line-opacity': ['interpolate', ['linear'], ['zoom'], 11.5, 0.55, 13.3, 0] } },
+      // 城市之间的分界（虚线），缩小时看得清，放大后淡去
+      { id: 'city-line', type: 'line', source: 'gba', maxzoom: 15, filter: ['==', ['get', 'k'], 'city'], layout: { 'line-join': 'round' }, paint: { 'line-color': C.district, 'line-width': ['interpolate', ['linear'], ['zoom'], 8, 0.8, 13, 1.4], 'line-dasharray': [4, 2.5], 'line-opacity': ['interpolate', ['linear'], ['zoom'], 8, 0.5, 12, 0.3, 15, 0] } },
       // 机场（白云机场、岑村机场）：场区、停机坪、滑行道、跑道（宽度按真实米数随缩放变化）
       { id: 'aero-area', type: 'fill', source: 'osm', 'source-layer': 'aero', minzoom: 9, filter: ['==', ['get', 'a'], 'area-aerodrome'], paint: { 'fill-color': '#E9EEF5', 'fill-opacity': ['interpolate', ['linear'], ['zoom'], 9, 0.5, 12, 0.85] } },
       { id: 'aero-apron', type: 'fill', source: 'osm', 'source-layer': 'aero', minzoom: 11, filter: ['match', ['get', 'a'], ['area-apron', 'area-taxiway', 'area-runway'], true, false], paint: { 'fill-color': '#D8E0EC' } },
@@ -1844,6 +1849,9 @@ function buildStyle() {
       { id: 'rail-metro', type: 'line', source: 'osm', 'source-layer': 'rail', minzoom: 12.5, filter: ['!=', ['get', 'k'], 'main'], paint: { 'line-color': '#7A9BD6', 'line-width': ['interpolate', ['linear'], ['zoom'], 12.5, 0.8, 17, 2.6], 'line-dasharray': [2, 1.5] } },
       ...roadLayers(false),
       ...roadLayers(true),
+      // 大湾区以外：一层雾盖住，边界画一条细细的点线
+      { id: 'veil', type: 'fill', source: 'veil', paint: { 'fill-color': '#E9EEF6', 'fill-opacity': 0.82, 'fill-antialias': false } },
+      { id: 'cover-line', type: 'line', source: 'gba', filter: ['==', ['get', 'k'], 'edge'], layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': C.blue, 'line-width': ['interpolate', ['linear'], ['zoom'], 8, 1.3, 14, 2], 'line-dasharray': [0.6, 2.2], 'line-opacity': ['interpolate', ['linear'], ['zoom'], 8, 0.7, 13, 0.45, 16, 0.2] } },
       { id: 'trail', type: 'line', source: 'trail', layout: { visibility: 'none', 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': C.blue, 'line-width': ['interpolate', ['linear'], ['zoom'], 10, 1.5, 16, 3.5], 'line-dasharray': [0.6, 1.8], 'line-opacity': 0.85 } },
       { id: 'road-label', type: 'symbol', source: 'osml', 'source-layer': 'roads', minzoom: 13.6, filter: ['all', ['has', 'n'], ['match', ['get', 'c'], ['primary', 'motorway', 'secondary'], true, false]],
         layout: { 'symbol-placement': 'line', 'text-field': ['get', 'n'], 'text-font': FONT, 'text-size': ['interpolate', ['linear'], ['zoom'], 14, 11, 18, 14.5], 'symbol-spacing': 340, 'text-max-angle': 32, 'text-padding': 4 },
@@ -1871,10 +1879,14 @@ function buildStyle() {
       { id: 'area-label', type: 'symbol', source: 'labels', minzoom: 12, maxzoom: 15.2, filter: ['==', ['get', 'd'], 1],
         layout: { 'text-field': ['get', 'n'], 'text-font': FONT, 'text-size': ['interpolate', ['linear'], ['zoom'], 12, 13, 14, 16], 'text-letter-spacing': 0.2, 'text-padding': 6 },
         paint: { 'text-color': '#1D4ED8', 'text-halo-color': 'rgba(255,255,255,0.92)', 'text-halo-width': 2, 'text-opacity': ['interpolate', ['linear'], ['zoom'], 12, 0, 12.4, 1, 14.6, 1, 15.2, 0] } },
-      { id: 'dist-label', type: 'symbol', source: 'districts', maxzoom: 12, filter: ['==', ['geometry-type'], 'Point'],
+      { id: 'dist-label', type: 'symbol', source: 'districts', minzoom: 9.3, maxzoom: 12, filter: ['==', ['geometry-type'], 'Point'],
         layout: { 'text-field': ['get', 'n'], 'text-font': FONT, 'text-size': ['interpolate', ['linear'], ['zoom'], 8, 12, 11, 15], 'text-letter-spacing': 0.3, 'text-padding': 4 },
-        paint: { 'text-color': C.blue, 'text-halo-color': 'rgba(255,255,255,0.9)', 'text-halo-width': 2, 'text-opacity': ['interpolate', ['linear'], ['zoom'], 11.4, 1, 12, 0] } },
-      { id: 'cover-label', type: 'symbol', source: 'cover', minzoom: 10.5, maxzoom: 13.2,
+        paint: { 'text-color': C.blue, 'text-halo-color': 'rgba(255,255,255,0.9)', 'text-halo-width': 2, 'text-opacity': ['interpolate', ['linear'], ['zoom'], 9.3, 0, 9.9, 1, 11.4, 1, 12, 0] } },
+      // 缩到全湾区时只写城市名
+      { id: 'city-label', type: 'symbol', source: 'gba', maxzoom: 10.4, filter: ['==', ['get', 'k'], 'label'],
+        layout: { 'text-field': ['format', ['get', 'n'], { 'font-scale': 1 }, '\n', {}, ['get', 'en'], { 'font-scale': 0.5 }], 'text-font': FONT, 'text-size': ['interpolate', ['linear'], ['zoom'], 8, 15, 10, 19], 'text-letter-spacing': 0.18, 'text-line-height': 1.25, 'text-padding': 6, 'text-allow-overlap': false },
+        paint: { 'text-color': C.text, 'text-halo-color': 'rgba(255,255,255,0.92)', 'text-halo-width': 2.2, 'text-opacity': ['interpolate', ['linear'], ['zoom'], 9.8, 1, 10.4, 0] } },
+      { id: 'cover-label', type: 'symbol', source: 'gba', minzoom: 9.6, maxzoom: 13.2, filter: ['==', ['get', 'k'], 'edge'],
         layout: { 'symbol-placement': 'line', 'text-field': ['get', 'n'], 'text-font': FONT, 'text-size': 11, 'symbol-spacing': 900, 'text-offset': [0, -0.8], 'text-letter-spacing': 0.06 },
         paint: { 'text-color': C.blue, 'text-halo-color': '#FFFFFF', 'text-halo-width': 1.6, 'text-opacity': 0.8 } },
     ],
@@ -3880,8 +3892,10 @@ async function loadPacked(path) {
 }
 function initMap() {
   if (!window.maplibregl) { $('#veil span').textContent = '地图引擎没能加载，请检查网络后刷新。'; return; }
-  // 矢量瓦片：按区域打包成 tilepack/*.json（gzip + base64），用到哪块才下载哪块
+  // 矢量瓦片：按区域打包成 tilepack/*.json（gzip + base64），用到哪块才下载哪块。
+  // 每个包不超过约 2 MB：市中心切得细，郊外一包管一大片（包名 t<级>-<格子级>-<x>-<y>，从 8 级格子往下找）
   const packNames = fetch(U('tilepack/index.json')).then((r) => r.json()).then((l) => new Set(l)).catch(() => new Set());
+  const bundleOf = (names, p, z, x, y) => { if (z <= 8) return names.has('lo') ? 'lo' : null; for (let cz = 8; cz <= z; cz++) { const n = `${p}${z}-${cz}-${x >> (z - cz)}-${y >> (z - cz)}`; if (names.has(n)) return n; } return null; };
   const packs = {};
   const pack = (n) => (packs[n] ||= fetch(U(`tilepack/${n}.json`)).then((r) => (r.ok ? r.json() : {})).catch(() => ({})));
   // 解码过的瓦片留一份（底图和文字两个数据源会各要一次），每次交出去一份拷贝
@@ -3889,8 +3903,8 @@ function initMap() {
   const unpack = async (s64) => { const bs = atob(s64), n = bs.length, u = new Uint8Array(n); for (let i = 0; i < n; i++) u[i] = bs.charCodeAt(i); return new Response(new Blob([u]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer(); };
   maplibregl.addProtocol('gzt', async (params) => {
     const key = params.url.slice('gzt://'.length); const [z, x, y] = key.split('/').map(Number);
-    const name = z <= 9 ? 'lo' : `z${z}-${x >> 2}-${y >> 2}`;
-    if (!(await packNames).has(name)) return { data: new ArrayBuffer(0) };
+    const name = bundleOf(await packNames, 't', z, x, y);
+    if (!name) return { data: new ArrayBuffer(0) };
     let hit = tcache.get(key);
     if (!hit) {
       const s64 = (await pack(name))[key];
@@ -3905,8 +3919,8 @@ function initMap() {
   const bpacks = {};
   maplibregl.addProtocol('gzb', async (params) => {
     const key = params.url.slice('gzb://'.length); const [z, x, y] = key.split('/').map(Number);
-    const name = `b${z}-${x >> 2}-${y >> 2}`;
-    if (!(await bridgeNames).has(name)) return { data: new ArrayBuffer(0) };
+    const name = bundleOf(await bridgeNames, 'b', z, x, y);
+    if (!name) return { data: new ArrayBuffer(0) };
     const s64 = (await (bpacks[name] ||= fetch(U(`bridgepack/${name}.json`)).then((r) => (r.ok ? r.json() : {})).catch(() => ({}))))[key];
     if (!s64) return { data: new ArrayBuffer(0) };
     return { data: await unpack(s64) };
@@ -3918,8 +3932,8 @@ function initMap() {
   map = new maplibregl.Map({
     container: 'map', style: buildStyle(),
     center: [113.31, 23.11], zoom: 10.2, pitch: 0, bearing: 0,
-    minZoom: 8.6, maxZoom: 18.6, maxPitch: 85,
-    maxBounds: [[112.6, 21.75], [114.8, 24.05]],
+    minZoom: 7.2, maxZoom: 18.6, maxPitch: 85,
+    maxBounds: [[110.0, 20.4], [116.8, 25.4]],
     localIdeographFontFamily: '"Noto Sans SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC","Noto Sans CJK TC",sans-serif',
     attributionControl: false, fadeDuration: 180, dragRotate: true, touchPitch: true,
     antialias: (window.devicePixelRatio || 1) < 2,
@@ -6404,7 +6418,8 @@ const NIGHT_PAINT = [
   ['rail-case', 'line-color', '#33476B'], ['rail-dash', 'line-color', '#0A1426'], ['rail-metro', 'line-color', '#4E6FB0'], ['path', 'line-color', '#2C3F63'],
   ['road-label', 'text-color', '#C3D2EC'], ['road-label-minor', 'text-color', '#8FA3C6'], ['place-label', 'text-color', '#9DB8E8'],
   ['poi-label', 'text-color', '#BCD3FB'], ['bridge-label', 'text-color', '#9FB2D4'], ['area-label', 'text-color', '#8FB2F5'],
-  ['dist-label', 'text-color', '#7AA7FF'], ['cover-label', 'text-color', '#7AA7FF'],
+  ['dist-label', 'text-color', '#7AA7FF'], ['cover-label', 'text-color', '#7AA7FF'], ['city-label', 'text-color', '#C3D2EC'], ['city-label', 'text-halo-color', NIGHT_HALO],
+  ['veil', 'fill-color', '#0A1426'], ['city-line', 'line-color', '#3A62B0'], ['cover-line', 'line-color', '#5B8DEF'],
   ['aero-area', 'fill-color', '#0F1B31'], ['aero-apron', 'fill-color', '#18253D'], ['aero-taxi', 'line-color', '#1F2E4A'], ['aero-runway', 'line-color', '#2A3B5C'],
   ['aero-runway-line', 'line-color', '#B9C9E6'], ['aero-label', 'text-color', '#8FB2F5'], ['aero-ref', 'text-color', '#9FB2D4'],
   ['poi-dot', 'circle-color', '#60A5FA'], ['poi-dot', 'circle-stroke-color', '#0A1426'],
