@@ -1117,7 +1117,9 @@ const SITE = {
     { id: 'dg', name: '东莞', en: 'DONGGUAN', center: [113.752, 23.022], zoom: 12.9, ready: true },
     { id: 'sz', name: '深圳', en: 'SHENZHEN', center: [114.03, 22.54], zoom: 12.3, ready: true },
     { id: 'hk', name: '香港', en: 'HONG KONG', center: [114.168, 22.3], zoom: 12.6, ready: true },
-    { id: 'mo', name: '澳门', en: 'MACAU', ready: false },
+    { id: 'zs', name: '中山', en: 'ZHONGSHAN', center: [113.385, 22.52], zoom: 12.4, ready: true },
+    { id: 'zh', name: '珠海', en: 'ZHUHAI', center: [113.555, 22.255], zoom: 12.4, ready: true },
+    { id: 'mo', name: '澳门', en: 'MACAU', center: [113.555, 22.165], zoom: 13.1, ready: true },
   ],
 
   // 吃饭地图 —— 广州，按菜式整理；score 满分 10，没打分的写 null
@@ -1757,9 +1759,9 @@ const C = {
   rail: '#8DA2C3', text: '#1C3463', textSoft: '#5A73A3', district: '#3B82F6', blue: '#2563EB',
 };
 const HILL = [[113.115234, 23.32208], [113.510742, 23.32208], [113.510742, 22.998852], [113.115234, 22.998852]];
-// 街道级细节覆盖的范围：广州主城区到白云机场、佛山主城区、东莞、深圳、香港全境，连成一片
-const COVER = { type: 'Feature', properties: { n: '街道级细节 · 广州 · 佛山 · 东莞 · 深圳 · 香港' }, geometry: { type: 'LineString', coordinates: [[112.98, 22.74], [113.33, 22.74], [113.33, 22.92], [113.65, 22.92], [113.65, 22.61], [113.86, 22.61], [113.86, 22.58], [113.81, 22.58], [113.81, 22.13], [114.45, 22.13], [114.45, 22.58], [114.18, 22.58], [114.18, 22.61], [114.19, 22.61], [114.19, 22.95], [113.84, 22.95], [113.84, 23.1], [113.67, 23.1], [113.67, 23.12], [113.56, 23.12], [113.56, 23.46], [113.15, 23.46], [113.15, 23.14], [112.98, 23.14], [112.98, 22.74]] } };
-const DATA_BOUNDS = [112.98, 22.13, 114.45, 23.46];
+// 街道级细节覆盖的范围：广州主城区到白云机场、佛山主城区、东莞、深圳、香港全境，加上伶仃洋西岸的南沙、中山、珠海、澳门，连成一片
+const COVER = { type: 'Feature', properties: { n: '街道级细节 · 广州 · 佛山 · 东莞 · 深圳 · 香港 · 中山 · 珠海 · 澳门' }, geometry: { type: 'LineString', coordinates: [[113.25, 21.95], [113.82, 21.95], [113.82, 22.13], [114.45, 22.13], [114.45, 22.58], [114.18, 22.58], [114.18, 22.61], [114.19, 22.61], [114.19, 22.95], [113.84, 22.95], [113.84, 23.1], [113.67, 23.1], [113.67, 23.12], [113.56, 23.12], [113.56, 23.46], [113.15, 23.46], [113.15, 23.14], [112.98, 23.14], [112.98, 22.74], [113.25, 22.74], [113.25, 21.95]] } };
+const DATA_BOUNDS = [112.98, 21.95, 114.45, 23.46];
 const FONT = ['Noto Sans Regular'];
 const HOME = () => ({ center: mq.matches ? [113.266, 23.117] : [113.274, 23.117], zoom: mq.matches ? 11.9 : 12.6, pitch: 48, bearing: 18.7 });
 const zi = (stops) => ['interpolate', ['exponential', 1.55], ['zoom'], ...stops.flat()];
@@ -3917,7 +3919,7 @@ function initMap() {
     container: 'map', style: buildStyle(),
     center: [113.31, 23.11], zoom: 10.2, pitch: 0, bearing: 0,
     minZoom: 8.6, maxZoom: 18.6, maxPitch: 85,
-    maxBounds: [[112.6, 21.95], [114.8, 24.05]],
+    maxBounds: [[112.6, 21.75], [114.8, 24.05]],
     localIdeographFontFamily: '"Noto Sans SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC","Noto Sans CJK TC",sans-serif',
     attributionControl: false, fadeDuration: 180, dragRotate: true, touchPitch: true,
     antialias: (window.devicePixelRatio || 1) < 2,
