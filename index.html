@@ -6539,6 +6539,14 @@ const Metro = {
     if (quiet && (force || !note.dataset.on)) { const S = this.sysNow(), h0 = S.h0; note.dataset.on = '1'; note.innerHTML = `${S.name}已经收车了，首班车 ${Math.floor(h0)}:${String(Math.round((h0 % 1) * 60)).padStart(2, '0')} 从各线起点站发出 <button type="button" class="sky-pill" data-skip>快进到明早 7:00</button>`; }
     if (!quiet) delete note.dataset.on;
     const box = $('#subInfo'); if (box.hidden) return;
+    // the close and follow buttons stay put; only the text under them is redrawn (redrawing the buttons every
+    // quarter second swallowed clicks: the button under the pointer was gone between press and release)
+    const kind = this.sel ? 't:' + this.sel : this.selSt ? 's:' + this.selSt.name : '';
+    if (box.dataset.k !== kind) {
+      box.dataset.k = kind;
+      box.innerHTML = `<button class="sky-btn x" data-x aria-label="关闭">${ICONS.close}</button><div data-body></div>${this.sel ? `<button type="button" class="sky-pill" data-follow aria-pressed="${this.follow}">${this.follow ? '停止跟随' : '跟着这列车'}</button>` : ''}`;
+    }
+    const body = box.querySelector('[data-body]'); let html = '';
     if (this.sel) {
       const t = this.selTrain; if (!t) return;
       const line = t.svc.line, tr = t.tr, q = t.q;
@@ -6551,17 +6559,15 @@ const Metro = {
         now = tr.st[j].n ? `下一站 ${tr.st[j].n} · 约 ${this.fmt(tr.arr[j] - t.tau)}` : '开往地图外的下一站';
       }
       const left = tr.st.slice(q.k + (q.stop ? 0 : 1)).filter((o) => o.n).length;
-      box.innerHTML = `<button class="sky-btn x" data-x aria-label="关闭">${ICONS.close}</button>
-        <div class="k"><i style="background:${line.vis}"></i>${line.name}${t.svc.loop ? '' : ' · 开往'}</div><h3>${tr.to}</h3>
+      html = `<div class="k"><i style="background:${line.vis}"></i>${line.name}${t.svc.loop ? '' : ' · 开往'}</div><h3>${tr.to}</h3>
         <p class="sub-now">${now}</p>
-        <table><tr><td>速度</td><td>${Math.round(q.v * 3.6)} km/h</td></tr><tr><td>列车长</td><td>约 ${line.tlen} 米</td></tr><tr><td>还剩</td><td>${left} 站</td></tr></table>
-        <button type="button" class="sky-pill" data-follow aria-pressed="${this.follow}">${this.follow ? '停止跟随' : '跟着这列车'}</button>`;
+        <table><tr><td>速度</td><td>${Math.round(q.v * 3.6)} km/h</td></tr><tr><td>列车长</td><td>约 ${line.tlen} 米</td></tr><tr><td>还剩</td><td>${left} 站</td></tr></table>`;
     } else if (this.selSt) {
       const s = this.selSt, rows = this.board(s);
-      box.innerHTML = `<button class="sky-btn x" data-x aria-label="关闭">${ICONS.close}</button>
-        <div class="k">${s.lines.map((l) => `<i style="background:${l.vis}"></i>`).join('')}${s.lines.map((l) => l.name).join(' · ')}</div><h3>${s.name}</h3>
+      html = `<div class="k">${s.lines.map((l) => `<i style="background:${l.vis}"></i>`).join('')}${s.lines.map((l) => l.name).join(' · ')}</div><h3>${s.name}</h3>
         <table>${rows.length ? rows.map((r) => `<tr><td><i style="background:${r.line.vis}"></i>往 ${r.to}</td><td>${r.eta < 30 ? '进站中' : r.eta < 3600 ? Math.ceil(r.eta / 60) + ' 分钟' : `${r.first ? '首班 ' : ''}${String(Math.floor(r.at / 3600) % 24).padStart(2, '0')}:${String(Math.floor((r.at % 3600) / 60)).padStart(2, '0')}`}</td></tr>`).join('') : '<tr><td>今天的车已经开完了</td><td></td></tr>'}</table>`;
     }
+    if (body && body._h !== html) { body._h = html; body.innerHTML = html; }
   },
   board(s) {   // the next train each way at a station
     const { day, sec } = this.clock(), best = new Map();
