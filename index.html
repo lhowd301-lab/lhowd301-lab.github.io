@@ -111,6 +111,10 @@ body.sunk .maplibregl-marker,body.sunk .look-hint{visibility:hidden}
 .sub-clock small{font-size:11.5px;color:#8FB0EA}
 .sub-speed{display:flex;gap:6px}
 .sub-lines{position:absolute;left:max(16px,env(safe-area-inset-left,0px));top:calc(78px + env(safe-area-inset-top,0px));width:250px;max-height:calc(100% - 128px);overflow:auto;display:flex;flex-direction:column;gap:1px;padding:8px;border-radius:16px;background:rgba(8,18,40,.62);border:1px solid rgba(147,197,253,.18);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);pointer-events:auto;scrollbar-width:thin;scrollbar-color:rgba(147,197,253,.3) transparent}
+.sub-sys{display:flex;flex-wrap:wrap;gap:4px;padding:2px 2px 8px;margin-bottom:4px;border-bottom:1px solid rgba(147,197,253,.14)}
+.sub-sys button{border:1px solid rgba(147,197,253,.22);background:rgba(15,30,60,.45);color:#C9DAF8;font-size:12px;padding:3px 10px;border-radius:999px;cursor:pointer;font-family:inherit}
+.sub-sys button:hover{background:rgba(59,130,246,.22)}
+.sub-sys button[aria-pressed="true"]{background:rgba(37,99,235,.62);border-color:transparent;color:#fff}
 .sub-line{display:grid;grid-template-columns:auto auto minmax(0,1fr);align-items:center;gap:8px;padding:5px 8px;border-radius:10px;border:0;background:none;color:#DCE7FA;text-align:left;font-size:12.5px;cursor:pointer}
 .sub-line i{width:18px;height:6px;border-radius:3px}
 .sub-lines-h{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:2px 8px 6px;border:0;background:none;color:#8FB0EA;font-size:11px;letter-spacing:.14em;cursor:pointer;text-align:left}
@@ -941,7 +945,7 @@ body.pure .pet-dock,body.pure .pet-bubble{display:none!important}
 <canvas id="subLines" aria-hidden="true"></canvas>
 <canvas id="subTrains" aria-hidden="true"></canvas>
 <button class="pull-hint sink-hint" id="sinkHint" type="button" tabindex="-1"><span class="ring" aria-hidden="true"><svg viewBox="0 0 30 30"><circle class="trk" cx="15" cy="15" r="12"/><circle class="prog" cx="15" cy="15" r="12"/></svg><i>↓</i></span><b>潜入城市之下</b><span id="sinkHow">按住右键继续往下拖</span></button>
-<section class="subway" id="sub" hidden aria-label="城市之下：广州地铁模拟运行">
+<section class="subway" id="sub" hidden aria-label="城市之下：大湾区地铁模拟运行">
   <div class="sub-top">
     <button class="sky-pill sub-back" id="subBack" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>回到地面</button>
     <div class="sky-title sub-title"><h2>城市之下</h2><p id="subStat">广州地铁</p></div>
@@ -6001,7 +6005,7 @@ const LookUp = {
 
 /* ===================================================================== 城市之下：往下拉，看见地底的地铁
    With the map looking straight down, keep pulling downward: the streets dim to a ghost and the real
-   Guangzhou metro comes up from below them, trains running on it. Every train leaves its terminus on a
+   metro of the city under the map (广州、深圳、香港、佛山、东莞、澳门) comes up from below them, trains running on it. Every train leaves its terminus on a
    timetable, speeds up, cruises, brakes into the next station and waits there; the clock is Guangzhou
    time. Track and stations are OpenStreetMap's (tools/metro.py → map/metro.json); headways and speeds
    are typical values for each line, not the operator's own timetable. */
@@ -6084,9 +6088,13 @@ const Metro = {
       await new Promise((r) => setTimeout(r, reduceMotion ? 0 : 680));
     }
     this.start();
+    // which city's metro: the one under the middle of the map (or the nearest); fly over if it is off screen
+    const S = this.pickSystem(), sb = S.box, cc = maplibregl.MercatorCoordinate.fromLngLat(map.getCenter()), sm = (sb[2] - sb[0]) * 0.15;
+    if (S.id !== this.cur) { this.cur = S.id; this.fillUI(); }
+    const far = cc.x < sb[0] - sm || cc.x > sb[2] + sm || cc.y < sb[1] - sm || cc.y > sb[3] + sm;
     // underground the panels are different: centre the view in the space they leave
     const pad = mq.matches ? { top: 110, bottom: 60, left: 0, right: 0 } : { top: 60, bottom: 20, left: 270, right: 0 };
-    map.easeTo({ padding: pad, duration: reduceMotion ? 0 : 900, essential: true });
+    if (far) this.fitSystem(S, 1200); else map.easeTo({ padding: pad, duration: reduceMotion ? 0 : 900, essential: true });
     await this.anim(this.p, 1, 900);
     this.on = true; this.busy = false; this.acc = 0; this.place();
     this.wasNight = Night.on; if (!Night.on) Night.set(true, false);
@@ -6126,9 +6134,11 @@ const Metro = {
     const KX = 111320 * Math.cos(23.12 * D2R), KY = 110574;
     const mY = (lat) => (180 - (180 / Math.PI) * Math.log(Math.tan(Math.PI / 4 + lat * D2R / 2))) / 360;
     this.hours = D.hours; this.lines = []; this.svcs = [];
+    this.systems = (D.systems || [{ id: 'gz', name: '广州地铁', tl: '有轨电车' }]).map((s) => ({ ...s, box: [1, 1, 0, 0], h0: 99, h1: 0 }));
+    const sysById = Object.fromEntries(this.systems.map((s) => [s.id, s]));
     const named = new Map();
     for (const L of D.lines) {
-      const line = { id: L.id, name: L.name, kind: L.kind, color: L.color, vis: this.vis(L.color), tlen: L.tlen, v: (L.vmax / 3.6) * (L.kind === 'tram' ? 0.72 : 0.9), a: L.acc, svc: [], box: [1, 1, 0, 0] };
+      const line = { id: L.id, sys: L.sys || ['gz'], hours: L.hours, name: L.name, kind: L.kind, color: L.color || '#7A9BD6', vis: this.vis(L.color || '#7A9BD6'), tlen: L.tlen, v: (L.vmax / 3.6) * (L.kind === 'tram' ? 0.72 : 0.9), a: L.acc, svc: [], box: [1, 1, 0, 0] };
       L.svc.forEach((S, si) => {
         const n = S.p.length / 2, mx = new Float64Array(n), my = new Float64Array(n), cs = new Float64Array(n);
         let X = 0, Y = 0, pl = 0, pt = 0;
@@ -6144,7 +6154,11 @@ const Metro = {
         line.svc.push(svc); this.svcs.push(svc);
       });
       this.lines.push(line);
+      const hh = (line.hours || this.hours[line.kind] || this.hours.metro).map((t) => { const [h, m] = t.split(':'); return +h + m / 60; });
+      for (const id of line.sys) { const S = sysById[id]; if (!S) continue; S.box = [Math.min(S.box[0], line.box[0]), Math.min(S.box[1], line.box[1]), Math.max(S.box[2], line.box[2]), Math.max(S.box[3], line.box[3])]; if (line.kind !== 'tram') { S.h0 = Math.min(S.h0, hh[0]); S.h1 = Math.max(S.h1, hh[1]); } }
     }
+    for (const S of this.systems) if (S.h1 === 0) { S.h0 = 6; S.h1 = 23; }
+    this.cur = this.cur || this.systems[0].id;
     // one marker per station: the lines that meet there, at the middle of their platforms
     this.stations = []; this.inter = new Set();
     for (const [name, arr] of named) {
@@ -6214,7 +6228,7 @@ const Metro = {
   },
   deps(svc, dir, wk) {   // the day's departures from this direction's first station (seconds after midnight)
     const k = dir * 2 + wk; if (svc.deps[k]) return svc.deps[k];
-    const [h0, h1] = (this.hours[svc.line.kind] || this.hours.metro).map((s) => { const [h, m] = s.split(':'); return h * 3600 + m * 60; });
+    const [h0, h1] = (svc.line.hours || this.hours[svc.line.kind] || this.hours.metro).map((s) => { const [h, m] = s.split(':'); return h * 3600 + m * 60; });
     const out = []; let t = h0 + ((dir ? 0.45 : 0) + svc.si * 0.5) * svc.hw[2] * 60;
     while (t <= h1) { out.push(t); t += this.hwAt(svc, t, wk) * 60; }
     return (svc.deps[k] = Float64Array.from(out));
@@ -6362,7 +6376,7 @@ const Metro = {
     if (k <= 0.01) return;
     const trains = this.update(), { w, tw } = this.widths(V), D = V.depth, hi = this.hi;
     const selT = this.sel ? trains.find((t) => t.id === this.sel) : null;
-    this.selTrain = selT; this.running = trains.length;
+    this.selTrain = selT; this.running = trains.reduce((n, t) => n + (t.svc.line.sys.includes(this.cur) ? 1 : 0), 0);
     ctx.lineCap = ctx.lineJoin = 'round';
     for (const t of trains) {
       const svc = t.svc, line = svc.line, half = line.tlen / 2, s = this.sOf(svc, t.dir, t.q.u);
@@ -6461,26 +6475,49 @@ const Metro = {
       this.setClock(to * 864e5 + 7 * 3600e3 - 60e3, 10); this.ui(true);
     });
   },
+  sysNow() { return this.systems.find((s) => s.id === this.cur) || this.systems[0]; },
+  pickSystem() {   // the system under (or nearest to) the middle of the map
+    const c = maplibregl.MercatorCoordinate.fromLngLat(map.getCenter()); let best = null;
+    for (const S of this.systems) { const b = S.box, dx = Math.max(b[0] - c.x, 0, c.x - b[2]), dy = Math.max(b[1] - c.y, 0, c.y - b[3]), d = Math.hypot(dx, dy) + Math.hypot(c.x - (b[0] + b[2]) / 2, c.y - (b[1] + b[3]) / 2) * 0.05; if (!best || d < best[0]) best = [d, S]; }
+    return best[1];
+  },
+  fitSystem(S, ms) {
+    const b = S.box, c0 = new maplibregl.MercatorCoordinate(b[0], b[3]).toLngLat(), c1 = new maplibregl.MercatorCoordinate(b[2], b[1]).toLngLat();
+    const pad = mq.matches ? { top: 150, bottom: 120, left: 24, right: 24 } : { top: 90, bottom: 50, left: 290, right: 50 };
+    map.fitBounds([[c0.lng, c0.lat], [c1.lng, c1.lat]], { padding: pad, duration: reduceMotion ? 0 : ms, maxZoom: 12.4, essential: true });
+  },
+  setSystem(id, fly) {
+    if (!this.systems.some((s) => s.id === id)) return;
+    this.cur = id; this.highlight(null); this.select(null); this.fillUI(); this.key = '';
+    if (fly) this.fitSystem(this.sysNow(), 1100);
+  },
   fillUI() {
     const list = $('#subLinesList'); list.innerHTML = '';
+    if (this.systems.length > 1) {
+      const tabs = document.createElement('div'); tabs.className = 'sub-sys'; tabs.setAttribute('role', 'group'); tabs.setAttribute('aria-label', '城市');
+      for (const S of this.systems) { const b = document.createElement('button'); b.type = 'button'; b.dataset.sys = S.id; b.setAttribute('aria-pressed', String(S.id === this.cur)); b.textContent = S.city || S.name; b.title = S.name; b.addEventListener('click', () => { if (S.id !== this.cur) this.setSystem(S.id, true); }); tabs.appendChild(b); }
+      list.appendChild(tabs);
+    }
     const h = document.createElement('button'); h.type = 'button'; h.className = 'sub-lines-h'; h.setAttribute('aria-expanded', 'true');
     h.innerHTML = `<span>线路 <small>点一条只看它</small></span>${ICONS.down}`;
     h.addEventListener('click', () => { const min = list.classList.toggle('min'); h.setAttribute('aria-expanded', String(!min)); });
     list.appendChild(h);
     for (const line of this.lines) {
+      if (!line.sys.includes(this.cur)) continue;
       const b = document.createElement('button');
       b.className = 'sub-line'; b.type = 'button'; b.dataset.line = line.id; b.setAttribute('aria-pressed', 'false'); b.setAttribute('role', 'listitem');
-      const svc = line.svc[0], ends = line.svc.length > 1 && line.id === '14' ? '含知识城支线' : svc.loop ? '环线' : `${svc.a} ⇄ ${svc.b}`;
+      const svc = line.svc[0], ends = line.svc.length > 1 && line.id === '14' ? '含知识城支线' : svc.loop ? '环线' : `${svc.a} ⇄ ${svc.b}${line.svc.length > 1 ? ' 等' : ''}`;
       b.innerHTML = `<i style="background:${line.vis}"></i><b>${line.name}</b><small>${ends}</small>`;
       b.addEventListener('click', () => this.highlight(line));
       list.appendChild(b);
     }
-    const nMetro = this.lines.filter((l) => l.kind !== 'tram').length, nSt = this.stations.length;
-    $('#subStat').textContent = `广州地铁 · ${nMetro} 条线路 · 有轨电车 3 条 · ${nSt} 座车站`;
+    const S = this.sysNow(), mine = this.lines.filter((l) => l.sys.includes(S.id)), nMetro = mine.filter((l) => l.kind !== 'tram').length, nTram = mine.length - nMetro;
+    const nSt = this.stations.filter((st) => st.lines.some((l) => l.sys.includes(S.id))).length;
+    $('#subStat').textContent = `${S.name} · ${nMetro} 条线路${nTram ? ` · ${S.tl || '有轨电车'} ${nTram} 条` : ''} · ${nSt} 座车站`;
   },
   period(sec, wk, n) {
-    const h = sec / 3600;
-    if (h < 6 || h >= 23.6) return n ? '末班车' : '收车';
+    const h = sec / 3600, S = this.sysNow(), late = S.h1 >= 24 && h < S.h1 - 24 + 0.4;
+    if (!late && (h < S.h0 || h >= S.h1 + 0.4)) return n ? '末班车' : '收车';
     if (!wk && h >= 7.5 && h < 9.5) return '早高峰';
     if (!wk && h >= 17 && h < 19.5) return '晚高峰';
     if (h >= (wk ? 8 : 9.5) && h < 21.5) return wk ? '周末' : '平峰';
@@ -6499,7 +6536,7 @@ const Metro = {
     $('#sub').querySelectorAll('[data-speed]').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.speed === this.speed)));
     const note = $('#subNote'), quiet = n === 0;
     note.hidden = !quiet;
-    if (quiet && (force || !note.dataset.on)) { note.dataset.on = '1'; note.innerHTML = `已经收车了，首班车 6:00 从各线起点站发出 <button type="button" class="sky-pill" data-skip>快进到明早 7:00</button>`; }
+    if (quiet && (force || !note.dataset.on)) { const S = this.sysNow(), h0 = S.h0; note.dataset.on = '1'; note.innerHTML = `${S.name}已经收车了，首班车 ${Math.floor(h0)}:${String(Math.round((h0 % 1) * 60)).padStart(2, '0')} 从各线起点站发出 <button type="button" class="sky-pill" data-skip>快进到明早 7:00</button>`; }
     if (!quiet) delete note.dataset.on;
     const box = $('#subInfo'); if (box.hidden) return;
     if (this.sel) {
