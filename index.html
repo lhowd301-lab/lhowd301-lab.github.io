@@ -10,6 +10,8 @@
 <meta name="description" content="Beyond Horizons：Howard Leong 的个人主页，把吃过的餐厅、扫街照片、地标、日记和星空放在广州的街道地图上。">
 <style>@font-face{font-family:"JetBrains Mono";font-style:normal;font-weight:400;font-display:swap;src:url(vendor/fonts/jetbrains-mono-latin-400-normal.woff2) format("woff2")}@font-face{font-family:"JetBrains Mono";font-style:normal;font-weight:500;font-display:swap;src:url(vendor/fonts/jetbrains-mono-latin-500-normal.woff2) format("woff2")}@font-face{font-family:"JetBrains Mono";font-style:normal;font-weight:600;font-display:swap;src:url(vendor/fonts/jetbrains-mono-latin-600-normal.woff2) format("woff2")}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <style>
+/* 元素带 hidden 就一定藏起来：很多面板自己写了 display，单靠浏览器默认的 hidden 盖不住（以前靠宿主页面补这一条，现在自己写上） */
+[hidden]{display:none!important}
 /* Layout: full-bleed street map; glass instrument panels pinned to the edges like a globe viewer's HUD.
    Left column = identity + layers, top = time & sound, right = orientation + places. */
 :root{
