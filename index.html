@@ -113,6 +113,8 @@ body.sunk .maplibregl-marker,body.sunk .look-hint{visibility:hidden}
 .sub-clock small{font-size:11.5px;color:#8FB0EA}
 .sub-speed{display:flex;gap:6px}
 .sub-lines{position:absolute;left:max(16px,env(safe-area-inset-left,0px));top:calc(78px + env(safe-area-inset-top,0px));width:250px;max-height:calc(100% - 128px);overflow:auto;display:flex;flex-direction:column;gap:1px;padding:8px;border-radius:16px;background:rgba(8,18,40,.62);border:1px solid rgba(147,197,253,.18);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);pointer-events:auto;scrollbar-width:thin;scrollbar-color:rgba(147,197,253,.3) transparent}
+.sub-lines.flash{animation:subFlash .6s ease}
+@keyframes subFlash{0%{border-color:rgba(147,197,253,.7);box-shadow:0 0 0 3px rgba(59,130,246,.25)}100%{border-color:rgba(147,197,253,.18);box-shadow:none}}
 .sub-sys{display:flex;flex-wrap:wrap;gap:4px;padding:2px 2px 8px;margin-bottom:4px;border-bottom:1px solid rgba(147,197,253,.14)}
 .sub-sys button{border:1px solid rgba(147,197,253,.22);background:rgba(15,30,60,.45);color:#C9DAF8;font-size:12px;padding:3px 10px;border-radius:999px;cursor:pointer;font-family:inherit}
 .sub-sys button:hover{background:rgba(59,130,246,.22)}
@@ -6032,6 +6034,7 @@ const Metro = {
     el.addEventListener('keydown', (e) => { if (e.shiftKey && e.key === 'ArrowDown' && this.atBottom() && !this.on) { this.push(60); clearTimeout(this._kt); this._kt = setTimeout(() => this.release(), 900); } });
     $('#sinkHint').addEventListener('click', () => this.go());
     map.on('move', () => this.place());
+    map.on('moveend', () => this.autoSystem());
     // the first time the map is laid flat, say once that there is something underneath
     map.on('pitchend', (e) => {
       const byHand = (e && e.originalEvent) || this.userFlat; this.userFlat = false;
@@ -6096,7 +6099,7 @@ const Metro = {
     const far = cc.x < sb[0] - sm || cc.x > sb[2] + sm || cc.y < sb[1] - sm || cc.y > sb[3] + sm;
     // underground the panels are different: centre the view in the space they leave
     const pad = mq.matches ? { top: 110, bottom: 60, left: 0, right: 0 } : { top: 60, bottom: 20, left: 270, right: 0 };
-    if (far) this.fitSystem(S, 1200); else map.easeTo({ padding: pad, duration: reduceMotion ? 0 : 900, essential: true });
+    if (far) { this.noAuto = true; this.fitSystem(S, 1200); } else map.easeTo({ padding: pad, duration: reduceMotion ? 0 : 900, essential: true });
     await this.anim(this.p, 1, 900);
     this.on = true; this.busy = false; this.acc = 0; this.place();
     this.wasNight = Night.on; if (!Night.on) Night.set(true, false);
@@ -6478,10 +6481,31 @@ const Metro = {
     });
   },
   sysNow() { return this.systems.find((s) => s.id === this.cur) || this.systems[0]; },
-  pickSystem() {   // the system under (or nearest to) the middle of the map
+  // the city whose station is nearest the middle of the map (a station that two systems share keeps the current one);
+  // with the distance to that station, in mercator units
+  nearest() {
     const c = maplibregl.MercatorCoordinate.fromLngLat(map.getCenter()); let best = null;
-    for (const S of this.systems) { const b = S.box, dx = Math.max(b[0] - c.x, 0, c.x - b[2]), dy = Math.max(b[1] - c.y, 0, c.y - b[3]), d = Math.hypot(dx, dy) + Math.hypot(c.x - (b[0] + b[2]) / 2, c.y - (b[1] + b[3]) / 2) * 0.05; if (!best || d < best[0]) best = [d, S]; }
-    return best[1];
+    for (const st of this.stations) { const d = Math.hypot(st.x - c.x, st.y - c.y); if (!best || d < best[0]) best = [d, st]; }
+    if (!best) return { S: this.sysNow(), d: Infinity };
+    const ids = [...new Set(best[1].lines.flatMap((l) => l.sys))];
+    let id = ids.includes(this.cur) ? this.cur : ids[0];
+    if (!ids.includes(this.cur) && ids.length > 1) {   // a station on a shared line (广佛线): go by the nearest station only one of them has
+      let bd = Infinity;
+      for (const st of this.stations) { const own = new Set(st.lines.flatMap((l) => l.sys)); if (own.size !== 1) continue; const o = [...own][0]; if (!ids.includes(o)) continue; const dd = Math.hypot(st.x - c.x, st.y - c.y); if (dd < bd) { bd = dd; id = o; } }
+    }
+    return { S: this.systems.find((x) => x.id === id) || this.sysNow(), d: best[0] };
+  },
+  pickSystem() { return this.nearest().S; },
+  // dragged over to another city: its lines and numbers take over the panel (no flying, nothing else changes)
+  autoSystem() {
+    if (!this.on || this.busy || !this.D) return;
+    if (this.noAuto) { this.noAuto = false; return; }
+    if (this.follow && this.selTrain && this.selTrain.svc.line.sys.includes(this.cur)) return;
+    const { S, d } = this.nearest();
+    if (S.id === this.cur || d > 4e-4) return;   // more than ~15 km from any station: stay put
+    if (this.hi && !this.hi.sys.includes(S.id)) this.highlight(null);
+    this.cur = S.id; this.fillUI(); this.key = '';
+    const list = $('#subLinesList'); list.classList.remove('flash'); void list.offsetWidth; list.classList.add('flash'); list.addEventListener('animationend', () => list.classList.remove('flash'), { once: true });
   },
   fitSystem(S, ms) {
     const b = S.box, c0 = new maplibregl.MercatorCoordinate(b[0], b[3]).toLngLat(), c1 = new maplibregl.MercatorCoordinate(b[2], b[1]).toLngLat();
@@ -6491,7 +6515,7 @@ const Metro = {
   setSystem(id, fly) {
     if (!this.systems.some((s) => s.id === id)) return;
     this.cur = id; this.highlight(null); this.select(null); this.fillUI(); this.key = '';
-    if (fly) this.fitSystem(this.sysNow(), 1100);
+    if (fly) { this.noAuto = true; this.fitSystem(this.sysNow(), 1100); }
   },
   fillUI() {
     const list = $('#subLinesList'); list.innerHTML = '';
@@ -6507,7 +6531,7 @@ const Metro = {
     for (const line of this.lines) {
       if (!line.sys.includes(this.cur)) continue;
       const b = document.createElement('button');
-      b.className = 'sub-line'; b.type = 'button'; b.dataset.line = line.id; b.setAttribute('aria-pressed', 'false'); b.setAttribute('role', 'listitem');
+      b.className = 'sub-line'; b.type = 'button'; b.dataset.line = line.id; b.setAttribute('aria-pressed', String(this.hi === line)); b.setAttribute('role', 'listitem');
       const svc = line.svc[0], ends = line.svc.length > 1 && line.id === '14' ? '含知识城支线' : svc.loop ? '环线' : `${svc.a} ⇄ ${svc.b}${line.svc.length > 1 ? ' 等' : ''}`;
       b.innerHTML = `<i style="background:${line.vis}"></i><b>${line.name}</b><small>${ends}</small>`;
       b.addEventListener('click', () => this.highlight(line));
