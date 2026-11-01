@@ -184,7 +184,9 @@ body.sunk .maplibregl-marker,body.sunk .look-hint{visibility:hidden}
 .col-left > *{pointer-events:auto}
 .col-right{grid-area:right;display:flex;flex-direction:column;align-items:flex-end;gap:12px;min-height:0;pointer-events:none}
 .col-right > *{pointer-events:auto}
-#ui > .col-left,#ui > .col-right{pointer-events:none}   /* the columns themselves let clicks and drags through to the map; only what is in them catches the pointer */
+#ui > .col-left,#ui > .col-right{pointer-events:none}
+/* the left column runs all the way down to the coordinates box: the zoom buttons' height (bottom right) is no business of its */
+@media (min-width:1024px){ #ui > .col-left{grid-row:1 / 4;padding-bottom:calc(var(--sh,52px) + 12px)} }   /* the columns themselves let clicks and drags through to the map; only what is in them catches the pointer */
 
 /* ---------- profile */
 .profile{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px 10px 10px 10px;border-radius:var(--r-lg)}
@@ -252,7 +254,20 @@ body.sunk .maplibregl-marker,body.sunk .look-hint{visibility:hidden}
   #ui.city-min .city-pill{display:flex}
   .cities{animation:pop .22s ease-out}
 }
-.friends{border-radius:var(--r-lg);padding:10px 12px 12px;min-height:0;overflow:auto}
+.friends{border-radius:var(--r-lg);padding:10px 12px 12px;flex:none}
+/* when the left column runs short of height (fitLeft), the friends become a row of small chips, then the nav tightens,
+   and on a very short window the friends move out to the profile drawer (tap the avatar), rather than being squeezed */
+#ui.fr-chip .friends{display:flex;flex-wrap:wrap;align-items:center;gap:5px 6px;padding:8px 10px 10px}
+#ui.fr-chip .friends h2{width:100%;margin:0 0 1px}
+#ui.fr-chip .friend{padding:3px 10px 3px 3px;border-radius:999px;background:var(--ice-2);gap:6px;max-width:100%}
+#ui.fr-chip .friend:hover{background:var(--ice)}
+#ui.fr-chip .friend .fav{width:22px;height:22px;font-size:11px;background:var(--white)}
+#ui.fr-chip .friend .ft b{font-size:12px;white-space:nowrap}
+#ui.fr-chip .friend .ft small{display:none}
+#ui.fr-hide .friends{display:none}
+#ui.tight .nav{padding:6px}
+#ui.tight .nav-btn{padding:4px 8px}
+#ui.tight .nav-btn .ic{width:32px;height:32px}
 .friends h2{margin:0 0 6px;font-size:11px;font-weight:500;letter-spacing:.14em;color:var(--ink-3);display:flex;justify-content:space-between}
 .friend{display:flex;align-items:center;gap:10px;padding:6px 4px;border-radius:10px;text-decoration:none;color:var(--ink)}
 .friend:hover{background:var(--ice-2)}
@@ -4446,6 +4461,24 @@ function setTrail(on) {
 }
 
 /* ===================================================================== nav + city panel */
+// keep the left column inside its space: try the friends as chips, then a tighter nav, then send the friends to the drawer
+const FIT_STEPS = [[], ['fr-chip'], ['fr-chip', 'tight'], ['fr-hide', 'tight']];
+function fitLeft() {
+  const ui = $('#ui'), col = document.querySelector('.col-left'); if (!ui || !col) return;
+  ui.classList.remove('fr-chip', 'fr-hide', 'tight');
+  if (mq.matches) return;
+  const st = document.querySelector('#ui > .status'); if (st && st.offsetHeight) ui.style.setProperty('--sh', st.offsetHeight + 'px');
+  const fits = () => {   // does the last thing showing in the column end above the coordinates box?
+    const kids = [...col.children].filter((e) => e.getClientRects().length), last = kids[kids.length - 1];
+    return !last || last.getBoundingClientRect().bottom <= col.getBoundingClientRect().bottom - parseFloat(getComputedStyle(col).paddingBottom) + 1;
+  };
+  for (const step of FIT_STEPS) {
+    ui.classList.remove('fr-chip', 'fr-hide', 'tight'); ui.classList.add(...step);
+    if (fits()) return;
+  }
+}
+window.addEventListener('resize', () => { clearTimeout(fitLeft.t); fitLeft.t = setTimeout(fitLeft, 120); });
+document.fonts?.ready?.then(fitLeft);
 function renderNav() {
   const nav = $('#layerNav');
   nav.querySelectorAll('.nav-btn').forEach((b) => b.remove());
@@ -4460,6 +4493,7 @@ function renderNav() {
     });
     nav.appendChild(b);
   }
+  requestAnimationFrame(fitLeft);
 }
 function itemsFor(mod, city) { return MODULES.find((m) => m.id === mod).items().filter((i) => (i.city || 'gz') === city); }
 function itemLabel(mod, i) {
@@ -4615,7 +4649,7 @@ mq.addEventListener?.('change', () => { Auto.apply(); });
 // 收起 / 展开左右面板；地图中心随之移到空出来的区域
 function applyHud(mode = 'ease') {
   const ui = $('#ui');
-  ui.classList.toggle('nav-min', state.navMin); ui.classList.toggle('city-min', state.cityMin);
+  ui.classList.toggle('nav-min', state.navMin); ui.classList.toggle('city-min', state.cityMin); fitLeft();
   $('#navMin').setAttribute('aria-expanded', String(!state.navMin)); $('#navMin').setAttribute('aria-label', state.navMin ? '展开地图板块' : '收起地图板块');
   $('#cityPill').setAttribute('aria-expanded', String(!state.cityMin));
   if (!map || mq.matches) return;
