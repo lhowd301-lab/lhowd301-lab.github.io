@@ -4244,6 +4244,7 @@ function initMap() {
   Metro.init();
   Rail.init();
   map.on('move', syncAltitude);
+  map.on('moveend', () => Weather.show());
   map.on('mousemove', (e) => { state.cursor = e.lngLat; syncAltitude(); });
   syncCompass();
 }
@@ -4934,47 +4935,92 @@ function tickClock() {
 }
 
 /* ===================================================================== weather */
+// 实时天气：Open-Meteo（每 15 分钟更新一次实况），一次取大湾区 11 个城市，每 10 分钟刷新；显示离地图中心最近的那座城市。
+// 在 Claude 里预览时页面不能访问外部接口，只能显示广州该月的常年平均气温（部署到 GitHub Pages 等自己的域名就是实时的）。
 // 广州常年月平均气温（°C，最高/最低，约 1991–2020 气候平均）——没有实时数据时显示
 const GZ_CLIMATE = [[19, 11], [20, 13], [23, 16], [27, 20], [30, 23], [32, 25], [33, 26], [33, 26], [32, 24], [30, 21], [25, 16], [21, 12]];
+const WX_CITIES = [['广州', 23.13, 113.26], ['深圳', 22.54, 114.06], ['佛山', 23.02, 113.12], ['东莞', 23.02, 113.75], ['珠海', 22.27, 113.58], ['中山', 22.52, 113.39],
+  ['江门', 22.58, 113.08], ['肇庆', 23.05, 112.47], ['惠州', 23.11, 114.42], ['香港', 22.3, 114.17], ['澳门', 22.19, 113.54]];
 const WX_ICONS = {
   sun: '<svg viewBox="0 0 32 32" fill="none" stroke-linecap="round"><circle cx="16" cy="16" r="6" fill="#FDE68A" stroke="#F59E0B" stroke-width="1.5"/><g stroke="#F59E0B" stroke-width="1.6"><path d="M16 3v3.5M16 25.5V29M3 16h3.5M25.5 16H29M6.8 6.8l2.5 2.5M22.7 22.7l2.5 2.5M6.8 25.2l2.5-2.5M22.7 9.3l2.5-2.5"/></g></svg>',
+  moon: '<svg viewBox="0 0 32 32" fill="none"><path d="M21.5 22.5A9.5 9.5 0 0 1 13 7.2a9.5 9.5 0 1 0 12.3 12.3 9.4 9.4 0 0 1-3.8 3Z" fill="#FEF3C7" stroke="#D97706" stroke-width="1.5" stroke-linejoin="round"/><circle cx="23" cy="8" r="1" fill="#F59E0B"/><circle cx="27" cy="13" r=".8" fill="#F59E0B"/></svg>',
   cloud: '<svg viewBox="0 0 32 32" fill="none"><circle cx="12" cy="12" r="5" fill="#FDE68A" stroke="#F59E0B" stroke-width="1.4"/><path d="M9 25h15a5 5 0 0 0 0-10 7 7 0 0 0-13.3 2A4 4 0 0 0 9 25Z" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.5" stroke-linejoin="round"/></svg>',
+  cloudnight: '<svg viewBox="0 0 32 32" fill="none"><path d="M15.5 13.5A5.5 5.5 0 0 1 10.6 5.4a5.6 5.6 0 1 0 7.3 7.4 5.4 5.4 0 0 1-2.4.7Z" fill="#FEF3C7" stroke="#D97706" stroke-width="1.3" stroke-linejoin="round"/><path d="M9 25h15a5 5 0 0 0 0-10 7 7 0 0 0-13.3 2A4 4 0 0 0 9 25Z" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.5" stroke-linejoin="round"/></svg>',
+  overcast: '<svg viewBox="0 0 32 32" fill="none"><path d="M8 24h16a5.5 5.5 0 0 0 0-11 7.5 7.5 0 0 0-14.3 2.2A4.4 4.4 0 0 0 8 24Z" fill="#E5ECF7" stroke="#3B82F6" stroke-width="1.5" stroke-linejoin="round"/></svg>',
   rain: '<svg viewBox="0 0 32 32" fill="none" stroke-linecap="round"><path d="M8 20h16a5 5 0 0 0 0-10 7 7 0 0 0-13.3 2A4 4 0 0 0 8 20Z" fill="#DBEAFE" stroke="#2563EB" stroke-width="1.5" stroke-linejoin="round"/><path d="M11 24l-1.5 3M17 24l-1.5 3M23 24l-1.5 3" stroke="#3B82F6" stroke-width="1.6"/></svg>',
   storm: '<svg viewBox="0 0 32 32" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M8 19h16a5 5 0 0 0 0-10 7 7 0 0 0-13.3 2A4 4 0 0 0 8 19Z" fill="#DBEAFE" stroke="#1E3A8A" stroke-width="1.5"/><path d="M17 20l-3 5h4l-2 4" stroke="#F59E0B" stroke-width="1.8"/></svg>',
   fog: '<svg viewBox="0 0 32 32" fill="none" stroke="#3B82F6" stroke-width="1.6" stroke-linecap="round"><path d="M6 12h20M4 17h24M7 22h18"/></svg>',
+  snow: '<svg viewBox="0 0 32 32" fill="none" stroke="#3B82F6" stroke-width="1.6" stroke-linecap="round"><path d="M16 5v22M6.5 10.5l19 11M6.5 21.5l19-11M13 6.5l3 2.5 3-2.5M13 25.5l3-2.5 3 2.5"/></svg>',
 };
-function wxFromCode(c) {
-  if (c === 0) return ['sun', '晴'];
-  if (c <= 2) return ['cloud', '多云'];
-  if (c === 3) return ['cloud', '阴'];
+// WMO weather codes (Open-Meteo) → icon and words; clear skies get the moon at night
+function wxFromCode(c, day = 1) {
+  if (c === 0) return [day ? 'sun' : 'moon', '晴'];
+  if (c === 1) return [day ? 'cloud' : 'cloudnight', '晴间多云'];
+  if (c === 2) return [day ? 'cloud' : 'cloudnight', '多云'];
+  if (c === 3) return ['overcast', '阴'];
   if (c === 45 || c === 48) return ['fog', '雾'];
-  if (c >= 95) return ['storm', '雷雨'];
-  if (c >= 80) return ['rain', '阵雨'];
-  if (c >= 51) return ['rain', '雨'];
-  return ['cloud', '多云'];
+  if (c >= 51 && c <= 55) return ['rain', '毛毛雨'];
+  if (c === 56 || c === 57 || c === 66 || c === 67) return ['rain', '冻雨'];
+  if (c === 61) return ['rain', '小雨'];
+  if (c === 63) return ['rain', '中雨'];
+  if (c === 65) return ['rain', '大雨'];
+  if (c >= 71 && c <= 77) return ['snow', '雪'];
+  if (c === 80 || c === 81) return ['rain', '阵雨'];
+  if (c === 82) return ['rain', '强阵雨'];
+  if (c === 85 || c === 86) return ['snow', '阵雪'];
+  if (c >= 95) return ['storm', c > 95 ? '雷雨伴冰雹' : '雷阵雨'];
+  return [day ? 'cloud' : 'cloudnight', '多云'];
 }
 function showClimate() {
   const m = new Date().getMonth(); const [hi, lo] = GZ_CLIMATE[m];
   $('#wxIcon').innerHTML = m >= 4 && m <= 8 ? WX_ICONS.cloud : WX_ICONS.sun;
   $('#wxBig').textContent = `${lo}–${hi}°C`;
-  $('#wxSmall').textContent = `广州 · ${m + 1}月常年`;
-  $('#wxSeg').title = '实时天气暂不可用，显示的是广州该月的常年平均气温。';
+  $('#wxSmall').textContent = `广州 · ${m + 1}月常年平均`;
+  $('#wxSeg').title = '这里显示的是广州该月的常年平均气温：在 Claude 里预览时页面不能访问外部接口，拿不到实时天气。部署到自己的网站（如 GitHub Pages）后是实时的。';
 }
-async function loadWeather() {
-  showClimate();
-  if (/claude/i.test(location.hostname)) return; // 在 Claude 里预览时不能访问外部接口；部署到自己的域名后会显示实时天气
-  const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 5000);
-  try {
-    const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=23.13&longitude=113.26&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=Asia%2FShanghai&forecast_days=1', { signal: ctl.signal });
-    if (!r.ok) throw new Error('weather');
-    const j = await r.json();
-    const [ic, txt] = wxFromCode(j.current.weather_code);
+const Weather = {
+  data: null, at: 0, city: '', timer: 0,
+  live() { return !/claude/i.test(location.hostname); },
+  async load() {
+    if (!this.live()) return;
+    const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 8000);
+    try {
+      const u = 'https://api.open-meteo.com/v1/forecast?latitude=' + WX_CITIES.map((c) => c[1]).join(',') + '&longitude=' + WX_CITIES.map((c) => c[2]).join(',') +
+        '&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,is_day,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min&timezone=Asia%2FShanghai&forecast_days=1';
+      const r = await fetch(u, { signal: ctl.signal, cache: 'no-store' });
+      if (!r.ok) throw new Error('weather ' + r.status);
+      const j = await r.json();
+      this.data = (Array.isArray(j) ? j : [j]).map((x, i) => ({ name: WX_CITIES[i][0], cur: x.current, lo: x.daily.temperature_2m_min[0], hi: x.daily.temperature_2m_max[0] }));
+      this.at = Date.now(); this.city = ''; this.show();
+    } catch (e) { /* 拿不到就保留上一次的（或常年平均），下次再试 */ } finally { clearTimeout(t); }
+  },
+  // the city nearest the middle of the map (Guangzhou until the map is up)
+  pick() {
+    if (!map) return 0;
+    const c = map.getCenter(); let best = 0, bd = 1e9;
+    WX_CITIES.forEach(([, la, lo], i) => { const d = (la - c.lat) ** 2 + ((lo - c.lng) * 0.92) ** 2; if (d < bd) { bd = d; best = i; } });
+    return best;
+  },
+  show() {
+    if (!this.data) return;
+    const d = this.data[this.pick()] || this.data[0]; if (!d || !d.cur) return;
+    if (this.city === d.name && this.shownAt === this.at) return;
+    this.city = d.name; this.shownAt = this.at;
+    const c = d.cur, [ic, txt] = wxFromCode(c.weather_code, c.is_day), tm = new Date(this.at + GZ_OFF).toISOString().slice(11, 16);
     $('#wxIcon').innerHTML = WX_ICONS[ic];
-    $('#wxBig').textContent = `${Math.round(j.current.temperature_2m)}°C`;
-    $('#wxSmall').textContent = `广州 · ${txt} ${Math.round(j.daily.temperature_2m_min[0])}–${Math.round(j.daily.temperature_2m_max[0])}°`;
-    $('#wxSeg').title = '实时天气 · Open-Meteo';
-  } catch (e) { /* 部署环境不允许访问外部接口时，保留常年气温 */ } finally { clearTimeout(t); }
-}
+    $('#wxBig').textContent = `${Math.round(c.temperature_2m)}°C`;
+    $('#wxSmall').textContent = `${d.name} · ${txt} ${Math.round(d.lo)}–${Math.round(d.hi)}°`;
+    $('#wxSeg').title = `${d.name}实时天气：${txt} ${c.temperature_2m.toFixed(1)}°C，体感 ${Math.round(c.apparent_temperature)}°，湿度 ${Math.round(c.relative_humidity_2m)}%，风速 ${Math.round(c.wind_speed_10m)} km/h。今天 ${Math.round(d.lo)}–${Math.round(d.hi)}°。${tm} 更新 · 数据来自 Open-Meteo，每 10 分钟刷新`;
+  },
+  start() {
+    showClimate();
+    if (!this.live()) return;
+    this.load();
+    this.timer = setInterval(() => { if (!document.hidden) this.load(); }, 10 * 60e3);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden && Date.now() - this.at > 10 * 60e3) this.load(); });
+  },
+};
+function loadWeather() { Weather.start(); }
 
 /* ===================================================================== popovers */
 const POPS = { calBtn: 'calPop', diaryBtn: 'diaryPop', musicBtn: 'musicPop' };
