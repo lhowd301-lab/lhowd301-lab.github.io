@@ -6640,7 +6640,20 @@ const Metro = {
    true to scale (a 16-car set is 415 m long), under the 3D buildings. Reuses the underground view's train sums. */
 const RAIL_GLASS = '#26334A';   // windscreens
 const RAIL_ICON = [18, 23, 29, 37, 47];   // the far-off symbol's lengths (px), picked to suit the zoom and the train
-const RAIL_CAT = { 高铁: { tag: 'G', cars: (l) => (l > 300 ? 16 : 8) }, 城际: { tag: 'C', cars: () => 8 }, 动车: { tag: 'D', cars: () => 8 } };
+// the trains that run these lines, as they really look: body, roof, window band, the livery's stripes, nose length (× width)
+const TRAINS = {
+  CR400AF: { fam: '复兴号', name: 'CR400AF', cars: 8, len: 209, v: 350, nose: 2.6, body: '#F6F8FB', s1: '#D7283E', s2: '#3B414D' },
+  'CR400AF-A': { fam: '复兴号', name: 'CR400AF-A', cars: 16, len: 414, v: 350, nose: 2.6, body: '#F6F8FB', s1: '#D7283E', s2: '#3B414D' },
+  CR400BF: { fam: '复兴号', name: 'CR400BF', cars: 8, len: 209, v: 350, nose: 2.4, body: '#F6F8FB', s1: '#D9A136', s2: '#8A6420' },
+  'CR400BF-A': { fam: '复兴号', name: 'CR400BF-A', cars: 16, len: 414, v: 350, nose: 2.4, body: '#F6F8FB', s1: '#D9A136', s2: '#8A6420' },
+  CRH380A: { fam: '和谐号', name: 'CRH380A', cars: 8, len: 203, v: 380, nose: 3.1, body: '#F6F8FB', s1: '#1F4FB0' },
+  VE: { fam: '动感号', name: 'CRH380A · 港铁', cars: 8, len: 203, v: 350, nose: 3.1, body: '#C3C9D2', s1: '#F05A24', s2: '#FFFFFF', glass: '#5E1428' },
+  CRH1A: { fam: '和谐号', name: 'CRH1A', cars: 8, len: 213.5, v: 250, nose: 1.3, body: '#F6F8FB', s1: '#1F4FB0' },
+  CRH2A: { fam: '和谐号', name: 'CRH2A', cars: 8, len: 201.4, v: 250, nose: 2.1, body: '#F6F8FB', s1: '#1F4FB0' },
+  CRH6A: { fam: '和谐号', name: 'CRH6A', cars: 8, len: 201.4, v: 200, nose: 1.4, body: '#F6F8FB', win: '#1C2C57', s1: '#2E6AD4' },
+  'CRH6A-PRD': { fam: '城际动车组', name: 'CRH6A · 珠三角城际', cars: 8, len: 201.4, v: 200, nose: 1.4, body: '#F6F8FB', s1: '#F08A24', s2: '#1F3E7A' },
+  'CRH6A-A': { fam: '城际动车组', name: 'CRH6A-A', cars: 4, len: 101.4, v: 200, nose: 1.4, body: '#F6F8FB', s1: '#F08A24', s2: '#1F3E7A' },
+};
 const Rail = Object.assign(Object.create(Metro), {
   D: null, enabled: true, trains: [], sel: null, follow: false, timer: 0, sim: 0,
   init() {
@@ -6675,7 +6688,7 @@ const Rail = Object.assign(Object.create(Metro), {
       map.addLayer({ id: 'icr-train-body', type: 'fill-extrusion', source: 'rail-cars', filter: ['==', ['get', 'k'], 0],
         paint: { 'fill-extrusion-color': ['get', 'color'], 'fill-extrusion-height': grow(['get', 'top']), 'fill-extrusion-base': grow(['get', 'base']), 'fill-extrusion-vertical-gradient': true } }, 'trail');
       map.addLayer({ id: 'icr-train-band', type: 'fill-extrusion', source: 'rail-cars', filter: ['==', ['get', 'k'], 1],
-        paint: { 'fill-extrusion-color': '#F4F8FE', 'fill-extrusion-height': grow(['get', 'top']), 'fill-extrusion-base': grow(['get', 'base']), 'fill-extrusion-vertical-gradient': false } }, 'trail');
+        paint: { 'fill-extrusion-color': ['get', 'color'], 'fill-extrusion-height': grow(['get', 'top']), 'fill-extrusion-base': grow(['get', 'base']), 'fill-extrusion-vertical-gradient': false } }, 'trail');
       // in a tunnel: a faint outline on the ground above
       map.addLayer({ id: 'icr-train-ghost', type: 'fill', source: 'rail-cars', filter: ['==', ['get', 'k'], 2], paint: { 'fill-color': ['get', 'color'], 'fill-opacity': 0.28 } }, 'icr-train-body');
       map.addLayer({ id: 'icr-train-ghost-line', type: 'line', source: 'rail-cars', filter: ['==', ['get', 'k'], 2], paint: { 'line-color': ['get', 'color'], 'line-width': 1, 'line-opacity': 0.75, 'line-dasharray': [2, 1.5] } }, 'icr-train-body');
@@ -6712,7 +6725,7 @@ const Rail = Object.assign(Object.create(Metro), {
     if (this.loading) return;
     this.loading = fetch(U('map/rail.json')).then((r) => r.json()).then((d) => {
       this.prep(d); this.D = d;
-      this.lines.forEach((line, i) => { line.cat = d.lines[i].cat; line.vmax = d.lines[i].vmax; line.svc.forEach((svc, j) => { svc.tn = d.lines[i].svc[j].tn || []; }); });
+      this.lines.forEach((line, i) => { line.cat = d.lines[i].cat; line.vmax = d.lines[i].vmax; line.svc.forEach((svc, j) => { svc.tn = d.lines[i].svc[j].tn || []; }); line.fleet = (d.lines[i].fleet || [['CR400AF', 1]]).filter(([k]) => TRAINS[k]); line.fw = line.fleet.reduce((a, f) => a + f[1], 0); });
       this.icons();
       // the lines and the stations for the map
       const feats = [], seenSt = [];
@@ -6766,33 +6779,41 @@ const Rail = Object.assign(Object.create(Metro), {
     this.timer = setTimeout(() => this.tick(), this.follow ? 60 : z < 9 ? 2000 : z < 10.5 ? 900 : z < 12 ? 350 : z < 13.5 ? 140 : 70);
   },
   // the far-off symbol: a train seen from above, pointed at both ends, with windscreens, a light roof stripe and car joints
-  // the far-off symbol: a little train of three or four cars with a white edge, the end cars bevelled at the nose
+  // the far-off symbol: each train type side-on in its own livery (window band, stripes, windscreens), nose at both ends
   icons() {
-    const R = 4, H = 5, P = 1.2, cols = new Map(this.lines.map((l) => [(RAIL_CAT[l.cat] || RAIL_CAT.动车).tag, l.color]));
-    for (const [tag, color] of cols) for (const len of RAIL_ICON) {
-      const name = `tr-${tag}-${len}`; if (map.hasImage(name)) continue;
+    const R = 4, H = 5.4, P = 1.2;
+    for (const [key, T] of Object.entries(TRAINS)) for (const len of RAIL_ICON) {
+      const name = `tr-${key}-${len}`; if (map.hasImage(name)) continue;
       const c = document.createElement('canvas'); c.width = Math.ceil((len + 2 * P) * R); c.height = Math.ceil((H + 2 * P) * R);
       const g = c.getContext('2d'); g.scale(R, R); g.translate(P, P);
-      const k = len >= 29 ? 4 : 3, gap = 0.9, cw = (len - gap * (k - 1)) / k, ch = Math.min(H * 0.62, cw * 0.45);
-      const car = (x0, x1, l, r) => {
-        g.beginPath();
-        g.moveTo(x0 + (l ? ch : 0), 0); g.lineTo(x1 - (r ? ch : 0), 0);
-        if (r) g.quadraticCurveTo(x1, 0, x1, H * 0.62); g.lineTo(x1, H); g.lineTo(x0, H);
-        if (l) { g.lineTo(x0, H * 0.62); g.quadraticCurveTo(x0, 0, x0 + ch, 0); }
-        g.closePath();
+      const n = Math.min(H * (0.45 + T.nose * 0.55), len * 0.3), tip = H * (T.nose > 2 ? 0.8 : 0.6);
+      const shape = () => {   // the roof curving down into a nose at each end, the floor straight
+        g.beginPath(); g.moveTo(n, 0); g.lineTo(len - n, 0);
+        g.bezierCurveTo(len - n * 0.4, 0, len, tip * 0.45, len, tip); g.lineTo(len, H - 0.5); g.quadraticCurveTo(len, H, len - 0.6, H);
+        g.lineTo(0.6, H); g.quadraticCurveTo(0, H, 0, H - 0.5); g.lineTo(0, tip); g.bezierCurveTo(0, tip * 0.45, n * 0.4, 0, n, 0); g.closePath();
       };
-      const cars = []; for (let i = 0; i < k; i++) { const x0 = i * (cw + gap); cars.push([x0, x0 + cw, i === 0, i === k - 1]); }
-      g.lineJoin = 'round'; g.lineWidth = 1.5; g.strokeStyle = '#FFFFFF';
-      for (const q of cars) { car(...q); g.stroke(); }
-      for (const q of cars) {
-        car(...q); g.fillStyle = color; g.fill();
-        g.save(); car(...q); g.clip();
-        g.fillStyle = 'rgba(255,255,255,.8)'; g.fillRect(q[0], H * 0.3, q[1] - q[0], H * 0.17);   // the windows
-        if (q[2] || q[3]) { g.fillStyle = RAIL_GLASS; g.fillRect(q[2] ? q[0] : q[1] - ch * 0.9, H * 0.12, ch * 0.9, H * 0.36); }
-        g.restore();
+      shape(); g.lineJoin = 'round'; g.lineWidth = 1.3; g.strokeStyle = '#46546E'; g.stroke(); g.fillStyle = T.body; g.fill();
+      g.save(); shape(); g.clip();
+      g.fillStyle = T.win || '#2A3342'; g.fillRect(n * 0.8, H * 0.2, len - n * 1.6, H * 0.24);
+      g.fillStyle = T.s1; g.fillRect(0, H * 0.56, len, H * 0.17);
+      if (T.s2) { g.fillStyle = T.s2; g.fillRect(0, H * 0.73, len, H * 0.08); }
+      g.fillStyle = T.glass || RAIL_GLASS;
+      for (const x of [0, len]) {
+        const d = x ? -1 : 1; g.beginPath(); g.moveTo(x + d * n * 0.2, tip * 0.6);
+        g.quadraticCurveTo(x + d * n * 0.4, H * 0.08, x + d * n * 0.85, H * 0.1); g.lineTo(x + d * n * 0.85, H * 0.44); g.lineTo(x + d * n * 0.3, H * 0.44); g.closePath(); g.fill();
       }
+      g.fillStyle = 'rgba(30,40,60,.22)'; const k = Math.max(2, Math.min(6, Math.round(T.cars / 2)));
+      for (let i = 1; i < k; i++) g.fillRect(n * 0.6 + ((len - n * 1.2) * i) / k - 0.2, 0, 0.4, H);
+      g.restore();
       map.addImage(name, g.getImageData(0, 0, c.width, c.height), { pixelRatio: R });
     }
+  },
+  typeOf(t) {   // which of its line's trains this departure is (the same each time you look)
+    const f = t.svc.line.fleet; let x = 0;
+    for (let i = 0; i < t.id.length; i++) x = (x * 31 + t.id.charCodeAt(i)) >>> 0;
+    let r = (x >>> 3) % t.svc.line.fw;
+    for (const [k, w] of f) { if (r < w) return k; r -= w; }
+    return f[0][0];
   },
   upright(r) { const a = ((((r - map.getBearing()) % 360) + 540) % 360) - 180; return a > 90 ? r - 180 : a < -90 ? r + 180 : r; },   // the symbol is drawn side-on: keep its roof up on screen
   inTun(svc, s) { for (const [a, b] of svc.tn) if (s >= a && s <= b) return true; return false; },
@@ -6825,13 +6846,15 @@ const Rail = Object.assign(Object.create(Metro), {
   },
   tan(svc, s, d) { const a = this.at2(svc, s - d), b = this.at2(svc, s + d), x = b[0] - a[0], y = b[1] - a[1], l = Math.hypot(x, y) || 1; return [x / l, y / l]; },
   // a train's outline on the ground, true to length, as one body or car by car; K holds this zoom's widths
-  shape(out, svc, line, s0, s1, K) {
-    const n = (RAIL_CAT[line.cat] || RAIL_CAT.动车).cars(line.tlen), cl = (s1 - s0) / n, joints = cl / K.mpp >= 8;
+  // side: which side of the line's one drawn track the train keeps to (trains here run on the left), so two trains
+  // passing, or standing at the same station, sit side by side instead of on top of each other
+  shape(out, svc, T, s0, s1, K, side) {
+    const n = T.cars, cl = (s1 - s0) / n, joints = cl / K.mpp >= 8;
     const gap = joints ? Math.max(0.9, 1.3 * K.mpp) : 0, h = K.wm * 1.15, NOSE = [0, 0.04, 0.1, 0.2, 0.34, 0.5, 0.7, 0.85, 1];
-    const prof = (t) => 0.06 + 0.94 * (1 - Math.pow(1 - Math.min(1, t), 2.1));   // a long, sharp nose
+    const prof = (t) => 0.06 + 0.94 * (1 - Math.pow(1 - Math.min(1, t), 2.1));
     const cs = svc.cs;
     const piece = (a, b, front, back) => {
-      const nose = Math.min((b - a) * (front && back ? 0.3 : 0.62), K.wm * 2.8);
+      const nose = Math.min((b - a) * (front && back ? 0.3 : 0.62), K.wm * T.nose);
       const mid = this.at2(svc, (a + b) / 2), tun = this.inTun(svc, (a + b) / 2), base = tun ? 0 : this.deck(this.ll(mid[0], mid[1]));
       const wAt = (s) => K.hw * (front && s < a + nose ? prof((s - a) / nose) : 1) * (back && s > b - nose ? prof((b - s) / nose) : 1);
       // the outline between two distances along this car (widened by ext), following the track's bends
@@ -6845,20 +6868,25 @@ const Rail = Object.assign(Object.create(Metro), {
         const L = [], R = []; let last = -1e9;
         for (const s of S) {
           if (s < u0 - 1e-6 || s > u1 + 1e-6 || s <= last + 0.05) continue; last = s;
-          const c = this.at2(svc, s), d = this.tan(svc, s, Math.max(2, K.wm * 0.5)), w = wAt(s) + ext;
-          L.push(this.ll(c[0] - d[1] * w, c[1] + d[0] * w)); R.push(this.ll(c[0] + d[1] * w, c[1] - d[0] * w));
+          const c = this.at2(svc, s), d = this.tan(svc, s, Math.max(2, K.wm * 0.5)), w = Math.max(0, wAt(s) + ext), x = c[0] + d[1] * K.off * side, y = c[1] - d[0] * K.off * side;
+          L.push(this.ll(x - d[1] * w, y + d[0] * w)); R.push(this.ll(x + d[1] * w, y - d[0] * w));
         }
         const r = L.concat(R.reverse()); r.push(r[0]); return [r];
       };
-      const add = (u0, u1, k, lo, hi, color, cat) => { if (u1 - u0 > 0.05) out.push({ type: 'Feature', properties: { k, color, cat, base: lo, top: hi }, geometry: { type: 'Polygon', coordinates: ring(u0, u1, k === 1 ? K.ext : 0) } }); };
-      if (tun) { add(a, b, 2, 0, 0, line.color, line.cat); return; }   // underground: a faint outline on the ground above
+      const add = (u0, u1, k, lo, hi, color, ext = 0, win = 0) => { if (u1 - u0 > 0.05) out.push({ type: 'Feature', properties: { k, color, base: lo, top: hi, win }, geometry: { type: 'Polygon', coordinates: ring(u0, u1, ext) } }); };
+      if (tun) { add(a, b, 2, 0, 0, T.s1); return; }   // underground: a faint outline on the ground above
       const f0 = front ? a + nose : a, f1 = back ? b - nose : b;
-      add(f0, f1, 0, base, base + h, line.color, line.cat);
-      if (K.band) add(f0, f1, 1, base + h * 0.42, base + h * 0.7, null, line.cat);   // the windows, a little proud of the sides
-      // the nose falls away in three steps, the middle one the windscreen
-      const nosed = (x0, x1, x2, x3) => { add(x0, x1, 0, base, base + h * 0.5, line.color, line.cat); add(x1, x2, 0, base, base + h * 0.8, RAIL_GLASS, 'glass'); add(x2, x3, 0, base, base + h * 0.96, line.color, line.cat); };
-      if (front) nosed(a, a + nose * 0.36, a + nose * 0.7, f0);
-      if (back) { add(b - nose * 0.36, b, 0, base, base + h * 0.5, line.color, line.cat); add(b - nose * 0.7, b - nose * 0.36, 0, base, base + h * 0.8, RAIL_GLASS, 'glass'); add(f1, b - nose * 0.7, 0, base, base + h * 0.96, line.color, line.cat); }
+      add(f0, f1, 0, base, base + h * 0.9, T.body);
+      add(f0, f1, 0, base + h * 0.9, base + h, T.roof || '#B3BDCB', -K.inset);   // the roof, a shade darker, set in from the sides
+      if (K.band) {   // a little proud of the sides, so they show from above as well
+        add(f0, f1, 1, base + h * 0.5, base + h * 0.76, T.win || '#2A3342', K.ext * 0.55, 1);
+        add(a, b, 1, base + h * 0.3, base + h * 0.42, T.s1, K.ext);
+        if (T.s2) add(a, b, 1, base + h * 0.24, base + h * 0.3, T.s2, K.ext);
+      }
+      // each nose falls away in three steps, the middle one the windscreen
+      const steps = (p) => [[p(0), p(0.36), 0.5, T.body], [p(0.36), p(0.7), 0.8, T.glass || RAIL_GLASS], [p(0.7), p(1), 0.95, T.body]];
+      if (front) for (const [x, y, f, col] of steps((t) => a + nose * t)) add(x, y, 0, base, base + h * f, col);
+      if (back) for (const [x, y, f, col] of steps((t) => b - nose * t)) add(y, x, 0, base, base + h * f, col);
     };
     for (let k = 0; k < n; k++) piece(s0 + k * cl + (k ? gap / 2 : 0), s0 + (k + 1) * cl - (k < n - 1 ? gap / 2 : 0), k === 0, k === n - 1);
   },
@@ -6868,7 +6896,8 @@ const Rail = Object.assign(Object.create(Metro), {
     const scale = 512 * Math.pow(2, z), mpp = (40075016.7 * Math.cos(map.getCenter().lat * D2R)) / scale;
     // drawn a little wider than real (a 3.4 m train would be a hairline until you are very close), as the streets are
     const wpx = Math.max(7 + Math.max(0, Math.min(3, z - 13)) * 0.8, (1.25 * 3.38) / mpp);
-    const K = { mpp, wm: wpx * mpp, hw: wpx / 2 / scale, ext: 1.1 / scale, band: z >= 13.4 };
+    const K = { mpp, wm: wpx * mpp, hw: wpx / 2 / scale, ext: 1.1 / scale, inset: 0.8 / scale, band: z >= 13.4 };
+    K.off = K.hw + K.ext + 0.6 / scale;
     const minLen = 14 + Math.max(0, Math.min(1, (z - 7) / 5.5)) * 16;
     const tr = [], cars = [];
     let selT = null;
@@ -6877,13 +6906,13 @@ const Rail = Object.assign(Object.create(Metro), {
       const c = this.at2(svc, s), p = this.ll(c[0], c[1]);
       if (t.id === this.sel) selT = t;
       if (p[0] < W || p[0] > E || p[1] < S || p[1] > N) continue;
-      const sel = t.id === this.sel ? 1 : 0, half = line.tlen / 2, s0 = Math.max(0, s - half), s1 = Math.min(svc.L, s + half), px = line.tlen / mpp;
-      tr.push({ type: 'Feature', properties: { id: t.id, color: line.color, sel, w: px >= 7 * wpx ? wpx : 0 }, geometry: { type: 'LineString', coordinates: this.seg(svc, s0, s1).map((q) => this.ll(q[0], q[1])) } });
-      if (px >= 7 * wpx) { this.shape(cars, svc, line, s0, s1, K); continue; }
+      const ty = this.typeOf(t), T = TRAINS[ty], sel = t.id === this.sel ? 1 : 0, half = T.len / 2, s0 = Math.max(0, s - half), s1 = Math.min(svc.L, s + half), px = T.len / mpp;
+      tr.push({ type: 'Feature', properties: { id: t.id, color: T.s1, sel, w: px >= 7 * wpx ? wpx : 0 }, geometry: { type: 'LineString', coordinates: this.seg(svc, s0, s1).map((q) => this.ll(q[0], q[1])) } });
+      if (px >= 7 * wpx) { this.shape(cars, svc, T, s0, s1, K, t.dir ? -1 : 1); continue; }
       const L = Math.max(minLen, px); let len = RAIL_ICON[0];
       for (const v of RAIL_ICON) if (v <= L) len = v;
       const d = this.tan(svc, s, 30);
-      tr.push({ type: 'Feature', properties: { id: t.id, color: line.color, sel, img: `tr-${(RAIL_CAT[line.cat] || RAIL_CAT.动车).tag}-${len}`, sz: Math.min(1.3, Math.max(0.72, L / len)) * (sel ? 1.25 : 1), tn: this.inTun(svc, s) ? 1 : 0, rot: this.upright((Math.atan2(d[1], d[0]) * 180) / Math.PI) }, geometry: { type: 'Point', coordinates: p } });
+      tr.push({ type: 'Feature', properties: { id: t.id, color: T.s1, sel, img: `tr-${ty}-${len}`, sz: Math.min(1.3, Math.max(0.72, L / len)) * (sel ? 1.25 : 1), tn: this.inTun(svc, s) ? 1 : 0, rot: this.upright((Math.atan2(d[1], d[0]) * 180) / Math.PI) }, geometry: { type: 'Point', coordinates: p } });
     }
     map.getSource('rail-trains').setData({ type: 'FeatureCollection', features: tr });
     map.getSource('rail-cars').setData({ type: 'FeatureCollection', features: cars });
@@ -6915,12 +6944,12 @@ const Rail = Object.assign(Object.create(Metro), {
       box.dataset.k = this.sel;
       box.innerHTML = `<button class="icon-btn x" data-x aria-label="关闭">${ICONS.close}</button><div data-body></div><button type="button" class="btn ghost" data-follow aria-pressed="${this.follow}">${this.follow ? '停止跟随' : '跟着这列车'}</button>`;
     }
-    const line = t.svc.line, tr = t.tr, q = t.q, cat = RAIL_CAT[line.cat] || RAIL_CAT.动车;
+    const line = t.svc.line, tr = t.tr, q = t.q, T = TRAINS[this.typeOf(t)];
     let now;
     if (q.stop) { const o = tr.st[q.k]; now = t.tau < 0 ? `在${o.n}站等候发车 · ${this.fmt(-t.tau)}后开` : q.k === tr.st.length - 1 ? `到达终点 ${o.n || ''}` : `停靠${o.n}站 · ${this.fmt(tr.dep[q.k] - t.tau)}后开`; }
     else { let j = q.k + 1; while (j < tr.st.length - 1 && !tr.st[j].n) j++; if (this.inTun(t.svc, this.sOf(t.svc, t.dir, q.u))) now = '隧道中 · '; else now = ''; now += tr.st[j].n ? `下一站 ${tr.st[j].n} · 约 ${this.fmt(tr.arr[j] - t.tau)}` : `正驶向${tr.to.replace('方向', '')}，即将驶出大湾区`; }
     const html = `<div class="rk"><i style="background:${line.color}"></i>${line.cat} · ${line.name}</div><h3>开往 ${tr.to}</h3><p class="rnow">${now}</p>
-      <table><tr><td>速度</td><td>${q.stop ? '停站中' : Math.round(q.v * 3.6) + ' km/h'}</td></tr><tr><td>编组</td><td>${cat.cars(line.tlen)} 节 · ${line.tlen} 米</td></tr><tr><td>最高</td><td>${line.vmax} km/h</td></tr></table>`;
+      <table><tr><td>车型</td><td>${T.fam} ${T.name}</td></tr><tr><td>编组</td><td>${T.cars} 节 · ${T.len} 米</td></tr><tr><td>速度</td><td>${q.stop ? '停站中' : Math.round(q.v * 3.6) + ' km/h'}</td></tr><tr><td>最高</td><td>线路 ${line.vmax} · 车 ${T.v} km/h</td></tr></table>`;
     const body = box.querySelector('[data-body]'); if (body._h !== html) { body._h = html; body.innerHTML = html; }
   },
 });
@@ -6949,7 +6978,7 @@ const NIGHT_PAINT = [
   ['road-label', 'text-color', '#C3D2EC'], ['road-label-minor', 'text-color', '#8FA3C6'], ['place-label', 'text-color', '#9DB8E8'],
   ['poi-label', 'text-color', '#BCD3FB'], ['bridge-label', 'text-color', '#9FB2D4'], ['area-label', 'text-color', '#8FB2F5'],
   ['dist-label', 'text-color', '#7AA7FF'], ['cover-label', 'text-color', '#7AA7FF'], ['city-label', 'text-color', '#C3D2EC'], ['city-label', 'text-halo-color', NIGHT_HALO],
-  ['veil', 'fill-color', '#0A1426'], ['icr-line', 'line-color', RAIL_NIGHT], ['icr-line-case', 'line-color', '#0A1426'], ['icr-train-body', 'fill-extrusion-color', RAIL_NIGHT], ['icr-train-ghost', 'fill-color', RAIL_NIGHT], ['icr-train-ghost-line', 'line-color', RAIL_NIGHT], ['icr-train-band', 'fill-extrusion-color', '#FFD58A'], ['icr-station', 'circle-color', '#0A1426'], ['icr-station-label', 'text-color', '#9DB8E8'], ['icr-station-label', 'text-halo-color', NIGHT_HALO], ['city-line', 'line-color', '#3A62B0'], ['cover-line', 'line-color', '#5B8DEF'],
+  ['veil', 'fill-color', '#0A1426'], ['icr-line', 'line-color', RAIL_NIGHT], ['icr-line-case', 'line-color', '#0A1426'], ['icr-train-band', 'fill-extrusion-color', ['case', ['==', ['get', 'win'], 1], '#FFD58A', ['get', 'color']]], ['icr-station', 'circle-color', '#0A1426'], ['icr-station-label', 'text-color', '#9DB8E8'], ['icr-station-label', 'text-halo-color', NIGHT_HALO], ['city-line', 'line-color', '#3A62B0'], ['cover-line', 'line-color', '#5B8DEF'],
   ['aero-area', 'fill-color', '#0F1B31'], ['aero-apron', 'fill-color', '#18253D'], ['aero-taxi', 'line-color', '#1F2E4A'], ['aero-runway', 'line-color', '#2A3B5C'],
   ['aero-runway-line', 'line-color', '#B9C9E6'], ['aero-label', 'text-color', '#8FB2F5'], ['aero-ref', 'text-color', '#9FB2D4'],
   ['poi-dot', 'circle-color', '#60A5FA'], ['poi-dot', 'circle-stroke-color', '#0A1426'],
