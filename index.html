@@ -4241,6 +4241,7 @@ function initMap() {
   map.on('pitchend', () => { state.is3d = map.getPitch() > 5; });
   map.on('move', () => { if (state.module === 'landmark' && !lmDQ) lmDQ = requestAnimationFrame(() => { lmDQ = 0; lmDeclutter(); }); });
   LookUp.init();
+  Gesture.init();
   Metro.init();
   Rail.init();
   map.on('move', syncAltitude);
@@ -6038,12 +6039,35 @@ const SkyDome = {   // night-sky preview drawn above the map's horizon while you
   },
 };
 
+// 不少浏览器（Edge、360、QQ、搜狗……）开着「鼠标手势」：按住右键一拖，浏览器先把它当成手势吃掉，页面收不到拖动，
+// 地图就没法倾斜，也就上不了天、下不了地。看出这种情况就提示一次：改用 Ctrl + 左键拖（效果完全一样），或者关掉鼠标手势。
+const Gesture = {
+  told: false, d: null,
+  init() {
+    const el = map.getCanvasContainer();
+    el.addEventListener('mousedown', (e) => { if (e.button === 2) this.d = { x: e.clientX, y: e.clientY, moves: 0, t: performance.now() }; });
+    window.addEventListener('mousemove', (e) => {
+      const d = this.d; if (!d) return;
+      if (e.buttons & 2) { d.moves++; return; }
+      if (performance.now() - d.t > 150) this.end(e);   // the button is up but we never saw it go: the browser kept it
+    }, true);
+    window.addEventListener('mouseup', (e) => { if (e.button === 2) this.end(e); }, true);
+  },
+  end(e) {
+    const d = this.d; this.d = null; if (!d) return;
+    if (d.moves < 3 && Math.hypot(e.clientX - d.x, e.clientY - d.y) > 40) this.tell();
+  },
+  tell() {
+    if (this.told) return; this.told = true;
+    toast('你的浏览器开着「鼠标手势」，按住右键拖动会被它拦下（所以弹出“无效手势”）。改用 Ctrl + 左键拖动：一样能倾斜、旋转地图，往上拖看天空、往下拖进地铁。也可以在浏览器设置里关掉鼠标手势。', 10000);
+  },
+};
 const LookUp = {
   acc: 0, p: 0, busy: false, drag: null, DEAD: 60, TH: 230,   // px pulled past the top: nothing shows until DEAD, sky opens at TH
   atTop() { return !!map && map.getPitch() >= map.getMaxPitch() - 0.6; },
   init() {
     const el = map.getCanvasContainer();
-    $('#lookHow').textContent = matchMedia('(pointer: coarse)').matches ? '双指继续往上推' : '按住右键继续往上拖';
+    $('#lookHow').textContent = matchMedia('(pointer: coarse)').matches ? '双指继续往上推' : '按住右键（或 Ctrl + 左键）继续往上拖';
     el.addEventListener('mousedown', (e) => { if (e.button === 2 || (e.button === 0 && e.ctrlKey)) this.drag = { y: e.clientY }; });
     window.addEventListener('mousemove', (e) => { if (!this.drag || this.drag.touch) return; const dy = this.drag.y - e.clientY; this.drag.y = e.clientY; this.push(dy); });
     window.addEventListener('mouseup', () => { if (this.drag && !this.drag.touch) { this.drag = null; this.release(); } });
@@ -6121,7 +6145,7 @@ const Metro = {
   atBottom() { return !!map && map.getPitch() <= map.getMinPitch() + 0.6; },
   init() {
     const el = map.getCanvasContainer();
-    $('#sinkHow').textContent = matchMedia('(pointer: coarse)').matches ? '双指继续往下拉' : '按住右键继续往下拖';
+    $('#sinkHow').textContent = matchMedia('(pointer: coarse)').matches ? '双指继续往下拉' : '按住右键（或 Ctrl + 左键）继续往下拖';
     el.addEventListener('mousedown', (e) => { if (e.button === 2 || (e.button === 0 && e.ctrlKey)) this.drag = { y: e.clientY }; });
     window.addEventListener('mousemove', (e) => { if (!this.drag || this.drag.touch) return; const dy = e.clientY - this.drag.y; this.drag.y = e.clientY; this.push(dy); });
     window.addEventListener('mouseup', () => { if (this.drag && !this.drag.touch) { this.drag = null; this.release(); } });
