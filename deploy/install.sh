@@ -13,10 +13,11 @@ echo "==> 安装 nginx 和 git"
 apt-get update -qq
 apt-get install -y -qq nginx git >/dev/null
 
-if [ ! -d "$ROOT/.git" ]; then
+if [ ! -d "$ROOT/.git" ] && [ ! -f "$ROOT/index.html" ]; then
   echo "==> 从 GitHub 下载网站（约 220 MB，视网络需要几分钟）"
   git clone --depth 1 "$REPO" "$ROOT"
 fi
+[ -f "$ROOT/index.html" ] || { echo "在 $ROOT 里没找到网站文件"; exit 1; }
 git config --system --add safe.directory "$ROOT" 2>/dev/null || true
 
 echo "==> 给文本文件生成压缩副本（访客下载量少一半左右）"
@@ -32,9 +33,13 @@ systemctl enable nginx >/dev/null 2>&1 || true
 systemctl restart nginx
 if command -v ufw >/dev/null 2>&1 && ufw status 2>/dev/null | grep -q "Status: active"; then ufw allow 80/tcp >/dev/null; fi
 
-echo "==> 每 15 分钟自动同步 GitHub 上的新版本"
-echo "*/15 * * * * root /usr/local/bin/bh-update >> /var/log/bh-update.log 2>&1" > /etc/cron.d/beyond-horizons
-chmod 644 /etc/cron.d/beyond-horizons
+if [ -d "$ROOT/.git" ]; then
+  echo "==> 每 15 分钟自动同步 GitHub 上的新版本"
+  echo "*/15 * * * * root /usr/local/bin/bh-update >> /var/log/bh-update.log 2>&1" > /etc/cron.d/beyond-horizons
+  chmod 644 /etc/cron.d/beyond-horizons
+else
+  echo "（网站是手动上传的，不是 git 下载的，所以不会自动同步更新）"
+fi
 
 IP=$(curl -s --max-time 3 http://metadata.tencentyun.com/latest/meta-data/public-ipv4 || true)
 echo

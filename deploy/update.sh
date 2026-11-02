@@ -4,7 +4,7 @@
 set -uo pipefail
 ROOT=/var/www/beyond-horizons
 cd "$ROOT" || exit 1
-if [ "${1:-}" != "--compress-only" ]; then
+if [ "${1:-}" != "--compress-only" ] && [ -d .git ]; then
   old=$(git rev-parse HEAD)
   timeout 900 git fetch --depth 1 -q origin main || { echo "$(date '+%F %T') 拉取失败，下次再试"; exit 0; }
   new=$(git rev-parse FETCH_HEAD)
@@ -19,5 +19,5 @@ find "$ROOT" -path "$ROOT/.git" -prune -o -type f \( -name '*.html' -o -name '*.
 # 源文件已删掉的 .gz 也删掉
 find "$ROOT" -path "$ROOT/.git" -prune -o -type f -name '*.gz' -print | while IFS= read -r g; do [ -f "${g%.gz}" ] || rm -f "$g"; done
 # 偶尔清理一下 .git，免得越存越大
-if [ $((RANDOM % 40)) -eq 0 ]; then git gc -q --prune=now 2>/dev/null || true; fi
+if [ -d .git ] && [ $((RANDOM % 40)) -eq 0 ]; then git gc -q --prune=now 2>/dev/null || true; fi
 exit 0
