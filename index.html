@@ -525,14 +525,7 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
 .d-kicker .k-sub::before{content:"·";margin-right:6px;color:var(--ink-3)}
 .d-title{margin:0;font-family:var(--f-display);font-weight:700;font-size:22px;letter-spacing:.04em;line-height:1.3;text-wrap:balance}
 .f-head{display:flex;align-items:center;gap:14px}
-.f-photo{position:relative;margin:0;height:200px;flex:none;background:var(--ice);overflow:hidden}
-.f-photo img{width:100%;height:100%;object-fit:cover;display:block;animation:fphoto .5s ease}
-@keyframes fphoto{from{opacity:0;transform:scale(1.03)}to{opacity:1;transform:none}}
-.f-photo::after{content:"";position:absolute;inset:auto 0 0 0;height:64px;background:linear-gradient(to top,rgba(8,18,40,.6),rgba(8,18,40,0));pointer-events:none}
-.f-photo figcaption{position:absolute;left:16px;right:16px;bottom:9px;z-index:1;display:flex;justify-content:space-between;align-items:flex-end;gap:10px;font-size:11.5px;color:#FFFFFF;text-shadow:0 1px 3px rgba(0,0,0,.45)}
-.f-photo figcaption a{color:rgba(255,255,255,.78);text-decoration:none;font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60%}
-.f-photo figcaption a:hover{color:#FFFFFF;text-decoration:underline}
-@media (max-width:1023px){.f-photo{height:160px}}
+
 .f-logo{flex:none;width:56px;height:56px;border-radius:16px;background:#FFFFFF;border:1px solid var(--line);box-shadow:0 6px 16px -10px rgba(29,78,216,.35);display:grid;place-items:center;overflow:hidden}
 .f-logo img{max-width:82%;max-height:82%;object-fit:contain}
 .d-sub{margin:-8px 0 0;font-size:12.5px;color:var(--ink-2)}
@@ -4854,19 +4847,11 @@ function navLinks(name, addr, p) {
   if (IS_IOS) links.push(['苹果地图', `https://maps.apple.com/?q=${n}&ll=${y},${x}`]);
   return links.map(([t, u]) => `<a class="navbtn" href="${u}" target="_blank" rel="noopener">${ICONS.go}${t}</a>`).join('');
 }
-// 吃饭地图卡片顶上的照片：只给有名的店配，都来自 Wikimedia Commons 的自由许可照片（作者和许可写在照片角上，点开是原图页）。
-// 连锁店的照片不一定是去过的那家分店，图注里写明是哪家。
-const FOOD_PHOTOS = {
-  f11: { cap: '广州酒家文昌总店', by: 'Dzb0715', lic: 'CC BY-SA 2.5', url: 'https://commons.wikimedia.org/wiki/File:GZ_jiujia.jpg', pos: '50% 28%' },
-  f01: { cap: '莲香楼第十甫路老店', by: 'David Wong', lic: 'CC BY-SA 3.0', url: 'https://commons.wikimedia.org/wiki/File:GZLinHengLau.JPG', pos: '50% 42%' },
-  f20: { cap: '白天鹅宾馆', by: 'PQ77wd', lic: 'CC BY-SA 4.0', url: 'https://commons.wikimedia.org/wiki/File:WHITE_SWAN_HOTEL_(2017-10-14).jpg', pos: '50% 55%' },
-  f04: { cap: '炳胜品味', by: 'robbie 林', lic: 'CC BY-SA 2.0', url: 'https://commons.wikimedia.org/wiki/File:%E5%BB%A3%E5%B7%9E_%E7%82%B3%E5%8B%9D_(8605140849).jpg', pos: '50% 30%' },
-  f19: { cap: '利苑酒家（香港分店）', by: 'See-ming Lee', lic: 'CC BY 2.0', url: 'https://commons.wikimedia.org/wiki/File:%E5%88%A9%E8%8B%91_Lei_Garden_SML.20120925T114559.IP3_(8085101777).jpg', pos: '50% 40%' },
-  f79: { cap: '海底捞（外地分店）', by: 'N509FZ', lic: 'CC BY-SA 4.0', url: 'https://commons.wikimedia.org/wiki/File:Haidilao_Hot_Pot_at_GR_Shopping_Mall_(20200829181143).jpg', pos: '50% 35%' },
-  f80: { cap: '鼎泰丰（北京当代商城店）', by: 'N509FZ', lic: 'CC BY-SA 4.0', url: 'https://commons.wikimedia.org/wiki/File:Din_Tai_Fung_at_Beijing_Modern_Plaza_(20210117113149).jpg', pos: '50% 45%' },
-  f30: { cap: '寿司郎的外带寿司', by: 'Ocdp', lic: 'CC0', url: 'https://commons.wikimedia.org/wiki/File:Akindo_Sushiro_001.jpg', pos: '50% 45%' },
-  f31: { cap: '元气寿司（香港 apm 店）', by: 'Wpcpey', lic: 'CC BY 4.0', url: 'https://commons.wikimedia.org/wiki/File:Genki_Sushi_concept_store_in_apm_2016.jpg', pos: '50% 40%' },
-  f34: { cap: '滨寿司（台北南京复兴店）', by: 'Vetalapancavimsatika', lic: 'CC BY-SA 4.0', url: 'https://commons.wikimedia.org/wiki/File:Hama-Sushi_Taiwan_Nanjing-Fuxing.jpg', pos: '50% 30%' },
+// 吃饭地图卡片上的店标：只给有名的连锁店配，而且只用能自由使用的版本（Wikimedia Commons 上公有领域或自由许可的文件），点开是来源页
+const FOOD_LOGOS = {
+  f30: { src: 'logos/sushiro.png', by: 'あきんどスシロー', lic: '公有领域', url: 'https://commons.wikimedia.org/wiki/File:Sushiro.svg' },
+  f34: { src: 'logos/hama.png', by: 'Hama-sushi', lic: 'CC BY-SA 4.0', url: 'https://commons.wikimedia.org/wiki/File:Hama-Sushi_Logo.png' },
+  f31: { src: 'logos/genki.png', by: 'Bodhikun', lic: 'CC BY 3.0', url: 'https://commons.wikimedia.org/wiki/File:Genki_sushi_logo.jpg' },
 };
 function detailHTML(type, it) {
   if (type === 'food') {
@@ -4883,11 +4868,10 @@ function detailHTML(type, it) {
       : it.chain ? '<p class="d-note">连锁品牌，没记是哪家分店，所以地图上没有标点。</p>'
       : it.unfound ? '<p class="d-note">还没查到这家店的准确位置，地图上暂不标点。</p>'
       : it.locs && it.locs.some((l) => l.approx) ? '<p class="d-note">地图上标的是大致位置。</p>' : '';
-    const ph = FOOD_PHOTOS[it.id];
-    const fig = ph ? `<figure class="f-photo"><img src="photos/food/${it.id}.jpg" alt="${esc(ph.cap)}" style="object-position:${ph.pos}" loading="lazy" onerror="this.closest('figure').remove()"><figcaption><span>${esc(ph.cap)}</span><a href="${ph.url}" target="_blank" rel="noopener">图：${esc(ph.by)} · ${esc(ph.lic)}</a></figcaption></figure>` : '';
-    return `${fig}<div class="d-body" style="padding-top:${ph ? 16 : 20}px">
+    const lg = FOOD_LOGOS[it.id];
+    return `<div class="d-body" style="padding-top:20px">
       <div class="d-kicker"><span class="chip">${esc(it.cat)}</span>${it.area ? `<span>${esc(it.area)}</span>` : ''}${subs.length ? `<span class="k-sub">${subs.map(esc).join('、')}</span>` : ''}</div>
-      ${it.logo ? `<div class="f-head"><span class="f-logo"><img src="${esc(it.logo)}" alt="${esc(it.name.replace(/[（(].*$/, ''))} 的标志" loading="lazy" onerror="this.closest('.f-logo').remove()"></span><h2 class="d-title">${esc(it.name)}</h2></div>` : `<h2 class="d-title">${esc(it.name)}</h2>`}
+      ${lg ? `<div class="f-head"><a class="f-logo" href="${lg.url}" target="_blank" rel="noopener" title="店标：${esc(lg.by)} · ${esc(lg.lic)} · Wikimedia Commons"><img src="${lg.src}" alt="${esc(it.name.replace(/[（(].*$/, ''))} 的店标" loading="lazy" onerror="this.closest('.f-logo').remove()"></a><h2 class="d-title">${esc(it.name)}</h2></div>` : `<h2 class="d-title">${esc(it.name)}</h2>`}
       <div class="f-score">${sc}</div>
       ${it.review ? `<p class="d-quote"><b>我的评价</b>${esc(it.review)}</p>` : ''}
       ${branches}${note}
