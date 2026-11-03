@@ -524,6 +524,9 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
 .navbtn:hover{border-color:var(--blue);color:var(--blue)}
 .d-kicker .k-sub::before{content:"·";margin-right:6px;color:var(--ink-3)}
 .d-title{margin:0;font-family:var(--f-display);font-weight:700;font-size:22px;letter-spacing:.04em;line-height:1.3;text-wrap:balance}
+.f-head{display:flex;align-items:center;gap:14px}
+.f-logo{flex:none;width:56px;height:56px;border-radius:16px;background:#FFFFFF;border:1px solid var(--line);box-shadow:0 6px 16px -10px rgba(29,78,216,.35);display:grid;place-items:center;overflow:hidden}
+.f-logo img{max-width:82%;max-height:82%;object-fit:contain}
 .d-sub{margin:-8px 0 0;font-size:12.5px;color:var(--ink-2)}
 .d-text{margin:0;font-size:14px;line-height:1.8;color:var(--ink)}
 .d-quote{margin:0;padding:12px 14px;border-radius:12px;background:var(--ice-2);font-size:13.5px;line-height:1.8;color:var(--ink-2)}
@@ -1258,6 +1261,8 @@ const SITE = {
     { id: 'f83', cat: "面食肠粉与港式茶餐", name: "才福面家（德政中路店）", score: 8, area: "越秀", locs: [{ b: "德政中路店", s: "德政路", m: "文明路德政路口", p: [113.27022, 23.12578], a: "越秀区德政中路238号" }], review: "以前去中图的时候经常吃，非常美味啊，伊面非常的好吃，也很划算，但是好久没去了" },
     { id: 'f88', cat: "面食肠粉与港式茶餐", name: "老西关濑粉（文明路店）", score: 7.3, area: "越秀", locs: [{ b: "文明路店", s: "文明路", m: "文明路德政路口", p: [113.27047, 23.1252], a: "越秀区文明路216号" }], review: "就是比较普通的濑粉，可能用料足一点，好像还有水菱角但是没吃过" },
     { id: 'f90', cat: "面食肠粉与港式茶餐", name: "食盈碗仔翅（德政中路店）", score: 7.4, area: "越秀", locs: [{ b: "德政中路店", s: "德政路", p: [113.26986, 23.12484], a: "越秀区德政中路197号" }], review: "还可以，碗仔翅来说无功无过" },
+    { id: 'f92', cat: "面食肠粉与港式茶餐", name: "顺兴面店", score: 8, area: "荔湾", locs: [{ b: "丛桂路店", s: "黄沙", p: [113.23365, 23.11378], a: "荔湾区丛桂路19号101" }], review: "情怀加分，很喜欢吃牛三星面" },
+    { id: 'f93', cat: "面食肠粉与港式茶餐", name: "非凡肠粉皇", score: 7.8, area: "越秀", locs: [{ b: "西华路店", s: "西华路", p: [113.24448, 23.13364], a: "越秀区西华路" }], review: "牛肉肠非常的好吃，以前上学还会买它的皮蛋瘦肉粥当早餐吃" },
     { id: 'f77', cat: "咖啡茶饮与甜品", name: "海天堂龟苓膏（梅东店）", score: null, area: "越秀", locs: [{ b: "梅东店", s: "梅花村", p: [113.30236, 23.1324], a: "越秀区梅东路30号106号" }], review: "养生这一块" },
     { id: 'f78', cat: "咖啡茶饮与甜品", name: "六六·抹茶66's SALDessert（保利时光里店）", score: 7.4, area: "越秀", locs: [{ b: "保利时光里店（建设大马路）", s: "建设新村", p: [113.27645, 23.13889], a: "越秀区建设大马路18号保利时光里" }], review: "甜，但是还算可以" },
     { id: 'f84', cat: "咖啡茶饮与甜品", name: "百花甜品（文明路原址店）", score: 7.5, area: "越秀", locs: [{ b: "文明路原址店", s: "文明路", m: "文明路德政路口", p: [113.27022, 23.12518], a: "越秀区文明路212号" }], review: "这个店以前经常排队好像有段时间倒闭了，然后现在不知道是开连锁了还是怎么样，感觉没以前好吃了" },
@@ -4858,7 +4863,7 @@ function detailHTML(type, it) {
       : it.locs && it.locs.some((l) => l.approx) ? '<p class="d-note">地图上标的是大致位置。</p>' : '';
     return `<div class="d-body" style="padding-top:20px">
       <div class="d-kicker"><span class="chip">${esc(it.cat)}</span>${it.area ? `<span>${esc(it.area)}</span>` : ''}${subs.length ? `<span class="k-sub">${subs.map(esc).join('、')}</span>` : ''}</div>
-      <h2 class="d-title">${esc(it.name)}</h2>
+      ${it.logo ? `<div class="f-head"><span class="f-logo"><img src="${esc(it.logo)}" alt="${esc(it.name.replace(/[（(].*$/, ''))} 的标志" loading="lazy" onerror="this.closest('.f-logo').remove()"></span><h2 class="d-title">${esc(it.name)}</h2></div>` : `<h2 class="d-title">${esc(it.name)}</h2>`}
       <div class="f-score">${sc}</div>
       ${it.review ? `<p class="d-quote"><b>我的评价</b>${esc(it.review)}</p>` : ''}
       ${branches}${note}
