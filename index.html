@@ -480,6 +480,16 @@ a.trk{text-decoration:none;color:inherit}
 .rail-card td{padding:4px 0;border-bottom:1px solid var(--line);color:var(--ink-2)}
 .rail-card td:last-child{text-align:right;font-family:var(--f-mono);font-size:12px;color:var(--ink)}
 .rail-card .btn{width:100%;justify-content:center}
+.rail-card .rstops{list-style:none;margin:8px 0 6px 5px;padding:0 4px 0 0;max-height:min(28vh,212px);overflow:auto;overscroll-behavior:contain;scrollbar-width:thin}
+.rail-card .rstops li{position:relative;display:flex;align-items:center;gap:10px;padding:3.5px 0 3.5px 14px;font-size:13px;color:var(--ink)}
+.rail-card .rstops li::before{content:"";position:absolute;left:4px;top:0;bottom:0;width:2px;background:var(--lc,#7A9BD6)}
+.rail-card .rstops li:first-child::before{top:50%}.rail-card .rstops li:last-child::before{bottom:50%}
+.rail-card .rstops i{position:absolute;left:0;top:50%;width:10px;height:10px;margin-top:-5px;border-radius:50%;background:var(--glass-strong,#fff);border:2px solid var(--lc,#7A9BD6);box-sizing:border-box}
+.rail-card .rstops b{margin-left:auto;font-family:var(--f-mono);font-weight:400;font-size:12px;color:var(--ink-2)}
+.rail-card .rstops li.past{color:var(--ink-3)}.rail-card .rstops li.past i{background:var(--lc,#7A9BD6)}.rail-card .rstops li.past b{color:var(--ink-3)}
+.rail-card .rstops li.nx{font-weight:600}.rail-card .rstops li.nx i{width:12px;height:12px;margin-top:-6px;left:-1px;box-shadow:0 0 0 3px color-mix(in srgb,var(--lc,#7A9BD6) 28%,transparent)}
+.rail-card .rstops li.nx b{color:var(--ink);font-weight:600}
+.rail-card .rstops li.far{color:var(--ink-3);font-size:12px}.rail-card .rstops li.far i{border-style:dashed}.rail-card .rstops li.far::before{background:repeating-linear-gradient(var(--lc,#7A9BD6) 0 3px,transparent 3px 6px)}
 .rail-card .sroute{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 7px;font-size:17px;line-height:1.3}
 .rail-card .sroute span{color:var(--ink-3);font-size:14px}
 .rail-card .snote{margin:-4px 0 10px;font-size:11px;color:var(--ink-3)}
@@ -1270,6 +1280,7 @@ const SITE = {
     { id: 'f90', cat: "面食肠粉与港式茶餐", name: "食盈碗仔翅（德政中路店）", score: 7.4, area: "越秀", locs: [{ b: "德政中路店", s: "德政路", p: [113.26986, 23.12484], a: "越秀区德政中路197号" }], review: "还可以，碗仔翅来说无功无过" },
     { id: 'f92', cat: "面食肠粉与港式茶餐", name: "顺兴面店", score: 8, area: "荔湾", locs: [{ b: "丛桂路店", s: "黄沙", p: [113.23365, 23.11378], a: "荔湾区丛桂路19号101" }], review: "情怀加分，很喜欢吃牛三星面" },
     { id: 'f93', cat: "面食肠粉与港式茶餐", name: "非凡肠粉皇", score: 7.8, area: "越秀", locs: [{ b: "东风东路店", s: "梅花村", p: [113.2990, 23.1344], a: "越秀区东风东路786号", approx: 1 }], review: "牛肉肠非常的好吃，以前上学还会买它的皮蛋瘦肉粥当早餐吃" },
+    { id: 'f94', city: 'sz', cat: "咖啡茶饮与甜品", name: "AllYouWant", score: 7.8, area: "南山", locs: [{ b: "华侨城店", s: "世界之窗", p: [113.9761, 22.5384], a: "南山区华侨城中新街12栋106", approx: 1 }], review: "非常好喝的巧克力，可以喝一下午" },
     { id: 'f77', cat: "咖啡茶饮与甜品", name: "海天堂龟苓膏（梅东店）", score: null, area: "越秀", locs: [{ b: "梅东店", s: "梅花村", p: [113.30236, 23.1324], a: "越秀区梅东路30号106号" }], review: "养生这一块" },
     { id: 'f78', cat: "咖啡茶饮与甜品", name: "六六·抹茶66's SALDessert（保利时光里店）", score: 7.4, area: "越秀", locs: [{ b: "保利时光里店（建设大马路）", s: "建设新村", p: [113.27645, 23.13889], a: "越秀区建设大马路18号保利时光里" }], review: "甜，但是还算可以" },
     { id: 'f84', cat: "咖啡茶饮与甜品", name: "百花甜品（文明路原址店）", score: 7.5, area: "越秀", locs: [{ b: "文明路原址店", s: "文明路", m: "文明路德政路口", p: [113.27022, 23.12518], a: "越秀区文明路212号" }], review: "这个店以前经常排队好像有段时间倒闭了，然后现在不知道是开连锁了还是怎么样，感觉没以前好吃了" },
@@ -6809,6 +6820,15 @@ const Rail = Object.assign(Object.create(Metro), {
       map.addSource('rail-cars', { type: 'geojson', data: { type: 'FeatureCollection', features: [] }, tolerance: 0 });
       const isLine = ['==', ['geometry-type'], 'LineString'], isDot = ['==', ['geometry-type'], 'Point'], isSel = ['==', ['get', 'sel'], 1];
       const grow = (v) => ['interpolate', ['linear'], ['zoom'], 13.2, 0, 14, v];   // rises with the bridges, so a train on a viaduct stays on its deck
+      // the picked train's own line and the stations it calls at, named, whether or not the 线路 are on
+      map.addSource('rail-sel', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+      map.addLayer({ id: 'icr-sel-line', type: 'line', source: 'rail-sel', filter: isLine, layout: { 'line-join': 'round', 'line-cap': 'round' },
+        paint: { 'line-color': ['get', 'color'], 'line-width': ['interpolate', ['linear'], ['zoom'], 8, 2.4, 14, 4.5], 'line-opacity': 0.5 } }, 'trail');
+      map.addLayer({ id: 'icr-sel-st', type: 'circle', source: 'rail-sel', filter: isDot,
+        paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 8, 3.4, 14, 5.6], 'circle-color': '#FFFFFF', 'circle-stroke-color': ['get', 'color'], 'circle-stroke-width': ['case', ['==', ['get', 'nx'], 1], 3.2, 2] } });
+      map.addLayer({ id: 'icr-sel-st-label', type: 'symbol', source: 'rail-sel', filter: isDot,
+        layout: { 'text-field': ['concat', ['get', 'n'], '站'], 'text-font': FONT, 'text-size': ['case', ['==', ['get', 'nx'], 1], 13, 12], 'text-offset': [0, 1.05], 'text-anchor': 'top', 'text-padding': 2, 'text-optional': true, 'symbol-sort-key': ['-', 0, ['get', 'nx']] },
+        paint: { 'text-color': '#1E3A66', 'text-halo-color': 'rgba(255,255,255,.95)', 'text-halo-width': 1.8 } });
       map.addLayer({ id: 'icr-train-sel', type: 'line', source: 'rail-trains', filter: ['all', isLine, isSel], layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: { 'line-color': ['get', 'color'], 'line-width': ['+', ['get', 'w'], 16], 'line-opacity': 0.26, 'line-blur': 6 } }, 'trail');
       map.addLayer({ id: 'icr-train-sel2', type: 'circle', source: 'rail-trains', filter: ['all', isDot, isSel],
@@ -6846,7 +6866,7 @@ const Rail = Object.assign(Object.create(Metro), {
     this.enabled = !this.enabled;
     try { localStorage.setItem('bh-rail', this.enabled ? '1' : '0'); } catch (e) { /* fine */ }
     $('#zRail').setAttribute('aria-pressed', String(this.enabled));
-    for (const id of ['icr-line-case', 'icr-line', 'icr-station', 'icr-station-label', 'icr-train-sel', 'icr-train-sel2', 'icr-train-ghost', 'icr-train-ghost-line', 'icr-train-body', 'icr-train-band', 'icr-train-icon', 'icr-train-hit', 'icr-train-hit2']) if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', this.enabled ? 'visible' : 'none');
+    for (const id of ['icr-line-case', 'icr-line', 'icr-station', 'icr-station-label', 'icr-train-sel', 'icr-train-sel2', 'icr-train-ghost', 'icr-train-ghost-line', 'icr-train-body', 'icr-train-band', 'icr-train-icon', 'icr-train-hit', 'icr-train-hit2', 'icr-sel-line', 'icr-sel-st', 'icr-sel-st-label']) if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', this.enabled ? 'visible' : 'none');
     Routes.apply();
     if (this.enabled) { this.load(); if (!this.night(0)) toast('城际列车：按真实轨道、车长和速度模拟的高铁、城际和动车'); } else { this.select(null); clearTimeout(this.timer); this.timer = 0; }
   },
@@ -7056,8 +7076,17 @@ const Rail = Object.assign(Object.create(Metro), {
   },
   select(id) {
     this.sel = id; const box = $('#railCard');
-    if (!id) { this.follow = false; box.hidden = true; box.dataset.k = ''; this.kick(); return; }
+    if (!id) { this.follow = false; box.hidden = true; box.dataset.k = ''; this.stopsKey = ''; if (map.getSource('rail-sel')) map.getSource('rail-sel').setData({ type: 'FeatureCollection', features: [] }); this.kick(); return; }
     box.hidden = false; this.cardT = 0; this.kick(); this.card();
+  },
+  // the picked train's line and its stations on the map (the next one a little bolder)
+  showStops(t, next) {
+    const key = `${t.id}|${next}`; if (this.stopsKey === key || !map.getSource('rail-sel')) return; this.stopsKey = key;
+    const svc = t.svc, line = svc.line, c = [], f = [];
+    for (let i = 0; i < svc.mx.length; i++) c.push(this.ll(svc.mx[i], svc.my[i]));
+    f.push({ type: 'Feature', properties: { color: line.color }, geometry: { type: 'LineString', coordinates: c } });
+    for (const [s, n] of svc.st) { const q = this.at2(svc, s); f.push({ type: 'Feature', properties: { n, color: line.color, nx: n === next ? 1 : 0 }, geometry: { type: 'Point', coordinates: this.ll(q[0], q[1]) } }); }
+    map.getSource('rail-sel').setData({ type: 'FeatureCollection', features: f });
   },
   setFollow(v) {
     this.follow = !!v && !!this.sel;
@@ -7073,15 +7102,29 @@ const Rail = Object.assign(Object.create(Metro), {
     const box = $('#railCard'), t = this.selTrain; if (box.hidden || !t) return;
     if (box.dataset.k !== this.sel) {   // buttons drawn once per train, so a click on them is never swallowed by a redraw
       box.dataset.k = this.sel;
-      box.innerHTML = `<button class="icon-btn x" data-x aria-label="关闭">${ICONS.close}</button><div data-body></div><button type="button" class="btn ghost" data-follow aria-pressed="${this.follow}">${this.follow ? '停止跟随' : '跟着这列车'}</button>`;
+      box.innerHTML = `<button class="icon-btn x" data-x aria-label="关闭">${ICONS.close}</button><div data-body></div><ol class="rstops" data-stops></ol><div data-tab></div><button type="button" class="btn ghost" data-follow aria-pressed="${this.follow}">${this.follow ? '停止跟随' : '跟着这列车'}</button>`;
     }
     const line = t.svc.line, tr = t.tr, q = t.q, T = TRAINS[this.typeOf(t)];
+    // the stations it calls at, with the times (Guangzhou time) it leaves or gets there; those behind it greyed out
+    const t0 = (this.sim - t.tau * 1000) / 1000, hm = (sec) => { const d = ((Math.round(sec / 60) % 1440) + 1440) % 1440; return `${String(Math.floor(d / 60)).padStart(2, '0')}:${String(d % 60).padStart(2, '0')}`; };
+    let nxt = -1;
+    for (let k = 0; k < tr.st.length; k++) if (tr.st[k].n && (q.stop ? k >= q.k && (k > q.k || t.tau < tr.dep[k]) : k > q.k)) { nxt = k; break; }
+    const items = tr.st.map((o, k) => {
+      if (!o.n) return k === tr.st.length - 1 ? `<li class="far"><i></i>${esc(tr.to)}<b>驶出大湾区</b></li>` : '';
+      const cls = nxt < 0 || k < nxt ? 'past' : k === nxt ? 'nx' : '';
+      return `<li class="${cls}"><i></i>${esc(o.n)}<b>${k === 0 ? '开 ' : ''}${hm(t0 + (k === 0 ? tr.dep[0] : tr.arr[k]))}</b></li>`;
+    }).join('');
+    const ol = box.querySelector('[data-stops]');
+    if (ol._h !== items) { const top = ol.scrollTop; ol._h = items; ol.innerHTML = items; ol.style.setProperty('--lc', line.color); ol.scrollTop = top; const cur = ol.querySelector('.nx'); if (cur && ol._k !== `${this.sel}|${nxt}`) { ol._k = `${this.sel}|${nxt}`; ol.scrollTop = Math.max(0, cur.offsetTop - ol.offsetTop - 26); } }
+    this.showStops(t, nxt >= 0 ? tr.st[nxt].n : '');
     let now;
     if (q.stop) { const o = tr.st[q.k]; now = t.tau < 0 ? `在${o.n}站等候发车 · ${this.fmt(-t.tau)}后开` : q.k === tr.st.length - 1 ? `到达终点 ${o.n || ''}` : `停靠${o.n}站 · ${this.fmt(tr.dep[q.k] - t.tau)}后开`; }
     else { let j = q.k + 1; while (j < tr.st.length - 1 && !tr.st[j].n) j++; if (this.inTun(t.svc, this.sOf(t.svc, t.dir, q.u))) now = '隧道中 · '; else now = ''; now += tr.st[j].n ? `下一站 ${tr.st[j].n} · 约 ${this.fmt(tr.arr[j] - t.tau)}` : `正驶向${tr.to.replace('方向', '')}，即将驶出大湾区`; }
-    const html = `<div class="rk"><i style="background:${line.color}"></i>${line.cat} · ${line.name}</div><h3>开往 ${tr.to}</h3><p class="rnow">${now}</p>
-      <table><tr><td>车型</td><td>${T.fam} ${T.name}</td></tr><tr><td>编组</td><td>${T.cars} 节 · ${T.len} 米</td></tr><tr><td>速度</td><td>${q.stop ? '停站中' : Math.round(q.v * 3.6) + ' km/h'}</td></tr><tr><td>最高</td><td>线路 ${line.vmax} · 车 ${T.v} km/h</td></tr></table>`;
+    const from = t.dir ? t.svc.b : t.svc.a;   // where it set out from (off the map, for the trains coming in from beyond it)
+    const html = `<div class="rk"><i style="background:${line.color}"></i>${line.cat} · ${line.name}</div><h3 class="sroute">${esc(from)}<span>→</span>${esc(tr.to)}</h3><p class="rnow">${now}</p>`;
+    const tab = `<table><tr><td>车型</td><td>${T.fam} ${T.name}</td></tr><tr><td>编组</td><td>${T.cars} 节 · ${T.len} 米</td></tr><tr><td>速度</td><td>${q.stop ? '停站中' : Math.round(q.v * 3.6) + ' km/h'}</td></tr><tr><td>最高</td><td>线路 ${line.vmax} · 车 ${T.v} km/h</td></tr></table>`;
     const body = box.querySelector('[data-body]'); if (body._h !== html) { body._h = html; body.innerHTML = html; }
+    const tb = box.querySelector('[data-tab]'); if (tb._h !== tab) { tb._h = tab; tb.innerHTML = tab; }
   },
 });
 
@@ -7594,7 +7637,7 @@ const NIGHT_PAINT = [
   ['poi-label', 'text-color', '#BCD3FB'], ['bridge-label', 'text-color', '#9FB2D4'], ['area-label', 'text-color', '#8FB2F5'],
   ['dist-label', 'text-color', '#7AA7FF'], ['cover-label', 'text-color', '#7AA7FF'], ['city-label', 'text-color', '#C3D2EC'], ['city-label', 'text-halo-color', NIGHT_HALO],
   ['veil', 'fill-color', '#0A1426'], ['water-fix', 'fill-color', '#050D1B'],
-  ['shp-band', 'fill-extrusion-color', ['case', ['==', ['get', 'win'], 1], '#FFD58A', ['==', ['get', 'glow'], 1], ['get', 'gc'], ['get', 'color']]], ['shp-glow', 'circle-opacity', 0.5], ['port-cargo', 'text-color', '#BCD3FB'], ['port-pax', 'text-color', '#9DB8E8'], ['shp-pier', 'circle-color', '#0A1426'], ['shp-pier-label', 'text-color', '#9DB8E8'],
+  ['shp-band', 'fill-extrusion-color', ['case', ['==', ['get', 'win'], 1], '#FFD58A', ['==', ['get', 'glow'], 1], ['get', 'gc'], ['get', 'color']]], ['shp-glow', 'circle-opacity', 0.5], ['icr-sel-st', 'circle-color', '#0A1426'], ['icr-sel-st-label', 'text-color', '#C3D2EC'], ['port-cargo', 'text-color', '#BCD3FB'], ['port-pax', 'text-color', '#9DB8E8'], ['shp-pier', 'circle-color', '#0A1426'], ['shp-pier-label', 'text-color', '#9DB8E8'],
   ['shp-wake', 'line-gradient', ['interpolate', ['linear'], ['line-progress'], 0, 'rgba(120,170,255,0)', 1, 'rgba(150,195,255,0.5)']],
   ['icr-line', 'line-color', RAIL_NIGHT], ['icr-line-case', 'line-color', '#0A1426'], ['icr-train-band', 'fill-extrusion-color', ['case', ['==', ['get', 'win'], 1], '#FFD58A', ['get', 'color']]], ['icr-station', 'circle-color', '#0A1426'], ['icr-station-label', 'text-color', '#9DB8E8'], ['icr-station-label', 'text-halo-color', NIGHT_HALO], ['city-line', 'line-color', '#3A62B0'], ['cover-line', 'line-color', '#5B8DEF'],
   ['aero-area', 'fill-color', '#0F1B31'], ['aero-apron', 'fill-color', '#18253D'], ['aero-taxi', 'line-color', '#1F2E4A'], ['aero-runway', 'line-color', '#2A3B5C'],
