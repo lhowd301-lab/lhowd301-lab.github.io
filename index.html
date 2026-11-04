@@ -590,7 +590,7 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
 .st-nav .icon-btn{width:32px;height:32px;border-radius:50%;cursor:pointer;background:rgba(255,255,255,.6);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:var(--ink-2);transition:transform .25s,background .25s,color .25s}
 .st-nav .icon-btn:hover{transform:translateY(-2px);background:var(--white);color:var(--blue)}
 .st-nav .icon-btn svg{width:16px;height:16px}
-.lifted{visibility:hidden}
+.st-lifted{visibility:hidden}   /* the photo tile while its picture flies to / from the viewer (not body.lifted, the sky) */
 .sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 @media (prefers-reduced-motion:reduce){.stc-hero img,.stc-th,.stc-th img,.stc-amb img{transition:none!important}.stc-hero:hover img,.stc-th:hover,.stc-th:hover img{transform:none!important}.pin-photo .pin-in{animation:none!important}.pin-photo .pb img{transition:none!important}}
 .d-cap{margin:-4px 0 0;font-size:12px;color:var(--ink-3)}
@@ -4813,11 +4813,11 @@ function openViewer(photos, i = 0, tiles = null, onStep = null) {
     if (closing) return; closing = true;
     document.removeEventListener('keydown', key, true); window.removeEventListener('resize', onResize);
     const t = tileOf(i), img = v.querySelector('.vimg');
-    const done = () => { v.hidden = true; v.getAnimations({ subtree: true }).forEach((a) => a.cancel()); document.querySelectorAll('.lifted').forEach((x) => x.classList.remove('lifted')); (t || tileAt(0))?.focus?.({ preventScroll: true }); };
+    const done = () => { v.hidden = true; v.getAnimations({ subtree: true }).forEach((a) => a.cancel()); document.querySelectorAll('.st-lifted').forEach((x) => x.classList.remove('st-lifted')); (t || tileAt(0))?.focus?.({ preventScroll: true }); };
     if (!anim || !img) { done(); return; }
     v.animate([{ backgroundColor: 'rgba(4,10,24,.92)' }, { backgroundColor: 'rgba(4,10,24,0)' }], { duration: 320, fill: 'forwards' });
     v.querySelectorAll('button,.vcap').forEach((e) => e.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 160, fill: 'forwards' }));
-    if (t) { t.classList.add('lifted'); flip(img, t, true).finished.then(done, done); }
+    if (t) { t.classList.add('st-lifted'); flip(img, t, true).finished.then(done, done); }
     else img.animate([{ opacity: 1 }, { opacity: 0, transform: 'scale(.96)' }], { duration: 240, fill: 'forwards' }).finished.then(done, done);
   };
   const key = (e) => {
@@ -4841,7 +4841,7 @@ function openViewer(photos, i = 0, tiles = null, onStep = null) {
   v.animate([{ backgroundColor: 'rgba(4,10,24,0)' }, { backgroundColor: 'rgba(4,10,24,.92)' }], { duration: 320, easing: 'ease-out' });
   v.querySelectorAll('button,.vcap').forEach((e) => e.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 260, delay: 200, fill: 'backwards' }));
   const t = tileOf(i);
-  if (t) { t.classList.add('lifted'); flip(img, t).finished.then(() => t.classList.remove('lifted'), () => t.classList.remove('lifted')); }
+  if (t) { t.classList.add('st-lifted'); flip(img, t).finished.then(() => t.classList.remove('st-lifted'), () => t.classList.remove('st-lifted')); }
   else img.animate([{ opacity: 0, transform: 'scale(.96)' }, { opacity: 1, transform: 'none' }], { duration: 300 });
 }
 function closeDetail() {
