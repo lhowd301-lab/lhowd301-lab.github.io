@@ -466,7 +466,7 @@ a.trk{text-decoration:none;color:inherit}
 /* ---------- 纯享模式：标记、卡片和面板都收起来，只留地图、指北针和缩放 */
 .zoom .pure-btn[aria-pressed="true"]{color:var(--blue);background:var(--ice-2)}
 .zoom .night-btn[aria-pressed="true"]{color:#F5C46B;background:#16233D}
-.zoom .rail-btn[aria-pressed="true"]{color:var(--blue);background:var(--ice-2)}
+.zoom .rail-btn[aria-pressed="true"],.zoom .ship-btn[aria-pressed="true"]{color:var(--blue);background:var(--ice-2)}
 .rail-card{position:fixed;z-index:6;left:50%;bottom:calc(64px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(300px,calc(100% - 32px));padding:14px 16px 12px;border-radius:18px;background:var(--glass-strong);border:1px solid var(--line);box-shadow:0 20px 50px -24px rgba(29,78,216,.45);color:var(--ink);animation:railIn .25s ease}
 @keyframes railIn{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
 @keyframes railInM{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
@@ -1071,6 +1071,7 @@ body.pure .pet-dock,body.pure .pet-bubble{display:none!important}
     <button id="zPure" class="pure-btn" aria-pressed="false" aria-label="纯享模式：收起标记和面板，只看地图" title="纯享模式"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V5.5A1.5 1.5 0 0 1 5.5 4H9M15 4h3.5A1.5 1.5 0 0 1 20 5.5V9M20 15v3.5a1.5 1.5 0 0 1-1.5 1.5H15M9 20H5.5A1.5 1.5 0 0 1 4 18.5V15"/></svg></button>
     <button id="zNight" class="night-btn" aria-pressed="false" aria-label="夜间模式：深色地图，高楼和地标开灯" title="夜间模式"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 14.5A7.5 7.5 0 0 1 9.5 4.5a7.5 7.5 0 1 0 10 10z"/></svg></button>
     <button id="zRail" class="rail-btn" aria-pressed="true" aria-label="城际列车：大湾区城市之间的高铁、城际和动车（模拟）" title="城际列车"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4.5h10a3 3 0 0 1 3 3V14a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V7.5a3 3 0 0 1 3-3z"/><path d="M4 11h16M8.5 14h.01M15.5 14h.01M8 20.5l1.5-3.5M16 20.5l-1.5-3.5"/></svg></button>
+    <button id="zShip" class="ship-btn" aria-pressed="true" aria-label="江海船只：客船、渡轮、珠江游船和货轮（模拟）" title="江海船只"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 13.5h17l-2.3 4.3H5.8z"/><path d="M7 13.5V9.5h9.5v4"/><path d="M10 9.5V6.5h3.5v3"/><path d="M3 21c1.5 0 1.5-.9 3-.9s1.5.9 3 .9 1.5-.9 3-.9 1.5.9 3 .9 1.5-.9 3-.9 1.5.9 3 .9"/></svg></button>
     <button id="zHome" aria-label="回到广州全景"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 5l8 6.5"/><path d="M6.5 10v9h11v-9"/></svg></button>
   </div>
 
@@ -1087,6 +1088,7 @@ body.pure .pet-dock,body.pure .pet-bubble{display:none!important}
 <aside class="drawer" id="profileDrawer" aria-label="个人介绍" aria-hidden="true"></aside>
 <article class="detail" id="detail" hidden aria-live="polite"></article>
 <section class="rail-card" id="railCard" hidden aria-label="城际列车"></section>
+<section class="rail-card" id="shipCard" hidden aria-label="江海船只"></section>
 
 <section class="sky" id="sky" hidden aria-label="地球之外：沉浸式星空">
   <canvas id="skyCanvas" tabindex="0" aria-label="星空：拖动环顾四周，滚轮缩放，点击天体查看信息"></canvas>
@@ -1884,7 +1886,8 @@ function buildStyle() {
       // the same tiles again, for what has to be laid out afresh at every zoom: text labels, and lines whose width depends on both zoom and the feature (rivers, runways)
       osml: { type: 'vector', tiles: ['gzt://{z}/{x}/{y}'], minzoom: 7, maxzoom: 13, bounds: DATA_BOUNDS },
       labels: { type: 'geojson', data: U('map/labels.json') },
-      seaout: { type: 'geojson', data: U('map/sea-out.json'), maxzoom: 12, tolerance: 0.6 },   // the sea beyond the street-level area (Natural Earth, ~50 m)
+      seaout: { type: 'geojson', data: U('map/sea-out.json'), maxzoom: 12, tolerance: 0.6 },
+      waterfix: { type: 'geojson', data: U('map/water-fix.json'), tolerance: 0.3 },   // wide channels the tiles lost (狮子洋, 莲花山水道, 西江…): tools/waterfix.py   // the sea beyond the street-level area (Natural Earth, ~50 m)
       gba: { type: 'geojson', data: U('map/gba.json') },
       veil: { type: 'geojson', data: U('map/veil.json'), tolerance: 0.5 },
       trail: { type: 'geojson', data: { type: 'FeatureCollection', features: [] } },
@@ -1903,6 +1906,8 @@ function buildStyle() {
       { id: 'green', type: 'fill', source: 'osm', 'source-layer': 'green', minzoom: 10, paint: { 'fill-color': ['match', ['get', 'k'], 'forest', C.forest, 'sport', C.sport, 'grass', C.grass, 'farm', '#E6F0E2', C.park], 'fill-opacity': ['interpolate', ['linear'], ['zoom'], 10, 0.5, 13, 1] } },
       { id: 'water', type: 'fill', source: 'osm', 'source-layer': 'water', paint: { 'fill-color': C.water, 'fill-antialias': true } },
       { id: 'water-line', type: 'line', source: 'osm', 'source-layer': 'water', minzoom: 11, paint: { 'line-color': C.waterLine, 'line-width': ['interpolate', ['linear'], ['zoom'], 11, 0.3, 16, 1.2], 'line-opacity': 0.55 } },
+      // 狮子洋、莲花山水道、西江下游这几段宽水道在 OSM 里是超大的多边形关系，切图用的分块数据没收进来，原先画成了陆地；按河道中线和两岸地物补回来
+      { id: 'water-fix', type: 'fill', source: 'waterfix', paint: { 'fill-color': C.water, 'fill-antialias': true } },
       { id: 'waterway', type: 'line', source: 'osml', 'source-layer': 'waterline', minzoom: 11, layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': C.water, 'line-width': ['interpolate', ['linear'], ['zoom'], 11, ['match', ['get', 'w'], 'river', 1, 0.4], 16, ['match', ['get', 'w'], 'river', 5, 2]] } },
       { id: 'dist-line', type: 'line', source: 'districts', filter: ['!=', ['geometry-type'], 'Point'], paint: { 'line-color': C.district, 'line-width': ['interpolate', ['linear'], ['zoom'], 8, 0.9, 13, 1.6], 'line-dasharray': [3, 2], 'line-opacity': ['interpolate', ['linear'], ['zoom'], 8, 0.55, 14, 0.22] } },
       // 城市之间的分界（虚线），缩小时看得清，放大后淡去
@@ -4230,7 +4235,7 @@ function initMap() {
   map.on('mouseleave', 'lm-3d', () => { map.getCanvas().style.cursor = ''; });
   // three.js 建模（广州塔、珠江新城、博物馆、猎德大桥……）：点到哪座就开哪座的地标卡片
   const onPin = (e) => e.originalEvent && e.originalEvent.target && e.originalEvent.target.closest && e.originalEvent.target.closest('.maplibregl-marker, .maplibregl-popup');
-  map.on('click', (e) => { if (state.pure || Metro.on || onPin(e) || Rail.onTrain(e.point)) return; const id = ThreeModels.pick(e.point); if (id) openDetail('landmark', id); });
+  map.on('click', (e) => { if (state.pure || Metro.on || onPin(e) || Rail.onTrain(e.point) || Ships.onShip(e.point)) return; const id = ThreeModels.pick(e.point); if (id) openDetail('landmark', id); });
   let pickQ = null, pickBusy = false, pickHot = false;
   map.on('mousemove', (e) => {
     if (state.pure || Metro.on || !ThreeModels.pickables) return;
@@ -4250,6 +4255,7 @@ function initMap() {
   Gesture.init();
   Metro.init();
   Rail.init();
+  Ships.init();
   map.on('move', syncAltitude);
   map.on('moveend', () => Weather.show());
   map.on('mousemove', (e) => { state.cursor = e.lngLat; syncAltitude(); });
@@ -6815,7 +6821,7 @@ const Rail = Object.assign(Object.create(Metro), {
       map.addLayer({ id: 'icr-train-hit', type: 'line', source: 'rail-trains', filter: isLine, layout: { 'line-cap': 'round' }, paint: { 'line-color': '#000', 'line-opacity': 0, 'line-width': ['max', 18, ['+', ['get', 'w'], 8]] } }, 'trail');
       map.addLayer({ id: 'icr-train-hit2', type: 'circle', source: 'rail-trains', filter: isDot, paint: { 'circle-color': '#000', 'circle-opacity': 0, 'circle-radius': 12 } }, 'trail');
       for (const id of ['icr-train-hit', 'icr-train-hit2']) {
-        map.on('click', id, (e) => { if (Metro.on || state.pure || this.clickT === e.originalEvent.timeStamp) return; this.clickT = e.originalEvent.timeStamp; const f = e.features && e.features[0]; if (f) this.select(f.properties.id); });
+        map.on('click', id, (e) => { if (Metro.on || state.pure || this.clickT === e.originalEvent.timeStamp) return; this.clickT = e.originalEvent.timeStamp; const f = e.features && e.features[0]; if (f) { if (Ships.sel) Ships.select(null); this.select(f.properties.id); } });
         map.on('mouseenter', id, () => { map.getCanvas().style.cursor = 'pointer'; });
         map.on('mouseleave', id, () => { map.getCanvas().style.cursor = ''; });
       }
@@ -7071,6 +7077,351 @@ const Rail = Object.assign(Object.create(Metro), {
   },
 });
 
+/* ===================================================================== 江海船只：珠江、伶仃洋和维港上的船
+   Real routes (tools/ships.py → map/ships.json, OpenStreetMap): the cross-boundary fast ferries and Hong Kong's ferries
+   on their own routes, Guangzhou's water buses and car ferries, the 珠江夜游 boats, river barges, and container ships,
+   bulk carriers and tankers on the lanes out of the ports, plus ships waiting at anchor. Departures at typical intervals
+   (not a timetable). Far off each is a small top-down ship pointing the way it is going, with a fading wake behind it;
+   close up it is drawn true to size in 3D, its windows lit at night (the night cruise boats with their coloured lights). */
+const SHIP_ICON = [14, 18, 24, 32, 42, 56];   // the far-off symbol's lengths (px)
+const SHIP_BOX = ['#C0392B', '#2471A3', '#D68910', '#7B8A8B', '#1E8449', '#B7950B', '#6C3483', '#A04000', '#117A65', '#E5E8EC', '#5D6D7E', '#922B21'];   // containers
+const SHIP_GLOW = ['#FF4FA3', '#4FD8FF', '#FFC94F', '#A77BFF', '#5CFF9D'];   // the cruise boats' lights at night
+// the boats as they really are: length and beam (m), height of the deck above the water (fb), hull and deck colours
+const VESSELS = {
+  TJ: { name: '港澳高速客船', len: 47, beam: 12, fb: 2.6, kind: 'cat', hull: '#FFFFFF', deck: '#E9EDF2', s1: '#D62E3A', s2: '#22407F' },
+  CAT: { name: '双体高速客船', len: 40, beam: 11, fb: 2.4, kind: 'cat', hull: '#FFFFFF', deck: '#E9EDF2', s1: '#1F6FD9', s2: '#F2A23A' },
+  STAR: { name: '天星小轮（双头渡轮）', len: 40, beam: 9.5, fb: 2, kind: 'star', hull: '#2E7A4E', deck: '#F3F1E6', s1: '#2E7A4E' },
+  FERRY: { name: '渡轮', len: 42, beam: 11, fb: 2.2, kind: 'ferry', hull: '#1F4E8C', deck: '#F4F6F9', s1: '#2B66C2', s2: '#F2C14E' },
+  WB: { name: '水上巴士', len: 26, beam: 6.5, fb: 1.6, kind: 'wb', hull: '#FFFFFF', deck: '#EEF2F7', s1: '#2F7FD8' },
+  CARF: { name: '汽车渡轮', len: 48, beam: 14, fb: 1.8, kind: 'carf', hull: '#2F5FA6', deck: '#9AA3AF', s1: '#F4F6F9' },
+  CRUISE: { name: '珠江游船', len: 52, beam: 12, fb: 1.8, kind: 'cruise', hull: '#F7F3EA', deck: '#EFE6D2', s1: '#B8282E', s2: '#D9A646' },
+  BOX: { name: '集装箱船', len: 300, beam: 48, fb: 10, kind: 'box', hull: '#22324F', deck: '#3B4658', bridge: 0.12 },
+  BOXL: { name: '集装箱船', len: 366, beam: 51, fb: 11, kind: 'box', hull: '#7A2424', deck: '#3B4658', bridge: 0.12 },
+  BOXU: { name: '超大型集装箱船', len: 400, beam: 61, fb: 12, kind: 'box', hull: '#1E4A5C', deck: '#3B4658', bridge: 0.62 },
+  BULK: { name: '散货船', len: 225, beam: 32, fb: 8, kind: 'bulk', hull: '#5B2420', deck: '#9A4632', s1: '#7F8792' },
+  TANK: { name: '油轮', len: 183, beam: 32, fb: 7, kind: 'tank', hull: '#2B2D35', deck: '#A8432E', s1: '#D8D2C2' },
+  BARGE: { name: '内河货船', len: 72, beam: 13, fb: 2.4, kind: 'barge', hull: '#2D3440', deck: '#3A414D', s1: '#B79A6A' },
+  BARGEC: { name: '内河集装箱船', len: 88, beam: 15, fb: 2.6, kind: 'bargec', hull: '#3A4A5E', deck: '#465364' },
+};
+const Ships = Object.assign(Object.create(Rail), {
+  D: null, loading: null, enabled: true, trains: [], anch: [], sel: null, selShip: null, follow: false, timer: 0, sim: 0, shift: 0, blank: false, jumping: false,
+  LAYERS: ['shp-wake', 'shp-glow', 'shp-sel', 'shp-sel-l', 'shp-body', 'shp-band', 'shp-icon', 'shp-hit', 'shp-hit2'],
+  init() {
+    try { this.enabled = localStorage.getItem('bh-ship') !== '0'; } catch (e) { /* fine */ }
+    $('#zShip').setAttribute('aria-pressed', String(this.enabled));
+    $('#zShip').addEventListener('click', () => this.toggle());
+    const go = () => {
+      const fc = { type: 'FeatureCollection', features: [] };
+      map.addSource('ship-icons', { type: 'geojson', data: fc, tolerance: 0, maxzoom: 16 });
+      map.addSource('ship-body', { type: 'geojson', data: fc, tolerance: 0 });
+      map.addSource('ship-wake', { type: 'geojson', data: fc, tolerance: 0, lineMetrics: true });
+      const before = map.getLayer('icr-train-sel') ? 'icr-train-sel' : 'trail', isSel = ['==', ['get', 'sel'], 1];
+      // the wake: fades out behind the stern
+      map.addLayer({ id: 'shp-wake', type: 'line', source: 'ship-wake', layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: { 'line-width': ['get', 'ww'], 'line-blur': ['*', ['get', 'ww'], 0.4], 'line-gradient': ['interpolate', ['linear'], ['line-progress'], 0, 'rgba(255,255,255,0)', 1, 'rgba(255,255,255,0.92)'] } }, before);
+      map.addLayer({ id: 'shp-glow', type: 'circle', source: 'ship-icons', paint: { 'circle-color': ['case', ['==', ['get', 'gc'], ''], '#FFD58A', ['get', 'gc']], 'circle-radius': ['get', 'gr'], 'circle-blur': 0.9, 'circle-opacity': 0 } }, before);
+      map.addLayer({ id: 'shp-sel', type: 'circle', source: 'ship-icons', filter: isSel, paint: { 'circle-color': ['get', 'color'], 'circle-radius': ['+', ['get', 'gr'], 8], 'circle-opacity': 0.24, 'circle-blur': 0.6 } }, before);
+      map.addLayer({ id: 'shp-sel-l', type: 'line', source: 'ship-body', filter: ['all', ['==', ['get', 'k'], 9], isSel], paint: { 'line-color': ['get', 'color'], 'line-width': 10, 'line-opacity': 0.35, 'line-blur': 6 } }, before);
+      map.addLayer({ id: 'shp-body', type: 'fill-extrusion', source: 'ship-body', filter: ['==', ['get', 'k'], 0],
+        paint: { 'fill-extrusion-color': ['get', 'color'], 'fill-extrusion-height': ['get', 'top'], 'fill-extrusion-base': ['get', 'base'], 'fill-extrusion-vertical-gradient': true } }, before);
+      map.addLayer({ id: 'shp-band', type: 'fill-extrusion', source: 'ship-body', filter: ['==', ['get', 'k'], 1],
+        paint: { 'fill-extrusion-color': ['get', 'color'], 'fill-extrusion-height': ['get', 'top'], 'fill-extrusion-base': ['get', 'base'], 'fill-extrusion-vertical-gradient': false } }, before);
+      map.addLayer({ id: 'shp-icon', type: 'symbol', source: 'ship-icons',
+        layout: { 'icon-image': ['get', 'img'], 'icon-size': ['get', 'sz'], 'icon-rotate': ['get', 'rot'], 'icon-rotation-alignment': 'map', 'icon-pitch-alignment': 'map',
+          'icon-allow-overlap': true, 'icon-ignore-placement': true, 'symbol-sort-key': ['get', 'sk'] } }, before);
+      map.addLayer({ id: 'shp-hit', type: 'fill', source: 'ship-body', filter: ['==', ['get', 'k'], 9], paint: { 'fill-color': '#000', 'fill-opacity': 0 } }, before);
+      map.addLayer({ id: 'shp-hit2', type: 'circle', source: 'ship-icons', paint: { 'circle-color': '#000', 'circle-opacity': 0, 'circle-radius': ['max', 11, ['get', 'gr']] } }, before);
+      for (const id of ['shp-hit', 'shp-hit2']) {
+        map.on('click', id, (e) => { if (Metro.on || state.pure || Rail.clickT === e.originalEvent.timeStamp) return; Rail.clickT = e.originalEvent.timeStamp; const f = e.features && e.features[0]; if (f) this.select(f.properties.id); });
+        map.on('mouseenter', id, () => { map.getCanvas().style.cursor = 'pointer'; });
+        map.on('mouseleave', id, () => { map.getCanvas().style.cursor = ''; });
+      }
+      map.on('moveend', () => { if (!this.jumping) this.kick(); });
+      document.addEventListener('visibilitychange', () => this.kick());
+      $('#shipCard').addEventListener('click', (e) => { if (e.target.closest('[data-x]')) this.select(null); else if (e.target.closest('[data-follow]')) this.setFollow(!this.follow); });
+      map.on('dragstart', () => { if (this.follow) this.setFollow(false); });
+      if (!this.enabled) for (const id of this.LAYERS) map.setLayoutProperty(id, 'visibility', 'none');
+      if (Night.on) Night.set(true, false);   // night was switched on before these layers existed
+      if (this.enabled) this.load();
+    };
+    if (map.loaded() || map.isStyleLoaded()) go(); else map.once('load', go);
+  },
+  onShip(pt) { return !!map.getLayer('shp-hit') && this.enabled && map.queryRenderedFeatures(pt, { layers: ['shp-hit', 'shp-hit2'] }).length > 0; },
+  toggle() {
+    this.enabled = !this.enabled;
+    try { localStorage.setItem('bh-ship', this.enabled ? '1' : '0'); } catch (e) { /* fine */ }
+    $('#zShip').setAttribute('aria-pressed', String(this.enabled));
+    for (const id of this.LAYERS) if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', this.enabled ? 'visible' : 'none');
+    if (this.enabled) { this.load(); toast('江海船只：港澳客船、维港渡轮、珠江夜游、内河货船和远洋货轮，按真实航线模拟'); } else { this.select(null); clearTimeout(this.timer); this.timer = 0; }
+  },
+  load() {
+    if (this.D) { this.kick(); return; }
+    if (this.loading) return;
+    this.loading = fetch(U('map/ships.json')).then((r) => r.json()).then((d) => {
+      this.prep(d); this.D = d;
+      this.lines.forEach((line, i) => {
+        const L = d.lines[i];
+        Object.assign(line, { cat: L.cat, vmax: L.vmax, op: L.op || '', dwell: L.dwell, end: L.end, fleet: L.fleet.filter(([k]) => VESSELS[k]) });
+        line.fw = line.fleet.reduce((a, f) => a + f[1], 0);
+        let h = 0; for (const ch of line.id) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+        line.ph = (h % 997) / 997;   // so that the lines do not all leave on the hour
+        line.svc.forEach((svc, j) => { const S = L.svc[j]; svc.sched = S.sched; svc.one = S.one; svc.deps = {}; svc.trip = [this.trip(svc, 0), this.trip(svc, 1)]; });
+      });
+      this.anch = (d.anch || []).flatMap((a, i) => a.s.map(([x, y, ty, h], j) => ({ id: `A${i}.${j}`, n: a.n, p: [x, y], ty, h })));
+      this.icons(); this.kick();
+    }).catch((e) => { console.warn('ships', e); this.loading = null; });
+  },
+  // a run from pier to pier: a few minutes at each pier on the way, longer at the ends (the cruise goes round and round)
+  trip(svc, dir) {
+    const line = svc.line, v = line.v, a = line.a, dA = (v * v) / (2 * a), L = svc.L;
+    let st = svc.st.map(([s, n]) => ({ u: s, n }));
+    if (svc.loop) st.push({ u: L, n: st[0].n });
+    if (svc.open[0]) st.unshift({ u: 0, n: null });
+    if (svc.open[1]) st.push({ u: L, n: null });
+    if (dir) st = st.reverse().map((o) => ({ u: L - o.u, n: o.n }));
+    const m = st.length, u = new Float64Array(m), arr = new Float64Array(m), dep = new Float64Array(m);
+    const run = (d) => (d >= 2 * dA ? d / v + v / a : 2 * Math.sqrt(d / a)), DW = line.dwell || 120, END = line.end || 600;
+    for (let i = 0; i < m; i++) {
+      u[i] = st[i].u; arr[i] = i ? dep[i - 1] + run(u[i] - u[i - 1]) : 0;
+      dep[i] = i === 0 ? 0 : arr[i] + (i === m - 1 ? (st[i].n ? END : 0) : st[i].n ? DW : 0);
+    }
+    return { st, u, arr, dep, T: dep[m - 1], pre: st[0].n ? END : 0, v, a, dA, to: svc.loop ? svc.b : dir ? svc.a : svc.b };
+  },
+  deps(svc, dir, wk) {   // the day's sailings from this direction's first pier: every so many minutes within each period
+    const k = dir * 2 + wk; if (svc.deps[k]) return svc.deps[k];
+    const out = [];
+    if (!(svc.one && dir)) for (const [h0, h1, m] of svc.sched || []) for (let t = h0 * 3600 + ((dir ? 0.5 : 0) + svc.line.ph) * m * 60; t < h1 * 3600; t += m * 60) out.push(t);
+    out.sort((x, y) => x - y);
+    return (svc.deps[k] = Float64Array.from(out));
+  },
+  tick() {
+    clearTimeout(this.timer); this.timer = 0;
+    if (!this.enabled || !this.D || document.hidden) return;
+    const z = map.getZoom();
+    this.sim = Date.now() + GZ_OFF + (this.shift || 0); this.base = { sim: this.sim, wall: Date.now() }; this.speed = 1;
+    if (!Metro.on) { this.render(z); this.blank = false; } else if (!this.blank) { this.blank = true; for (const id of ['ship-icons', 'ship-body', 'ship-wake']) map.getSource(id).setData({ type: 'FeatureCollection', features: [] }); }
+    this.timer = setTimeout(() => this.tick(), this.follow ? 60 : z < 9 ? 2500 : z < 10.5 ? 1200 : z < 12 ? 500 : z < 13.5 ? 220 : z < 15 ? 120 : 80);
+  },
+  // where a ship is and which way it points: centre (mercator), heading d, starboard n, mercator units per metre k.
+  // Ships keep to the right of the channel, so two meeting on the same route pass each other.
+  pose(t, V) {
+    const svc = t.svc, s = this.sOf(svc, t.dir, t.q.u), sg = t.dir ? -1 : 1;
+    const c = this.at2(svc, s), e = this.tan(svc, s, Math.max(15, V.len * 0.45)), d = [e[0] * sg, e[1] * sg], n = [-d[1], d[0]];
+    const k = 1 / (40075016.7 * Math.cos(this.ll(c[0], c[1])[1] * D2R));
+    const off = svc.loop ? 0 : V.len > 150 ? V.beam * 1.6 + 60 : V.beam * 1.1 + 6;
+    return { c: [c[0] + n[0] * off * k, c[1] + n[1] * off * k], d, n, k, s, sg, off };
+  },
+  poseA(a) {   // at anchor: the ships of an anchorage all swing round with the tide (twice a day)
+    const tide = ((this.sim / 1000) % 44712) / 44712, h = (a.h + 180 * (0.5 - 0.5 * Math.cos(2 * Math.PI * tide))) * D2R;
+    const c = [(a.p[0] + 180) / 360, (180 - (180 / Math.PI) * Math.log(Math.tan(Math.PI / 4 + (a.p[1] * D2R) / 2))) / 360];
+    const d = [Math.sin(h), -Math.cos(h)];
+    return { c, d, n: [-d[1], d[0]], k: 1 / (40075016.7 * Math.cos(a.p[1] * D2R)) };
+  },
+  hull(V, f = 1) {   // the outline seen from above, stern to bow (x along from the middle, y to starboard); f < 1 sets it in
+    const L = V.len, B = V.beam * f, X = (q) => -L / 2 + q * L;
+    if (V.kind === 'star') return [[X(0), 0], [X(0.05), -0.34 * B], [X(0.17), -0.5 * B], [X(0.83), -0.5 * B], [X(0.95), -0.34 * B], [X(1), 0], [X(0.95), 0.34 * B], [X(0.83), 0.5 * B], [X(0.17), 0.5 * B], [X(0.05), 0.34 * B]];
+    const bow = V.kind === 'barge' || V.kind === 'bargec' || V.kind === 'carf' ? [[X(0.93), -0.5 * B], [X(1), -0.32 * B], [X(1), 0.32 * B], [X(0.93), 0.5 * B]]
+      : V.kind === 'cat' ? [[X(0.84), -0.5 * B], [X(0.97), -0.42 * B], [X(1), -0.2 * B], [X(1), 0.2 * B], [X(0.97), 0.42 * B], [X(0.84), 0.5 * B]]
+        : [[X(0.8), -0.5 * B], [X(0.91), -0.42 * B], [X(0.97), -0.22 * B], [X(1), 0], [X(0.97), 0.22 * B], [X(0.91), 0.42 * B], [X(0.8), 0.5 * B]];
+    return [[X(0), -0.42 * B], [X(0.02), -0.5 * B], ...bow, [X(0.02), 0.5 * B], [X(0), 0.42 * B]];
+  },
+  hash(id) { let x = 0; for (let i = 0; i < id.length; i++) x = (x * 31 + id.charCodeAt(i)) >>> 0; return x; },
+  // the far-off symbol: each kind of boat seen from above, bow to the right, in its own colours
+  icons() {
+    const R = 4;
+    for (const [key, V] of Object.entries(VESSELS)) for (const len of SHIP_ICON) {
+      const name = `sh-${key}-${len}`; if (map.hasImage(name)) continue;
+      const w = Math.max(5, ((len * V.beam) / V.len) * (V.len > 150 ? 1.35 : 1.15)), P = 1.4;
+      const cv = document.createElement('canvas'); cv.width = Math.ceil((len + 2 * P) * R); cv.height = Math.ceil((w + 2 * P) * R);
+      const g = cv.getContext('2d'); g.scale(R, R); g.translate(P, P + w / 2);
+      const VV = { ...V, len, beam: w };
+      const out = (f) => { const h = this.hull(VV, f); g.beginPath(); h.forEach(([x, y], i) => (i ? g.lineTo(x + len / 2, y) : g.moveTo(x + len / 2, y))); g.closePath(); };
+      out(1); g.lineJoin = 'round'; g.lineWidth = 1.1; g.strokeStyle = 'rgba(18,26,42,.8)'; g.stroke(); g.fillStyle = V.hull; g.fill();
+      g.save(); out(0.84); g.clip(); g.fillStyle = V.deck; g.fillRect(0, -w / 2, len, w);
+      const rect = (q0, q1, ww, col, yc = 0) => { g.fillStyle = col; g.fillRect(q0 * len, yc - ww / 2, (q1 - q0) * len, ww); };
+      const bays = (q0, q1, skip) => {
+        const nb = Math.max(3, Math.min(Math.round((V.len * (q1 - q0)) / 13), Math.floor((len * (q1 - q0)) / 1.5))), bl = (q1 - q0) / nb;
+        for (let i = 0; i < nb; i++) { const q = q0 + i * bl; if (skip && q + bl > skip[0] && q < skip[1]) continue; rect(q, q + bl * 0.84, w * 0.8, SHIP_BOX[(i * 7 + key.length * 5 + 3) % SHIP_BOX.length]); }
+      };
+      switch (V.kind) {
+        case 'box': { const b = V.bridge; if (b > 0.5) { bays(0.05, 0.88, [b - 0.01, b + 0.07]); rect(0.2, 0.235, w * 0.3, '#2B2F38'); } else { bays(0.19, 0.88); rect(0.08, 0.11, w * 0.3, '#2B2F38'); } rect(b, b + 0.06, w * 0.86, '#F4F4EF'); break; }
+        case 'bulk': for (let i = 0; i < 6; i++) rect(0.22 + i * 0.11, 0.305 + i * 0.11, w * 0.56, V.s1); rect(0.04, 0.15, w * 0.8, '#F4F4EF'); break;
+        case 'tank': rect(0.17, 0.9, w * 0.12, V.s1); rect(0.5, 0.53, w * 0.7, V.s1); rect(0.03, 0.13, w * 0.8, '#F4F4EF'); break;
+        case 'barge': rect(0.12, 0.85, w * 0.8, V.s1); rect(0.02, 0.11, w * 0.62, '#F4F6F9'); break;
+        case 'bargec': bays(0.13, 0.87); rect(0.02, 0.1, w * 0.62, '#F4F6F9'); break;
+        case 'cat': rect(0.1, 0.84, w * 0.86, '#F6F8FB'); rect(0.1, 0.84, w * 0.1, V.s1, -w * 0.36); rect(0.1, 0.84, w * 0.1, V.s1, w * 0.36); rect(0.77, 0.84, w * 0.66, '#26334A'); break;
+        case 'star': rect(0.12, 0.88, w * 0.84, '#F3F1E6'); rect(0.2, 0.8, w * 0.42, V.s1); break;
+        case 'ferry': rect(0.07, 0.9, w * 0.84, '#F4F6F9'); rect(0.22, 0.8, w * 0.66, '#DCE3EB'); rect(0.72, 0.78, w * 0.5, '#26334A'); break;
+        case 'wb': rect(0.14, 0.86, w * 0.8, '#F4F6F9'); rect(0.2, 0.8, w * 0.3, V.s1); break;
+        case 'carf': for (let i = 0; i < 6; i++) for (const y of [-0.24, 0.24]) if (i !== 3) rect(0.1 + i * 0.13, 0.19 + i * 0.13, w * 0.26, SHIP_BOX[(i * 5 + (y > 0 ? 3 : 0)) % SHIP_BOX.length], y * w); rect(0.46, 0.56, w * 0.3, '#F4F6F9', w * 0.3); break;
+        case 'cruise': rect(0.06, 0.9, w * 0.86, '#F7F3EA'); rect(0.22, 0.72, w * 0.78, V.s1); g.strokeStyle = V.s2; g.lineWidth = 0.6; g.strokeRect(0.22 * len, -w * 0.39, 0.5 * len, w * 0.78); break;
+      }
+      g.restore();
+      map.addImage(name, g.getImageData(0, 0, cv.width, cv.height), { pixelRatio: R });
+    }
+  },
+  // a ship true to size in 3D: the hull, its deck and what stands on it, each piece a block standing on the water
+  build(out, id, V, ps, color, sel) {
+    const { c, d, n, k } = ps, L = V.len, B = V.beam, fb = V.fb, X = (q) => -L / 2 + q * L;
+    const P = ([x, y]) => this.ll(c[0] + (d[0] * x + n[0] * y) * k, c[1] + (d[1] * x + n[1] * y) * k);
+    const add = (pts, kk, lo, hi, col, props) => { const r = pts.map(P); r.push(r[0]); out.push({ type: 'Feature', properties: { id, k: kk, color: col, base: lo, top: hi, sel, ...props }, geometry: { type: 'Polygon', coordinates: [r] } }); };
+    const box = (q0, q1, w, lo, hi, col, kk = 0, props, yc = 0) => add([[X(q0), yc - w / 2], [X(q1), yc - w / 2], [X(q1), yc + w / 2], [X(q0), yc + w / 2]], kk, lo, hi, col, props);
+    const win = (q0, q1, w, lo, hi) => box(q0, q1, w + 0.5, lo, hi, '#26334A', 1, { win: 1 });
+    const h = this.hash(id), WHITE = '#F2F2EC';
+    add(this.hull(V), 9, 0, 0, color);   // the footprint: for clicks and the selection glow
+    add(this.hull(V), 0, 0, fb, V.hull);
+    add(this.hull(V, 0.9), 0, fb, fb + 0.2, V.deck);
+    const stripe = (lo, hi, col) => add(this.hull(V, 1.03), 1, lo, hi, col);
+    switch (V.kind) {
+      case 'box': {
+        const b = V.bridge, fwd = b > 0.5, top = fb + (L > 350 ? 40 : 34), bl = 13.2 / L;
+        const zone = fwd ? [[0.05, b - 0.005], [b + 0.05, 0.86]] : [[b + 0.06, 0.86]];
+        let i = 0;
+        for (const [q0, q1] of zone) for (let q = q0; q + bl <= q1 + 1e-6; q += bl, i++) {   // bay after bay of containers, two stacks across
+          if (fwd && q < 0.24 && q + bl > 0.19) continue;   // the funnel stands aft
+          for (const side of [-1, 1]) { const r = (h >>> ((i * 3 + (side > 0 ? 1 : 0)) % 24)) + i * 7 + side; box(q, q + bl * 0.92, B * 0.45, fb + 0.2, fb + 0.2 + 2.6 * (4 + (Math.abs(r) % 5)), SHIP_BOX[Math.abs(r * 7 + i) % SHIP_BOX.length], 0, null, side * B * 0.23); }
+        }
+        box(b, b + 0.05, B * 0.86, fb, top, WHITE); box(b + 0.01, b + 0.04, B, top - 4, top - 2, WHITE); win(b + 0.01, b + 0.04, B, top - 3.6, top - 2.4); win(b, b + 0.05, B * 0.86, top - 12, top - 11);
+        if (fwd) box(0.19, 0.235, B * 0.24, fb, fb + 30, '#2B2F38'); else box(b - 0.035, b - 0.006, B * 0.24, fb, top + 2, '#2B2F38');
+        break;
+      }
+      case 'bulk':
+        for (let i = 0; i < 7; i++) box(0.2 + i * 0.095, 0.275 + i * 0.095, B * 0.6, fb, fb + 2.4, V.s1);
+        box(0.04, 0.15, B * 0.78, fb, fb + 20, WHITE); win(0.04, 0.15, B * 0.78, fb + 16, fb + 17.6); box(0.05, 0.09, B * 0.22, fb + 20, fb + 25, '#2B2F38');
+        break;
+      case 'tank':
+        box(0.17, 0.9, B * 0.06, fb, fb + 2.4, V.s1); box(0.5, 0.52, B * 0.7, fb, fb + 1.8, V.s1);
+        box(0.03, 0.13, B * 0.78, fb, fb + 18, WHITE); win(0.03, 0.13, B * 0.78, fb + 14, fb + 15.6); box(0.04, 0.075, B * 0.22, fb + 18, fb + 23, '#2B2F38');
+        break;
+      case 'barge':
+        box(0.12, 0.85, B * 0.82, fb, fb + 1.3, V.s1); box(0.02, 0.11, B * 0.62, fb, fb + 5.5, '#F4F6F9'); win(0.02, 0.11, B * 0.62, fb + 3.6, fb + 4.8);
+        break;
+      case 'bargec': {
+        const bl = 12.6 / L; let i = 0;
+        for (let q = 0.13; q + bl <= 0.88; q += bl, i++) box(q, q + bl * 0.92, B * 0.84, fb, fb + 2.6 * (1 + ((h >>> i) & 1)), SHIP_BOX[(h + i * 5) % SHIP_BOX.length]);
+        box(0.02, 0.1, B * 0.56, fb, fb + 9, '#F4F6F9'); win(0.02, 0.1, B * 0.56, fb + 7, fb + 8.4);
+        break;
+      }
+      case 'cat':
+        stripe(fb - 1.3, fb - 0.6, V.s1); if (V.s2) stripe(fb - 0.6, fb - 0.3, V.s2);
+        box(0.1, 0.84, B * 0.9, fb, fb + 2.9, '#F6F8FB'); win(0.1, 0.84, B * 0.9, fb + 1, fb + 2.1);
+        box(0.58, 0.78, B * 0.62, fb + 2.9, fb + 4.8, '#F6F8FB'); win(0.58, 0.78, B * 0.62, fb + 3.6, fb + 4.4);
+        break;
+      case 'star':
+        box(0.1, 0.9, B * 0.86, fb, fb + 2.4, '#F3F1E6'); win(0.1, 0.9, B * 0.86, fb + 0.9, fb + 1.9);
+        box(0.14, 0.86, B * 0.84, fb + 2.4, fb + 4.6, '#F7F6EE'); win(0.14, 0.86, B * 0.84, fb + 3.2, fb + 4.1);
+        box(0.16, 0.84, B * 0.8, fb + 4.6, fb + 4.9, V.s1);
+        break;
+      case 'ferry':
+        stripe(fb - 0.5, fb - 0.2, V.s2);
+        box(0.07, 0.9, B * 0.86, fb, fb + 2.6, '#F4F6F9'); win(0.07, 0.9, B * 0.86, fb + 1, fb + 2);
+        box(0.22, 0.8, B * 0.82, fb + 2.6, fb + 5, '#F4F6F9'); win(0.22, 0.8, B * 0.82, fb + 3.4, fb + 4.4);
+        box(0.68, 0.78, B * 0.5, fb + 5, fb + 6.8, '#F4F6F9'); win(0.68, 0.78, B * 0.5, fb + 5.6, fb + 6.4);
+        break;
+      case 'wb':
+        stripe(fb - 0.9, fb - 0.4, V.s1);
+        box(0.14, 0.86, B * 0.84, fb, fb + 2.4, '#F4F6F9'); win(0.14, 0.86, B * 0.84, fb + 0.9, fb + 1.9); box(0.16, 0.84, B * 0.8, fb + 2.4, fb + 2.6, V.s1);
+        break;
+      case 'carf':
+        for (let i = 0; i < 6; i++) for (const y of [-0.24, 0.24]) if (i !== 3) box(0.1 + i * 0.13, 0.18 + i * 0.13, B * 0.22, fb + 0.2, fb + 1.7, SHIP_BOX[(h + i * 5 + (y > 0 ? 3 : 0)) % SHIP_BOX.length], 0, null, y * B);
+        box(0.46, 0.56, B * 0.3, fb, fb + 6.2, '#F4F6F9', 0, null, B * 0.3); win(0.46, 0.56, B * 0.3, fb + 4.6, fb + 5.6);
+        break;
+      case 'cruise': {   // three decks, the top one open under a canopy; at night the decks are outlined in coloured lights
+        const gc = SHIP_GLOW[h % SHIP_GLOW.length], glow = { glow: 1, gc };
+        stripe(fb - 0.9, fb - 0.3, V.s1);
+        box(0.06, 0.9, B * 0.9, fb, fb + 2.8, '#F7F3EA'); win(0.06, 0.9, B * 0.9, fb + 0.9, fb + 2.2);
+        box(0.12, 0.84, B * 0.88, fb + 2.8, fb + 5.4, '#F7F3EA'); win(0.12, 0.84, B * 0.88, fb + 3.6, fb + 4.9);
+        box(0.24, 0.7, B * 0.8, fb + 5.4, fb + 7.4, '#FBF8F0'); win(0.24, 0.7, B * 0.8, fb + 6, fb + 7);
+        box(0.22, 0.72, B * 0.86, fb + 7.4, fb + 7.8, V.s1);
+        box(0.06, 0.9, B * 0.92, fb + 2.55, fb + 2.95, V.s2, 1, glow); box(0.12, 0.84, B * 0.9, fb + 5.15, fb + 5.55, V.s2, 1, glow); box(0.22, 0.72, B * 0.88, fb + 7.3, fb + 7.55, V.s2, 1, glow);
+        break;
+      }
+    }
+  },
+  render(z) {
+    const list = this.update(), b = map.getBounds(), m = 0.15 * Math.max(b.getEast() - b.getWest(), b.getNorth() - b.getSouth());
+    const W = b.getWest() - m, E = b.getEast() + m, S = b.getSouth() - m, N = b.getNorth() + m;
+    const mpp = (40075016.7 * Math.cos(map.getCenter().lat * D2R)) / (512 * Math.pow(2, z));
+    const icons = [], body = [], wake = [], items = list.map((t) => ({ t, ty: this.typeOf(t) }));
+    for (const a of this.anch) items.push({ a, ty: a.ty });
+    let selIt = null;
+    for (const it of items) {
+      const V = VESSELS[it.ty]; if (!V) continue;
+      const t = it.t, id = t ? t.id : it.a.id, ps = t ? this.pose(t, V) : this.poseA(it.a), p = this.ll(ps.c[0], ps.c[1]);
+      if (id === this.sel) selIt = it;
+      if (p[0] < W || p[0] > E || p[1] < S || p[1] > N) continue;
+      const sel = id === this.sel ? 1 : 0, color = t ? t.svc.line.color : '#4A5A78', big = V.len > 150;
+      let shown = V.len / mpp, wpx = V.beam / mpp;   // its length and beam on screen
+      if (shown >= 34) this.build(body, id, V, ps, color, sel);
+      else {
+        const minLen = big ? 18 + Math.max(0, Math.min(1, (z - 8) / 5)) * 12 : 12 + Math.max(0, Math.min(1, (z - 10) / 5)) * 8;
+        const want = Math.max(minLen, shown); let len = SHIP_ICON[0];
+        for (const v of SHIP_ICON) if (v <= want) len = v;
+        const sz = Math.min(1.35, Math.max(0.75, want / len)) * (sel ? 1.25 : 1);
+        shown = len * sz; wpx = Math.max(4, ((shown * V.beam) / V.len) * (big ? 1.35 : 1.15));
+        icons.push({ type: 'Feature', properties: { id, color, sel, img: `sh-${it.ty}-${len}`, sz, rot: (Math.atan2(ps.d[1], ps.d[0]) * 180) / Math.PI, gr: shown * 0.45, gc: V.kind === 'cruise' ? SHIP_GLOW[this.hash(id) % SHIP_GLOW.length] : '', sk: sel ? 2 : big ? 1 : 0 }, geometry: { type: 'Point', coordinates: p } });
+      }
+      if (t && !t.q.stop && t.q.v > 0.3) {   // the wake, following the route back from the stern
+        const svc = t.svc, back = Math.max(V.len, shown * mpp) / 2, Lw = Math.max(V.len * 1.4, t.q.v * 24, shown * mpp * 1.8), pts = [];
+        for (let j = 8; j >= 0; j--) {
+          let s = ps.s - ps.sg * (back + (Lw * j) / 8);
+          if (svc.loop) s = ((s % svc.L) + svc.L) % svc.L; else if (s < 0 || s > svc.L) continue;
+          const q = this.at2(svc, s), e = this.tan(svc, s, 20);
+          pts.push(this.ll(q[0] - e[1] * ps.sg * ps.off * ps.k, q[1] + e[0] * ps.sg * ps.off * ps.k));
+        }
+        if (pts.length > 1) wake.push({ type: 'Feature', properties: { ww: Math.min(40, Math.max(2, wpx * 0.9)) }, geometry: { type: 'LineString', coordinates: pts } });
+      }
+    }
+    map.getSource('ship-icons').setData({ type: 'FeatureCollection', features: icons });
+    map.getSource('ship-body').setData({ type: 'FeatureCollection', features: body });
+    map.getSource('ship-wake').setData({ type: 'FeatureCollection', features: wake });
+    this.selShip = selIt;
+    if (this.sel) {
+      if (!selIt) { this.select(null); return; }
+      if (this.follow && !map.isEasing()) { const ps = this.poseOf(selIt); this.jumping = true; map.jumpTo({ center: this.ll(ps.c[0], ps.c[1]) }); this.jumping = false; }
+      if (performance.now() - (this.cardT || 0) > 900) { this.cardT = performance.now(); this.card(); }
+    }
+  },
+  poseOf(it) { return it.t ? this.pose(it.t, VESSELS[it.ty]) : this.poseA(it.a); },
+  select(id) {
+    this.sel = id; const box = $('#shipCard');
+    if (!id) { this.follow = false; box.hidden = true; box.dataset.k = ''; this.kick(); return; }
+    if (Rail.sel) Rail.select(null);
+    box.hidden = false; this.cardT = 0; this.kick(); this.card();
+  },
+  setFollow(v) {
+    this.follow = !!v && !!this.sel;
+    const b = $('#shipCard').querySelector('[data-follow]'); if (b) { b.setAttribute('aria-pressed', String(this.follow)); b.textContent = this.follow ? '停止跟随' : '跟着这条船'; }
+    const it = this.selShip;
+    if (this.follow && it) {   // glide to the ship first, then keep it in the middle
+      const ps = this.poseOf(it), ms = 900;
+      map.easeTo({ center: this.ll(ps.c[0], ps.c[1]), zoom: Math.max(map.getZoom(), VESSELS[it.ty].len > 150 ? 14.6 : 16.4), duration: ms });
+      clearTimeout(this.timer); this.timer = setTimeout(() => this.tick(), ms + 60);
+    } else this.kick();
+  },
+  card() {
+    const box = $('#shipCard'), it = this.selShip; if (box.hidden || !it) return;
+    if (box.dataset.k !== this.sel) {   // buttons drawn once per ship, so a click on them is never swallowed by a redraw
+      box.dataset.k = this.sel;
+      box.innerHTML = `<button class="icon-btn x" data-x aria-label="关闭">${ICONS.close}</button><div data-body></div><button type="button" class="btn ghost" data-follow aria-pressed="${this.follow}">${this.follow ? '停止跟随' : '跟着这条船'}</button>`;
+    }
+    const V = VESSELS[it.ty], size = `<tr><td>船长</td><td>${V.len} 米 · 宽 ${V.beam} 米</td></tr>`;
+    let html;
+    if (it.a) html = `<div class="rk"><i style="background:#4A5A78"></i>锚泊 · ${esc(it.a.n || '锚地')}</div><h3>在锚地候泊</h3><p class="rnow">等泊位和引航员，船头随潮水转向</p>
+      <table><tr><td>船型</td><td>${V.name}</td></tr>${size}<tr><td>状态</td><td>抛锚</td></tr></table>`;
+    else {
+      const t = it.t, line = t.svc.line, tr = t.tr, q = t.q, sea = tr.to === '外海';
+      let now;
+      if (q.stop) { const o = tr.st[q.k]; now = t.tau < 0 ? `在${o.n}等候开船 · ${this.fmt(-t.tau)}后开` : q.k === tr.st.length - 1 ? `已到达${o.n || ''}` : `停靠${o.n} · ${this.fmt(tr.dep[q.k] - t.tau)}后开`; }
+      else { let j = q.k + 1; while (j < tr.st.length - 1 && !tr.st[j].n) j++; now = tr.st[j].n ? `下一站 ${tr.st[j].n} · 约 ${this.fmt(tr.arr[j] - t.tau)}` : sea ? '出港中，正驶向外海' : `正驶向${tr.to}`; }
+      const head = t.svc.loop ? `往返${tr.to} · 环游中` : sea ? '出港 · 驶向外海' : `开往 ${tr.to}`;
+      html = `<div class="rk"><i style="background:${line.color}"></i>${line.cat} · ${line.name}</div><h3>${head}</h3><p class="rnow">${now}</p>
+        <table><tr><td>船型</td><td>${V.name}</td></tr>${size}<tr><td>航速</td><td>${q.stop ? '停泊中' : `${Math.round(q.v * 1.944)} 节 · ${Math.round(q.v * 3.6)} km/h`}</td></tr>${line.op ? `<tr><td>运营</td><td>${line.op}</td></tr>` : ''}</table>`;
+    }
+    const body = box.querySelector('[data-body]'); if (body._h !== html) { body._h = html; body.innerHTML = html; }
+  },
+});
+
 /* ===================================================================== controls */
 $('#zIn').addEventListener('click', () => map && map.zoomIn());
 $('#zOut').addEventListener('click', () => map && map.zoomOut());
@@ -7095,7 +7446,10 @@ const NIGHT_PAINT = [
   ['road-label', 'text-color', '#C3D2EC'], ['road-label-minor', 'text-color', '#8FA3C6'], ['place-label', 'text-color', '#9DB8E8'],
   ['poi-label', 'text-color', '#BCD3FB'], ['bridge-label', 'text-color', '#9FB2D4'], ['area-label', 'text-color', '#8FB2F5'],
   ['dist-label', 'text-color', '#7AA7FF'], ['cover-label', 'text-color', '#7AA7FF'], ['city-label', 'text-color', '#C3D2EC'], ['city-label', 'text-halo-color', NIGHT_HALO],
-  ['veil', 'fill-color', '#0A1426'], ['icr-line', 'line-color', RAIL_NIGHT], ['icr-line-case', 'line-color', '#0A1426'], ['icr-train-band', 'fill-extrusion-color', ['case', ['==', ['get', 'win'], 1], '#FFD58A', ['get', 'color']]], ['icr-station', 'circle-color', '#0A1426'], ['icr-station-label', 'text-color', '#9DB8E8'], ['icr-station-label', 'text-halo-color', NIGHT_HALO], ['city-line', 'line-color', '#3A62B0'], ['cover-line', 'line-color', '#5B8DEF'],
+  ['veil', 'fill-color', '#0A1426'], ['water-fix', 'fill-color', '#050D1B'],
+  ['shp-band', 'fill-extrusion-color', ['case', ['==', ['get', 'win'], 1], '#FFD58A', ['==', ['get', 'glow'], 1], ['get', 'gc'], ['get', 'color']]], ['shp-glow', 'circle-opacity', 0.5],
+  ['shp-wake', 'line-gradient', ['interpolate', ['linear'], ['line-progress'], 0, 'rgba(120,170,255,0)', 1, 'rgba(150,195,255,0.5)']],
+  ['icr-line', 'line-color', RAIL_NIGHT], ['icr-line-case', 'line-color', '#0A1426'], ['icr-train-band', 'fill-extrusion-color', ['case', ['==', ['get', 'win'], 1], '#FFD58A', ['get', 'color']]], ['icr-station', 'circle-color', '#0A1426'], ['icr-station-label', 'text-color', '#9DB8E8'], ['icr-station-label', 'text-halo-color', NIGHT_HALO], ['city-line', 'line-color', '#3A62B0'], ['cover-line', 'line-color', '#5B8DEF'],
   ['aero-area', 'fill-color', '#0F1B31'], ['aero-apron', 'fill-color', '#18253D'], ['aero-taxi', 'line-color', '#1F2E4A'], ['aero-runway', 'line-color', '#2A3B5C'],
   ['aero-runway-line', 'line-color', '#B9C9E6'], ['aero-label', 'text-color', '#8FB2F5'], ['aero-ref', 'text-color', '#9FB2D4'],
   ['poi-dot', 'circle-color', '#60A5FA'], ['poi-dot', 'circle-stroke-color', '#0A1426'],
