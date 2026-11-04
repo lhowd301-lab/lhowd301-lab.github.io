@@ -480,6 +480,14 @@ a.trk{text-decoration:none;color:inherit}
 .rail-card td{padding:4px 0;border-bottom:1px solid var(--line);color:var(--ink-2)}
 .rail-card td:last-child{text-align:right;font-family:var(--f-mono);font-size:12px;color:var(--ink)}
 .rail-card .btn{width:100%;justify-content:center}
+.rail-card .rprog{margin:9px 0 2px}
+.rail-card .rp-bar{position:relative;height:6px;margin:0 6px;border-radius:3px;background:color-mix(in srgb,var(--lc) 20%,transparent)}
+.rail-card .rp-bar>i{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--lc);transition:width .8s linear}
+.rail-card .rp-bar>.tk{position:absolute;top:50%;width:4px;height:4px;margin:-2px 0 0 -2px;border-radius:50%;background:#fff;opacity:.95}
+.rail-card .rp-bar>b{position:absolute;top:50%;width:13px;height:13px;margin:-6.5px 0 0 -6.5px;border-radius:50%;background:#fff;border:3px solid var(--lc);box-sizing:border-box;box-shadow:0 1px 4px rgba(8,18,40,.3);transition:left .8s linear}
+.rail-card .rp-txt{display:flex;justify-content:space-between;flex-wrap:wrap;gap:2px 10px;margin-top:7px;font-size:11.5px;color:var(--ink-3)}
+.rail-card .rp-txt b{color:var(--ink);font-weight:600}
+.rail-card .rstops:empty,.rail-card [data-prog]:empty{display:none}
 .rail-card .rstops{list-style:none;margin:8px 0 6px 5px;padding:0 4px 0 0;max-height:min(28vh,212px);overflow:auto;overscroll-behavior:contain;scrollbar-width:thin}
 .rail-card .rstops li{position:relative;display:flex;align-items:center;gap:10px;padding:3.5px 0 3.5px 14px;font-size:13px;color:var(--ink)}
 .rail-card .rstops li::before{content:"";position:absolute;left:4px;top:0;bottom:0;width:2px;background:var(--lc,#7A9BD6)}
@@ -513,6 +521,13 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
 .detail{position:fixed;z-index:6;top:calc(80px + env(safe-area-inset-top,0px));right:calc(max(16px,env(safe-area-inset-right,0px)) + 260px + 14px);width:380px;max-height:calc(100% - 120px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;border-radius:20px;background:var(--glass-strong);border:1px solid var(--line);box-shadow:0 24px 60px -24px rgba(29,78,216,.45),0 2px 10px rgba(29,78,216,.08);overflow:hidden;animation:rise .28s cubic-bezier(.2,.8,.2,1)}
 @keyframes rise{from{transform:translateY(10px);opacity:.4}to{transform:none;opacity:1}}
 .detail-scroll{overflow:auto;min-height:0}
+/* cards you can drag out of the way: by any part that is not a button, link or picture */
+@media (min-width:1024px){.detail{cursor:grab}}
+.rail-card,.sky-info{cursor:grab}
+.rail-card{touch-action:none}.rail-card .rstops{touch-action:pan-y}
+.card-drag,.card-drag *{cursor:grabbing!important;user-select:none!important;-webkit-user-select:none!important}
+.card-drag{transition:none!important;box-shadow:0 30px 70px -22px rgba(29,78,216,.55),0 2px 10px rgba(29,78,216,.1)}
+:is(.detail,.rail-card,.sky-info) :is(button,a,img,input,select,textarea,label,.rstops){cursor:pointer}
 .detail .close{position:absolute;top:10px;right:10px;z-index:2;background:rgba(255,255,255,.9)}
 .d-hero{position:relative;aspect-ratio:16/9;max-width:100%;background:var(--ice);overflow:hidden}
 .d-hero img{width:100%;height:100%;object-fit:cover;display:block}
@@ -7102,29 +7117,58 @@ const Rail = Object.assign(Object.create(Metro), {
       clearTimeout(this.timer); this.timer = setTimeout(() => this.tick(), ms + 60);
     } else this.kick();
   },
+  // how far along it is: a bar from the first stop to the last (stops as ticks), what is left to go, and the stops it
+  // calls at with their times (Guangzhou time), those behind it greyed out. Shared by the trains and the boats.
+  // o: inFrom / inText for a run that comes in from off the map, outTo / outText for one that runs off it, turn for a
+  // round trip's far end. Returns the index of the next stop.
+  track(box, t, color, o) {
+    const tr = t.tr, q = t.q, n = tr.st.length, svc = t.svc;
+    const t0 = (this.sim - t.tau * 1000) / 1000, hm = (sec) => { const d = ((Math.round(sec / 60) % 1440) + 1440) % 1440; return `${String(Math.floor(d / 60)).padStart(2, '0')}:${String(d % 60).padStart(2, '0')}`; };
+    const dur = (sec) => { const m = Math.max(1, Math.round(sec / 60)); return m < 60 ? `${m} 分钟` : `${Math.floor(m / 60)} 小时${m % 60 ? ` ${m % 60} 分` : ''}`; };
+    let nxt = -1;
+    for (let k = 0; k < n; k++) if (tr.st[k].n && (q.stop ? k >= q.k && (k > q.k || t.tau < tr.dep[k]) : k > q.k)) { nxt = k; break; }
+    const tAt = (u) => { let lo = 0, hi = tr.T; for (let i = 0; i < 40; i++) { const m = (lo + hi) / 2; if (this.pos(tr, m).u < u) lo = m; else hi = m; } return hi; };
+    const rows = [];
+    tr.st.forEach((s, k) => {
+      if (o.turn && k === n - 1) {   // the round trip turns at its far end and comes back
+        const uT = (tr.u[0] + tr.u[n - 1]) / 2, past = q.u >= uT;
+        rows.push(`<li class="${past ? 'past' : nxt === n - 1 && !past ? 'nx' : ''}"><i></i>${esc(o.turn)}<b>掉头 ${hm(t0 + tAt(uT))}</b></li>`);
+      }
+      if (!s.n) {
+        if (k === 0 && o.inFrom) rows.push(`<li class="far past"><i></i>${esc(o.inFrom)}<b>${o.inText}</b></li>`);
+        else if (k === n - 1 && o.outTo) rows.push(`<li class="far"><i></i>${esc(o.outTo)}<b>${o.outText}</b></li>`);
+        return;
+      }
+      const cls = nxt < 0 || k < nxt ? 'past' : k === nxt ? 'nx' : '';
+      rows.push(`<li class="${cls}"><i></i>${esc(s.n)}<b>${k === 0 ? '开 ' : k === n - 1 ? '到 ' : ''}${hm(t0 + (k === 0 ? tr.dep[0] : tr.arr[k]))}</b></li>`);
+    });
+    const items = rows.join('');
+    const ol = box.querySelector('[data-stops]');
+    if (ol._h !== items) { const top = ol.scrollTop; ol._h = items; ol.innerHTML = items; ol.style.setProperty('--lc', color); ol.scrollTop = top; const cur = ol.querySelector('.nx'); if (cur && ol._k !== `${this.sel}|${nxt}`) { ol._k = `${this.sel}|${nxt}`; ol.scrollTop = Math.max(0, cur.offsetTop - ol.offsetTop - 26); } }
+    // the bar
+    const U0 = tr.u[0], tot = Math.max(1, tr.u[n - 1] - U0), done = Math.max(0, Math.min(tot, q.u - U0)), f = done / tot;
+    const ticks = tr.st.map((s, k) => (s.n && k > 0 && k < n - 1 ? `<span class="tk" style="left:${(((tr.u[k] - U0) / tot) * 100).toFixed(1)}%"></span>` : '')).join('');
+    const km = (m) => (m >= 10000 ? Math.round(m / 1000) : (m / 1000).toFixed(1));
+    const end = tr.st[n - 1].n, left = tot - done;
+    const arrived = q.stop && q.k === n - 1 && t.tau >= tr.arr[n - 1];
+    const right = arrived ? `已到达 <b>${esc(end)}</b>` : end ? `距${esc(end)} <b>${km(left)} 公里</b> · 约 ${dur(tr.arr[n - 1] - Math.max(0, t.tau))}` : `距${o.outBar || o.outText} <b>${km(left)} 公里</b>`;
+    const prog = `<div class="rprog" style="--lc:${color}"><div class="rp-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(f * 100)}"><i style="width:${(f * 100).toFixed(1)}%"></i>${ticks}<b style="left:${(f * 100).toFixed(1)}%"></b></div><div class="rp-txt"><span>已行 ${km(done)} / 全程 ${km(tot)} 公里</span><span>${right}</span></div></div>`;
+    const pg = box.querySelector('[data-prog]'); if (pg._h !== prog) { pg._h = prog; pg.innerHTML = prog; }
+    return nxt;
+  },
   card() {
     const box = $('#railCard'), t = this.selTrain; if (box.hidden || !t) return;
     if (box.dataset.k !== this.sel) {   // buttons drawn once per train, so a click on them is never swallowed by a redraw
       box.dataset.k = this.sel;
-      box.innerHTML = `<button class="icon-btn x" data-x aria-label="关闭">${ICONS.close}</button><div data-body></div><ol class="rstops" data-stops></ol><div data-tab></div><button type="button" class="btn ghost" data-follow aria-pressed="${this.follow}">${this.follow ? '停止跟随' : '跟着这列车'}</button>`;
+      box.innerHTML = `<button class="icon-btn x" data-x aria-label="关闭">${ICONS.close}</button><div data-body></div><div data-prog></div><ol class="rstops" data-stops></ol><div data-tab></div><button type="button" class="btn ghost" data-follow aria-pressed="${this.follow}">${this.follow ? '停止跟随' : '跟着这列车'}</button>`;
     }
     const line = t.svc.line, tr = t.tr, q = t.q, T = TRAINS[this.typeOf(t)];
-    // the stations it calls at, with the times (Guangzhou time) it leaves or gets there; those behind it greyed out
-    const t0 = (this.sim - t.tau * 1000) / 1000, hm = (sec) => { const d = ((Math.round(sec / 60) % 1440) + 1440) % 1440; return `${String(Math.floor(d / 60)).padStart(2, '0')}:${String(d % 60).padStart(2, '0')}`; };
-    let nxt = -1;
-    for (let k = 0; k < tr.st.length; k++) if (tr.st[k].n && (q.stop ? k >= q.k && (k > q.k || t.tau < tr.dep[k]) : k > q.k)) { nxt = k; break; }
-    const items = tr.st.map((o, k) => {
-      if (!o.n) return k === tr.st.length - 1 ? `<li class="far"><i></i>${esc(tr.to)}<b>驶出大湾区</b></li>` : '';
-      const cls = nxt < 0 || k < nxt ? 'past' : k === nxt ? 'nx' : '';
-      return `<li class="${cls}"><i></i>${esc(o.n)}<b>${k === 0 ? '开 ' : ''}${hm(t0 + (k === 0 ? tr.dep[0] : tr.arr[k]))}</b></li>`;
-    }).join('');
-    const ol = box.querySelector('[data-stops]');
-    if (ol._h !== items) { const top = ol.scrollTop; ol._h = items; ol.innerHTML = items; ol.style.setProperty('--lc', line.color); ol.scrollTop = top; const cur = ol.querySelector('.nx'); if (cur && ol._k !== `${this.sel}|${nxt}`) { ol._k = `${this.sel}|${nxt}`; ol.scrollTop = Math.max(0, cur.offsetTop - ol.offsetTop - 26); } }
+    const from = t.dir ? t.svc.b : t.svc.a;   // where it set out from (off the map, for the trains coming in from beyond it)
+    const nxt = this.track(box, t, line.color, { inFrom: from, inText: '驶入大湾区', outText: '驶出大湾区', outTo: tr.to });
     this.showStops(t, nxt >= 0 ? tr.st[nxt].n : '');
     let now;
     if (q.stop) { const o = tr.st[q.k]; now = t.tau < 0 ? `在${o.n}站等候发车 · ${this.fmt(-t.tau)}后开` : q.k === tr.st.length - 1 ? `到达终点 ${o.n || ''}` : `停靠${o.n}站 · ${this.fmt(tr.dep[q.k] - t.tau)}后开`; }
     else { let j = q.k + 1; while (j < tr.st.length - 1 && !tr.st[j].n) j++; if (this.inTun(t.svc, this.sOf(t.svc, t.dir, q.u))) now = '隧道中 · '; else now = ''; now += tr.st[j].n ? `下一站 ${tr.st[j].n} · 约 ${this.fmt(tr.arr[j] - t.tau)}` : `正驶向${tr.to.replace('方向', '')}，即将驶出大湾区`; }
-    const from = t.dir ? t.svc.b : t.svc.a;   // where it set out from (off the map, for the trains coming in from beyond it)
     const html = `<div class="rk"><i style="background:${line.color}"></i>${line.cat} · ${line.name}</div><h3 class="sroute">${esc(from)}<span>→</span>${esc(tr.to)}</h3><p class="rnow">${now}</p>`;
     const tab = `<table><tr><td>车型</td><td>${T.fam} ${T.name}</td></tr><tr><td>编组</td><td>${T.cars} 节 · ${T.len} 米</td></tr><tr><td>速度</td><td>${q.stop ? '停站中' : Math.round(q.v * 3.6) + ' km/h'}</td></tr><tr><td>最高</td><td>线路 ${line.vmax} · 车 ${T.v} km/h</td></tr></table>`;
     const body = box.querySelector('[data-body]'); if (body._h !== html) { body._h = html; body.innerHTML = html; }
@@ -7586,22 +7630,23 @@ const Ships = Object.assign(Object.create(Rail), {
     const box = $('#shipCard'), it = this.selShip; if (box.hidden || !it) return;
     if (box.dataset.k !== this.sel) {   // buttons drawn once per ship, so a click on them is never swallowed by a redraw
       box.dataset.k = this.sel;
-      box.innerHTML = `<button class="icon-btn x" data-x aria-label="关闭">${ICONS.close}</button><div data-body></div><button type="button" class="btn ghost" data-follow aria-pressed="${this.follow}">${this.follow ? '停止跟随' : '跟着这条船'}</button>`;
+      box.innerHTML = `<button class="icon-btn x" data-x aria-label="关闭">${ICONS.close}</button><div data-body></div><div data-prog></div><ol class="rstops" data-stops></ol><div data-tab></div><button type="button" class="btn ghost" data-follow aria-pressed="${this.follow}">${this.follow ? '停止跟随' : '跟着这条船'}</button>`;
     }
     const V = VESSELS[it.ty], size = `<tr><td>船长</td><td>${V.len} 米 · 宽 ${V.beam} 米</td></tr>`;
     const h = this.hash(this.sel), pick = (a, k = 0) => a[(h >>> k) % a.length], cls = V.kind === 'box' ? 'box' : V.kind;
+    let tab = '';
     const route = (a, b, two) => `<h3 class="sroute">${esc(a)}<span>${two ? '⇄' : '→'}</span>${esc(b)}</h3>`;
     const note = '<p class="snote">船公司和远洋起讫港为示意，班次按常见间隔模拟</p>';
     let html;
     if (it.a) {   // at anchor: waiting for a berth at the nearest port
       const near = PORTS.filter((o) => o.k === 'cargo').reduce((b, o) => (Math.hypot(o.p[0] - it.a.p[0], o.p[1] - it.a.p[1]) < Math.hypot(b.p[0] - it.a.p[0], b.p[1] - it.a.p[1]) ? o : b));
-      html = `<div class="rk"><i style="background:#4A5A78"></i>锚泊 · ${esc(it.a.n || '锚地')}</div>${route(pick(SHIP_FAR[cls] || SHIP_FAR.box, 5), `${near.o} ${near.n}`)}<p class="rnow">在锚地候泊，等泊位和引航员；船头随潮水转向</p>
-        <table><tr><td>所属</td><td>${pick(SHIP_OWNER[cls] || SHIP_OWNER.box)}（示意）</td></tr><tr><td>船型</td><td>${V.name}</td></tr>${size}<tr><td>状态</td><td>抛锚</td></tr></table>${note}`;
+      html = `<div class="rk"><i style="background:#4A5A78"></i>锚泊 · ${esc(it.a.n || '锚地')}</div>${route(pick(SHIP_FAR[cls] || SHIP_FAR.box, 5), `${near.o} ${near.n}`)}<p class="rnow">在锚地候泊，等泊位和引航员；船头随潮水转向</p>`;
+      tab = `<table><tr><td>所属</td><td>${pick(SHIP_OWNER[cls] || SHIP_OWNER.box)}（示意）</td></tr><tr><td>船型</td><td>${V.name}</td></tr>${size}<tr><td>状态</td><td>抛锚</td></tr></table>${note}`;
     } else {
       const t = it.t, svc = t.svc, line = svc.line, tr = t.tr, q = t.q, sea = line.cat === '远洋货轮';
       let now;
       if (q.stop) { const o = tr.st[q.k]; now = t.tau < 0 ? `在${o.n}等候开船 · ${this.fmt(-t.tau)}后开` : q.k === tr.st.length - 1 ? `已到达${o.n || ''}` : `停靠${o.n} · ${this.fmt(tr.dep[q.k] - t.tau)}后开`; }
-      else { let j = q.k + 1; while (j < tr.st.length - 1 && !tr.st[j].n) j++; now = tr.st[j].n ? `下一站 ${tr.st[j].n} · 约 ${this.fmt(tr.arr[j] - t.tau)}` : '出港中，正驶出伶仃洋去往外海'; }
+      else { let j = q.k + 1; while (j < tr.st.length - 1 && !tr.st[j].n) j++; now = tr.st[j].n ? `下一站 ${tr.st[j].n} · 约 ${this.fmt(tr.arr[j] - t.tau)}` : '出港中，正驶向外海'; }
       let from = tr.st[0].n || svc.b, to = tr.to, owner = line.op, guess = false;
       if (sea) {   // out to sea or in from it: a likely far port and shipping line
         const far = pick(SHIP_FAR[cls] || SHIP_FAR.box, 3);
@@ -7609,12 +7654,58 @@ const Ships = Object.assign(Object.create(Rail), {
         owner = pick(SHIP_OWNER[cls] || SHIP_OWNER.box); guess = true;
       } else if (line.cat === '内河货船') owner = '内河个体船东';
       else if (svc.loop) owner = owner || '广州珠江夜游';
-      html = `<div class="rk"><i style="background:${line.color}"></i>${line.cat} · ${line.name}</div>${route(from, to, svc.loop)}<p class="rnow">${now}</p>
-        <table>${owner ? `<tr><td>${line.cat === '内河货船' || sea ? '所属' : '运营'}</td><td>${esc(owner)}${guess ? '（示意）' : ''}</td></tr>` : ''}<tr><td>船型</td><td>${V.name}</td></tr>${size}<tr><td>航速</td><td>${q.stop ? '停泊中' : `${Math.round(q.v * 1.944)} 节 · ${Math.round(q.v * 3.6)} km/h`}</td></tr></table>${guess ? note : ''}`;
+      this.track(box, t, line.color, sea ? { inFrom: from, inText: '从外海驶入', outTo: to, outText: '驶向外海', outBar: '外海' } : { turn: svc.loop ? svc.b : '' });
+      html = `<div class="rk"><i style="background:${line.color}"></i>${line.cat} · ${line.name}</div>${route(from, to, svc.loop)}<p class="rnow">${now}</p>`;
+      tab = `<table>${owner ? `<tr><td>${line.cat === '内河货船' || sea ? '所属' : '运营'}</td><td>${esc(owner)}${guess ? '（示意）' : ''}</td></tr>` : ''}<tr><td>船型</td><td>${V.name}</td></tr>${size}<tr><td>航速</td><td>${q.stop ? '停泊中' : `${Math.round(q.v * 1.944)} 节 · ${Math.round(q.v * 3.6)} km/h`}</td></tr></table>${guess ? note : ''}`;
     }
     const body = box.querySelector('[data-body]'); if (body._h !== html) { body._h = html; body.innerHTML = html; }
+    const tb = box.querySelector('[data-tab]'); if (tb._h !== tab) { tb._h = tab; tb.innerHTML = tab; }
+    if (it.a) for (const k of ['[data-prog]', '[data-stops]']) { const e = box.querySelector(k); if (e._h) { e._h = ''; e.innerHTML = ''; } }   // at anchor: going nowhere yet
   },
 });
+
+/* ---------- 卡片拖动：详情卡（吃饭、扫街、地标……）、列车卡、船只卡、星空里的星星卡，按住卡片空白处拖到别处；
+   关掉再打开会回到原来的位置。手机上详情卡是底部抽屉，不拖 */
+const CardDrag = {
+  NO: 'button,a,input,select,textarea,label,img,video,.rstops,[contenteditable]',
+  make(el, ok = () => true) {
+    let st = null;
+    const end = (e) => {
+      if (!st) return;
+      if (st.on) { el.classList.remove('card-drag'); el.dataset.dragged = '1'; setTimeout(() => { delete el.dataset.dragged; }, 0); }
+      try { el.releasePointerCapture(e.pointerId); } catch (err) { /* already released */ }
+      st = null;
+    };
+    el.addEventListener('pointerdown', (e) => {
+      if ((e.pointerType === 'mouse' && e.button !== 0) || !ok() || e.target.closest(this.NO)) return;
+      const r = el.getBoundingClientRect(), t = (el.style.translate || '0px 0px').split(' ').map(parseFloat);
+      st = { x: e.clientX, y: e.clientY, tx: t[0] || 0, ty: t[1] || 0, r, on: false, id: e.pointerId };
+    });
+    el.addEventListener('pointermove', (e) => {
+      if (!st || e.pointerId !== st.id) return;
+      let dx = e.clientX - st.x, dy = e.clientY - st.y;
+      if (!st.on) {
+        if (Math.hypot(dx, dy) < 6) return;   // a click, so far
+        st.on = true; el.classList.add('card-drag'); window.getSelection()?.removeAllRanges();
+        try { el.setPointerCapture(e.pointerId); } catch (err) { /* fine */ }
+      }
+      // keep a good part of it on screen, and its top edge where you can grab it again
+      const W = window.innerWidth, H = window.innerHeight, keep = Math.min(120, st.r.width * 0.5);
+      dx = Math.max(keep - st.r.right, Math.min(W - keep - st.r.left, dx));
+      dy = Math.max(8 - st.r.top, Math.min(H - 56 - st.r.top, dy));
+      el.style.translate = `${Math.round(st.tx + dx)}px ${Math.round(st.ty + dy)}px`;
+      e.preventDefault();
+    });
+    el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
+    // a drag is not a click on what it ended over
+    el.addEventListener('click', (e) => { if (el.dataset.dragged) { e.stopPropagation(); e.preventDefault(); } }, true);
+    // closed: back to its own place next time
+    new MutationObserver(() => { if (el.hidden) el.style.translate = ''; }).observe(el, { attributes: true, attributeFilter: ['hidden'] });
+    window.addEventListener('resize', () => { el.style.translate = ''; });
+  },
+};
+CardDrag.make($('#detail'), () => !mq.matches);
+CardDrag.make($('#railCard')); CardDrag.make($('#shipCard')); CardDrag.make($('#skyInfo'));
 
 /* ===================================================================== controls */
 $('#zIn').addEventListener('click', () => map && map.zoomIn());
