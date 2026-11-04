@@ -7083,7 +7083,7 @@ const Rail = Object.assign(Object.create(Metro), {
    bulk carriers and tankers on the lanes out of the ports, plus ships waiting at anchor. Departures at typical intervals
    (not a timetable). Far off each is a small top-down ship pointing the way it is going, with a fading wake behind it;
    close up it is drawn true to size in 3D, its windows lit at night (the night cruise boats with their coloured lights). */
-const SHIP_ICON = [14, 18, 24, 32, 42, 56];   // the far-off symbol's lengths (px)
+const SHIP_ICON = [8, 10, 12, 15, 19, 24, 32, 42, 56];   // the far-off symbol's lengths (px)
 const SHIP_BOX = ['#C0392B', '#2471A3', '#D68910', '#7B8A8B', '#1E8449', '#B7950B', '#6C3483', '#A04000', '#117A65', '#E5E8EC', '#5D6D7E', '#922B21'];   // containers
 const SHIP_GLOW = ['#FF4FA3', '#4FD8FF', '#FFC94F', '#A77BFF', '#5CFF9D'];   // the cruise boats' lights at night
 // the boats as they really are: length and beam (m), height of the deck above the water (fb), hull and deck colours
@@ -7231,12 +7231,12 @@ const Ships = Object.assign(Object.create(Rail), {
     const R = 4;
     for (const [key, V] of Object.entries(VESSELS)) for (const len of SHIP_ICON) {
       const name = `sh-${key}-${len}`; if (map.hasImage(name)) continue;
-      const w = Math.max(5, ((len * V.beam) / V.len) * (V.len > 150 ? 1.35 : 1.15)), P = 1.4;
+      const w = Math.max(3, ((len * V.beam) / V.len) * (V.len > 150 ? 1.2 : 1.08)), P = 1.2;
       const cv = document.createElement('canvas'); cv.width = Math.ceil((len + 2 * P) * R); cv.height = Math.ceil((w + 2 * P) * R);
       const g = cv.getContext('2d'); g.scale(R, R); g.translate(P, P + w / 2);
       const VV = { ...V, len, beam: w };
       const out = (f) => { const h = this.hull(VV, f); g.beginPath(); h.forEach(([x, y], i) => (i ? g.lineTo(x + len / 2, y) : g.moveTo(x + len / 2, y))); g.closePath(); };
-      out(1); g.lineJoin = 'round'; g.lineWidth = 1.1; g.strokeStyle = 'rgba(18,26,42,.8)'; g.stroke(); g.fillStyle = V.hull; g.fill();
+      out(1); g.lineJoin = 'round'; g.lineWidth = Math.min(1, 0.4 + len / 45); g.strokeStyle = 'rgba(18,26,42,.7)'; g.stroke(); g.fillStyle = V.hull; g.fill();
       g.save(); out(0.84); g.clip(); g.fillStyle = V.deck; g.fillRect(0, -w / 2, len, w);
       const rect = (q0, q1, ww, col, yc = 0) => { g.fillStyle = col; g.fillRect(q0 * len, yc - ww / 2, (q1 - q0) * len, ww); };
       const bays = (q0, q1, skip) => {
@@ -7345,31 +7345,37 @@ const Ships = Object.assign(Object.create(Rail), {
     const icons = [], body = [], wake = [], items = list.map((t) => ({ t, ty: this.typeOf(t) }));
     for (const a of this.anch) items.push({ a, ty: a.ty });
     let selIt = null;
+    // zoomed out, only a few of them: the big ships first, the fast ferries next, the small boats and those at anchor
+    // only once you are close; which ones stay is fixed per ship, so they do not flicker as you zoom
+    const ramp = (z0, z1) => Math.max(0, Math.min(1, (z - z0) / (z1 - z0)));
+    const keep = { big: ramp(9.5, 12.5), cat: ramp(10.5, 13), anch: ramp(11.5, 13), small: ramp(11.8, 13.2) };
     for (const it of items) {
       const V = VESSELS[it.ty]; if (!V) continue;
-      const t = it.t, id = t ? t.id : it.a.id, ps = t ? this.pose(t, V) : this.poseA(it.a), p = this.ll(ps.c[0], ps.c[1]);
+      const t = it.t, id = t ? t.id : it.a.id;
       if (id === this.sel) selIt = it;
+      else if ((this.hash(id) % 1000) / 1000 >= (it.a ? keep.anch : V.len > 150 ? keep.big : V.kind === 'cat' ? keep.cat : keep.small)) continue;
+      const ps = t ? this.pose(t, V) : this.poseA(it.a), p = this.ll(ps.c[0], ps.c[1]);
       if (p[0] < W || p[0] > E || p[1] < S || p[1] > N) continue;
       const sel = id === this.sel ? 1 : 0, color = t ? t.svc.line.color : '#4A5A78', big = V.len > 150;
       let shown = V.len / mpp, wpx = V.beam / mpp;   // its length and beam on screen
       if (shown >= 34) this.build(body, id, V, ps, color, sel);
       else {
-        const minLen = big ? 18 + Math.max(0, Math.min(1, (z - 8) / 5)) * 12 : 12 + Math.max(0, Math.min(1, (z - 10) / 5)) * 8;
+        const minLen = big ? 9 + Math.max(0, Math.min(1, (z - 8) / 6)) * 7 : 6.5 + Math.max(0, Math.min(1, (z - 10) / 6)) * 5.5;
         const want = Math.max(minLen, shown); let len = SHIP_ICON[0];
         for (const v of SHIP_ICON) if (v <= want) len = v;
-        const sz = Math.min(1.35, Math.max(0.75, want / len)) * (sel ? 1.25 : 1);
-        shown = len * sz; wpx = Math.max(4, ((shown * V.beam) / V.len) * (big ? 1.35 : 1.15));
+        const sz = Math.min(1.2, Math.max(0.8, want / len)) * (sel ? 1.3 : 1);
+        shown = len * sz; wpx = Math.max(2.5, ((shown * V.beam) / V.len) * (big ? 1.2 : 1.08));
         icons.push({ type: 'Feature', properties: { id, color, sel, img: `sh-${it.ty}-${len}`, sz, rot: (Math.atan2(ps.d[1], ps.d[0]) * 180) / Math.PI, gr: shown * 0.45, gc: V.kind === 'cruise' ? SHIP_GLOW[this.hash(id) % SHIP_GLOW.length] : '', sk: sel ? 2 : big ? 1 : 0 }, geometry: { type: 'Point', coordinates: p } });
       }
       if (t && !t.q.stop && t.q.v > 0.3) {   // the wake, following the route back from the stern
-        const svc = t.svc, back = Math.max(V.len, shown * mpp) / 2, Lw = Math.max(V.len * 1.4, t.q.v * 24, shown * mpp * 1.8), pts = [];
+        const svc = t.svc, back = Math.max(V.len, shown * mpp) / 2, Lw = Math.max(V.len * 1.3, t.q.v * 20, shown * mpp * 1.4), pts = [];
         for (let j = 8; j >= 0; j--) {
           let s = ps.s - ps.sg * (back + (Lw * j) / 8);
           if (svc.loop) s = ((s % svc.L) + svc.L) % svc.L; else if (s < 0 || s > svc.L) continue;
           const q = this.at2(svc, s), e = this.tan(svc, s, 20);
           pts.push(this.ll(q[0] - e[1] * ps.sg * ps.off * ps.k, q[1] + e[0] * ps.sg * ps.off * ps.k));
         }
-        if (pts.length > 1) wake.push({ type: 'Feature', properties: { ww: Math.min(40, Math.max(2, wpx * 0.9)) }, geometry: { type: 'LineString', coordinates: pts } });
+        if (pts.length > 1) wake.push({ type: 'Feature', properties: { ww: Math.min(40, Math.max(1.5, wpx * 0.85)) }, geometry: { type: 'LineString', coordinates: pts } });
       }
     }
     map.getSource('ship-icons').setData({ type: 'FeatureCollection', features: icons });
