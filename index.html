@@ -960,9 +960,9 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
 .pet-stages{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
 .pet-stages li{display:flex;gap:10px;align-items:flex-start;color:#8A6E5B}
 .pet-stages li i{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:12px;font-weight:700;background:#F1E8DC;border:2px solid var(--p-line);color:var(--p-ink)}
-.pet-stages li.done,.pet-stages li.now{color:var(--p-ink)}
+.pet-stages li.done,.pet-stages li.cur{color:var(--p-ink)}
 .pet-stages li.done i{background:#DDF1D8}
-.pet-stages li.now i{background:#5DBB7E;color:#fff}
+.pet-stages li.cur i{background:#5DBB7E;color:#fff}
 .pet-stages b{display:block;font-size:14px}
 .pet-stages small{display:block;font-size:12.5px;line-height:1.5;color:var(--p-ink-2)}
 .pet-clues{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
@@ -1020,13 +1020,13 @@ body.pure .pet-dock,body.pure .pet-bubble,body.pure .pet-chat{display:none!impor
 .pc-msg{display:flex;gap:8px;align-items:flex-end}
 .pc-msg img{width:28px;height:28px;border-radius:50%;flex:none;background:#E3F1FD;border:1.5px solid #5A3B2A;object-fit:cover}
 .pc-msg p{margin:0;padding:8px 12px;border-radius:16px;font-size:14px;line-height:1.55;white-space:pre-wrap;word-break:break-word;max-width:80%}
-.pc-msg.pet p{background:#fff;border:2px solid #5A3B2A;border-bottom-left-radius:5px}
-.pc-msg.me{justify-content:flex-end}
-.pc-msg.me p{background:#2F6DB0;color:#fff;border:2px solid #2F6DB0;border-bottom-right-radius:5px}
-.pc-msg.typing p{display:flex;gap:4px;padding:12px 14px}
-.pc-msg.typing i{width:6px;height:6px;border-radius:50%;background:#8A6E5B;animation:pcDot 1s ease-in-out infinite}
-.pc-msg.typing i:nth-child(2){animation-delay:.15s}
-.pc-msg.typing i:nth-child(3){animation-delay:.3s}
+.pc-msg.from-pet p{background:#fff;border:2px solid #5A3B2A;border-bottom-left-radius:5px}
+.pc-msg.from-me{justify-content:flex-end}
+.pc-msg.from-me p{background:#2F6DB0;color:#fff;border:2px solid #2F6DB0;border-bottom-right-radius:5px}
+.pc-msg.pc-typing p{display:flex;gap:4px;padding:12px 14px}
+.pc-msg.pc-typing i{width:6px;height:6px;border-radius:50%;background:#8A6E5B;animation:pcDot 1s ease-in-out infinite}
+.pc-msg.pc-typing i:nth-child(2){animation-delay:.15s}
+.pc-msg.pc-typing i:nth-child(3){animation-delay:.3s}
 @keyframes pcDot{0%,100%{opacity:.3;transform:translateY(0)}50%{opacity:1;transform:translateY(-3px)}}
 .pc-sugg{display:flex;flex-wrap:wrap;gap:6px;padding:0 12px 2px}
 .pc-sugg:empty{display:none}
@@ -8563,7 +8563,7 @@ const Pet = {
       const own = !!s.items[i.id], lock = st.i < i.need;
       return `<div class="pet-item${own ? ' owned' : ''}${lock && !own ? ' locked' : ''}"><b>${i.name}</b><small>${i.desc} · 安心 +${i.comfort}</small><div class="row"><span class="price">${drop}${i.price}</span>${own ? '<span class="done">已摆好</span>' : lock ? `<span class="need">树长到「${this.STAGES[i.need].n}」</span>` : `<button type="button" data-act="buy" data-id="${i.id}" ${s.coins < i.price ? 'disabled' : ''}>买</button>`}</div></div>`;
     }).join('')}</div></div>`;
-    const atlas = `<div class="pet-card"><h3>成长图鉴</h3><ol class="pet-stages">${this.STAGES.map((g, k) => `<li class="${k < st.i ? 'done' : k === st.i ? 'now' : ''}"><i>${k + 1}</i><span><b>${g.n}</b><small>${k <= st.i ? g.d : `还差 ${Math.ceil(g.g - T.g)} 成长`}</small></span></li>`).join('')}</ol></div>`;
+    const atlas = `<div class="pet-card"><h3>成长图鉴</h3><ol class="pet-stages">${this.STAGES.map((g, k) => `<li class="${k < st.i ? 'done' : k === st.i ? 'cur' : ''}"><i>${k + 1}</i><span><b>${g.n}</b><small>${k <= st.i ? g.d : `还差 ${Math.ceil(g.g - T.g)} 成长`}</small></span></li>`).join('')}</ol></div>`;
     return `<div class="pet-grid">${left}<div>${shop}${atlas}</div></div>`;
   },
   questHTML() {
@@ -8659,8 +8659,8 @@ const PetChat = {
   },
   render(scroll) {
     const el = this.el, log = el.querySelector('.pc-log'), s = Pet.s;
-    log.innerHTML = s.chat.map((m) => `<div class="pc-msg ${m.r === 'u' ? 'me' : 'pet'}">${m.r === 'u' ? '' : `<img src="${Pet.img('avatar')}" alt="">`}<p>${esc(m.t)}</p></div>`).join('')
-      + (this.busy ? `<div class="pc-msg pet typing"><img src="${Pet.img('avatar')}" alt=""><p><i></i><i></i><i></i></p></div>` : '');
+    log.innerHTML = s.chat.map((m) => `<div class="pc-msg ${m.r === 'u' ? 'from-me' : 'from-pet'}">${m.r === 'u' ? '' : `<img src="${Pet.img('avatar')}" alt="">`}<p>${esc(m.t)}</p></div>`).join('')
+      + (this.busy ? `<div class="pc-msg from-pet pc-typing"><img src="${Pet.img('avatar')}" alt=""><p><i></i><i></i><i></i></p></div>` : '');
     el.querySelector('[data-st]').textContent = `在小榕树下 · 依恋度 ${Math.round(s.attach)}%${this.offline ? ' · 离线小脑袋' : ''}`;
     el.querySelector('.pc-sugg').innerHTML = s.chat.length <= 2 ? this.SUGG.map((t) => `<button type="button">${t}</button>`).join('') : '';
     const note = el.querySelector('.pc-note');
