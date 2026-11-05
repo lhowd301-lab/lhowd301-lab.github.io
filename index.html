@@ -1028,10 +1028,6 @@ body.pure .pet-dock,body.pure .pet-bubble,body.pure .pet-chat{display:none!impor
 .pc-msg.pc-typing i:nth-child(2){animation-delay:.15s}
 .pc-msg.pc-typing i:nth-child(3){animation-delay:.3s}
 @keyframes pcDot{0%,100%{opacity:.3;transform:translateY(0)}50%{opacity:1;transform:translateY(-3px)}}
-.pc-sugg{display:flex;flex-wrap:wrap;gap:6px;padding:0 12px 2px}
-.pc-sugg:empty{display:none}
-.pc-sugg button{height:30px;padding:0 10px;border-radius:999px;border:2px solid #5A3B2A;background:#E3F1FD;font-size:12.5px;font-weight:700;color:#4A3428}
-.pc-sugg button:hover{background:#CFE6FA}
 .pc-in{display:flex;gap:8px;padding:10px 12px 12px}
 .pc-in input{flex:1;min-width:0;height:40px;border-radius:12px;border:2px solid #5A3B2A;background:#fff;padding:0 12px;font-size:15px;color:#4A3428;font-family:inherit}
 .pc-in input:focus{outline:none;box-shadow:0 0 0 3px rgba(47,109,176,.25)}
@@ -1181,7 +1177,6 @@ body.pure .pet-dock,body.pure .pet-bubble,body.pure .pet-chat{display:none!impor
   <section class="pet-chat" id="petChat" hidden role="dialog" aria-label="和榕忆聊天">
     <header><img data-av alt=""><div><b>榕忆</b><small data-st>在小榕树下</small></div><button type="button" class="pc-home" data-home>小院</button><button type="button" class="pc-x" data-x aria-label="关闭聊天"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
     <div class="pc-log" role="log" aria-live="polite"></div>
-    <div class="pc-sugg"></div>
     <form class="pc-in" autocomplete="off"><input type="text" maxlength="200" placeholder="和榕忆说点什么…" aria-label="和榕忆说的话" enterkeyhint="send"><button type="submit" aria-label="发送"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l16-8-6 16-2-6-8-2z"/></svg></button></form>
     <p class="pc-note" hidden></p>
   </section>
@@ -8510,7 +8505,7 @@ const Pet = {
       <div>
         <h3 class="pet-name">榕忆</h3>
         <div class="pet-pills"><span>榕树小精灵</span><span>活泼 · 亲人 · 带点小调皮</span><span>大头小身体 · 短手短脚</span></div>
-        <p class="pet-lead">住在广州老榕树里的小精灵。榕树头是老广饮茶、下棋、讲古的地方，街坊说过的话、走过的路，它都悄悄记在心里——所以叫“榕忆”，榕树的记忆。它胸口那颗水滴纹，是给小榕树浇水用的。</p>
+        <p class="pet-lead">住在广州老榕树里的小精灵。榕树头是老广州人喝茶、下棋、讲故事的地方，街坊说过的话、走过的路，它都悄悄记在心里——所以叫“榕忆”，榕树的记忆。它胸口那颗水滴纹，是给小榕树浇水用的。</p>
         <div class="pet-card" style="margin-top:14px"><h3>外形识别</h3><div class="pet-feats">
           <div><b>云朵耳</b><span>天蓝色，带心形浅色斑；开心时扬起，好奇时一高一低</span></div>
           <div><b>额前卷毛</b><span>一撮奶油色的卷毛，从背后看是一颗小圆球</span></div>
@@ -8527,7 +8522,7 @@ const Pet = {
         <tr><td>好奇</td><td>歪头看向鼠标，耳朵一高一低</td></tr>
         <tr><td>移动</td><td>短步蹦走，耳朵和尾巴稍有延迟</td></tr>
         <tr><td>被摸</td><td>眯眼，脸颊泛红，主动靠近</td></tr>
-        <tr><td>聊天</td><td>说话短短的、亲亲热热，偶尔冒一两句粤语</td></tr>
+        <tr><td>聊天</td><td>说话短短的、亲亲热热，带点小调皮</td></tr>
         <tr><td>困倦</td><td>趴下，抱着卷尾睡觉</td></tr>
       </tbody></table></div>
       <div class="pet-card"><h3>怎么玩</h3><ol class="pet-rules">
@@ -8619,7 +8614,6 @@ const Pet = {
    最近的对话存在访客自己的浏览器里（最多 30 条），每次只把最近 12 条发给服务 */
 const PetChat = {
   busy: false, offline: false, el: null, lastSend: 0,
-  SUGG: ['小榕树怎么样了？', '今天吃什么好？', '讲个广州的老故事', '你是谁呀？'],
   url() {
     const h = location.hostname;
     if (/claude|anthropic|usercontent/.test(h)) return '';   // the preview on claude.ai cannot reach other sites
@@ -8634,7 +8628,6 @@ const PetChat = {
     el.querySelector('[data-x]').addEventListener('click', () => this.toggle(false));
     el.querySelector('[data-home]').addEventListener('click', () => { this.toggle(false); Pet.open('home'); });
     el.querySelector('form').addEventListener('submit', (e) => { e.preventDefault(); const i = el.querySelector('input'); const t = i.value; i.value = ''; this.send(t); });
-    el.querySelector('.pc-sugg').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) this.send(b.textContent); });
     el.addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.stopPropagation(); this.toggle(false); } });
   },
   isOpen() { return !!this.el && !this.el.hidden; },
@@ -8650,7 +8643,7 @@ const PetChat = {
   },
   hello() {
     const h = Pet.gzHour(), T = Pet.s.tree, S = Pet.STAGES[Pet.stage().i].n;
-    const g = h < 6 ? '这么晚还没睡呀？' : h < 11 ? '早晨！' : h < 14 ? '食咗饭未呀？' : h < 18 ? '下午好～' : '晚上好呀～';
+    const g = h < 6 ? '这么晚还没睡呀？' : h < 11 ? '早上好～' : h < 14 ? '吃饭了吗？' : h < 18 ? '下午好～' : '晚上好呀～';
     return `${g}我是榕忆，小榕树现在是「${S}」${T.m < 25 ? '，它有点渴了' : ''}。想聊点什么？`;
   },
   push(r, t) {
@@ -8662,7 +8655,6 @@ const PetChat = {
     log.innerHTML = s.chat.map((m) => `<div class="pc-msg ${m.r === 'u' ? 'from-me' : 'from-pet'}">${m.r === 'u' ? '' : `<img src="${Pet.img('avatar')}" alt="">`}<p>${esc(m.t)}</p></div>`).join('')
       + (this.busy ? `<div class="pc-msg from-pet pc-typing"><img src="${Pet.img('avatar')}" alt=""><p><i></i><i></i><i></i></p></div>` : '');
     el.querySelector('[data-st]').textContent = `在小榕树下 · 依恋度 ${Math.round(s.attach)}%${this.offline ? ' · 离线小脑袋' : ''}`;
-    el.querySelector('.pc-sugg').innerHTML = s.chat.length <= 2 ? this.SUGG.map((t) => `<button type="button">${t}</button>`).join('') : '';
     const note = el.querySelector('.pc-note');
     note.hidden = !this.offline;
     if (this.offline) note.textContent = this.url() ? '聊天服务暂时连不上，先用离线小脑袋陪你说两句。' : '这里还没接上聊天服务，榕忆只能用离线小脑袋简单回答；在网站的正式地址上能聊得更多。';
@@ -8699,12 +8691,12 @@ const PetChat = {
   local(t) {   // a few canned answers in its voice, for when there's no chat service
     const st = Pet.stage(), T = Pet.s.tree, S = Pet.STAGES[st.i], pick = (a) => a[Math.floor(Math.random() * a.length)];
     if (/树|浇|水|榕|长|种/.test(t)) return T.m < 20 ? `小榕树口好渴…它现在是「${S.n}」，帮它浇点水嘛～` : `小榕树现在是「${S.n}」${st.next ? `，再长 ${Math.ceil(st.next - T.g)} 就到下一阶啦` : '，已经独木成林啦'}！`;
-    if (/吃|饿|饭|餐|茶|宵夜|好味|推荐/.test(t)) return pick(['肚子咕咕叫了！「吃饭地图」里都是 Howard 自己吃过、打过分的店，去翻翻看～', '我最想去饮早茶，一盅两件！你去「吃饭地图」找找嘛～']);
+    if (/吃|饿|饭|餐|茶|宵夜|好味|推荐/.test(t)) return pick(['肚子咕咕叫了！「吃饭地图」里都是 Howard 自己吃过、打过分的店，去翻翻看～', '我最想去喝早茶，虾饺烧卖一笼一笼的！你去「吃饭地图」找找嘛～']);
     if (/星|月|天文|宇宙|银河/.test(t)) return '想看星星就去「地球之外」抬头看看，今晚的星空我帮你留着～';
     if (/地铁|火车|高铁|列车|船|轮渡/.test(t)) return pick(['地图上的火车和船都在照着时刻跑哦，点一下就知道它们开去哪～', '想坐地铁就去「城市之下」，地底下的列车跑得可快啦！']);
-    if (/故事|以前|历史|老广|讲古/.test(t)) return pick(['以前街坊最爱在榕树头讲古，一壶茶能讲一下午～', '老广说“食在广州”，我在榕树下闻了几百年的早茶香！']);
+    if (/故事|以前|历史|老广|讲古/.test(t)) return pick(['以前街坊最爱在榕树头讲故事，一壶茶能讲一下午～', '老广说“食在广州”，我在榕树下闻了几百年的早茶香！']);
     if (/你好|嗨|hi|hello|在吗|早晨|晚上好/i.test(t)) return pick(['嘿～我在呢！今天过得好不好？', '在榕树下等你好久啦～']);
-    if (/你是谁|名字|叫什么|榕忆/.test(t)) return '我系榕忆！住在小榕树里的小精灵，记得好多广州街巷的事～';
+    if (/你是谁|名字|叫什么|榕忆/.test(t)) return '我是榕忆！住在小榕树里的小精灵，记得好多广州街巷的事～';
     if (/AI|人工智能|机器人|模型/i.test(t)) return '我是用程序做出来的小宠物啦～不过陪你聊天是真心的！';
     return pick(['嗯嗯，我在听～不过我现在是离线小脑袋，只能简单陪你说两句。', '嘿嘿，这个我要想一想…你可以问问我小榕树怎么样了，或者今天吃什么～', '风吹得榕树叶沙沙响，好舒服～你也歇一歇吧。']);
   },
@@ -9336,7 +9328,7 @@ const Room = {
   },
   line(f) {   // what it says when it gets there
     const pick = (a) => a[Math.floor(Math.random() * a.length)], T = Pet.treeView();
-    if (f === 'tree') return T.m < 15 ? pick(['小榕树好渴…', '土都干裂了，浇浇水嘛']) : T.i === 0 ? pick(['快点发芽呀～', '榕果在睡觉…']) : T.i < 3 ? pick(['又长了一片新叶子！', '快高长大～']) : pick(['叶子沙沙响～', '树荫好凉快', '小榕树又长高了！', '我最喜欢这棵树了']);
+    if (f === 'tree') return T.m < 15 ? pick(['小榕树好渴…', '土都干裂了，浇浇水嘛']) : T.i === 0 ? pick(['快点发芽呀～', '榕果在睡觉…']) : T.i < 3 ? pick(['又长了一片新叶子！', '快快长大～']) : pick(['叶子沙沙响～', '树荫好凉快', '小榕树又长高了！', '我最喜欢这棵树了']);
     if (f === 'jar') return pick(['小金鱼，你好呀～', '咕噜咕噜…', '水里有我的倒影！']);
     if (f === 'swing') return pick(['荡秋千咯～', '再高一点！', '呼——飞起来了！']);
     return null;
@@ -9440,7 +9432,7 @@ const Room = {
     if (!this.present() || !this.shown || this.drag || this.fall) { this.rain(n); return; }
     this.walkTo(F.spot[0], F.spot[1], () => {
       this.faceYaw = this.blendYaw(Math.atan2(F.at[0] - this.pos.u, F.at[1] - this.pos.v), 0.55);
-      this.react('shake', true, big ? '哗啦啦——喝饱饱！' : '浇浇水，快高长大～');
+      this.react('shake', true, big ? '哗啦啦——喝饱饱！' : '浇浇水，快快长大～');
     }, 'walk');
     this.rain(n);
   },
