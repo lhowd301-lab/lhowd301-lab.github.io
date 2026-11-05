@@ -1,0 +1,20 @@
+# 榕忆聊天服务（deploy/pet_api.py）。由 deploy/pet-setup.sh 装到 /etc/systemd/system/bh-pet.service
+[Unit]
+Description=Beyond Horizons pet chat (榕忆)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+EnvironmentFile=/etc/beyond-horizons/pet.env
+ExecStart=/usr/bin/python3 /opt/beyond-horizons/pet_api.py
+Restart=on-failure
+RestartSec=3
+DynamicUser=yes
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+
+[Install]
+WantedBy=multi-user.target

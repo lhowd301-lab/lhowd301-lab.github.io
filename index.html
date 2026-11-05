@@ -832,7 +832,7 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
 
-/* ---------- 萌宠啵铃: the pet page (full screen, warm paper), the desk pet in the corner, its bubble, the catch card */
+/* ---------- 萌宠榕忆: the pet page (full screen, warm paper), the desk pet in the corner, its bubble, the catch card */
 .pet,.pet-catch{--p-ink:#4A3428;--p-ink-2:#6A4F3E;--p-line:#5A3B2A;--p-paper:#FFF9F1;--p-card:#FFFFFF;--p-soft:#F3E8DA;--p-sky:#E3F1FD;--p-sky-2:#2F6DB0;--p-peach:#FFF0DE;--p-love:#FF7E8C}
 .pet{position:fixed;inset:0;z-index:14;background:var(--p-paper);color:var(--p-ink);overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;font-family:var(--f-body)}
 .pet[hidden]{display:none}
@@ -881,14 +881,25 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
 .pet-poses figcaption{font-size:12.5px;font-weight:700}
 .pet-rules{margin:0;padding-left:20px;font-size:14px;line-height:1.75;color:#5C4334}
 .pet-rules b{color:var(--p-ink)}
-/* the room */
-.pet-room{position:relative;width:100%;aspect-ratio:520/470;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;overflow:hidden;border-radius:14px}
+/* the garden */
+.pet-room{position:relative;width:100%;aspect-ratio:520/470;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;overflow:hidden;border-radius:14px;background:linear-gradient(180deg,#CFE8FA 0%,#E6F3FC 48%,#F7F2E6 100%);transition:background .8s}
+.pet-room.night{background:linear-gradient(180deg,#1F2B52 0%,#35467A 52%,#58607F 100%)}
+.pet-room.night svg.layer{filter:brightness(.76) saturate(.92)}
+.pet-room.night canvas.pet3d{filter:brightness(.9)}
+.pet-room .glow{opacity:0;transition:opacity .8s}
+.pet-room.night .glow{opacity:1}
+.pet-room .ff{opacity:0}
+.pet-room.night .ff{animation:petFF 2.6s ease-in-out infinite}
+@keyframes petFF{0%,100%{opacity:.12}50%{opacity:1}}
+.pet-rain{position:absolute;z-index:30;width:3.2%;aspect-ratio:1;pointer-events:none;opacity:0;transform:translate(-50%,-100%);animation:petRain .9s ease-in forwards}
+.pet-rain svg{width:100%;height:100%;display:block}
+@keyframes petRain{0%{opacity:0;transform:translate(-50%,-900%)}15%{opacity:1}85%{opacity:1}100%{opacity:0;transform:translate(-50%,-100%) scale(1.25,.55)}}
 .pet-room .room-layers,.pet-room svg.layer{position:absolute;inset:0;width:100%;height:100%;display:block}
 .pet-room .room-layers,.pet-room svg.layer{pointer-events:none}
 .pet-room svg.layer g[data-f]{pointer-events:visiblePainted;cursor:pointer}
 .pet-room canvas.pet3d{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;z-index:3}
 .pet-room canvas.pet3d[hidden]{display:none}
-.pet-room .who{position:absolute;z-index:45;height:27%;width:21%;transform:translate(-50%,-100%);border:0;background:transparent;padding:0;cursor:grab;touch-action:none;border-radius:40%}
+.pet-room .who{position:absolute;z-index:45;height:24%;width:18.5%;transform:translate(-50%,-100%);border:0;background:transparent;padding:0;cursor:grab;touch-action:none;border-radius:40%}
 .pet-room .who[hidden]{display:none}
 .pet-room .who img{display:none;pointer-events:none;-webkit-user-drag:none}
 .pet-room .who.flat img{display:block;height:100%;width:auto;margin:0 auto;animation:petBob 2.8s ease-in-out infinite}
@@ -937,6 +948,23 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
 .pet-item button{height:32px;padding:0 12px;border-radius:10px;border:2px solid var(--p-line);background:var(--p-sky-2);color:#fff;font-weight:700;font-size:12.5px}
 .pet-item button:disabled{background:#D9CFC3;color:#6A4F3E;cursor:not-allowed}
 .pet-item .done{font-size:12.5px;font-weight:700;color:#1F6B3A}
+.pet-item.locked{background:#F6F1EA;opacity:.7}
+.pet-item .need{font-size:12px;font-weight:700;color:#8A6E5B;text-align:right}
+.pet-tree-meters{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:12px}
+.pet-tree-meters .stat{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700}
+.pet-tree-meters .pet-meter{width:130px;background:#EEF4EA}
+.pet-meter.grow i{background:#5DBB7E}
+.pet-meter.wet i{background:#6FB3E8}
+.pet-act.water{background:#E3F1FD}
+.pet-act.water:hover:not(:disabled){background:#CFE6FA}
+.pet-stages{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
+.pet-stages li{display:flex;gap:10px;align-items:flex-start;color:#8A6E5B}
+.pet-stages li i{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:12px;font-weight:700;background:#F1E8DC;border:2px solid var(--p-line);color:var(--p-ink)}
+.pet-stages li.done,.pet-stages li.now{color:var(--p-ink)}
+.pet-stages li.done i{background:#DDF1D8}
+.pet-stages li.now i{background:#5DBB7E;color:#fff}
+.pet-stages b{display:block;font-size:14px}
+.pet-stages small{display:block;font-size:12.5px;line-height:1.5;color:var(--p-ink-2)}
 .pet-clues{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
 .pet-clues li{display:flex;gap:10px;align-items:flex-start;font-size:14.5px;line-height:1.55}
 .pet-clues li i{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:12px;font-weight:700;background:var(--p-sky);border:2px solid var(--p-line)}
@@ -975,7 +1003,47 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
 .pet-bubble b{display:block;font-size:13px}
 .pet-bubble span{display:block;font-size:13.5px;line-height:1.55}
 .pet-bubble::after{content:"";position:absolute;right:30px;bottom:-9px;width:14px;height:14px;background:#fff;border-right:2px solid #5A3B2A;border-bottom:2px solid #5A3B2A;transform:rotate(45deg)}
-body.pure .pet-dock,body.pure .pet-bubble{display:none!important}
+body.pure .pet-dock,body.pure .pet-bubble,body.pure .pet-chat{display:none!important}
+/* chatting with it: a small window above the desk pet */
+.pet-chat{position:fixed;z-index:7;right:calc(max(16px,env(safe-area-inset-right,0px)) + 56px);bottom:calc(100px + env(safe-area-inset-bottom,0px));width:min(340px,calc(100vw - 32px));height:min(460px,calc(100dvh - 140px));display:flex;flex-direction:column;border-radius:20px;background:#FFF9F1;border:2px solid #5A3B2A;color:#4A3428;box-shadow:5px 5px 0 #EADFCF,0 18px 40px rgba(14,31,64,.18);overflow:hidden;font-family:var(--f-body);animation:rise .25s cubic-bezier(.2,.8,.2,1)}
+.pet-chat[hidden]{display:none}
+.pet-chat header{display:flex;align-items:center;gap:10px;padding:9px 8px 9px 12px;border-bottom:2px solid #EFE2D2;background:#fff}
+.pet-chat header img{width:38px;height:38px;border-radius:50%;flex:none;background:#E3F1FD;border:2px solid #5A3B2A;object-fit:cover}
+.pet-chat header div{display:flex;flex-direction:column;min-width:0;flex:1}
+.pet-chat header b{font-family:"ZCOOL KuaiLe",var(--f-body);font-weight:400;font-size:19px;line-height:1.15;color:#5A3B2A}
+.pet-chat header small{font-size:11.5px;color:#6A4F3E;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pet-chat .pc-home{height:30px;padding:0 10px;border-radius:10px;border:2px solid #5A3B2A;background:#FFF0DE;font-weight:700;font-size:12.5px;color:#4A3428;flex:none}
+.pet-chat .pc-x{width:32px;height:32px;border-radius:10px;border:0;background:transparent;display:grid;place-items:center;color:#4A3428;flex:none}
+.pet-chat .pc-x svg{width:18px;height:18px}
+.pet-chat .pc-x:hover{background:#F3E8DA}
+.pc-log{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:10px;overscroll-behavior:contain}
+.pc-msg{display:flex;gap:8px;align-items:flex-end}
+.pc-msg img{width:28px;height:28px;border-radius:50%;flex:none;background:#E3F1FD;border:1.5px solid #5A3B2A;object-fit:cover}
+.pc-msg p{margin:0;padding:8px 12px;border-radius:16px;font-size:14px;line-height:1.55;white-space:pre-wrap;word-break:break-word;max-width:80%}
+.pc-msg.pet p{background:#fff;border:2px solid #5A3B2A;border-bottom-left-radius:5px}
+.pc-msg.me{justify-content:flex-end}
+.pc-msg.me p{background:#2F6DB0;color:#fff;border:2px solid #2F6DB0;border-bottom-right-radius:5px}
+.pc-msg.typing p{display:flex;gap:4px;padding:12px 14px}
+.pc-msg.typing i{width:6px;height:6px;border-radius:50%;background:#8A6E5B;animation:pcDot 1s ease-in-out infinite}
+.pc-msg.typing i:nth-child(2){animation-delay:.15s}
+.pc-msg.typing i:nth-child(3){animation-delay:.3s}
+@keyframes pcDot{0%,100%{opacity:.3;transform:translateY(0)}50%{opacity:1;transform:translateY(-3px)}}
+.pc-sugg{display:flex;flex-wrap:wrap;gap:6px;padding:0 12px 2px}
+.pc-sugg:empty{display:none}
+.pc-sugg button{height:30px;padding:0 10px;border-radius:999px;border:2px solid #5A3B2A;background:#E3F1FD;font-size:12.5px;font-weight:700;color:#4A3428}
+.pc-sugg button:hover{background:#CFE6FA}
+.pc-in{display:flex;gap:8px;padding:10px 12px 12px}
+.pc-in input{flex:1;min-width:0;height:40px;border-radius:12px;border:2px solid #5A3B2A;background:#fff;padding:0 12px;font-size:15px;color:#4A3428;font-family:inherit}
+.pc-in input:focus{outline:none;box-shadow:0 0 0 3px rgba(47,109,176,.25)}
+.pc-in button{width:40px;height:40px;flex:none;border-radius:12px;border:2px solid #5A3B2A;background:#2F6DB0;color:#fff;display:grid;place-items:center}
+.pc-in button svg{width:18px;height:18px}
+.pc-in input:disabled,.pc-in button:disabled{opacity:.55}
+.pc-note{margin:0;padding:0 12px 10px;font-size:11.5px;line-height:1.5;color:#8A6E5B}
+.pc-note[hidden]{display:none}
+@media (max-width:640px){
+  .pet-chat{left:12px;right:12px;width:auto;bottom:calc(98px + env(safe-area-inset-bottom,0px));height:min(440px,calc(100dvh - 190px))}
+  .pc-in input{font-size:16px}
+}
 /* the pet on the map */
 .pet-mark{border:0;background:transparent;padding:0;cursor:pointer;width:64px;filter:drop-shadow(0 6px 6px rgba(29,78,216,.25))}
 .pet-mark img{width:100%;height:auto;display:block;animation:petPeek 1.8s ease-in-out infinite;transform-origin:50% 100%}
@@ -1108,8 +1176,15 @@ body.pure .pet-dock,body.pure .pet-bubble{display:none!important}
     <span class="coord" id="coord">23°07′N 113°16′E · 视高 —</span>
     <span class="attr">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> 贡献者 · SRTM 地形</span>
   </div>
-  <button class="pet-dock" id="petDock" type="button" aria-label="萌宠啵铃"></button>
+  <button class="pet-dock" id="petDock" type="button" aria-label="萌宠榕忆"></button>
   <button class="pet-bubble" id="petBubble" type="button" hidden></button>
+  <section class="pet-chat" id="petChat" hidden role="dialog" aria-label="和榕忆聊天">
+    <header><img data-av alt=""><div><b>榕忆</b><small data-st>在小榕树下</small></div><button type="button" class="pc-home" data-home>小院</button><button type="button" class="pc-x" data-x aria-label="关闭聊天"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
+    <div class="pc-log" role="log" aria-live="polite"></div>
+    <div class="pc-sugg"></div>
+    <form class="pc-in" autocomplete="off"><input type="text" maxlength="200" placeholder="和榕忆说点什么…" aria-label="和榕忆说的话" enterkeyhint="send"><button type="submit" aria-label="发送"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l16-8-6 16-2-6-8-2z"/></svg></button></form>
+    <p class="pc-note" hidden></p>
+  </section>
 </div>
 
 <button class="pure-exit glass" id="pureExit" type="button" aria-label="退出纯享模式"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M15 20v-5h5M9 20v-5H4"/></svg>退出纯享<kbd>Esc</kbd></button>
@@ -1142,15 +1217,15 @@ body.pure .pet-dock,body.pure .pet-bubble{display:none!important}
   </div>
 </section>
 
-<section class="pet" id="pet" hidden aria-label="萌宠啵铃">
+<section class="pet" id="pet" hidden aria-label="萌宠榕忆">
   <header class="pet-top">
     <button class="pet-back" id="petClose" type="button" aria-label="返回地图"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
-    <div class="pet-title"><h2>萌宠 · 啵铃</h2><p id="petSub">—</p></div>
+    <div class="pet-title"><h2>萌宠 · 榕忆</h2><p id="petSub">—</p></div>
     <div class="pet-stats"><span class="pet-chip coins" id="petCoins"></span><span class="pet-chip" id="petLove"></span></div>
   </header>
   <div class="pet-tabs" role="tablist" aria-label="萌宠页面">
-    <button type="button" role="tab" data-tab="about" aria-selected="true">认识啵铃</button>
-    <button type="button" role="tab" data-tab="home" aria-selected="false">我的家</button>
+    <button type="button" role="tab" data-tab="about" aria-selected="true">认识榕忆</button>
+    <button type="button" role="tab" data-tab="home" aria-selected="false">榕树小院</button>
     <button type="button" role="tab" data-tab="quest" aria-selected="false">线索与任务<span class="dot" aria-hidden="true"></span></button>
   </div>
   <div class="pet-body" id="petBody" role="tabpanel"></div>
@@ -1176,6 +1251,9 @@ const SITE = {
     bio: '喜欢在城市里走路、拍照、看星星。这张地图记着我吃过的店、拍过的街、去过的地方，还有一些写给自己的日记。',
     bioSample: true,
   },
+  // 和榕忆聊天的服务地址：网站开在哪个域名 → 去哪里问。服务器上自己那份（map.howardleong.work 或 IP）用同站的 /api/pet，
+  // 不用写；GitHub Pages 那份要跨站去服务器问（服务器得先开好 HTTPS，见 deploy/domain.sh）。找不到就用离线的简单回答
+  petChat: { 'lhowd301-lab.github.io': 'https://map.howardleong.work/api/pet' },
   // glyph：单色图标形状（icons/*-m.png，按参考图提取），颜色跟着网站主题走；不填就用内置的通用图标
   socials: [
     { id: 'douyin', label: '抖音', url: 'https://www.douyin.com/', glyph: 'icons/douyin-m.png' },
@@ -1850,7 +1928,7 @@ const MODULES = [
   { id: 'diary', name: '街巷日记', en: 'DIARY', items: () => [...SITE.diary, ...SITE.life.filter((l) => l.lnglat), ...SITE.spots.filter((l) => l.lnglat)] },
   { id: 'metro', name: '城市之下', en: 'BENEATH', items: () => [] },
   { id: 'sky', name: '地球之外', en: 'BEYOND', items: () => [] },
-  { id: 'pet', name: '萌宠啵铃', en: 'PET', items: () => [] },
+  { id: 'pet', name: '萌宠榕忆', en: 'PET', items: () => [] },
 ];
 const ICON_OF = { food: ICONS.food, street: ICONS.street, landmark: ICONS.landmark, diary: ICONS.diary, metro: ICONS.metro, sky: ICONS.sky, pet: ICONS.pet };
 const state = { module: 'food', foodCat: 'all', active: null, city: 'gz', cityOpen: true, is3d: true, ready: false, navMin: false, cityMin: false, pure: false };
@@ -7883,6 +7961,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key !== 'Escape') return;
   if (!$('#petCatch').hidden) $('#petCatch').hidden = true;
   else if (!$('#pet').hidden) Pet.close();
+  else if (PetChat.isOpen()) PetChat.toggle(false);
   else if (!$('#sky').hidden) Sky.close();
   else if (Metro.on) { if (!$('#subInfo').hidden) Metro.select(null); else Metro.exit(); }
   else if ($('#profileDrawer').classList.contains('open')) closeDrawer();
@@ -7891,27 +7970,202 @@ document.addEventListener('keydown', (e) => {
   else closePops();
 });
 
-const PET_ROOM = {"vb":"40 -50 520 470","geo":{"L0":[60,300],"UA":[240,-120],"VA":[240,120],"VB":[40,-50,520,470]},"layers":{"walls_bare":"<path d=\"M60.0 300.0 L300.0 180.0 L300.0 -30.0 L60.0 90.0 Z\" fill=\"#CFCBC4\" stroke=\"#7E7870\" stroke-width=\"3\" stroke-linejoin=\"round\"/><path d=\"M300.0 180.0 L540.0 300.0 L540.0 90.0 L300.0 -30.0 Z\" fill=\"#BEB9B1\" stroke=\"#7E7870\" stroke-width=\"3\" stroke-linejoin=\"round\"/><path d=\"M108.0 216.0 L136.8 195.6 L132.0 178.0 L103.2 198.4 Z\" fill=\"#C3BFB7\"/><path d=\"M192.0 114.0 L220.8 93.6 L216.0 76.0 L187.2 96.4 Z\" fill=\"#C3BFB7\"/><path d=\"M240.0 170.0 L268.8 149.6 L264.0 132.0 L235.2 152.4 Z\" fill=\"#C3BFB7\"/><path d=\"M372.0 136.0 L396.0 152.0 L400.8 132.4 L372.0 114.0 Z\" fill=\"#B2ADA5\"/><path d=\"M448.8 114.4 L472.8 130.4 L477.6 110.8 L448.8 92.4 Z\" fill=\"#B2ADA5\"/>","walls_paint":"<path d=\"M60.0 300.0 L300.0 180.0 L300.0 -30.0 L60.0 90.0 Z\" fill=\"#EAF3FC\" stroke=\"#6F86A3\" stroke-width=\"3\" stroke-linejoin=\"round\"/><path d=\"M300.0 180.0 L540.0 300.0 L540.0 90.0 L300.0 -30.0 Z\" fill=\"#DCEAF8\" stroke=\"#6F86A3\" stroke-width=\"3\" stroke-linejoin=\"round\"/><path d=\"M60.0 300.0 L300.0 180.0 L300.0 134.0 L60.0 254.0 Z\" fill=\"#CFE1F4\" stroke=\"#6F86A3\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M300.0 180.0 L540.0 300.0 L540.0 254.0 L300.0 134.0 Z\" fill=\"#C3D8EE\" stroke=\"#6F86A3\" stroke-width=\"2\" stroke-linejoin=\"round\"/>","floor_bare":"<path d=\"M60.0 300.0 L300.0 180.0 L540.0 300.0 L300.0 420.0 Z\" fill=\"#A7A198\" stroke=\"#7E7870\" stroke-width=\"3\" stroke-linejoin=\"round\"/><g fill=\"none\" stroke=\"#8C867D\" stroke-width=\"2.5\" stroke-linecap=\"round\"><path d=\"M276 336 L310 334 L329 348\"/><path d=\"M300 252 L329 252 L343 240\"/></g>","floor_wood":"<path d=\"M60.0 300.0 L300.0 180.0 L540.0 300.0 L300.0 420.0 Z\" fill=\"#D9B38A\" stroke=\"#6F86A3\" stroke-width=\"3\" stroke-linejoin=\"round\"/><g stroke=\"#BE9466\" stroke-width=\"2\"><path d=\"M90 285 L330 405\"/><path d=\"M120 270 L360 390\"/><path d=\"M150 255 L390 375\"/><path d=\"M180 240 L420 360\"/><path d=\"M210 225 L450 345\"/><path d=\"M240 210 L480 330\"/><path d=\"M270 195 L510 315\"/></g>","window":"<path d=\"M372.0 138.0 L477.6 190.8 L477.6 86.8 L372.0 34.0 Z\" fill=\"#BFE0FF\" stroke=\"#6F86A3\" stroke-width=\"4\" stroke-linejoin=\"round\"/><g transform=\"translate(396.0 78.0) scale(1.0)\" opacity=\"1.0\"><path d=\"M-14 6 a8 8 0 0 1 2 -14 a10 10 0 0 1 18 -2 a8 8 0 0 1 8 14 Z\" fill=\"#FFFFFF\" stroke=\"#B8CDE6\" stroke-width=\"2.0\" stroke-linejoin=\"round\"/></g><g transform=\"translate(444.0 132.0) scale(0.8)\" opacity=\"1.0\"><path d=\"M-14 6 a8 8 0 0 1 2 -14 a10 10 0 0 1 18 -2 a8 8 0 0 1 8 14 Z\" fill=\"#FFFFFF\" stroke=\"#B8CDE6\" stroke-width=\"2.5\" stroke-linejoin=\"round\"/></g><g transform=\"translate(424.8 74.4) scale(0.6)\" opacity=\"1.0\"><path d=\"M-14 6 a8 8 0 0 1 2 -14 a10 10 0 0 1 18 -2 a8 8 0 0 1 8 14 Z\" fill=\"#FFFFFF\" stroke=\"#B8CDE6\" stroke-width=\"3.3\" stroke-linejoin=\"round\"/></g><path d=\"M372.0 138.0 L477.6 190.8 L477.6 178.8 L372.0 126.0 Z\" fill=\"#A9C3E0\"/><path d=\"M425 164 L425 60\" stroke=\"#6F86A3\" stroke-width=\"3\"/>","lights":"<circle cx=\"60\" cy=\"108\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"300\" cy=\"-12\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"80\" cy=\"104\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"320\" cy=\"4\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"100\" cy=\"88\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"340\" cy=\"8\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"120\" cy=\"72\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"360\" cy=\"12\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"140\" cy=\"68\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"380\" cy=\"28\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"160\" cy=\"64\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"400\" cy=\"44\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"180\" cy=\"48\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"420\" cy=\"48\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"200\" cy=\"32\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"440\" cy=\"52\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"220\" cy=\"28\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"460\" cy=\"68\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"240\" cy=\"24\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"480\" cy=\"84\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"260\" cy=\"8\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"500\" cy=\"88\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"280\" cy=\"-8\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"520\" cy=\"92\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"300\" cy=\"-12\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/><circle cx=\"540\" cy=\"108\" r=\"5\" fill=\"#FFE08A\" stroke=\"#6F86A3\" stroke-width=\"1.5\"/>","shelf":"<path d=\"M103.2 148.4 L184.8 107.6 L198.8 114.6 L117.2 155.4 Z\" fill=\"#B98552\" stroke=\"#6D5235\" stroke-width=\"2\" stroke-linejoin=\"round\"/><g transform=\"translate(127 124)\"><path transform=\"translate(0 0) scale(1.2)\" opacity=\"1.0\" d=\"M0 -12 C 5 -5 8 -1 8 3 a8 8 0 0 1 -16 0 C -8 -1 -5 -5 0 -12 Z\" fill=\"#8EC3F2\" stroke=\"#5A3B2A\" stroke-width=\"1.7\" stroke-linejoin=\"round\"/><path transform=\"translate(0 0) scale(1.2)\" opacity=\"1.0\" d=\"M-3 2 a3 3 0 0 0 3 3\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.3\" stroke-linecap=\"round\"/></g><rect x=\"149\" y=\"100\" width=\"24\" height=\"20\" rx=\"4\" fill=\"#9FC48A\" stroke=\"#6D5235\" stroke-width=\"2\"/>","bulb":"<path d=\"M220 10 L220 80\" stroke=\"#4A4540\" stroke-width=\"2.5\"/><circle cx=\"220\" cy=\"92\" r=\"12\" fill=\"#FFF2B8\" stroke=\"#4A4540\" stroke-width=\"2.5\"/><circle cx=\"220\" cy=\"92\" r=\"26\" fill=\"#FFF2B8\" opacity=\"0.25\"/>","box":"<path d=\"M108.0 258.8 L156.0 234.8 L199.2 256.4 L151.2 280.4 Z\" fill=\"#D7B07A\" stroke=\"#6D5235\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M108.0 304.8 L151.2 326.4 L151.2 280.4 L108.0 258.8 Z\" fill=\"#B98C55\" stroke=\"#6D5235\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M151.2 326.4 L199.2 302.4 L199.2 256.4 L151.2 280.4 Z\" fill=\"#C99C64\" stroke=\"#6D5235\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M130 270 L178 246\" stroke=\"#8E6A3E\" stroke-width=\"3\"/>","rug":"<ellipse cx=\"324.0\" cy=\"300.0\" rx=\"94.9\" ry=\"47.6\" fill=\"#9CC8F2\" stroke=\"#4F78A8\" stroke-width=\"3\"/><ellipse cx=\"324.0\" cy=\"300.0\" rx=\"67.8\" ry=\"34.0\" fill=\"#C8E2FA\"/><ellipse cx=\"324.0\" cy=\"300.0\" rx=\"33.9\" ry=\"17.0\" fill=\"#FFF3D6\"/>","plant":"<path d=\"M88.8 266.0 L108.0 256.4 L127.2 266.0 L108.0 275.6 Z\" fill=\"#C77F4B\" stroke=\"#5A4636\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M88.8 300.0 L108.0 309.6 L108.0 275.6 L88.8 266.0 Z\" fill=\"#A9643A\" stroke=\"#5A4636\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M108.0 309.6 L127.2 300.0 L127.2 266.0 L108.0 275.6 Z\" fill=\"#B87043\" stroke=\"#5A4636\" stroke-width=\"2\" stroke-linejoin=\"round\"/><g fill=\"#6FA35A\" stroke=\"#3F6B34\" stroke-width=\"2\"><ellipse cx=\"94\" cy=\"236\" rx=\"12\" ry=\"26\" transform=\"rotate(-25 94 236)\"/><ellipse cx=\"122\" cy=\"236\" rx=\"12\" ry=\"26\" transform=\"rotate(25 122 236)\"/><ellipse cx=\"108\" cy=\"224\" rx=\"12\" ry=\"30\"/></g>","lamp":"<path d=\"M305 211 L305 91\" stroke=\"#5A4636\" stroke-width=\"4\"/><path d=\"M283 93 L327 93 L319 63 L291 63 Z\" fill=\"#FFE3A8\" stroke=\"#5A4636\" stroke-width=\"3\"/><ellipse cx=\"305\" cy=\"107\" rx=\"40\" ry=\"18\" fill=\"#FFE3A8\" opacity=\"0.35\"/><ellipse cx=\"305\" cy=\"211\" rx=\"12\" ry=\"5\" fill=\"#5A4636\"/>","bed":"<g transform=\"translate(300 267) scale(1.0 0.6)\"><g fill=\"#FFFFFF\" stroke=\"#7FA6CF\" stroke-width=\"5\"><circle cx=\"-46\" cy=\"4\" r=\"26\"/><circle cx=\"-20\" cy=\"-8\" r=\"30\"/><circle cx=\"14\" cy=\"-10\" r=\"30\"/><circle cx=\"44\" cy=\"2\" r=\"26\"/><circle cx=\"0\" cy=\"12\" r=\"34\"/></g><g fill=\"#FFFFFF\"><circle cx=\"-46\" cy=\"4\" r=\"23\"/><circle cx=\"-20\" cy=\"-8\" r=\"27\"/><circle cx=\"14\" cy=\"-10\" r=\"27\"/><circle cx=\"44\" cy=\"2\" r=\"23\"/><circle cx=\"0\" cy=\"12\" r=\"31\"/></g><g fill=\"#DDEEFF\"><circle cx=\"-20\" cy=\"2\" r=\"16\"/><circle cx=\"14\" cy=\"0\" r=\"16\"/></g></g>","table":"<path d=\"M252.0 326.8 L290.4 307.6 L328.8 326.8 L290.4 346.0 Z\" fill=\"#C9935C\" stroke=\"#5A4636\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M252.0 352.8 L290.4 372.0 L290.4 346.0 L252.0 326.8 Z\" fill=\"#A87442\" stroke=\"#5A4636\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M290.4 372.0 L328.8 352.8 L328.8 326.8 L290.4 346.0 Z\" fill=\"#B98552\" stroke=\"#5A4636\" stroke-width=\"2\" stroke-linejoin=\"round\"/><ellipse cx=\"290\" cy=\"325\" rx=\"24\" ry=\"10\" fill=\"#FFFFFF\" stroke=\"#6D5235\" stroke-width=\"2\"/><circle cx=\"282\" cy=\"321\" r=\"7\" fill=\"#E7B36A\" stroke=\"#6D5235\" stroke-width=\"1.5\"/><circle cx=\"298\" cy=\"323\" r=\"7\" fill=\"#E7B36A\" stroke=\"#6D5235\" stroke-width=\"1.5\"/><path d=\"M306 303 l0 14 a7 4 0 0 0 14 0 l0 -14 Z\" fill=\"#BFE0FF\" stroke=\"#6D5235\" stroke-width=\"2\"/>"},"spots":{"floor":[55.54,74.47],"bed":[50.0,65.36],"door":[57.38,88.77]}};
-/* ===================================================================== 萌宠啵铃
-   每位访客一份自己的游戏，存在各自浏览器的 localStorage（bh-pet-v1），换设备或清缓存会从头开始：
-   - 走失：啵铃藏在地图上某个地标 / 餐厅 / 扫街点旁边，不定时发消息给线索（完成任务、花水滴也能换线索）；
+const PET_ROOM = { vb: "40 -50 520 470", geo: { L0: [60, 300], UA: [240, -120], VA: [240, 120], VB: [40, -50, 520, 470] } };   // the garden floor: P(u, v) = L0 + u·UA + v·VA
+/* ===================================================================== 榕树小院：地面、矮墙、榕树和装饰，全部按等轴测坐标现画（SVG）
+   地面上的点 (u, v) 和小屋原来的一样：P(u, v, h) 是 SVG 坐标，h 往上抬。榕树长在后方 (0.80, 0.22)。
+   树按阶段和阶段内的进度连续长大：主干、枝、树冠（一团团叶簇，外描边），老树的树干由几股枝干合抱而成；
+   土越干叶子越黄，干透了地上会落几片叶子 */
+const Garden = {
+  P(u, v, h = 0) { return [60 + 240 * (u + v), 300 - 120 * u + 120 * v - h]; },
+  rng(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; },
+  BASE: [0.80, 0.22],
+  H: [0, 16, 40, 78, 112, 140, 160], R: [0, 0, 0, 50, 76, 100, 120], W: [0, 1.6, 2.6, 8, 13, 18, 23],
+  dims(st, f) { const k = st < 6 ? Math.min(1, f) * 0.6 : 0, L = (a) => a[st] + (a[Math.min(6, st + 1)] - a[st]) * k; return { H: L(this.H), R: L(this.R), W: L(this.W) }; },
+  mix(a, b, t) { const p = (c) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16)); const A = p(a), B = p(b); return '#' + A.map((x, i) => Math.round(x + (B[i] - x) * t).toString(16).padStart(2, '0')).join(''); },
+  pal(m) {   // greener when the soil is wet, yellower as it dries out
+    const d = Math.max(0, Math.min(1, (35 - m) / 35));
+    return { dark: this.mix('#2F6E3B', '#6E7438', d), mid: this.mix('#3F8F48', '#93974A', d), light: this.mix('#7DC266', '#C9C56E', d), d };
+  },
+  f1: (n) => Math.round(n * 10) / 10,
+  pts(a) { return a.map((p) => `${this.f1(p[0])},${this.f1(p[1])}`).join(' '); },
+  // ------------------------------------------------------------- the ground and the walls (behind the pet)
+  ground(it) {
+    const P = (u, v, h) => this.P(u, v, h), o = [];
+    // the low wall round the back: plain, or a Lingnan wall with green glazed tiles and coloured-glass 满洲窗
+    const hw = 46, nice = !!it.wall;
+    const wall = (a, b, shade) => {
+      const A = P(...a), B = P(...b), A2 = P(...a, hw), B2 = P(...b, hw);
+      o.push(`<polygon points="${this.pts([A, B, B2, A2])}" fill="${nice ? this.mix('#B9BDB6', '#9DA39C', shade) : this.mix('#E6DFD3', '#D3CABC', shade)}" stroke="#7E7568" stroke-width="2.5" stroke-linejoin="round"/>`);
+      if (nice) {   // brick courses
+        for (let k = 1; k < 6; k++) { const t = k / 6, p = [A[0], A[1] - hw * t], q = [B[0], B[1] - hw * t]; o.push(`<line x1="${this.f1(p[0])}" y1="${this.f1(p[1])}" x2="${this.f1(q[0])}" y2="${this.f1(q[1])}" stroke="#8E948D" stroke-width="1"/>`); }
+        // two 满洲窗 per wall: a timber frame, a grid of coloured panes
+        for (const c of [0.28, 0.72]) {
+          const g = (s, h) => [A[0] + (B[0] - A[0]) * s, A[1] + (B[1] - A[1]) * s - h];
+          const w = 0.11, h0 = 12, h1 = 34, fr = [g(c - w, h0), g(c + w, h0), g(c + w, h1), g(c - w, h1)];
+          o.push(`<polygon points="${this.pts(fr)}" fill="#7A4E2E" stroke="#4E3220" stroke-width="2"/>`);
+          const cols = ['#6FA8DC', '#E06666', '#F6D365', '#93C47D', '#F6D365', '#6FA8DC'];
+          for (let i = 0; i < 3; i++) for (let j = 0; j < 2; j++) {
+            const s0 = c - w + 0.012 + (i * (2 * w - 0.024)) / 3, s1 = s0 + (2 * w - 0.024) / 3 - 0.008, hA = h0 + 2.5 + j * 10, hB = hA + 8.5;
+            o.push(`<polygon points="${this.pts([g(s0, hA), g(s1, hA), g(s1, hB), g(s0, hB)])}" fill="${cols[i * 2 + j]}" opacity=".9"/>`);
+          }
+        }
+      }
+      // the coping on top: a thin cap, or a row of green glazed tiles
+      const ch = nice ? 9 : 5, C1 = P(...a, hw + ch), C2 = P(...b, hw + ch);
+      o.push(`<polygon points="${this.pts([A2, B2, C2, C1])}" fill="${nice ? '#3E7D4F' : '#BDB3A5'}" stroke="${nice ? '#244A2E' : '#7E7568'}" stroke-width="2" stroke-linejoin="round"/>`);
+      if (nice) for (let k = 1; k < 18; k++) { const t = k / 18, p = [A2[0] + (B2[0] - A2[0]) * t, A2[1] + (B2[1] - A2[1]) * t]; o.push(`<line x1="${this.f1(p[0])}" y1="${this.f1(p[1])}" x2="${this.f1(p[0])}" y2="${this.f1(p[1] - ch)}" stroke="#2C5A39" stroke-width="1.2"/>`); }
+    };
+    wall([0, 0], [1, 0], 0); wall([1, 0], [1, 1], 1);
+    // a raised bed of grass, its two front sides showing the soil
+    const L = P(0, 0), T = P(1, 0), R = P(1, 1), F = P(0, 1), d = 12;
+    o.push(`<polygon points="${this.pts([L, F, [F[0], F[1] + d], [L[0], L[1] + d]])}" fill="#A07B55" stroke="#6D5235" stroke-width="2.5" stroke-linejoin="round"/>`);
+    o.push(`<polygon points="${this.pts([F, R, [R[0], R[1] + d], [F[0], F[1] + d]])}" fill="#8A6845" stroke="#6D5235" stroke-width="2.5" stroke-linejoin="round"/>`);
+    o.push(`<polygon points="${this.pts([L, T, R, F])}" fill="#BFDE9E" stroke="#6F8F55" stroke-width="3" stroke-linejoin="round"/>`);
+    const r = this.rng(5);
+    for (let i = 0; i < 46; i++) {   // tufts of grass
+      const u = 0.05 + r() * 0.9, v = 0.05 + r() * 0.9; if (Math.hypot(u - this.BASE[0], v - this.BASE[1]) < 0.12) continue;
+      const [x, y] = P(u, v);
+      o.push(`<path d="M${this.f1(x - 3)} ${this.f1(y)} l2 -5 l1.2 5 l1.8 -6 l1 6" fill="none" stroke="#86B26A" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>`);
+    }
+    if (it.path) for (const [u, v] of [[0.1, 0.9], [0.21, 0.8], [0.32, 0.7], [0.43, 0.61], [0.53, 0.53], [0.62, 0.46]]) {   // stepping stones
+      const [x, y] = P(u, v); o.push(`<ellipse cx="${this.f1(x)}" cy="${this.f1(y)}" rx="14" ry="6.5" fill="#CFC9BE" stroke="#8C867D" stroke-width="2"/><ellipse cx="${this.f1(x - 2)}" cy="${this.f1(y - 1.5)}" rx="7" ry="2.6" fill="#E4DFD6"/>`);
+    }
+    return o.join('');
+  },
+  bench() {   // a stone bench under the tree; it climbs up and naps on it
+    const P = (u, v, h) => this.P(u, v, h), u0 = 0.50, u1 = 0.64, v0 = 0.27, v1 = 0.33, h = 12, o = [];
+    const top = [P(u0, v0, h), P(u1, v0, h), P(u1, v1, h), P(u0, v1, h)];
+    for (const [a, b] of [[u0 + 0.015, u0 + 0.035], [u1 - 0.035, u1 - 0.015]]) o.push(`<polygon points="${this.pts([P(a, v1, 0), P(b, v1, 0), P(b, v1, h), P(a, v1, h)])}" fill="#A9A49B" stroke="#6E6960" stroke-width="2" stroke-linejoin="round"/><polygon points="${this.pts([P(b, v0 + 0.01, 0), P(b, v1, 0), P(b, v1, h), P(b, v0 + 0.01, h)])}" fill="#928D84" stroke="#6E6960" stroke-width="2" stroke-linejoin="round"/>`);
+    o.push(`<polygon points="${this.pts([P(u0, v1, h), P(u1, v1, h), P(u1, v1, h - 4), P(u0, v1, h - 4)])}" fill="#B5B0A7" stroke="#6E6960" stroke-width="2" stroke-linejoin="round"/>`);
+    o.push(`<polygon points="${this.pts([P(u1, v0, h), P(u1, v1, h), P(u1, v1, h - 4), P(u1, v0, h - 4)])}" fill="#9F9A91" stroke="#6E6960" stroke-width="2" stroke-linejoin="round"/>`);
+    o.push(`<polygon points="${this.pts(top)}" fill="#D1CCC3" stroke="#6E6960" stroke-width="2" stroke-linejoin="round"/>`);
+    return o.join('');
+  },
+  table() {   // a round stone table with two drum stools, a teapot and cups: 榕树头饮茶
+    const P = (u, v, h) => this.P(u, v, h), o = [], stone = '#C9C3B8', line = '#6E6960';
+    const drum = (u, v, rx, h) => { const [x, y] = P(u, v); o.push(`<path d="M${x - rx} ${y - h} L${x - rx} ${y} A${rx} ${rx / 2} 0 0 0 ${x + rx} ${y} L${x + rx} ${y - h} Z" fill="#B3ADA2" stroke="${line}" stroke-width="2"/><ellipse cx="${x}" cy="${y - h}" rx="${rx}" ry="${rx / 2}" fill="${stone}" stroke="${line}" stroke-width="2"/>`); };
+    drum(0.36, 0.62, 9, 12);
+    const [x, y] = P(0.28, 0.70);
+    o.push(`<path d="M${x - 7} ${y - 20} L${x - 9} ${y} A9 4.5 0 0 0 ${x + 9} ${y} L${x + 7} ${y - 20} Z" fill="#ADA79C" stroke="${line}" stroke-width="2"/>`);
+    o.push(`<ellipse cx="${x}" cy="${y - 22}" rx="27" ry="13.5" fill="#B8B2A7" stroke="${line}" stroke-width="2"/><ellipse cx="${x}" cy="${y - 25}" rx="27" ry="13.5" fill="${stone}" stroke="${line}" stroke-width="2"/>`);
+    // teapot and two cups
+    o.push(`<path d="M${x - 2} ${y - 31} a6 5 0 0 1 12 0 l0 3 a6 3 0 0 1 -12 0 Z" fill="#8C4A2F" stroke="#4E2A1C" stroke-width="1.5"/><path d="M${x + 10} ${y - 30} q5 -3 6 -6" fill="none" stroke="#4E2A1C" stroke-width="1.8" stroke-linecap="round"/><circle cx="${x + 4}" cy="${y - 37}" r="1.6" fill="#4E2A1C"/>`);
+    for (const dx of [-14, -6]) o.push(`<path d="M${x + dx - 3} ${y - 28} l1 3.5 a2.5 1.2 0 0 0 4 0 l1 -3.5 Z" fill="#F4F1EA" stroke="#6E6960" stroke-width="1.2"/>`);
+    drum(0.20, 0.79, 9, 12);
+    return o.join('');
+  },
+  jar() {   // a big glazed water jar with a goldfish in it
+    const [x, y] = this.P(0.15, 0.17), o = [];
+    o.push(`<path d="M${x - 15} ${y - 30} C${x - 24} ${y - 18} ${x - 20} ${y - 2} ${x - 12} ${y} A12 5 0 0 0 ${x + 12} ${y} C${x + 20} ${y - 2} ${x + 24} ${y - 18} ${x + 15} ${y - 30} Z" fill="#4E6B57" stroke="#2C3E33" stroke-width="2.2"/>`);
+    o.push(`<path d="M${x - 17} ${y - 20} q17 7 34 0" fill="none" stroke="#6E8E78" stroke-width="2"/>`);
+    o.push(`<ellipse cx="${x}" cy="${y - 31}" rx="16" ry="6.5" fill="#3F5A48" stroke="#2C3E33" stroke-width="2"/><ellipse cx="${x}" cy="${y - 31}" rx="13" ry="4.8" fill="#86BFE0"/>`);
+    o.push(`<path d="M${x - 3} ${y - 31} q3 -2.2 6 0 q-3 2.2 -6 0 Z M${x + 3} ${y - 31} l3 -2 l0 4 Z" fill="#F08A3C"/><ellipse cx="${x - 6}" cy="${y - 32.5}" rx="3" ry="1" fill="#fff" opacity=".7"/>`);
+    return o.join('');
+  },
+  // ------------------------------------------------------------- the banyan
+  tree(st, f, m, it, preview) {
+    const [Bx, By] = this.P(...this.BASE), D = this.dims(st, f), { H, R, W } = D, pal = this.pal(m), o = [], rnd = this.rng(11 + st * 7), line = '#2E4A2C', bark = '#8C6E52', barkLine = '#5A4636';
+    const Rx = R * 1.14, Ry = R * 0.52, Cx = Bx, Cy = By - H, f1 = this.f1;
+    const under = (x) => Cy + Ry * 0.8 * Math.sqrt(Math.max(0, 1 - ((x - Cx) / (Rx * 0.97)) ** 2));   // the canopy's underside
+    // the soil round its foot: dark when watered, pale and cracked when dry
+    const srx = st < 3 ? 17 + st * 3 : 20 + W * 1.7, wet = this.mix('#6B4A33', '#B48E64', pal.d);
+    o.push(`<ellipse cx="${f1(Bx)}" cy="${f1(By + 1)}" rx="${f1(srx)}" ry="${f1(srx * 0.46)}" fill="${wet}" stroke="#5A4636" stroke-width="2"/>`);
+    if (pal.d > 0.6) o.push(`<path d="M${f1(Bx - srx * 0.5)} ${f1(By)} l6 2 l5 -2 M${f1(Bx + srx * 0.2)} ${f1(By + 3)} l5 -2 l4 2" fill="none" stroke="#7A5C40" stroke-width="1.2"/>`);
+    if (st >= 3) { const r2 = this.rng(3); for (let k = 0; k < 9; k++) { const a = (k / 9) * Math.PI * 2 + r2() * 0.3; o.push(`<ellipse cx="${f1(Bx + Math.cos(a) * srx * 1.02)}" cy="${f1(By + 1 + Math.sin(a) * srx * 0.47)}" rx="${f1(4 + r2() * 2)}" ry="${f1(2.4 + r2())}" fill="#B9B4AA" stroke="#7E796F" stroke-width="1.2"/>`); } }
+    if (m < 15 && st >= 2) { const r3 = this.rng(9); for (let k = 0; k < 6; k++) { const x = Bx + (r3() * 2 - 1) * (srx + 26), y = By + 6 + r3() * 14; o.push(`<ellipse cx="${f1(x)}" cy="${f1(y)}" rx="4" ry="2" transform="rotate(${Math.round(r3() * 180)} ${f1(x)} ${f1(y)})" fill="#D9B24C" stroke="#8A6B2C" stroke-width="1"/>`); } }
+    if (st === 0) {   // a fig in the soil, and a little wooden sign
+      o.push(`<circle cx="${f1(Bx + 2)}" cy="${f1(By - 1.5)}" r="3.6" fill="#B5543A" stroke="#5A2A1E" stroke-width="1.5"/><circle cx="${f1(Bx + 1)}" cy="${f1(By - 2.6)}" r="1" fill="#E89A7E"/>`);
+      o.push(`<path d="M${f1(Bx - 15)} ${f1(By + 2)} l0 -16" stroke="#8C6A45" stroke-width="2.4"/><rect x="${f1(Bx - 23)}" y="${f1(By - 24)}" width="16" height="11" rx="2" fill="#E9C995" stroke="#6D5235" stroke-width="1.6"/><text x="${f1(Bx - 15)}" y="${f1(By - 15.5)}" font-size="8" text-anchor="middle" fill="#6D5235" font-weight="700">榕</text>`);
+    } else if (st <= 2) {   // a seedling: a thin stem, leaves on alternate sides
+      const n = st === 1 ? 2 + Math.floor(f * 2.5) : 5 + Math.floor(f * 4), top = [Bx + 3, By - H];
+      o.push(`<path d="M${f1(Bx)} ${f1(By)} Q${f1(Bx - 4)} ${f1(By - H * 0.5)} ${f1(top[0])} ${f1(top[1])}" fill="none" stroke="${st === 1 ? '#6E9A4A' : '#7A6A4A'}" stroke-width="${st === 1 ? 2 : 2.8}" stroke-linecap="round"/>`);
+      for (let i = 0; i < n; i++) {
+        const t = 0.35 + (0.65 * (i + 1)) / (n + 0.5), x = Bx - 4 * 2 * t * (1 - t) + 3 * t * t, y = By - H * t, s = i % 2 ? 1 : -1, rx = st === 1 ? 5.5 : 6.8;
+        o.push(`<ellipse cx="${f1(x + s * rx * 0.85)}" cy="${f1(y - 1)}" rx="${rx}" ry="${f1(rx * 0.5)}" transform="rotate(${s * -28} ${f1(x + s * rx * 0.85)} ${f1(y - 1)})" fill="${i === n - 1 ? pal.light : pal.mid}" stroke="${line}" stroke-width="1.4"/>`);
+      }
+      o.push(`<ellipse cx="${f1(top[0])}" cy="${f1(top[1] - 3)}" rx="3" ry="5" fill="${pal.light}" stroke="${line}" stroke-width="1.3"/>`);
+    } else {
+      const topY = Cy + Ry * 0.3;
+      // branches reaching up into the crown (their feet show below it)
+      for (const [ex, ey, w] of [[-0.5, 0.05, 0.55], [0.52, 0.0, 0.55], [-0.12, -0.25, 0.5], [0.22, -0.15, 0.4]]) o.push(`<path d="M${f1(Bx)} ${f1(topY + 6)} Q${f1(Bx + ex * Rx * 0.4)} ${f1(topY - 4)} ${f1(Bx + ex * Rx)} ${f1(Cy + ey * Ry)}" fill="none" stroke="${barkLine}" stroke-width="${f1(W * w + 3)}" stroke-linecap="round"/><path d="M${f1(Bx)} ${f1(topY + 6)} Q${f1(Bx + ex * Rx * 0.4)} ${f1(topY - 4)} ${f1(Bx + ex * Rx)} ${f1(Cy + ey * Ry)}" fill="none" stroke="${bark}" stroke-width="${f1(W * w)}" stroke-linecap="round"/>`);
+      // the trunk: flared at the foot, with a few streaks of lighter bark; the old trees have more stems grown into it
+      const b = W * 0.95, t = W * 0.5;
+      if (st >= 5) for (const [dx, lean] of [[-b * 1.1, -0.35], [b * 1.2, 0.3]].slice(0, st === 6 ? 2 : 1)) {
+        const x0 = Bx + dx, w2 = W * 0.38, x1 = x0 + lean * Rx * 0.5, y1 = Cy + Ry * 0.35;
+        o.push(`<path d="M${f1(x0 - w2 * 1.6)} ${f1(By + 3)} Q${f1(x0 - w2)} ${f1(By - 4)} ${f1(x0 - w2)} ${f1(By - 10)} L${f1(x1 - w2 * 0.5)} ${f1(y1)} L${f1(x1 + w2 * 0.5)} ${f1(y1)} L${f1(x0 + w2)} ${f1(By - 10)} Q${f1(x0 + w2)} ${f1(By - 4)} ${f1(x0 + w2 * 1.6)} ${f1(By + 3)} Z" fill="#7E634A" stroke="${barkLine}" stroke-width="2" stroke-linejoin="round"/>`);
+      }
+      o.push(`<path d="M${f1(Bx - b * 1.7)} ${f1(By + 2)} Q${f1(Bx - b)} ${f1(By - 3)} ${f1(Bx - b)} ${f1(By - 10)} L${f1(Bx - t)} ${f1(topY)} L${f1(Bx + t)} ${f1(topY)} L${f1(Bx + b)} ${f1(By - 10)} Q${f1(Bx + b)} ${f1(By - 3)} ${f1(Bx + b * 1.8)} ${f1(By + 2)} Z" fill="${bark}" stroke="${barkLine}" stroke-width="2.2" stroke-linejoin="round"/>`);
+      for (const k of [-0.45, 0.05, 0.5]) o.push(`<path d="M${f1(Bx + k * b)} ${f1(By - 4)} L${f1(Bx + k * t)} ${f1(topY + 4)}" stroke="#A88B6E" stroke-width="${f1(Math.max(1, W * 0.12))}" stroke-linecap="round" opacity=".8"/>`);
+      if (it.ribbon) {   // red wishing ribbons round the trunk
+        const ry = By - (By - topY) * 0.42, hw = b * 0.85;
+        o.push(`<path d="M${f1(Bx - hw)} ${f1(ry)} Q${f1(Bx)} ${f1(ry + 4)} ${f1(Bx + hw)} ${f1(ry)}" fill="none" stroke="#D8322A" stroke-width="3.2"/><path d="M${f1(Bx + hw * 0.4)} ${f1(ry + 2)} q3 8 -1 15 M${f1(Bx + hw * 0.55)} ${f1(ry + 2)} q5 7 4 13" fill="none" stroke="#D8322A" stroke-width="2.2" stroke-linecap="round"/>`);
+      }
+      // the crown: clusters of leaves, one merged silhouette with an outline, then lighter clusters and highlights
+      const blobs = [];
+      const N = 10 + st * 4;
+      for (let i = 0; i < N; i++) { const a = rnd() * Math.PI * 2, r = Math.sqrt(rnd()) * 0.74; blobs.push([Cx + Math.cos(a) * Rx * r, Cy + Math.sin(a) * Ry * r * 0.9, R * (0.22 + rnd() * 0.12)]); }
+      const M = 7 + st; for (let k = 0; k < M; k++) { const t = Math.PI + (k / (M - 1)) * Math.PI; blobs.push([Cx + Math.cos(t) * Rx * 0.78, Cy + Math.sin(t) * Ry * 0.78, R * (0.24 + rnd() * 0.06)]); }
+      for (let k = 0; k < 6; k++) { const x = Cx + ((k - 2.5) / 2.5) * Rx * 0.72; blobs.push([x, under(x) - R * 0.2, R * 0.17]); }
+      const C = (b, s = 1, dx = 0, dy = 0) => `<circle cx="${f1(b[0] + dx)}" cy="${f1(b[1] + dy)}" r="${f1(b[2] * s)}"/>`;
+      o.push(`<g fill="${pal.dark}" stroke="${line}" stroke-width="5">${blobs.map((b) => C(b)).join('')}</g><g fill="${pal.dark}">${blobs.map((b) => C(b)).join('')}</g>`);
+      o.push(`<g fill="${pal.mid}">${blobs.map((b) => (b[1] < Cy + Ry * 0.45 ? C(b, 0.78, -b[2] * 0.12, -b[2] * 0.2) : '')).join('')}</g>`);
+      o.push(`<g fill="${pal.light}" opacity=".85">${blobs.map((b) => (b[1] < Cy + Ry * 0.1 ? C(b, 0.34, -b[2] * 0.3, -b[2] * 0.42) : '')).join('')}</g>`);
+      const fl = []; for (let i = 0; i < R * 0.7; i++) { const a = rnd() * Math.PI * 2, r = Math.sqrt(rnd()) * 0.85, x = Cx + Math.cos(a) * Rx * r, y = Cy + Math.sin(a) * Ry * r * 0.85; fl.push(`<ellipse cx="${f1(x)}" cy="${f1(y)}" rx="2.6" ry="1.3" transform="rotate(${Math.round(rnd() * 180)} ${f1(x)} ${f1(y)})"/>`); }
+      o.push(`<g fill="${pal.light}" opacity=".7">${fl.join('')}</g>`);
+      if (st >= 4) { const r4 = this.rng(21); const figs = []; for (let i = 0; i < 8 + st * 2; i++) { const a = r4() * Math.PI * 2, r = Math.sqrt(r4()) * 0.8; figs.push(`<circle cx="${f1(Cx + Math.cos(a) * Rx * r)}" cy="${f1(Cy + Math.sin(a) * Ry * r * 0.8)}" r="1.9"/>`); } o.push(`<g fill="#D9733F" stroke="#7A3A1E" stroke-width=".8">${figs.join('')}</g>`); }
+      // what hangs from it
+      const hang = (fx) => { const x = Cx + fx * Rx; return [x, under(x) - 6]; };
+      if (it.lantern) o.push('<defs><radialGradient id="bhLanternGlow"><stop offset="0" stop-color="#FFE29A" stop-opacity=".9"/><stop offset=".4" stop-color="#FFB347" stop-opacity=".45"/><stop offset="1" stop-color="#FFB347" stop-opacity="0"/></radialGradient></defs>');
+      if (it.lantern) for (const fx of [-0.62, -0.18, 0.34, 0.68]) {
+        const [x, y] = hang(fx), l = 12 + Math.abs(fx) * 6;
+        o.push(`<circle class="glow" cx="${f1(x)}" cy="${f1(y + l + 8)}" r="26" fill="url(#bhLanternGlow)"/><path d="M${f1(x)} ${f1(y)} l0 ${f1(l)}" stroke="#5A2A1E" stroke-width="1.2"/><rect x="${f1(x - 3.5)}" y="${f1(y + l)}" width="7" height="2.4" fill="#E2B13C"/><ellipse cx="${f1(x)}" cy="${f1(y + l + 8.5)}" rx="7" ry="7.5" fill="#E0352B" stroke="#5A2A1E" stroke-width="1.5"/><path d="M${f1(x)} ${f1(y + l + 1.5)} l0 14 M${f1(x - 4)} ${f1(y + l + 3)} q-1.5 5.5 0 11 M${f1(x + 4)} ${f1(y + l + 3)} q1.5 5.5 0 11" fill="none" stroke="#B5241D" stroke-width=".9"/><rect x="${f1(x - 3.5)}" y="${f1(y + l + 15)}" width="7" height="2.4" fill="#E2B13C"/><path d="M${f1(x)} ${f1(y + l + 17.4)} l0 6" stroke="#E2B13C" stroke-width="1.6"/>`);
+      }
+      if (it.chime) { const [x, y] = hang(-0.4); o.push(`<path d="M${f1(x)} ${f1(y)} l0 9" stroke="#5A4636" stroke-width="1"/><ellipse cx="${f1(x)}" cy="${f1(y + 10)}" rx="6" ry="2" fill="#C9A45A" stroke="#6D5235" stroke-width="1.2"/>${[-4, -1.3, 1.3, 4].map((d, i) => `<rect x="${f1(x + d - 0.9)}" y="${f1(y + 11)}" width="1.8" height="${8 + (i % 2) * 4}" rx=".9" fill="#D9E2EA" stroke="#7E8C99" stroke-width=".6"/>`).join('')}<path d="M${f1(x)} ${f1(y + 11)} l0 13" stroke="#5A4636" stroke-width=".8"/><rect x="${f1(x - 2.5)}" y="${f1(y + 24)}" width="5" height="6" fill="#F6E6B4" stroke="#8C6A45" stroke-width=".8"/>`); }
+      if (it.cage) { const [x, y] = hang(0.12), cy = y + 12; o.push(`<path d="M${f1(x)} ${f1(y)} l0 6" stroke="#5A4636" stroke-width="1.2"/><circle cx="${f1(x)}" cy="${f1(y + 6)}" r="1.6" fill="none" stroke="#6D5235" stroke-width="1.2"/><path d="M${f1(x - 9)} ${f1(cy + 16)} L${f1(x - 9)} ${f1(cy + 6)} Q${f1(x)} ${f1(cy - 6)} ${f1(x + 9)} ${f1(cy + 6)} L${f1(x + 9)} ${f1(cy + 16)} Z" fill="rgba(255,248,230,.35)" stroke="#8C6A45" stroke-width="1.6"/>${[-5, 0, 5].map((d) => `<path d="M${f1(x + d)} ${f1(cy + 1)} L${f1(x + d)} ${f1(cy + 16)}" stroke="#8C6A45" stroke-width="1"/>`).join('')}<ellipse cx="${f1(x)}" cy="${f1(cy + 16)}" rx="10" ry="2.6" fill="#B98552" stroke="#6D5235" stroke-width="1.2"/><circle cx="${f1(x + 1)}" cy="${f1(cy + 9)}" r="3.4" fill="#F5C842" stroke="#6D5235" stroke-width="1"/><path d="M${f1(x + 4.2)} ${f1(cy + 8.6)} l2.2 .8 l-2.2 .8 Z" fill="#E07A2E"/><circle cx="${f1(x + 2.2)}" cy="${f1(cy + 8)}" r=".7" fill="#3A2A20"/>`); }
+      if (it.swing && st >= 4) {
+        const [sx, sy] = this.P(0.80, 0.42, 14), y = under(sx) - 4;
+        o.push(`<g data-f="swing"><polygon points="${this.pts([[sx - 16, y], [sx + 16, y], [sx + 16, sy + 9], [sx - 16, sy + 5]])}" fill="transparent"/><path d="M${f1(sx - 9)} ${f1(y)} L${f1(sx - 9)} ${f1(sy)} M${f1(sx + 9)} ${f1(y - 2)} L${f1(sx + 9)} ${f1(sy + 4)}" stroke="#8C6A45" stroke-width="1.8"/><polygon points="${this.pts([[sx - 13, sy - 1], [sx + 13, sy + 3], [sx + 13, sy + 7], [sx - 13, sy + 3]])}" fill="#C9935C" stroke="#6D5235" stroke-width="1.8" stroke-linejoin="round"/></g>`);
+      }
+      if (it.fireflies) { const r5 = this.rng(33), ff = []; for (let i = 0; i < 16; i++) { const x = Cx + (r5() * 2 - 1) * Rx * 0.9, y = under(x) - r5() * Ry * 0.6 + r5() * 40; ff.push(`<circle class="ff" cx="${f1(x)}" cy="${f1(y)}" r="${f1(1.4 + r5() * 1.2)}" style="animation-delay:${(r5() * 3).toFixed(2)}s"/>`); } o.push(`<g fill="#FFF3A0">${ff.join('')}</g>`); }
+    }
+    return o.join('');
+  },
+  // the trunk's footprint on the floor (it can't walk through it)
+  foot(st) { return st >= 3 ? [0.70, 0.90, 0.12, 0.32] : [0.75, 0.85, 0.17, 0.27]; },
+};
+
+/* ===================================================================== 萌宠榕忆
+   每位访客一份自己的游戏，存在各自浏览器的 localStorage（bh-pet-v1，v: 2），换设备或清缓存会从头开始：
+   - 走失：榕忆藏在地图上某个地标 / 餐厅 / 扫街点旁边，不定时发消息给线索（完成任务、花水滴也能换线索）；
      地图放大到 15.5 级以上才看得见它，点一下它会蹦开，再点一下就抓住了
-   - 在家：住在“我的家”（玩家的家），依恋度随时间下降，家具越多降得越慢，开着网页陪它会慢慢回升；降到 0 它就乘风溜走、重新藏起来
-   - 每日任务（逛地标、看餐厅、看扫街、看星空、摸摸它）给水滴，水滴买家具、零食和提示
-   房间的各层图形在 PET_ROOM（由 tools 外的脚本按等轴测画好），宠物图片在 pet/ 目录 */
+   - 榕树小院：院子里种着一颗榕果。水滴拿来浇水，树就一阶一阶长大（榕果 → 嫩芽 → 树苗 → 小树 → 绿荫初成 → 枝繁叶茂 → 独木成林）；
+     土里的水分每小时少一点，有水的时候树自己也慢慢长；早上 6–9 点（广州时间）浇水有晨露，多长一半；每长一阶奖励水滴
+   - 抓到的榕忆住在树下，依恋度随时间下降：树越大、院子装饰越多降得越慢，土干透了降得快；降到 0 它就乘风溜走、重新藏起来
+   - 抓到以后点右下角的它可以聊天（PetChat）
+   - 每日任务（逛地标、看餐厅、看扫街、看星空、摸摸它、聊两句）给水滴；水滴浇树、买院子里的装饰、换提示 */
 const Pet = {
   K: 'bh-pet-v1', s: null, mem: false, skew: 0, tab: 'about', preview: null, marker: null, chatAt: 0, dockKey: '', _badge: false,
+  STAGES: [
+    { g: 0, n: '一颗榕果', d: '鸟儿衔来的一颗榕果，埋在土里等一场雨' },
+    { g: 30, n: '破土嫩芽', d: '冒出两片嫩叶，风一吹就点点头' },
+    { g: 90, n: '小树苗', d: '细细的茎，一节一节长出新叶子' },
+    { g: 220, n: '青青小树', d: '有了树干和一小团树冠，枝头可以挂东西了' },
+    { g: 450, n: '绿荫初成', d: '树冠撑开一片绿荫，挂上了第一串榕果' },
+    { g: 800, n: '枝繁叶茂', d: '树干合抱粗壮，树荫下能坐一桌人饮茶' },
+    { g: 1300, n: '独木成林', d: '一棵树长成了一片林，整个小院都在它的荫下' },
+  ],
   ITEMS: [
-    { id: 'paint', name: '刷墙', desc: '浅蓝色墙面，加一圈墙裙', price: 80, comfort: 10 },
-    { id: 'floor', name: '木地板', desc: '把水泥地换成暖色木地板', price: 100, comfort: 12 },
-    { id: 'window', name: '窗户', desc: '开一扇看得见蓝天白云的窗', price: 120, comfort: 12 },
-    { id: 'bed', name: '云朵软垫床', desc: '啵铃最喜欢的软垫，它会窝在上面', price: 150, comfort: 18 },
-    { id: 'rug', name: '圆地毯', desc: '踩上去软软的', price: 60, comfort: 8 },
-    { id: 'table', name: '小圆桌和点心', desc: '桌上常备小饼干', price: 80, comfort: 8 },
-    { id: 'plant', name: '绿植', desc: '角落里放一盆大叶子', price: 50, comfort: 6 },
-    { id: 'lamp', name: '落地灯', desc: '换掉光秃秃的灯泡', price: 60, comfort: 6 },
-    { id: 'lights', name: '串灯', desc: '沿着墙顶挂一圈小灯', price: 70, comfort: 8 },
-    { id: 'shelf', name: '置物架', desc: '摆几件小东西', price: 40, comfort: 5 },
+    { id: 'path', name: '青石板小路', desc: '从院门铺到树下的几块踏脚石', price: 50, comfort: 5, need: 0 },
+    { id: 'wall', name: '岭南矮墙', desc: '青砖墙、绿琉璃瓦顶，嵌两扇满洲窗', price: 120, comfort: 10, need: 0 },
+    { id: 'jar', name: '大水缸', desc: '养一尾小金鱼，榕忆爱趴在缸边看', price: 60, comfort: 6, need: 0 },
+    { id: 'bench', name: '石凳', desc: '树下一张石凳，它会爬上去打盹', price: 70, comfort: 7, need: 1 },
+    { id: 'table', name: '石桌茶具', desc: '榕树头饮茶，一壶两杯', price: 90, comfort: 9, need: 2 },
+    { id: 'chime', name: '风铃', desc: '挂在枝头，风一来叮叮响', price: 50, comfort: 5, need: 3 },
+    { id: 'ribbon', name: '祈福红绳', desc: '系在树干上，许个愿', price: 50, comfort: 5, need: 3 },
+    { id: 'lantern', name: '红灯笼', desc: '四盏红灯笼，晚上会亮', price: 80, comfort: 8, need: 3 },
+    { id: 'fireflies', name: '萤火虫', desc: '晚上（广州时间 19 点后）在树冠下一闪一闪', price: 70, comfort: 7, need: 3 },
+    { id: 'cage', name: '雀笼', desc: '老广遛雀的竹笼，里面一只小黄雀', price: 70, comfort: 6, need: 4 },
+    { id: 'swing', name: '秋千', desc: '从粗枝上垂下来的木秋千', price: 120, comfort: 12, need: 4 },
   ],
   TASKS: [
     { id: 'checkin', name: '今天来看看', goal: 1, reward: 20 },
@@ -7920,45 +8174,87 @@ const Pet = {
     { id: 'street', name: '看一组扫街照片', goal: 1, reward: 15 },
     { id: 'sky', name: '去「地球之外」看一次星空', goal: 1, reward: 20 },
     { id: 'metro', name: '潜入「城市之下」看一次地铁', goal: 1, reward: 20 },
-    { id: 'pat', name: '摸摸啵铃 3 次', goal: 3, reward: 10 },
+    { id: 'pat', name: '摸摸榕忆 3 次', goal: 3, reward: 10 },
+    { id: 'chat', name: '和榕忆聊两句', goal: 2, reward: 15 },
   ],
   img(n) { return U('pet/' + n + '.webp'); },
-  // the pictures the room's animated 啵铃 is made of (loaded once)
+  // the pictures the garden's animated 榕忆 is made of (loaded once)
   rigImgs() {
     return this._rig || (this._rig = Promise.all(['front', 'front_blink', 'front_happy', 'side', 'side_blink', 'back', 'happy', 'curious', 'sleepy'].map((n) => new Promise((ok, no) => {
       const im = new Image(); im.onload = () => ok([n, im]); im.onerror = no; im.src = U('pet/rig/' + n + '.webp');
     }))).then(Object.fromEntries).catch((e) => { this._rig = null; throw e; }));
   },
   now() { return Date.now() + this.skew; },
+  gzHour(t = this.now()) { return new Date(t + 8 * 3600e3).getUTCHours(); },
+  isNight() { const h = this.gzHour(); return h >= 19 || h < 6; },
   today(t = this.now()) { const d = new Date(t); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; },
-  load() { try { const j = JSON.parse(localStorage.getItem(this.K) || 'null'); if (j && j.v === 1) return j; } catch (e) { this.mem = true; } return null; },
+  load() {
+    try {
+      const j = JSON.parse(localStorage.getItem(this.K) || 'null');
+      if (j && j.v === 2) return j;
+      if (j && j.v === 1) {   // the old "我的家": what was spent on furniture comes back as water (six tenths of it)
+        const old = { paint: 80, floor: 100, window: 120, bed: 150, rug: 60, table: 80, plant: 50, lamp: 60, lights: 70, shelf: 40 };
+        const back = Math.round(Object.keys(j.items || {}).reduce((a, k) => a + (old[k] || 0), 0) * 0.6);
+        Object.assign(j, { v: 2, coins: (j.coins || 0) + back, items: {}, tree: { g: 0, m: 55, best: 0 }, chat: [], waters: 0, chats: 0 });
+        j.flags = j.flags || {}; j.flags.moved = back;
+        return j;
+      }
+    } catch (e) { this.mem = true; }
+    return null;
+  },
   save() { if (this.mem) return; try { localStorage.setItem(this.K, JSON.stringify(this.s)); } catch (e) { this.mem = true; } },
   fresh() {
     const t = this.now();
-    this.s = { v: 1, status: 'wild', coins: 60, attach: 0, items: {}, spawn: null, last: t, day: '', tasks: {}, seen: {}, pats: 0, feeds: 0, caught: 0, escapes: 0, log: [], flags: {}, first: t };
+    this.s = { v: 2, status: 'wild', coins: 60, attach: 0, items: {}, spawn: null, last: t, day: '', tasks: {}, seen: {}, pats: 0, feeds: 0, waters: 0, chats: 0, caught: 0, escapes: 0, log: [], flags: {}, first: t, tree: { g: 0, m: 55, best: 0 }, chat: [] };
     this.newSpawn();
   },
   init() {
-    if (/petdebug/.test(location.search)) { window.__pet = this; window.__room = Room; }
+    if (/petdebug/.test(location.search)) { window.__pet = this; window.__room = Room; window.__chat = PetChat; }
     this.s = this.load();
     if (!this.s) this.fresh();
+    this.s.tree = this.s.tree || { g: 0, m: 55, best: 0 }; this.s.chat = this.s.chat || [];
     this.step(false);
     this.save();
     $('#petClose').addEventListener('click', () => this.close());
     $('#pet').addEventListener('click', (e) => this.onClick(e));
-    $('#petDock').addEventListener('click', () => this.open());
+    $('#petDock').addEventListener('click', () => (this.s.status === 'home' ? PetChat.toggle() : this.open()));   // caught: the corner pet talks
     $('#petBubble').addEventListener('click', (e) => this.open(e.currentTarget.dataset.tab));
     document.querySelectorAll('#pet .pet-tabs [data-tab]').forEach((b) => b.addEventListener('click', () => this.show(b.dataset.tab, true)));
+    PetChat.init();
     this.updateDock();
     setInterval(() => this.tick(), 15000);
     document.addEventListener('visibilitychange', () => { if (!document.hidden) this.tick(); });
     setTimeout(() => {   // say hello once the map has had a moment
       const f = this.s.flags;
-      if (!f.hello && this.s.status === 'wild') { f.hello = 1; this.say(`啵～你好呀！我是啵铃，我先躲起来啦，看你能不能找到我～第一条线索：${this.s.spawn.clues[0]}`, { tab: 'quest', ms: 16000 }); }
+      if (f.moved != null) { this.say(`“我的家”变成了榕树小院！之前买家具的水滴退回了 ${f.moved} 滴，快去种下小榕树吧～`, { tab: 'home', ms: 16000 }); delete f.moved; this.save(); }
+      else if (!f.hello && this.s.status === 'wild') { f.hello = 1; this.say(`嘿～你好呀！我是榕忆，我先躲起来啦，看你能不能找到我～第一条线索：${this.s.spawn.clues[0]}`, { tab: 'quest', ms: 16000 }); }
       else if (f.awayMsg) { this.say(f.awayMsg, { tab: 'quest', ms: 16000 }); f.awayMsg = ''; this.save(); }
+      else if (f.treeMsg) { this.say(f.treeMsg, { tab: 'home', ms: 14000 }); f.treeMsg = ''; this.save(); }
     }, 6500);
   },
   navLabel() { return this.s && this.s.status === 'home' ? '在家' : '走失'; },
+  // ------------------------------------------------------------- the banyan
+  stage(g = this.s.tree.g) { let i = 0; while (i < 6 && g >= this.STAGES[i + 1].g) i++; const a = this.STAGES[i].g, b = i < 6 ? this.STAGES[i + 1].g : a; return { i, f: i < 6 ? (g - a) / (b - a) : 0, next: i < 6 ? b : null }; },
+  treeView() { if (this.preview && this.preview.full) return { i: 6, f: 0, m: 80 }; const st = this.stage(); return { i: st.i, f: st.f, m: this.s.tree.m }; },
+  grown(live) {   // reached a new stage: a reward, and it says so
+    const T = this.s.tree, st = this.stage().i; if (st <= (T.best || 0)) return;
+    let gain = 0; for (let k = (T.best || 0) + 1; k <= st; k++) gain += k * 20;
+    T.best = st; this.s.coins += gain;
+    const S = this.STAGES[st], m = `小榕树长成了「${S.n}」！${S.d}。奖励 ${gain} 水滴`;
+    this.log(m);
+    if (live) { toast(`小榕树长成了「${S.n}」· +${gain} 水滴`, 4200); if (this.isOpen() && this.tab === 'home') Room.grow(); else this.say(m, { tab: 'home', ms: 12000 }); }
+    else this.s.flags.treeMsg = `你不在的时候，${m}`;
+  },
+  water(big) {
+    const T = this.s.tree, cost = big ? 25 : 10;
+    if (this.s.coins < cost) return;
+    if (T.m >= (big ? 60 : 85)) { const t = T.m >= 85 ? '土还湿着呢，等它喝完再浇吧～' : '土还挺湿的，浇一瓢就够啦'; toast(t); Room.talk && Room.el && Room.shown && Room.talk(t, 2200); return; }
+    const h = this.gzHour(), dawn = h >= 6 && h < 9, g = (big ? 40 : 15) * (dawn ? 1.5 : 1);
+    this.s.coins -= cost; T.m = Math.min(100, T.m + (big ? 70 : 30)); T.g += g; this.s.waters = (this.s.waters || 0) + 1;
+    if (this.s.status === 'home') this.s.attach = Math.min(100, this.s.attach + 2);
+    this.log(`给小榕树浇了${big ? '一桶' : '一瓢'}水，成长 +${Math.round(g)}${dawn ? '（晨露时分，多长一半）' : ''}`);
+    this.save(); this.render(); Room.water(big); this.grown(true); this.save(); this.render();
+  },
   // ------------------------------------------------------------- where it hides, and the clues
   places() {
     if (this._pl) return this._pl;
@@ -8002,7 +8298,7 @@ const Pet = {
   reveal(why) {
     const sp = this.s.spawn; if (!sp || sp.shown >= 3) return;
     sp.shown++; sp.next = this.now() + this.gap();
-    const pre = why === 'hint' ? '好吧好吧，再告诉你一条：' : why === 'task' ? '你完成了任务，奖励一条线索：' : ['啵～新线索：', '嘿嘿，提示来啦：', '我还躲着呢～给你一条：'][Math.floor(Math.random() * 3)];
+    const pre = why === 'hint' ? '好吧好吧，再告诉你一条：' : why === 'task' ? '你完成了任务，奖励一条线索：' : ['叮～新线索：', '嘿嘿，提示来啦：', '我还躲着呢～给你一条：'][Math.floor(Math.random() * 3)];
     this.say(pre + sp.clues[sp.shown - 1], { tab: 'quest' });
   },
   hint() {
@@ -8014,6 +8310,10 @@ const Pet = {
     const t = this.now(), dt = Math.min(24 * 30, Math.max(0, (t - (this.s.last || t)) / 3600000));
     this.s.last = t;
     this.daily();
+    // the banyan: the soil dries a little every hour; while there's water in it, it grows by itself, slowly
+    const T = this.s.tree, wetH = Math.min(dt, T.m / 3);
+    T.g += wetH * 1.5; T.m = Math.max(0, T.m - dt * 3);
+    this.grown(live);
     if (this.s.status === 'home') {
       this.s.attach = Math.min(100, Math.max(0, this.s.attach - dt * this.decay() + (live ? Math.min(dt, 0.25) * 2.4 : 0)));   // keeping it company only counts while the page is really open
       this.mood(live);
@@ -8029,12 +8329,13 @@ const Pet = {
     this.save(); this.updateDock(); if (this.isOpen()) this.renderStats();
   },
   comfort() { return this.ITEMS.reduce((a, i) => a + (this.s.items[i.id] ? i.comfort : 0), 0); },
-  decay() { return 2 * (1 - this.comfort() / 110); },   // 依恋度每小时掉多少：毛坯房 2，摆满家具约 0.3
+  // 依恋度每小时掉多少：空院子、小树苗 2；树越大、装饰越多掉得越慢（全齐约 0.2）；土干透了掉得快一半
+  decay() { return 2 * (1 - this.comfort() / 100) * (1 - this.stage().i * 0.07) * (this.s.tree.m <= 0 ? 1.6 : 1); },
   mood(live) {
     const a = this.s.attach, f = this.s.flags;
     if (a <= 0) return this.escape(live);
-    if (a < 10 && !f.w10) { f.w10 = 1; if (live) this.say('……我趴在地上发呆，好想出去吹吹风。', { tab: 'home' }); }
-    else if (a < 25 && !f.w25) { f.w25 = 1; if (live) this.say('家里有点空，我闷闷的…能陪我玩一会儿吗？', { tab: 'home' }); }
+    if (a < 10 && !f.w10) { f.w10 = 1; if (live) this.say('……我趴在树根上发呆，好想出去吹吹风。', { tab: 'home' }); }
+    else if (a < 25 && !f.w25) { f.w25 = 1; if (live) this.say('小院有点冷清，我闷闷的…能陪我玩一会儿吗？', { tab: 'home' }); }
     if (a > 35) f.w25 = 0;
     if (a > 20) f.w10 = 0;
   },
@@ -8047,17 +8348,18 @@ const Pet = {
     this.updateDock();
   },
   chatter() {
-    const owned = this.ITEMS.filter((i) => this.s.items[i.id]);
-    const a = this.s.attach;
-    const lines = a < 25 ? ['家里空荡荡的，回声都听得见…', '我在数地上的裂缝，数到第三条了。']
-      : a < 70 ? ['今天也要记得来看我哦～', '我刚刚在门口晒了一会儿太阳。', owned.length ? `${owned[Math.floor(Math.random() * owned.length)].name}好好玩！` : '什么时候添点家具呀？']
-      : ['啵～最喜欢这个家啦！', '我把耳朵晾干了，软乎乎的。', owned.length ? `${owned[Math.floor(Math.random() * owned.length)].name}好舒服，我不想动了～` : '有你在就好～'];
-    this.say(lines[Math.floor(Math.random() * lines.length)], { tab: 'home', ms: 8000 });
+    const owned = this.ITEMS.filter((i) => this.s.items[i.id]), a = this.s.attach, T = this.s.tree, S = this.STAGES[this.stage().i];
+    const pick = (x) => x[Math.floor(Math.random() * x.length)];
+    if (T.m < 15) return this.say(pick(['小榕树的叶子都耷拉下来了…帮它浇点水好不好？', '土干得裂开啦，小榕树好渴～']), { tab: 'home', ms: 9000 });
+    const lines = a < 25 ? ['小院静悄悄的，只有风吹叶子的声音…', '我在数地上的落叶，数到第七片了。']
+      : a < 70 ? ['今天也要记得来看我哦～', `我刚刚在「${S.n}」下面晒了一会儿太阳。`, owned.length ? `${pick(owned).name}好好玩！` : '小院什么时候添点东西呀？']
+      : ['嘿嘿～最喜欢这个小院啦！', '我把耳朵晾干了，软乎乎的。', owned.length ? `${pick(owned).name}旁边好舒服，我不想动了～` : '有你在就好～'];
+    this.say(pick(lines), { tab: 'home', ms: 8000 });
   },
   // ------------------------------------------------------------- daily tasks
   daily() {
     const d = this.today(); if (this.s.day === d) return;
-    this.s.day = d; this.s.tasks = {}; this.s.seen = {}; this.s.pats = 0; this.s.feeds = 0;
+    this.s.day = d; this.s.tasks = {}; this.s.seen = {}; this.s.pats = 0; this.s.feeds = 0; this.s.waters = 0; this.s.chats = 0;
     setTimeout(() => this.progress('checkin', 'day'), 2500);
   },
   progress(id, key) {
@@ -8078,8 +8380,9 @@ const Pet = {
   say(text, o = {}) {
     this.log(text); this.save();
     if (this.isOpen()) { this.render(); return; }
+    if (PetChat.isOpen()) { PetChat.push('p', text); return; }   // talking already: it says it in the chat
     const b = $('#petBubble');
-    b.innerHTML = `<img src="${this.img('avatar')}" alt=""><span><b>啵铃</b><span>${esc(text)}</span></span>`;
+    b.innerHTML = `<img src="${this.img('avatar')}" alt=""><span><b>榕忆</b><span>${esc(text)}</span></span>`;
     b.dataset.tab = o.tab || (this.s.status === 'wild' ? 'quest' : 'home'); b.hidden = false;
     clearTimeout(this._bt); this._bt = setTimeout(() => { b.hidden = true; }, o.ms || 11000);
     this._badge = true; this.updateDock();
@@ -8094,7 +8397,7 @@ const Pet = {
     if (!map || !state.ready) return;
     if (this.marker) { this.marker.remove(); this.marker = null; }
     const sp = this.s.spawn; if (this.s.status !== 'wild' || !sp) return;
-    const el = document.createElement('button'); el.type = 'button'; el.className = 'pet-mark'; el.setAttribute('aria-label', '啵铃藏在这里！点它');
+    const el = document.createElement('button'); el.type = 'button'; el.className = 'pet-mark'; el.setAttribute('aria-label', '榕忆藏在这里！点它');
     el.innerHTML = `<img src="${this.img('curious')}" alt="">`;
     el.addEventListener('click', (e) => { e.stopPropagation(); this.tap(); });
     this.marker = new maplibregl.Marker({ element: el, anchor: 'bottom' }).setLngLat(sp.at).addTo(map);
@@ -8116,7 +8419,7 @@ const Pet = {
       sp.at = [sp.at[0] + (r * Math.cos(a)) / (111320 * Math.cos(sp.at[1] * D2R)), sp.at[1] + (r * Math.sin(a)) / 110574];
       const el = this.marker.getElement(); el.classList.remove('hop'); void el.offsetWidth; el.classList.add('hop');
       this.marker.setLngLat(sp.at); this.save();
-      this.say('啵！差一点点～再来！', { ms: 5000 });
+      this.say('嘿！差一点点～再来！', { ms: 5000 });
       return;
     }
     this.caught();
@@ -8125,22 +8428,23 @@ const Pet = {
     const sp = this.s.spawn, fast = this.now() - sp.t0 < 10 * 60000, gain = 50 + (fast ? 30 : 0), first = !this.s.caught;
     this.s.status = 'home'; this.s.spawn = null; this.s.caught++; this.s.coins += gain; this.preview = null;
     this.s.attach = Math.max(this.s.attach, 40); this.s.flags.w10 = this.s.flags.w25 = 0; this.chatAt = 0;
-    this.log(`抓到啵铃啦！+${gain} 水滴${fast ? '（10 分钟内抓到，多 30）' : ''}`);
+    this.log(`抓到榕忆啦！+${gain} 水滴${fast ? '（10 分钟内抓到，多 30）' : ''}`);
     this.save(); this.placeMarker(); $('#petBubble').hidden = true; this.updateDock();
-    const c = $('#petCatch');
-    c.innerHTML = `<div class="card" role="dialog" aria-modal="true" aria-labelledby="petCatchT"><img src="${this.img('happy')}" alt="啵铃开心地蹦起来"><h3 id="petCatchT">抓到啵铃啦！</h3>
-      <p>${first ? '它答应跟你回家了。' : '它又回到你身边了。'}奖励 <b>${gain} 水滴</b>${fast ? '（10 分钟内抓到，多给 30）' : ''}。<br>家里还${this.comfort() ? '可以再添点东西' : '是毛坯房'}，记得用水滴给它布置一下，不然它待不住。</p>
-      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button class="pet-act primary" type="button" data-catch="home">带它回家</button><button class="pet-act" type="button" data-catch="map">继续逛地图</button></div></div>`;
+    const c = $('#petCatch'), S = this.STAGES[this.stage().i];
+    c.innerHTML = `<div class="card" role="dialog" aria-modal="true" aria-labelledby="petCatchT"><img src="${this.img('happy')}" alt="榕忆开心地蹦起来"><h3 id="petCatchT">抓到榕忆啦！</h3>
+      <p>${first ? '它答应跟你回小院了。' : '它又回到你的小榕树下了。'}奖励 <b>${gain} 水滴</b>${fast ? '（10 分钟内抓到，多给 30）' : ''}。<br>院子里的小榕树现在是「${S.n}」，记得用水滴浇浇水。<br><b>以后点右下角的榕忆，就能和它聊天。</b></p>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button class="pet-act primary" type="button" data-catch="home">带它回小院</button><button class="pet-act" type="button" data-catch="chat">和它聊聊</button><button class="pet-act" type="button" data-catch="map">继续逛地图</button></div></div>`;
     c.hidden = false;
     c.querySelector('[data-catch="home"]').addEventListener('click', () => { c.hidden = true; this.open('home'); });
+    c.querySelector('[data-catch="chat"]').addEventListener('click', () => { c.hidden = true; PetChat.toggle(true); });
     c.querySelector('[data-catch="map"]').addEventListener('click', () => { c.hidden = true; });
     c.querySelector('[data-catch="home"]').focus();
   },
-  // ------------------------------------------------------------- at home
+  // ------------------------------------------------------------- in the garden
   pat() {
     if (this.preview) { Room.react('pat'); return; }
     if (this.s.status !== 'home') return;
-    if (this.s.pats >= 5) { Room.react('pat'); toast('今天已经摸了好多次啦，啵铃的毛都要摸平了～'); return; }
+    if (this.s.pats >= 5) { Room.react('pat'); toast('今天已经摸了好多次啦，榕忆的毛都要摸平了～'); return; }
     this.s.pats++; this.s.attach = Math.min(100, this.s.attach + 3);
     this.progress('pat'); this.save(); this.render(); Room.react('pat');
   },
@@ -8152,15 +8456,20 @@ const Pet = {
     this.save(); this.render(); Room.eat();
   },
   buy(id) {
-    const it = this.ITEMS.find((i) => i.id === id); if (!it || this.s.items[id] || this.s.coins < it.price) return;
+    const it = this.ITEMS.find((i) => i.id === id); if (!it || this.s.items[id] || this.s.coins < it.price || this.stage().i < it.need) return;
     this.s.coins -= it.price; this.s.items[id] = this.now();
     if (this.s.status === 'home') this.s.attach = Math.min(100, this.s.attach + 4);
-    this.log(`买了「${it.name}」，-${it.price} 水滴`); toast(`「${it.name}」摆好啦`);
+    this.log(`给小院添了「${it.name}」，-${it.price} 水滴`); toast(`「${it.name}」摆好啦`);
     this.save(); this.render(); if (this.s.status === 'home' && !this.preview) setTimeout(() => Room.react('hop'), 120);
+  },
+  chatted() {   // a chat counts as company (a little, ten times a day) and towards the day's task
+    this.s.chats = (this.s.chats || 0) + 1;
+    if (this.s.chats <= 10) this.s.attach = Math.min(100, this.s.attach + 1);
+    this.progress('chat', String(this.s.chats)); this.save(); this.updateDock();
   },
   // ------------------------------------------------------------- the page
   open(tab) {
-    $('#pet').hidden = false; closePops(); closeDetail();
+    $('#pet').hidden = false; closePops(); closeDetail(); PetChat.toggle(false);
     $('#petBubble').hidden = true; this._badge = false; this.updateDock();
     document.querySelectorAll('.nav-btn').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mod === 'pet')));
     this.step(true); this.save();
@@ -8178,17 +8487,17 @@ const Pet = {
     this.render(); if (top) $('#pet').scrollTop = 0;
   },
   renderStats() {
-    const s = this.s, home = s.status === 'home';
-    $('#petSub').textContent = home ? `和你住在一起 · 已经抓到 ${s.caught} 次` : s.caught ? '乘风溜走了，在外面躲着等你去找' : '还没被抓到，在地图上躲着';
+    const s = this.s, home = s.status === 'home', S = this.STAGES[this.stage().i];
+    $('#petSub').textContent = (home ? `住在小榕树下 · 已经抓到 ${s.caught} 次` : s.caught ? '乘风溜走了，在外面躲着等你去找' : '还没被抓到，在地图上躲着') + ` · 小榕树：${S.n}`;
     $('#petCoins').innerHTML = `<img src="${U('pet/drop.svg')}" alt="">${s.coins} 水滴`;
     $('#petLove').innerHTML = home ? `依恋度 <span class="pet-meter" aria-hidden="true"><i style="width:${Math.round(s.attach)}%"></i></span> ${Math.round(s.attach)}%` : '走失中';
-    $('#petLove').setAttribute('aria-label', home ? `依恋度 ${Math.round(s.attach)}%` : '啵铃走失中');
+    $('#petLove').setAttribute('aria-label', home ? `依恋度 ${Math.round(s.attach)}%` : '榕忆走失中');
     const dot = document.querySelector('#pet .pet-tabs [data-tab="quest"] .dot'); if (dot) dot.hidden = home;
   },
   render() {
     if (!this.isOpen()) return;
     this.renderStats();
-    const body = $('#petBody'), keep = this.tab === 'home' && Room.el && body.contains(Room.el) ? Room.el : null;   // the room is live: keep it, swap the rest
+    const body = $('#petBody'), keep = this.tab === 'home' && Room.el && body.contains(Room.el) ? Room.el : null;   // the garden is live: keep it, swap the rest
     body.innerHTML = this.tab === 'home' ? this.homeHTML() : this.tab === 'quest' ? this.questHTML() : this.aboutHTML();
     if (this.tab !== 'home') { Room.stop(); return; }
     const ph = body.querySelector('.pet-room');
@@ -8197,11 +8506,11 @@ const Pet = {
   aboutHTML() {
     const poses = [['front', '正面'], ['side', '侧面'], ['back', '背面'], ['happy', '开心'], ['curious', '好奇'], ['sleepy', '困困']];
     return `<div class="pet-grid">
-      <div class="pet-card shadow pet-hero"><span class="tag">概念 v1 · 云风精灵</span><img src="${this.img('main')}" alt="啵铃：奶油色的小精灵，天蓝色云朵耳朵，额前一撮卷毛，胸口一颗水滴纹，卷尾巴末端是蓝色水滴形绒团，正举着小爪打招呼"></div>
+      <div class="pet-card shadow pet-hero"><span class="tag">榕树小精灵</span><img src="${this.img('main')}" alt="榕忆：奶油色的小精灵，天蓝色云朵耳朵，额前一撮卷毛，胸口一颗水滴纹，卷尾巴末端是蓝色水滴形绒团，正举着小爪打招呼"></div>
       <div>
-        <h3 class="pet-name">啵铃</h3>
-        <div class="pet-pills"><span>云风精灵</span><span>活泼 · 亲人 · 带点小调皮</span><span>大头小身体 · 短手短脚</span></div>
-        <p class="pet-lead">一只活泼、亲人、带一点小调皮的云风精灵。奶油色的短圆身体配天蓝色云朵耳和杏桃色腮红，远远一看，轮廓就是那对云耳和一条卷尾巴。</p>
+        <h3 class="pet-name">榕忆</h3>
+        <div class="pet-pills"><span>榕树小精灵</span><span>活泼 · 亲人 · 带点小调皮</span><span>大头小身体 · 短手短脚</span></div>
+        <p class="pet-lead">住在广州老榕树里的小精灵。榕树头是老广饮茶、下棋、讲古的地方，街坊说过的话、走过的路，它都悄悄记在心里——所以叫“榕忆”，榕树的记忆。它胸口那颗水滴纹，是给小榕树浇水用的。</p>
         <div class="pet-card" style="margin-top:14px"><h3>外形识别</h3><div class="pet-feats">
           <div><b>云朵耳</b><span>天蓝色，带心形浅色斑；开心时扬起，好奇时一高一低</span></div>
           <div><b>额前卷毛</b><span>一撮奶油色的卷毛，从背后看是一颗小圆球</span></div>
@@ -8218,45 +8527,50 @@ const Pet = {
         <tr><td>好奇</td><td>歪头看向鼠标，耳朵一高一低</td></tr>
         <tr><td>移动</td><td>短步蹦走，耳朵和尾巴稍有延迟</td></tr>
         <tr><td>被摸</td><td>眯眼，脸颊泛红，主动靠近</td></tr>
-        <tr><td>被提起</td><td>四肢轻轻摆动，落地后弹一下</td></tr>
+        <tr><td>聊天</td><td>说话短短的、亲亲热热，偶尔冒一两句粤语</td></tr>
         <tr><td>困倦</td><td>趴下，抱着卷尾睡觉</td></tr>
       </tbody></table></div>
       <div class="pet-card"><h3>怎么玩</h3><ol class="pet-rules">
-        <li><b>找它：</b>啵铃会躲在地图上某个地标、餐厅或扫街点旁边，不定时给你发消息透露线索。</li>
+        <li><b>找它：</b>榕忆会躲在地图上某个地标、餐厅或扫街点旁边，不定时给你发消息透露线索。</li>
         <li><b>抓它：</b>地图放大到街道级别才看得见它，点一下它会蹦开，再点一下就抓住了。越快抓到奖励越多。</li>
-        <li><b>养它：</b>抓到后它住进“我的家”。家具越多它越安心，摸摸它、喂点心也能加依恋度。</li>
-        <li><b>别冷落它：</b>依恋度会随时间慢慢掉，掉到 0 它就乘风溜走，你得重新按线索去找。</li>
-        <li><b>赚水滴：</b>每天逛地标、看餐厅、看扫街、看星空都有任务奖励。进度存在你自己的浏览器里。</li>
+        <li><b>种榕树：</b>小院里埋着一颗榕果。用水滴浇水，它会从嫩芽一路长成独木成林的大榕树；有水的时候它自己也慢慢长，早上 6–9 点浇水有晨露，多长一半。每长一阶奖励水滴。</li>
+        <li><b>陪它：</b>抓到的榕忆住在树下。树越大、院子装饰越多，它越安心；土干透了它会难过。依恋度掉到 0 它就乘风溜走，你得重新按线索去找。</li>
+        <li><b>和它聊天：</b>抓到以后，点地图右下角的榕忆，就能打字和它聊天。</li>
+        <li><b>赚水滴：</b>每天逛地标、看餐厅、看扫街、看星空、和它聊两句都有任务奖励。进度存在你自己的浏览器里。</li>
       </ol></div>
     </div>`;
   },
   homeHTML() {
-    const s = this.s, home = s.status === 'home', pv = this.preview, c = this.comfort(), owned = Object.keys(s.items).length;
-    const trial = pv ? `<div class="pet-trial"><span><b>试玩中</b> · 啵铃先来家里玩一会儿，这里做的事都不会改动你的进度。</span>
-        <span class="pet-seg" role="group" aria-label="试玩的房间"><button type="button" data-act="pv-room" data-v="0" aria-pressed="${!pv.full}">毛坯房</button><button type="button" data-act="pv-room" data-v="1" aria-pressed="${!!pv.full}">布置好的家</button></span>
+    const s = this.s, home = s.status === 'home', pv = this.preview, T = s.tree, st = this.stage(), S = this.STAGES[st.i], owned = Object.keys(s.items).length;
+    const drop = `<img src="${U('pet/drop.svg')}" alt="">`, h = this.gzHour(), dawn = h >= 6 && h < 9;
+    const trial = pv ? `<div class="pet-trial"><span><b>试玩中</b> · 榕忆先来小院玩一会儿，这里做的事都不会改动你的进度。</span>
+        <span class="pet-seg" role="group" aria-label="试玩的小院"><button type="button" data-act="pv-room" data-v="0" aria-pressed="${!pv.full}">现在的小院</button><button type="button" data-act="pv-room" data-v="1" aria-pressed="${!!pv.full}">长成大树的小院</button></span>
         <button class="pet-act" type="button" data-act="pv-end">结束试玩</button></div>` : '';
-    const tip = home || pv ? '<p class="pet-room-tip"><b>点地板</b>它会蹦过去 · <b>点家具</b>它会过去玩（床、桌子、窗、绿植、落地灯）· <b>鼠标碰它</b>（手机上双击它）会翻滚、转圈、抖水 · <b>点它</b>摸摸 · <b>按住拖动</b>能把它拎起来</p>' : '';
-    const bar = pv ? `<div class="pet-homebar"><button class="pet-act" type="button" data-act="pat">摸摸它</button><button class="pet-act" type="button" data-act="feed">喂点心</button></div>`
-      : home ? `<div class="pet-homebar">
-        <span class="stat">依恋度 <span class="pet-meter" aria-hidden="true"><i style="width:${Math.round(s.attach)}%"></i></span> ${Math.round(s.attach)}%</span>
-        <button class="pet-act" type="button" data-act="pat">摸摸它<span class="mono" style="font-size:12px;color:#6A4F3E">${s.pats}/5</span></button>
-        <button class="pet-act" type="button" data-act="feed" ${s.coins < 10 || s.feeds >= 3 ? 'disabled' : ''}>喂点心<img src="${U('pet/drop.svg')}" alt="">10</button>
-      </div>
-      <p class="pet-note">${s.attach < 25 ? '它有点闷闷不乐，再这样下去会乘风溜走的。' : s.attach >= 70 ? '它在家里待得很开心。' : '它还算安心，添点家具会更黏你。'}依恋度每小时大约掉 ${this.decay().toFixed(1)}（家具越多掉得越慢），开着网页陪着它会慢慢回升。</p>`
-      : `<div class="pet-homebar"><button class="pet-act primary" type="button" data-act="quest">看线索，去找啵铃</button><button class="pet-act" type="button" data-act="pv-start">试玩：先带它回家看看</button></div><p class="pet-note">现在可以先把家布置起来，抓回来的时候它会更安心。</p>`;
-    const head = pv ? (pv.full ? '试玩 · 布置好的家' : '试玩 · 毛坯房') : owned ? `摆了 ${owned} 件家具，舒适度 ${c}` : '毛坯房';
-    const left = `<div class="pet-card shadow">${trial}<h3>我的家 <span style="font-weight:500;font-size:13px;color:#6A4F3E">· ${head}</span></h3><div class="pet-room"></div>${tip}${bar}</div>`;
-    const shop = `<div class="pet-card"><h3>小铺 <span style="font-weight:500;font-size:13px;color:#6A4F3E">· 买了就直接摆进家里</span></h3><div class="pet-shop">${this.ITEMS.map((i) => {
-      const own = !!s.items[i.id];
-      return `<div class="pet-item${own ? ' owned' : ''}"><b>${i.name}</b><small>${i.desc} · 舒适 +${i.comfort}</small><div class="row"><span class="price"><img src="${U('pet/drop.svg')}" alt="水滴">${i.price}</span>${own ? '<span class="done">已摆放</span>' : `<button type="button" data-act="buy" data-id="${i.id}" ${s.coins < i.price ? 'disabled' : ''}>买</button>`}</div></div>`;
+    const tip = home || pv ? '<p class="pet-room-tip"><b>点地面</b>它会蹦过去 · <b>点榕树、石凳、水缸、石桌</b>它会过去玩 · <b>鼠标碰它</b>（手机上双击它）会翻滚、转圈、抖水 · <b>点它</b>摸摸 · <b>按住拖动</b>能把它拎起来</p>' : '';
+    const pct = st.next ? Math.round(st.f * 100) : 100;
+    const meters = `<div class="pet-tree-meters">
+        <span class="stat">成长 <span class="pet-meter grow" aria-hidden="true"><i style="width:${pct}%"></i></span> ${st.next ? `${Math.floor(T.g)} / ${st.next}` : '已长成'}</span>
+        <span class="stat">水分 <span class="pet-meter wet" aria-hidden="true"><i style="width:${Math.round(T.m)}%"></i></span> ${Math.round(T.m)}%</span>
+      </div>`;
+    const water = `<button class="pet-act water" type="button" data-act="water" ${s.coins < 10 || pv ? 'disabled' : ''}>浇一瓢${drop}10</button><button class="pet-act water" type="button" data-act="water-big" ${s.coins < 25 || pv ? 'disabled' : ''}>浇一桶${drop}25</button>`;
+    const care = home || pv ? `<button class="pet-act" type="button" data-act="pat">摸摸它${pv ? '' : `<span class="mono" style="font-size:12px;color:#6A4F3E">${s.pats}/5</span>`}</button><button class="pet-act" type="button" data-act="feed" ${!pv && (s.coins < 10 || s.feeds >= 3) ? 'disabled' : ''}>喂点心${drop}10</button>${pv ? '' : '<button class="pet-act primary" type="button" data-act="chat">和它聊天</button>'}` : '';
+    const soil = T.m <= 0 ? '土已经干透了，小榕树停下来不长了。' : T.m < 25 ? '土有点干了，记得浇水。' : T.m > 85 ? '土湿湿的，它喝得饱饱的。' : '土里的水分刚刚好。';
+    const note = pv ? '' : `<p class="pet-note">${soil}水分每小时少 3%，有水的时候小榕树自己每小时长 1.5。${dawn ? '<b>现在是晨露时分（6–9 点），浇水多长一半！</b>' : '早上 6–9 点（广州时间）浇水有晨露，多长一半。'}${home ? ` 依恋度每小时大约掉 ${this.decay().toFixed(1)}，树越大、装饰越多掉得越慢。` : ''}</p>`;
+    const away = !home && !pv ? `<div class="pet-homebar"><button class="pet-act primary" type="button" data-act="quest">看线索，去找榕忆</button><button class="pet-act" type="button" data-act="pv-start">试玩：先带它来小院看看</button></div>` : '';
+    const head = pv ? (pv.full ? '试玩 · 长成大树的小院' : '试玩 · 现在的小院') : `${S.n}${owned ? ` · 添了 ${owned} 样东西` : ''}`;
+    const left = `<div class="pet-card shadow">${trial}<h3>榕树小院 <span style="font-weight:500;font-size:13px;color:#6A4F3E">· ${head}</span></h3><div class="pet-room"></div>${tip}${pv ? '' : meters}<div class="pet-homebar">${water}${care}</div>${note}${away}</div>`;
+    const shop = `<div class="pet-card"><h3>榕树头小铺 <span style="font-weight:500;font-size:13px;color:#6A4F3E">· 买了就直接摆进小院</span></h3><div class="pet-shop">${this.ITEMS.map((i) => {
+      const own = !!s.items[i.id], lock = st.i < i.need;
+      return `<div class="pet-item${own ? ' owned' : ''}${lock && !own ? ' locked' : ''}"><b>${i.name}</b><small>${i.desc} · 安心 +${i.comfort}</small><div class="row"><span class="price">${drop}${i.price}</span>${own ? '<span class="done">已摆好</span>' : lock ? `<span class="need">树长到「${this.STAGES[i.need].n}」</span>` : `<button type="button" data-act="buy" data-id="${i.id}" ${s.coins < i.price ? 'disabled' : ''}>买</button>`}</div></div>`;
     }).join('')}</div></div>`;
-    return `<div class="pet-grid">${left}${shop}</div>`;
+    const atlas = `<div class="pet-card"><h3>成长图鉴</h3><ol class="pet-stages">${this.STAGES.map((g, k) => `<li class="${k < st.i ? 'done' : k === st.i ? 'now' : ''}"><i>${k + 1}</i><span><b>${g.n}</b><small>${k <= st.i ? g.d : `还差 ${Math.ceil(g.g - T.g)} 成长`}</small></span></li>`).join('')}</ol></div>`;
+    return `<div class="pet-grid">${left}<div>${shop}${atlas}</div></div>`;
   },
   questHTML() {
     const s = this.s, sp = s.spawn, home = s.status === 'home';
     const status = home
-      ? `<div class="pet-card shadow"><h3>啵铃在家</h3><div class="pet-status"><img src="${this.img(s.attach < 25 ? 'sleepy' : 'front')}" alt=""><p>它现在住在你家，依恋度 ${Math.round(s.attach)}%。依恋度掉到 0 它就会乘风溜走，到时候这里会出现新的线索。</p></div></div>`
-      : `<div class="pet-card shadow"><h3>找啵铃</h3><ul class="pet-clues">${sp.clues.map((c, i) => i < sp.shown ? `<li><i>${i + 1}</i><span>${esc(c)}</span></li>` : `<li class="lock"><i>${i + 1}</i><span>${i === sp.shown ? '等它下一条消息，或者完成一个任务、花 10 水滴换提示' : '还没解锁'}</span></li>`).join('')}</ul>
+      ? `<div class="pet-card shadow"><h3>榕忆在小院</h3><div class="pet-status"><img src="${this.img(s.attach < 25 ? 'sleepy' : 'front')}" alt=""><p>它现在住在你的小榕树下，依恋度 ${Math.round(s.attach)}%。依恋度掉到 0 它就会乘风溜走，到时候这里会出现新的线索。点地图右下角的它可以聊天。</p></div></div>`
+      : `<div class="pet-card shadow"><h3>找榕忆</h3><ul class="pet-clues">${sp.clues.map((c, i) => i < sp.shown ? `<li><i>${i + 1}</i><span>${esc(c)}</span></li>` : `<li class="lock"><i>${i + 1}</i><span>${i === sp.shown ? '等它下一条消息，或者完成一个任务、花 10 水滴换提示' : '还没解锁'}</span></li>`).join('')}</ul>
         <div class="pet-homebar"><button class="pet-act primary" type="button" data-act="map">去地图上找</button><button class="pet-act" type="button" data-act="hint" ${sp.shown >= 3 || s.coins < 10 ? 'disabled' : ''}>换一条提示<img src="${U('pet/drop.svg')}" alt="">10</button></div>
         <p class="pet-note">找到大概位置后，把地图放大到街道级别（比例尺 100 米左右）才看得见它。离它近了，它会发消息提醒你。</p></div>`;
     const tasks = `<div class="pet-card"><h3>今日任务 <span style="font-weight:500;font-size:13px;color:#6A4F3E">· 每天零点刷新</span></h3><ul class="pet-tasks">${this.TASKS.map((t) => {
@@ -8270,8 +8584,11 @@ const Pet = {
     const b = e.target.closest('[data-act]'); if (!b || b.disabled) return;
     const a = b.dataset.act;
     if (a === 'buy') this.buy(b.dataset.id);
+    else if (a === 'water') this.water(false);
+    else if (a === 'water-big') this.water(true);
     else if (a === 'pat') this.pat();
     else if (a === 'feed') this.feed();
+    else if (a === 'chat') { this.close(); PetChat.toggle(true); }
     else if (a === 'hint') this.hint();
     else if (a === 'quest') this.show('quest', true);
     else if (a === 'map') this.close();
@@ -8286,8 +8603,8 @@ const Pet = {
     const key = `${this.s.status}|${pose}|${this._badge}`;
     if (key !== this.dockKey) {
       this.dockKey = key;
-      d.innerHTML = (home ? `<img src="${this.img(pose)}" alt="">` : '<span class="lost" aria-hidden="true">?</span>') + `<span class="tag">${home ? '啵铃' : '走失中'}</span>` + (this._badge ? '<span class="badge" aria-hidden="true"></span>' : '');
-      d.setAttribute('aria-label', home ? '萌宠啵铃在家，点开看看' : '萌宠啵铃走失了，点开看线索');
+      d.innerHTML = (home ? `<img src="${this.img(pose)}" alt="">` : '<span class="lost" aria-hidden="true">?</span>') + `<span class="tag">${home ? '榕忆 · 聊天' : '走失中'}</span>` + (this._badge ? '<span class="badge" aria-hidden="true"></span>' : '');
+      d.setAttribute('aria-label', home ? '萌宠榕忆在家，点一下和它聊天' : '萌宠榕忆走失了，点开看线索');
     }
     const ct = document.querySelector('.nav-btn[data-mod="pet"] .ct'); if (ct) ct.textContent = this.navLabel();
   },
@@ -8295,7 +8612,105 @@ const Pet = {
   advance(hours, away = true) { this.skew += hours * 3600000; this.step(!away); this.save(); this.updateDock(); this.render(); },
 };
 
-/* ===================================================================== 啵铃（用原画做的骨骼动画）
+/* ===================================================================== 和榕忆聊天
+   抓到以后点右下角的它：弹出一个小对话框。说的话发给网站自己的聊天服务（deploy/pet_api.py，在服务器上拿着 API key
+   去问大模型，并给它榕忆的性格设定），回答按榕忆的口吻显示。页面里不放任何 key。
+   连不上服务（claude.ai 上的预览、还没接好的 GitHub Pages）时，用几句本地的简单回答，并说明是“离线小脑袋”。
+   最近的对话存在访客自己的浏览器里（最多 30 条），每次只把最近 12 条发给服务 */
+const PetChat = {
+  busy: false, offline: false, el: null, lastSend: 0,
+  SUGG: ['小榕树怎么样了？', '今天吃什么好？', '讲个广州的老故事', '你是谁呀？'],
+  url() {
+    const h = location.hostname;
+    if (/claude|anthropic|usercontent/.test(h)) return '';   // the preview on claude.ai cannot reach other sites
+    const cfg = SITE.petChat || {};
+    if (cfg[h]) return cfg[h];
+    if (/howardleong\.work$/.test(h) || /^\d{1,3}(\.\d{1,3}){3}$/.test(h) || h === 'localhost') return '/api/pet';   // served from the server itself
+    return cfg.default || '';
+  },
+  init() {
+    const el = this.el = $('#petChat');
+    el.querySelector('[data-av]').src = Pet.img('avatar');
+    el.querySelector('[data-x]').addEventListener('click', () => this.toggle(false));
+    el.querySelector('[data-home]').addEventListener('click', () => { this.toggle(false); Pet.open('home'); });
+    el.querySelector('form').addEventListener('submit', (e) => { e.preventDefault(); const i = el.querySelector('input'); const t = i.value; i.value = ''; this.send(t); });
+    el.querySelector('.pc-sugg').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) this.send(b.textContent); });
+    el.addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.stopPropagation(); this.toggle(false); } });
+  },
+  isOpen() { return !!this.el && !this.el.hidden; },
+  toggle(v) {
+    v = v == null ? !this.isOpen() : v;
+    if (v && Pet.s.status !== 'home') { Pet.open('quest'); return; }
+    this.el.hidden = !v;
+    if (!v) return;
+    $('#petBubble').hidden = true; Pet._badge = false; Pet.updateDock();
+    if (!Pet.s.chat.length) Pet.s.chat.push({ r: 'p', t: this.hello(), at: Pet.now() });
+    this.render(true);
+    if (!matchMedia('(pointer: coarse)').matches) this.el.querySelector('input').focus({ preventScroll: true });
+  },
+  hello() {
+    const h = Pet.gzHour(), T = Pet.s.tree, S = Pet.STAGES[Pet.stage().i].n;
+    const g = h < 6 ? '这么晚还没睡呀？' : h < 11 ? '早晨！' : h < 14 ? '食咗饭未呀？' : h < 18 ? '下午好～' : '晚上好呀～';
+    return `${g}我是榕忆，小榕树现在是「${S}」${T.m < 25 ? '，它有点渴了' : ''}。想聊点什么？`;
+  },
+  push(r, t) {
+    Pet.s.chat.push({ r, t, at: Pet.now() }); if (Pet.s.chat.length > 30) Pet.s.chat.splice(0, Pet.s.chat.length - 30);
+    Pet.save(); if (this.isOpen()) this.render(true);
+  },
+  render(scroll) {
+    const el = this.el, log = el.querySelector('.pc-log'), s = Pet.s;
+    log.innerHTML = s.chat.map((m) => `<div class="pc-msg ${m.r === 'u' ? 'me' : 'pet'}">${m.r === 'u' ? '' : `<img src="${Pet.img('avatar')}" alt="">`}<p>${esc(m.t)}</p></div>`).join('')
+      + (this.busy ? `<div class="pc-msg pet typing"><img src="${Pet.img('avatar')}" alt=""><p><i></i><i></i><i></i></p></div>` : '');
+    el.querySelector('[data-st]').textContent = `在小榕树下 · 依恋度 ${Math.round(s.attach)}%${this.offline ? ' · 离线小脑袋' : ''}`;
+    el.querySelector('.pc-sugg').innerHTML = s.chat.length <= 2 ? this.SUGG.map((t) => `<button type="button">${t}</button>`).join('') : '';
+    const note = el.querySelector('.pc-note');
+    note.hidden = !this.offline;
+    if (this.offline) note.textContent = this.url() ? '聊天服务暂时连不上，先用离线小脑袋陪你说两句。' : '这里还没接上聊天服务，榕忆只能用离线小脑袋简单回答；在网站的正式地址上能聊得更多。';
+    el.querySelector('input').disabled = el.querySelector('button[type=submit]').disabled = this.busy;
+    if (scroll) log.scrollTop = log.scrollHeight;
+  },
+  ctx() {
+    const st = Pet.stage(), T = Pet.s.tree, city = (SITE.cities.find((c) => c.id === state.city) || {}).name || '', mod = (MODULES.find((m) => m.id === state.module) || {}).name || '';
+    return { stage: Pet.STAGES[st.i].n, growth: Math.floor(T.g), next: st.next || 0, moisture: Math.round(T.m), attach: Math.round(Pet.s.attach), hour: Pet.gzHour(), city, module: mod,
+      decor: Pet.ITEMS.filter((i) => Pet.s.items[i.id]).map((i) => i.name) };
+  },
+  async send(text) {
+    text = String(text || '').trim().slice(0, 200);
+    if (!text || this.busy) return;
+    const t = Date.now(); if (t - this.lastSend < 1200) return; this.lastSend = t;
+    if ((Pet.s.chats || 0) >= 80) { this.push('u', text); this.push('p', '今天说了好多好多话，我的嘴巴都累啦…明天再陪你聊好不好？'); return; }
+    this.push('u', text); this.busy = true; this.render(true);
+    let reply = null; const url = this.url();
+    if (url) {
+      const ac = new AbortController(), to = setTimeout(() => ac.abort(), 30000);
+      try {
+        const msgs = Pet.s.chat.slice(-12).map((m) => ({ role: m.r === 'u' ? 'user' : 'assistant', content: m.t }));
+        const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: msgs, ctx: this.ctx() }), signal: ac.signal });
+        const j = await r.json().catch(() => ({}));
+        if (r.ok && j.reply) { reply = String(j.reply).slice(0, 500); this.offline = false; }
+        else if (r.status === 429) { reply = j.reply || '我说太多话啦，喉咙有点干…歇一会儿再聊好不好？'; this.offline = false; }
+      } catch (e) { /* no service: answer from the little offline brain */ }
+      clearTimeout(to);
+    }
+    if (!reply) { this.offline = true; reply = this.local(text); }
+    this.busy = false; this.push('p', reply);
+    Pet.chatted(); if (this.isOpen()) { this.render(true); if (!matchMedia('(pointer: coarse)').matches) this.el.querySelector('input').focus({ preventScroll: true }); }
+  },
+  local(t) {   // a few canned answers in its voice, for when there's no chat service
+    const st = Pet.stage(), T = Pet.s.tree, S = Pet.STAGES[st.i], pick = (a) => a[Math.floor(Math.random() * a.length)];
+    if (/树|浇|水|榕|长|种/.test(t)) return T.m < 20 ? `小榕树口好渴…它现在是「${S.n}」，帮它浇点水嘛～` : `小榕树现在是「${S.n}」${st.next ? `，再长 ${Math.ceil(st.next - T.g)} 就到下一阶啦` : '，已经独木成林啦'}！`;
+    if (/吃|饿|饭|餐|茶|宵夜|好味|推荐/.test(t)) return pick(['肚子咕咕叫了！「吃饭地图」里都是 Howard 自己吃过、打过分的店，去翻翻看～', '我最想去饮早茶，一盅两件！你去「吃饭地图」找找嘛～']);
+    if (/星|月|天文|宇宙|银河/.test(t)) return '想看星星就去「地球之外」抬头看看，今晚的星空我帮你留着～';
+    if (/地铁|火车|高铁|列车|船|轮渡/.test(t)) return pick(['地图上的火车和船都在照着时刻跑哦，点一下就知道它们开去哪～', '想坐地铁就去「城市之下」，地底下的列车跑得可快啦！']);
+    if (/故事|以前|历史|老广|讲古/.test(t)) return pick(['以前街坊最爱在榕树头讲古，一壶茶能讲一下午～', '老广说“食在广州”，我在榕树下闻了几百年的早茶香！']);
+    if (/你好|嗨|hi|hello|在吗|早晨|晚上好/i.test(t)) return pick(['嘿～我在呢！今天过得好不好？', '在榕树下等你好久啦～']);
+    if (/你是谁|名字|叫什么|榕忆/.test(t)) return '我系榕忆！住在小榕树里的小精灵，记得好多广州街巷的事～';
+    if (/AI|人工智能|机器人|模型/i.test(t)) return '我是用程序做出来的小宠物啦～不过陪你聊天是真心的！';
+    return pick(['嗯嗯，我在听～不过我现在是离线小脑袋，只能简单陪你说两句。', '嘿嘿，这个我要想一想…你可以问问我小榕树怎么样了，或者今天吃什么～', '风吹得榕树叶沙沙响，好舒服～你也歇一歇吧。']);
+  },
+};
+
+/* ===================================================================== 榕忆（用原画做的骨骼动画）
    正面、侧面、背面、开心、好奇、困困 六张原画，每张铺在一张细网格上；骨骼（头、两只云耳、卷毛、手、脚、尾巴、尾巴尖）
    带着网格弯曲——和 Live2D 一个思路。画本身一笔不改，只是被“掰”着动：
    - 侧着走 / 四肢着地爬：身体前倾、头抬起来看路、前爪往前够、后脚交替蹬，尾巴翘着晃
@@ -8696,28 +9111,28 @@ function petStage(THREE, canvas, geo) {
   return { renderer, scene, cam, shadow, hFactor, K, size, render() { size(); renderer.render(scene, cam); } };   // re-checks its size every frame (the room can be re-laid out while hidden)
 }
 
-/* ===================================================================== 啵铃在家里：爬、走、动作、拎起来（试玩模式也用这一套）
-   房间是等轴测的 SVG；啵铃是原画做的骨骼动画（makeBolingArt），画在叠在房间上的透明 WebGL 画布里，
-   相机和 SVG 的投影完全对齐，所以地板上的点 (u, v) 正好落在 SVG 画的位置
-   - 点地板：它沿着绕开家具的路线爬过去（近的就走两步）
-   - 点家具：过去做对应的事（床上睡觉、桌边吃点心、窗前看云……）
+/* ===================================================================== 榕忆在小院里：爬、走、动作、拎起来（试玩模式也用这一套）
+   小院是等轴测的 SVG（Garden 现画）；榕忆是原画做的骨骼动画（makeBolingArt），画在叠在小院上的透明 WebGL 画布里，
+   相机和 SVG 的投影完全对齐，所以地面上的点 (u, v) 正好落在 SVG 画的位置
+   - 点地面：它沿着绕开树干、水缸、石桌的路线爬过去（近的就走两步）
+   - 点东西：过去做对应的事（抬头看榕树、石凳上打盹、石桌边吃点心、看水缸里的金鱼、荡秋千……）
+   - 浇水：它跑到树下帮忙，水珠落进土里；树长大一阶，它会高兴地蹦一下
    - 鼠标碰到它：随机翻跟头、蹦跳、转圈、抖水、害羞；点它：摸摸；手机上双击它做动作
    - 按住拖动：拎起来，它四脚乱蹬；松手掉回地上弹一下
-   - 没人理它时自己溜达、打盹、看窗外
+   - 没人理它时自己溜达、打盹、看看小榕树
    碰撞判定用一个看不见的按钮 .who 跟着它走 */
 const Room = {
   el: null, layers: null, who: null, im: null, say: null, empty: null, canvas: null, stand: [], obs: [], raf: 0, lt: 0, key: null, shown: false,
   st: null, B: null, three: false,
-  pos: { u: 0.56, v: 0.6 }, h: 0, path: [], then: null, gait: 'crawl', speed: 0.3, moveYaw: 0, faceYaw: null, vel: 0,
+  pos: { u: 0.42, v: 0.5 }, h: 0, path: [], then: null, gait: 'crawl', speed: 0.3, moveYaw: 0, faceYaw: null, vel: 0,
   mode: 'idle', act: null, nextIdle: 0, wakeAt: 0, zzzAt: 0, hoverAt: 0, press: null, drag: null, fall: null, slide: null, noClick: false, ptr: null, sayT: 0,
   VIEW: -Math.PI / 4,
-  FURN: {
-    box: { r: [0.06, 0.30, 0.10, 0.32], spot: [0.22, 0.42], act: 'peek', at: [0.18, 0.21] },
-    plant: { r: [0.04, 0.16, 0.04, 0.16], spot: [0.13, 0.27], act: 'sniff', at: [0.10, 0.10] },
-    lamp: { r: [0.84, 0.92, 0.10, 0.18], spot: [0.80, 0.28], act: 'lamp', at: [0.88, 0.14] },
-    table: { r: [0.16, 0.36, 0.60, 0.80], spot: [0.28, 0.89], act: 'eat', at: null },
-    bed: { spot: [0.62, 0.38], act: 'nap' },
-    window: { spot: [0.86, 0.52], act: 'gaze', yaw: Math.PI / 2 },
+  FURN: {   // r: the footprint it can't walk through (u0, u1, v0, v1); spot: where it stands to use it; at: what it faces
+    tree: { r: [0.70, 0.90, 0.12, 0.32], spot: [0.64, 0.15], act: 'gaze', at: [0.80, 0.22] },
+    jar: { r: [0.08, 0.22, 0.10, 0.24], spot: [0.25, 0.36], act: 'peek', at: [0.15, 0.17] },
+    table: { r: [0.17, 0.39, 0.60, 0.81], spot: [0.30, 0.88], act: 'eat', at: null },
+    bench: { spot: [0.57, 0.30], act: 'nap', h: 12 },
+    swing: { spot: [0.80, 0.42], act: 'hop', h: 14 },
   },
   DUR: { pat: 0.95, shy: 0.7, hop: 0.95, roll: 0.95, spin: 0.9, shake: 0.75, look: 2.4, eat: 1.6, gaze: 2.8, sniff: 1.3, lamp: 1.4, peek: 1.3, land: 0.56, wake: 0.8 },
   P(u, v, h = 0) { const g = PET_ROOM.geo; return [g.L0[0] + u * g.UA[0] + v * g.VA[0], g.L0[1] + u * g.UA[1] + v * g.VA[1] - h]; },
@@ -8730,8 +9145,8 @@ const Room = {
   mount(ph) {
     this.el = ph; this.key = null; this.shown = false; this.mode = 'idle'; this.path = []; this.drag = this.fall = this.slide = this.act = null; this.st = this.B = null;
     ph.innerHTML = `<div class="room-layers"></div><canvas class="pet3d" aria-hidden="true"></canvas>
-      <button class="who" type="button" aria-label="啵铃：点一下摸摸它，按住拖动可以把它拎起来"><img alt="" draggable="false"></button>
-      <span class="pet-say" hidden></span><div class="empty" hidden>家里空空的——啵铃还在外面。<br>先去地图上把它找回来，或者点下面的“试玩”。</div>`;
+      <button class="who" type="button" aria-label="榕忆：点一下摸摸它，按住拖动可以把它拎起来"><img alt="" draggable="false"></button>
+      <span class="pet-say" hidden></span><div class="empty" hidden>树下空空的——榕忆还在外面。<br>小榕树照样可以浇水；想它了就去地图上把它找回来，或者点下面的“试玩”。</div>`;
     this.layers = ph.querySelector('.room-layers'); this.canvas = ph.querySelector('.pet3d'); this.who = ph.querySelector('.who'); this.im = ph.querySelector('.who img');
     this.say = ph.querySelector('.pet-say'); this.empty = ph.querySelector('.empty');
     this.im.src = Pet.img('front');
@@ -8739,7 +9154,7 @@ const Room = {
     Promise.all([import(THREE_URL), Pet.rigImgs()]).then(([T, imgs]) => {
       if (this.el !== ph) return;
       try {
-        this.st = petStage(T, this.canvas, PET_ROOM.geo); this.B = makeBolingArt(T, imgs, this.st.cam); this.st.scene.add(this.B.root); this.B.root.scale.setScalar(0.24);
+        this.st = petStage(T, this.canvas, PET_ROOM.geo); this.B = makeBolingArt(T, imgs, this.st.cam); this.st.scene.add(this.B.root); this.B.root.scale.setScalar(0.21);
         this.three = true; ph.classList.add('is3d');
       } catch (e) { console.warn('pet 3d', e); this.three = false; }
     }).catch(() => { this.three = false; });
@@ -8763,27 +9178,30 @@ const Room = {
     w.addEventListener('pointerup', up); w.addEventListener('pointercancel', up);
     this.sync();
   },
-  layersHTML(it) {
-    const L = PET_ROOM.layers, vb = PET_ROOM.vb, g = (f, s) => (s ? `<g data-f="${f}">${s}</g>` : '');
-    const back = g('wall', it.paint ? L.walls_paint : L.walls_bare) + g('floor', it.floor ? L.floor_wood : L.floor_bare) + g('window', it.window && L.window)
-      + g('wall', it.lights && L.lights) + g('wall', it.shelf && L.shelf) + g('wall', !it.lamp && L.bulb) + g('rug', it.rug && L.rug) + g('bed', it.bed && L.bed);
-    const stand = ['box', 'plant', 'lamp', 'table'].filter((k) => (k === 'box' ? !it.table && !it.shelf : it[k]));
+  layersHTML(it, T) {
+    const vb = PET_ROOM.vb, g = (f, s) => (s ? `<g data-f="${f}">${s}</g>` : ''), n = Object.keys(it).length;
+    this.FURN.tree.r = Garden.foot(T.i);
+    const back = g('floor', Garden.ground(it)) + g('bench', it.bench && Garden.bench());
+    const stand = ['tree', 'jar', 'table'].filter((k) => k === 'tree' || it[k]);
     this.obs = stand.map((k) => this.FURN[k].r);
-    return `<svg class="layer" viewBox="${vb}" style="z-index:0" role="img" aria-label="我的家：${Object.keys(it).length ? '摆了 ' + Object.keys(it).length + ' 件家具' : '毛坯房'}">${back}</svg>`
-      + stand.map((k) => `<svg class="layer" viewBox="${vb}" aria-hidden="true" data-f="${k}">${g(k, L[k])}</svg>`).join('');
+    const art = { tree: () => Garden.tree(T.i, T.f, T.m, it), jar: () => Garden.jar(), table: () => Garden.table() };
+    return `<svg class="layer" viewBox="${vb}" style="z-index:0" role="img" aria-label="榕树小院：小榕树「${Pet.STAGES[T.i].n}」，水分 ${Math.round(T.m)}%${n ? '，添了 ' + n + ' 样东西' : ''}">${back}</svg>`
+      + stand.map((k) => `<svg class="layer" viewBox="${vb}" aria-hidden="true" data-f="${k}">${g(k, art[k]())}</svg>`).join('');
   },
   sync() {
     if (!this.el) return;
-    const it = this.items(), pres = this.present(), key = Object.keys(it).sort().join(',');
+    const it = this.items(), pres = this.present(), T = Pet.treeView();
+    const key = `${Object.keys(it).sort().join(',')}|${T.i}|${Math.floor(T.f * 5)}|${T.m < 15 ? 0 : T.m < 35 ? 1 : 2}`;   // redraw when the tree visibly grows or dries
+    this.el.classList.toggle('night', Pet.isNight());
     if (key !== this.key) {
-      this.key = key; this.layers.innerHTML = this.layersHTML(it); this.stand = [...this.layers.querySelectorAll('svg[data-f]')];
+      this.key = key; this.layers.innerHTML = this.layersHTML(it, T); this.stand = [...this.layers.querySelectorAll('svg[data-f]')];
       if (pres && this.shown && !this.free(this.pos.u, this.pos.v)) { const g = this.nearFree(this.pos.u, this.pos.v); this.walkTo(g[0], g[1]); }
     }
     this.who.hidden = !pres; this.canvas.hidden = !pres; this.empty.hidden = pres;
     if (pres && !this.shown) {   // it drops in from above
-      this.shown = true; this.pos = { u: 0.56, v: 0.6 }; this.h = 0; this.path = []; this.act = null; this.mode = 'fall';
+      this.shown = true; this.pos = { u: 0.42, v: 0.5 }; this.h = 0; this.path = []; this.act = null; this.mode = 'fall';
       this.fall = { h0: 190, t0: performance.now() + 250, dur: 560 };
-      this.talk('啵～我来啦！', 2200);
+      this.talk('嘿～我来啦！', 2200);
     }
     if (!pres) { this.shown = false; this.say.hidden = true; }
     this.start();
@@ -8802,7 +9220,7 @@ const Room = {
       else if (!this.drag && this.mode === 'idle' && t > this.nextIdle) this.idle();
       else if (this.mode === 'sleep') { if (t > this.wakeAt) this.wake(); else if (t > this.zzzAt) { this.zzzAt = t + 1500; this.fx('zzz'); } }
       if (this.act && t > this.act.t0 + this.act.dur * 1000) this.endAct();
-      if (!this.fall && !this.drag) { const hh = this.onBed() ? 12 : 0; this.h += (hh - this.h) * Math.min(1, dt * 8); }
+      if (!this.fall && !this.drag) { const hh = this.seatH(); this.h += (hh - this.h) * Math.min(1, dt * 8); }
       this.place();
       this.draw(dt, t);
     }
@@ -8818,7 +9236,7 @@ const Room = {
     this.who.style.left = l + '%'; this.who.style.top = tp + '%';
     this.canvas.style.zIndex = up ? 40 : 3;
     for (const s of this.stand) { const r = this.FURN[s.dataset.f].r, front = this.pos.v > r[3] - 0.01 || this.pos.u < r[0] + 0.01; s.style.zIndex = up || front ? 2 : 4; }
-    if (!this.say.hidden) { this.say.style.left = l + '%'; this.say.style.top = tp - (this.mode === 'sleep' ? 17 : 29) + '%'; }
+    if (!this.say.hidden) { this.say.style.left = l + '%'; this.say.style.top = tp - (this.mode === 'sleep' ? 15 : 26) + '%'; }
   },
   draw(dt, t) {
     if (!this.three || !this.B) { this.who.classList.add('flat'); return; }
@@ -8876,7 +9294,12 @@ const Room = {
     for (let a = 0; a < pts.length - 1;) { let far = a + 1; for (let m = pts.length - 1; m > a + 1; m--) if (this.clear(pts[a], pts[m])) { far = m; break; } out.push(pts[far]); a = far; }
     return out;
   },
-  onBed() { return !!this.items().bed && Math.hypot(this.pos.u - this.FURN.bed.spot[0], this.pos.v - this.FURN.bed.spot[1]) < 0.09; },
+  seatH() {   // standing on the bench or sitting on the swing lifts it a little
+    const it = this.items(), near = (f) => Math.hypot(this.pos.u - this.FURN[f].spot[0], this.pos.v - this.FURN[f].spot[1]) < 0.06;
+    if (it.bench && near('bench')) return this.FURN.bench.h;
+    if (it.swing && Pet.treeView().i >= 4 && near('swing')) return this.FURN.swing.h;
+    return 0;
+  },
   // ------------------------------------------------------------- moving
   walkTo(u, v, then, gait) {
     if (this.mode === 'sleep') this.wake(true);
@@ -8908,8 +9331,15 @@ const Room = {
       if (F.act === 'nap') return this.nap(true);
       // face what it's using (half towards you, so you still see its face), or straight at the window
       const at = F.at; this.faceYaw = F.yaw != null ? F.yaw : at ? this.blendYaw(Math.atan2(at[0] - this.pos.u, at[1] - this.pos.v), 0.55) : null;
-      this.react(F.act, true);
+      this.react(F.act, true, this.line(f));
     });
+  },
+  line(f) {   // what it says when it gets there
+    const pick = (a) => a[Math.floor(Math.random() * a.length)], T = Pet.treeView();
+    if (f === 'tree') return T.m < 15 ? pick(['小榕树好渴…', '土都干裂了，浇浇水嘛']) : T.i === 0 ? pick(['快点发芽呀～', '榕果在睡觉…']) : T.i < 3 ? pick(['又长了一片新叶子！', '快高长大～']) : pick(['叶子沙沙响～', '树荫好凉快', '小榕树又长高了！', '我最喜欢这棵树了']);
+    if (f === 'jar') return pick(['小金鱼，你好呀～', '咕噜咕噜…', '水里有我的倒影！']);
+    if (f === 'swing') return pick(['荡秋千咯～', '再高一点！', '呼——飞起来了！']);
+    return null;
   },
   blendYaw(a, k) { const d = Math.atan2(Math.sin(a - this.VIEW), Math.cos(a - this.VIEW)); return this.VIEW + d * k; },
   slideStep(t) {
@@ -8937,12 +9367,12 @@ const Room = {
     const d = this.drag; this.drag = null; this.who.classList.remove('held');
     const uv = this.toUV([d.xy[0], d.xy[1] + d.lift]), g = this.nearFree(uv[0], uv[1]);
     this.pos = { u: g[0], v: g[1] };
-    const hb = this.onBed() ? 12 : 0, h0 = Math.max(hb + 10, this.P(g[0], g[1])[1] - d.xy[1]);
+    const hb = this.seatH(), h0 = Math.max(hb + 10, this.P(g[0], g[1])[1] - d.xy[1]);
     this.h = h0; this.mode = 'fall';
     this.fall = { h0, h1: hb, t0: performance.now(), dur: Math.min(600, 230 + h0 * 2.4) };
   },
   // ------------------------------------------------------------- reactions
-  react(name, keepFace) {
+  react(name, keepFace, line) {
     if (!this.present() || !this.shown || this.drag || this.fall) return;
     if (this.mode === 'sleep') { this.wake(true); if (name !== 'pat') return; }
     this.path = []; this.then = null; this.slide = null; this.mode = 'act';
@@ -8951,19 +9381,18 @@ const Room = {
     this.act = { name, t0: performance.now(), dur: this.DUR[name] || 1 };
     if (name === 'pat') { this.fx('heart', 3); this.talk(pick(['嘿嘿～', '再摸摸！', '好舒服～', '最喜欢你啦！'])); }
     else if (name === 'shy') { this.fx('heart', 2); this.talk('好痒！'); }
-    else if (name === 'hop') { this.fx('sparkle', 3); this.talk(pick(['啵！', '跳跳～', '嘿！'])); }
+    else if (name === 'hop') { this.fx('sparkle', 3); this.talk(line || pick(['嘿咻！', '跳跳～', '嘿！'])); }
     else if (name === 'roll') {   // a forward somersault, left or right across the floor wherever there's room
       const dirs = Math.random() < 0.5 ? [1, -1] : [-1, 1];
       for (const s of dirs) { const b = [this.pos.u + s * 0.14, this.pos.v + s * 0.14]; if (this.clear([this.pos.u, this.pos.v], b) && this.free(b[0], b[1])) { this.slide = { a: [this.pos.u, this.pos.v], b, t0: performance.now() + 80, dur: 820 }; this.faceYaw = Math.atan2(s, s); this.B && (this.B.S.yaw = this.faceYaw); break; } }
       this.fx('drop', 2); this.talk('咕噜咕噜～');
     } else if (name === 'spin') { this.fx('sparkle', 2); this.talk('转圈圈～'); }
-    else if (name === 'shake') { this.fx('drop', 5); this.talk('抖抖～'); }
+    else if (name === 'shake') { this.fx('drop', 5); this.talk(line || '抖抖～'); }
     else if (name === 'look') this.talk(pick(['嗯？', '那是什么？', '咦～']));
     else if (name === 'eat') { this.fx('sparkle', 3); this.talk('啊呜～好吃！'); }
-    else if (name === 'gaze') this.talk(pick(['外面有云！', '风好舒服～', '那朵云像我！']), 2600);
-    else if (name === 'sniff') { this.fx('sparkle', 2); this.talk('香香的～'); }
-    else if (name === 'lamp') { this.fx('sparkle', 2); this.talk('暖暖的～'); }
-    else if (name === 'peek') this.talk('箱子里有什么？');
+    else if (name === 'gaze') this.talk(line || pick(['风好舒服～', '天上有云！', '那朵云像我！']), 2600);
+    else if (name === 'sniff') { this.fx('sparkle', 2); this.talk(line || '香香的～'); }
+    else if (name === 'peek') this.talk(line || '里面有什么？');
     else if (name === 'wake') this.talk('嗯…睡醒啦');
   },
   endAct() {
@@ -8973,18 +9402,20 @@ const Room = {
   nap(onBed) {
     this.act = null; this.path = []; this.mode = 'sleep'; this.faceYaw = null;
     this.wakeAt = performance.now() + 12000 + Math.random() * 10000; this.zzzAt = performance.now() + 900;
-    if (onBed) this.talk('呼～软软的', 1800);
+    if (onBed) this.talk('呼～石凳凉凉的', 1800);
   },
   wake(quiet) { this.mode = 'idle'; this.nextIdle = performance.now() + 3000 + Math.random() * 3000; if (!quiet) this.react('wake'); },
-  idle() {   // left alone: potter about, nap, look out of the window, have a snack
-    const it = this.items(), r = Math.random(), sad = !Pet.preview && Pet.s.attach < 25;
+  idle() {   // left alone: potter about, nap on the bench, look up at the tree, watch the fish, swing, have a snack
+    const it = this.items(), r = Math.random(), sad = !Pet.preview && Pet.s.attach < 25, T = Pet.treeView();
     if (sad && r < 0.6) return this.nap();
-    if (r < 0.42) { for (let k = 0; k < 12; k++) { const u = 0.1 + Math.random() * 0.8, v = 0.1 + Math.random() * 0.8; if (this.free(u, v) && Math.hypot(u - this.pos.u, v - this.pos.v) > 0.18) return this.walkTo(u, v, null, Math.random() < 0.5 ? 'crawl' : 'walk'); } }
-    if (r < 0.54) return this.react('hop');
-    if (r < 0.64) return this.react('shake');
-    if (r < 0.74) return it.bed ? this.goto('bed') : this.nap();
-    if (r < 0.83 && it.window) return this.goto('window');
-    if (r < 0.9 && it.table) return this.goto('table');
+    if (r < 0.38) { for (let k = 0; k < 12; k++) { const u = 0.1 + Math.random() * 0.8, v = 0.1 + Math.random() * 0.8; if (this.free(u, v) && Math.hypot(u - this.pos.u, v - this.pos.v) > 0.18) return this.walkTo(u, v, null, Math.random() < 0.5 ? 'crawl' : 'walk'); } }
+    if (r < 0.48) return this.react('hop');
+    if (r < 0.55) return this.react('shake');
+    if (r < 0.68) return this.goto('tree');
+    if (r < 0.77) return it.bench ? this.goto('bench') : this.nap();
+    if (r < 0.84 && it.jar) return this.goto('jar');
+    if (r < 0.91 && it.swing && T.i >= 4) return this.goto('swing');
+    if (r < 0.96 && it.table) return this.goto('table');
     this.react('look');
   },
   hover(e) {
@@ -9000,10 +9431,41 @@ const Room = {
     const f = e.target.closest('[data-f]')?.dataset.f || 'floor', uv = this.toUV(this.svgXY(e.clientX, e.clientY));
     this.ping(e);
     if (this.FURN[f]) return this.goto(f);
-    if (f === 'floor' || f === 'rug') return this.walkTo(uv[0], uv[1]);
-    this.walkTo(uv[0], uv[1], () => this.react('look'));   // a wall: go and have a look
+    this.walkTo(uv[0], uv[1]);
   },
   eat() { if (!this.shown) return; if (this.items().table) this.goto('table'); else this.react('eat'); },
+  water(big) {   // it runs to the tree to help; drops fall into the soil either way
+    if (!this.el || !this.el.isConnected) return;
+    const F = this.FURN.tree, n = big ? 10 : 5;
+    if (!this.present() || !this.shown || this.drag || this.fall) { this.rain(n); return; }
+    this.walkTo(F.spot[0], F.spot[1], () => {
+      this.faceYaw = this.blendYaw(Math.atan2(F.at[0] - this.pos.u, F.at[1] - this.pos.v), 0.55);
+      this.react('shake', true, big ? '哗啦啦——喝饱饱！' : '浇浇水，快高长大～');
+    }, 'walk');
+    this.rain(n);
+  },
+  rain(n) {
+    const [l, tp] = this.pct(this.P(...Garden.BASE));
+    for (let i = 0; i < n; i++) {
+      const s = document.createElement('span');
+      s.className = 'pet-rain'; s.innerHTML = this.FX.drop;
+      s.style.left = l + (Math.random() - 0.5) * 9 + '%'; s.style.top = tp - 1 + Math.random() * 2 + '%'; s.style.animationDelay = i * 90 + 'ms';
+      this.el.appendChild(s); setTimeout(() => s.remove(), 1100 + i * 90);
+    }
+  },
+  grow() {   // the tree just grew a stage
+    if (!this.el || !this.el.isConnected) return;
+    const T = Pet.treeView(), D = Garden.dims(T.i, T.f), [x, y] = this.P(...Garden.BASE), [l, tp] = this.pct([x, y - Math.max(20, D.H * 0.8)]);
+    for (let i = 0; i < 7; i++) {
+      const s = document.createElement('span');
+      s.className = 'pet-fx'; s.innerHTML = this.FX.sparkle;
+      s.style.left = l + (Math.random() - 0.5) * (8 + D.R / 8) + '%'; s.style.top = tp + (Math.random() - 0.5) * 8 + '%';
+      s.style.setProperty('--dx', (Math.random() - 0.5) * 60 + 'px'); s.style.animationDelay = i * 120 + 'ms';
+      this.el.appendChild(s); setTimeout(() => s.remove(), 1700 + i * 120);
+    }
+    if (this.present() && this.shown) setTimeout(() => this.react('hop', false, pick2(['小榕树长大啦！', '哇，长高了！', '它在跟我招手！'])), 600);
+    function pick2(a) { return a[Math.floor(Math.random() * a.length)]; }
+  },
   // ------------------------------------------------------------- little effects
   ping(e) {
     const r = this.el.getBoundingClientRect(), s = document.createElement('span');
@@ -9024,7 +9486,7 @@ const Room = {
       s.className = 'pet-fx' + (kind === 'zzz' ? ' zzz' : '') + (foot ? ' dust' : '');
       s.innerHTML = this.FX[kind];
       s.style.left = l + (Math.random() - 0.5) * (foot ? 14 : 10) + '%';
-      s.style.top = tp - (foot ? 1 : this.mode === 'sleep' ? 12 : 20) + (Math.random() - 0.5) * 4 + '%';
+      s.style.top = tp - (foot ? 1 : this.mode === 'sleep' ? 11 : 18) + (Math.random() - 0.5) * 4 + '%';
       s.style.setProperty('--dx', (Math.random() - 0.5) * 50 + 'px'); s.style.animationDelay = i * 110 + 'ms';
       this.el.appendChild(s); setTimeout(() => s.remove(), 1600 + i * 110);
     }
