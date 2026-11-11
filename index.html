@@ -1275,6 +1275,8 @@ const SITE = {
     { id: 'hz', name: '惠州', en: 'HUIZHOU', center: [114.405, 23.09], zoom: 12.5, ready: true },
     // 大湾区以外（far: true）：地图只到城市一级，扫街照片标在城市中心附近；没有照片的城市不在列表里出现。
     // 加一个城市：{ id: 'bj', name: '北京', en: 'BEIJING', center: [116.40, 39.91], zoom: 9, ready: true, far: true }
+    { id: 'tokyo', name: '东京', en: 'TOKYO', center: [139.735, 35.684], zoom: 11.3, ready: true, far: true },
+    { id: 'kyoto', name: '京都', en: 'KYOTO', center: [135.773, 35.04], zoom: 10.6, ready: true, far: true },
     { id: 'world', name: '全国 · 世界', en: 'CHINA & WORLD', center: [105, 32], zoom: 3.3, ready: true, far: true, overview: true },
   ],
 
@@ -1484,6 +1486,32 @@ const SITE = {
     // 深圳 · 福田：放在莲花山附近
     { id: 's43', city: 'sz', title: '莲花山 · 福田中心区', place: '福田 · 莲花山附近', lnglat: [114.0565, 22.5560], approx: true, date: '',
       note: '从高处望福田中心区：傍晚的阳光照在平安金融中心和一排写字楼上，前面是一片树林和市民中心波浪形的屋顶，远处的山腰缠着云；下雨天隔着窗再看，平安金融中心在雨雾里只剩一个影子。', photos: [{ src: 'photos/sz-futian-01.jpg', thumb: 'photos/sz-futian-01-s.jpg', cap: '傍晚的平安金融中心和市民中心', ar: 1.455 }, { src: 'photos/sz-futian-02.jpg', thumb: 'photos/sz-futian-02-s.jpg', cap: '雨天窗外的平安金融中心', ar: 0.75 }] },
+    // 东京（大湾区以外：图钉只标到大概的街区，没有拍摄日期）
+    { id: 's46', city: 'tokyo', title: '涩谷十字路口', place: '东京 · 涩谷', lnglat: [139.7005, 35.6595], approx: true, date: '',
+      note: '从高处俯瞰涩谷十字路口：入夜后绿灯一亮，人群从四个方向同时涌上斑马线，四周是亮着的广告屏和巴士总站。', photos: [{ src: 'photos/jp-tokyo-02.jpg', thumb: 'photos/jp-tokyo-02-s.jpg', cap: '入夜的涩谷十字路口', ar: 1.5 }] },
+    { id: 's47', city: 'tokyo', title: '东京塔', place: '东京 · 六本木一带', lnglat: [139.7292, 35.6605], approx: true, date: '',
+      note: '从高处的展望台望东京塔：阴天时窗边坐着两个低头看手机的人，红白的铁塔立在一片高楼中间；入夜后铁塔亮起橙色的灯，后面是东京湾边的高楼。', photos: [{ src: 'photos/jp-tokyo-03.jpg', thumb: 'photos/jp-tokyo-03-s.jpg', cap: '窗边的两个人和东京塔', ar: 0.667 }, { src: 'photos/jp-tokyo-07.jpg', thumb: 'photos/jp-tokyo-07-s.jpg', cap: '入夜亮灯的东京塔', ar: 1.5 }] },
+    { id: 's48', city: 'tokyo', title: '秋叶原', place: '东京 · 秋叶原', lnglat: [139.7712, 35.6995], approx: true, date: '',
+      note: '秋叶原街口的松本清药妆店，蓝黄色的大招牌正中一个红色的“薬”字，两边是资生堂、高丝、SK-II 等牌子。', photos: [{ src: 'photos/jp-tokyo-04.jpg', thumb: 'photos/jp-tokyo-04-s.jpg', cap: '松本清秋叶原店', ar: 1.5 }] },
+    { id: 's49', city: 'tokyo', title: '新宿之夜', place: '东京 · 新宿', lnglat: [139.7006, 35.6938], approx: true, date: '',
+      note: '夜里的新宿东口：天桥上望下去，一排排霓虹招牌和巨幕，电车从铁桥上开过，桥下排着亮红色尾灯的车流。', photos: [{ src: 'photos/jp-tokyo-05.jpg', thumb: 'photos/jp-tokyo-05-s.jpg', cap: '新宿东口的霓虹和车流', ar: 1.5 }] },
+    { id: 's50', city: 'tokyo', title: '银座站', place: '东京 · 银座', lnglat: [139.765, 35.6717], approx: true, date: '',
+      note: '傍晚的银座站 A8 出入口：门头上是银座线、日比谷线、丸之内线三条线的站标，一个背着包的人正走下楼梯。', photos: [{ src: 'photos/jp-tokyo-06.jpg', thumb: 'photos/jp-tokyo-06-s.jpg', cap: '银座站 A8 出口', ar: 0.667 }] },
+    { id: 's51', city: 'tokyo', title: '山手线站台', place: '东京', date: '',
+      note: 'JR 站台上，左边是京浜东北线、右边是山手线外环，站台门一蓝一绿，头顶的显示屏报着下一班车。', photos: [{ src: 'photos/jp-tokyo-01.jpg', thumb: 'photos/jp-tokyo-01-s.jpg', cap: '京浜东北线和山手线的站台', ar: 1.5 }] },
+    // 京都（同上：图钉只标到大概的位置，没有拍摄日期）
+    { id: 's52', city: 'kyoto', title: '清水寺', place: '京都 · 东山', lnglat: [135.785, 34.9949], approx: true, date: '',
+      note: '清水寺的三重塔和本堂：朱红的塔身立在一片绿树上面，远处是京都城和一层层的山；走到塔下抬头，檐角挂着铜铃，旁边的枫叶刚开始转黄。', photos: [{ src: 'photos/jp-kyoto-05.jpg', thumb: 'photos/jp-kyoto-05-s.jpg', cap: '三重塔和本堂', ar: 1.5 }, { src: 'photos/jp-kyoto-07.jpg', thumb: 'photos/jp-kyoto-07-s.jpg', cap: '三重塔的檐角', ar: 1.5 }] },
+    { id: 's53', city: 'kyoto', title: '伏见稻荷大社', place: '京都 · 伏见', lnglat: [135.7727, 34.9671], approx: true, date: '',
+      note: '伏见稻荷大社：一座接一座的朱红鸟居连成隧道，柱子上写着“奉纳”；再往山上走，长满青苔的石鸟居后面是密密麻麻的小祠和小鸟居。', photos: [{ src: 'photos/jp-kyoto-08.jpg', thumb: 'photos/jp-kyoto-08-s.jpg', cap: '千本鸟居', ar: 0.75 }, { src: 'photos/jp-kyoto-09.jpg', thumb: 'photos/jp-kyoto-09-s.jpg', cap: '山上的石鸟居和小祠', ar: 1.333 }] },
+    { id: 's54', city: 'kyoto', title: '贵船神社', place: '京都 · 贵船', lnglat: [135.7629, 35.1215], approx: true, date: '',
+      note: '贵船的山林里，朱红的鸟居和石灯笼沿着石阶往上排开，头顶是一片新绿的枫叶；另一头的林间小路上，一座鸟居架在小桥前。', photos: [{ src: 'photos/jp-kyoto-03.jpg', thumb: 'photos/jp-kyoto-03-s.jpg', cap: '石阶、鸟居和红灯笼', ar: 0.75 }, { src: 'photos/jp-kyoto-01.jpg', thumb: 'photos/jp-kyoto-01-s.jpg', cap: '林间小路上的鸟居', ar: 0.666 }] },
+    { id: 's55', city: 'kyoto', title: '祇园之夜', place: '京都 · 祇园', lnglat: [135.7751, 35.0037], approx: true, date: '',
+      note: '夜里祇园的小巷，两边是木格子的町屋和灯笼，一位舞伎走在石板路上。', photos: [{ src: 'photos/jp-kyoto-02.jpg', thumb: 'photos/jp-kyoto-02-s.jpg', cap: '夜里走过小巷的舞伎', ar: 1.333 }] },
+    { id: 's56', city: 'kyoto', title: '松原通', place: '京都 · 东山', lnglat: [135.7785, 34.9965], approx: true, date: '',
+      note: '东山一带的松原通：松原交番门口，电线在头顶缠成一团，有人骑着单车往前，路的尽头是东山。', photos: [{ src: 'photos/jp-kyoto-06.jpg', thumb: 'photos/jp-kyoto-06-s.jpg', cap: '松原交番前的街', ar: 0.666 }] },
+    { id: 's57', city: 'kyoto', title: '京都小巷', place: '京都', date: '',
+      note: '阴天的住宅小巷，路面上写着“速度落せ”，电线杆和电线一路往远处延伸。', photos: [{ src: 'photos/jp-kyoto-04.jpg', thumb: 'photos/jp-kyoto-04-s.jpg', cap: '写着“速度落せ”的小巷', ar: 0.75 }] },
   ],
 
   // 地标名胜 —— 介绍为公开资料整理
