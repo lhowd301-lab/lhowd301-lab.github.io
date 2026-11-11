@@ -467,11 +467,22 @@ a.trk{text-decoration:none;color:inherit}
 /* ---------- 纯享模式：标记、卡片和面板都收起来，只留地图、指北针和缩放 */
 .zoom .pure-btn[aria-pressed="true"]{color:var(--blue);background:var(--ice-2)}
 .zoom .night-btn[aria-pressed="true"]{color:#F5C46B;background:#16233D}
-.zoom .rail-btn[aria-pressed="true"],.zoom .ship-btn[aria-pressed="true"],.zoom .route-btn[aria-pressed="true"]{color:var(--blue);background:var(--ice-2)}
+.zoom .rail-btn[aria-pressed="true"],.zoom .ship-btn[aria-pressed="true"],.zoom .route-btn[aria-pressed="true"],.zoom .flight-btn[aria-pressed="true"]{color:var(--blue);background:var(--ice-2)}
 .rail-card{position:fixed;z-index:6;left:50%;bottom:calc(64px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(300px,calc(100% - 32px));padding:14px 16px 12px;border-radius:18px;background:var(--glass-strong);border:1px solid var(--line);box-shadow:0 20px 50px -24px rgba(29,78,216,.45);color:var(--ink);animation:railIn .25s ease}
 @keyframes railIn{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
 @keyframes railInM{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @media (max-width:1023px){.rail-card{left:max(12px,env(safe-area-inset-left,0px));right:64px;width:auto;max-width:340px;transform:none;bottom:calc(128px + env(safe-area-inset-bottom,0px));animation-name:railInM}}
+.air-card .fl-row{display:flex;flex-wrap:wrap;gap:6px;margin:9px 0 0}
+.air-card .fl-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border:1px solid var(--line);border-radius:999px;background:transparent;font:inherit;font-size:12px;color:var(--ink-2);cursor:pointer;transition:background .2s,color .2s,border-color .2s}
+.air-card .fl-chip i{width:8px;height:8px;border-radius:50%;flex:none}
+.air-card .fl-chip[aria-pressed="true"]{background:var(--ice-2);border-color:#BFD3F5;color:var(--blue,#2563EB)}
+.air-card .fl-speed .fl-chip{font-family:var(--f-mono);font-size:11.5px}
+.air-card .fl-sel:empty{display:none}.air-card .fl-sel{margin-top:10px;padding-top:9px;border-top:1px solid var(--line)}
+.air-card h4.sroute{margin:4px 0 2px;font-size:16px;font-family:var(--f-display);letter-spacing:.03em}.air-card h4.sroute span{margin:0 7px;color:var(--ink-3);font-weight:400}
+.air-card .fl-note{margin:8px 0 0;font-size:11px;line-height:1.5;color:var(--ink-3)}
+body.air-on .maplibregl-marker{opacity:0!important;pointer-events:none!important}
+@media (max-width:1023px){.air-card .fl-note{display:none}.air-card .fl-chip{padding:2px 8px;font-size:11.5px}.air-card .fl-row{gap:5px;margin-top:7px}}
+@media (min-width:1024px){.air-card{width:min(360px,calc(100% - 32px))}}
 .rail-card .x{position:absolute;top:8px;right:8px;width:30px;height:30px}
 .rail-card .rk{display:flex;align-items:center;gap:7px;font-size:11.5px;letter-spacing:.06em;color:var(--ink-3);padding-right:30px}
 .rail-card .rk i{width:16px;height:5px;border-radius:3px;display:inline-block}
@@ -1168,6 +1179,7 @@ body.pure .pet-dock,body.pure .pet-bubble,body.pure .pet-chat{display:none!impor
     <button id="zNight" class="night-btn" aria-pressed="false" aria-label="夜间模式：深色地图，高楼和地标开灯" title="夜间模式"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 14.5A7.5 7.5 0 0 1 9.5 4.5a7.5 7.5 0 1 0 10 10z"/></svg></button>
     <button id="zRail" class="rail-btn" aria-pressed="true" aria-label="城际列车：大湾区城市之间的高铁、城际和动车（模拟）" title="城际列车"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4.5h10a3 3 0 0 1 3 3V14a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V7.5a3 3 0 0 1 3-3z"/><path d="M4 11h16M8.5 14h.01M15.5 14h.01M8 20.5l1.5-3.5M16 20.5l-1.5-3.5"/></svg></button>
     <button id="zShip" class="ship-btn" aria-pressed="true" aria-label="江海船只：客船、渡轮、珠江游船和货轮（模拟）" title="江海船只"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 13.5h17l-2.3 4.3H5.8z"/><path d="M7 13.5V9.5h9.5v4"/><path d="M10 9.5V6.5h3.5v3"/><path d="M3 21c1.5 0 1.5-.9 3-.9s1.5.9 3 .9 1.5-.9 3-.9 1.5.9 3 .9 1.5-.9 3-.9 1.5.9 3 .9"/></svg></button>
+    <button id="zFlight" class="flight-btn" aria-pressed="false" aria-label="航线：从大湾区各机场飞往世界各地的航线（示意）" title="航线"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg></button>
     <button id="zRoute" class="route-btn" aria-pressed="false" aria-label="线路：显示火车线路和船舶航线" title="显示线路"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h7.5a3 3 0 0 0 0-6h-7a3 3 0 0 1 0-6H16"/></svg></button>
     <button id="zHome" aria-label="回到广州全景"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 5l8 6.5"/><path d="M6.5 10v9h11v-9"/></svg></button>
   </div>
@@ -1192,6 +1204,7 @@ body.pure .pet-dock,body.pure .pet-bubble,body.pure .pet-chat{display:none!impor
 <article class="detail" id="detail" hidden aria-live="polite"></article>
 <section class="rail-card" id="railCard" hidden aria-label="城际列车"></section>
 <section class="rail-card" id="shipCard" hidden aria-label="江海船只"></section>
+<section class="rail-card air-card" id="flightCard" hidden aria-label="航线"></section>
 
 <section class="sky" id="sky" hidden aria-label="地球之外：沉浸式星空">
   <canvas id="skyCanvas" tabindex="0" aria-label="星空：拖动环顾四周，滚轮缩放，点击天体查看信息"></canvas>
@@ -4785,6 +4798,7 @@ function initMap() {
   Rail.init();
   Ships.init();
   Routes.init();
+  Flights.init();
   map.on('move', syncAltitude);
   map.on('moveend', () => Weather.show());
   map.on('mousemove', (e) => { state.cursor = e.lngLat; syncAltitude(); });
@@ -7758,6 +7772,195 @@ const Routes = {
     for (const id of this.SHIP) if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', this.on && Ships.enabled ? 'visible' : 'none');
   },
 };
+
+/* ===================================================================== 航空：大湾区各机场飞往世界各地的航线（示意）
+   七座机场（白云、宝安、赤鱲角、澳门、金湾、平潭、沙堤）飞往国内外的代表性航线，画成大圆航线；
+   班次按航线远近给一个大致的每日架次，起飞时间是示意的（不是真实时刻表），飞行时间按距离估算。
+   点开飞行界面后地图缩到全世界，航线上一个个小亮点就是正在飞的航班（不画飞机），可以加速看 */
+const AIRPORTS = [
+  { id: 'CAN', n: '广州白云', p: [113.299, 23.392], c: '#2563EB', k: 1 },
+  { id: 'SZX', n: '深圳宝安', p: [113.811, 22.639], c: '#0EA5A4', k: 1 },
+  { id: 'HKG', n: '香港', p: [113.915, 22.308], c: '#E0435A', k: 1.15 },
+  { id: 'MFM', n: '澳门', p: [113.592, 22.150], c: '#16A34A', k: 0.5 },
+  { id: 'ZUH', n: '珠海金湾', p: [113.376, 22.006], c: '#F59E0B', k: 0.55 },
+  { id: 'HUZ', n: '惠州平潭', p: [114.600, 23.050], c: '#8B5CF6', k: 0.35 },
+  { id: 'FUO', n: '佛山沙堤', p: [113.070, 23.083], c: '#64748B', k: 0.3 },
+];
+const AIR_DEST = {
+  北京: [116.41, 39.90], 上海: [121.47, 31.23], 成都: [104.07, 30.57], 重庆: [106.55, 29.56], 杭州: [120.16, 30.27], 西安: [108.94, 34.34], 昆明: [102.83, 24.88],
+  武汉: [114.31, 30.59], 南京: [118.80, 32.06], 青岛: [120.38, 36.07], 大连: [121.61, 38.91], 沈阳: [123.43, 41.80], 哈尔滨: [126.53, 45.80], 乌鲁木齐: [87.62, 43.83],
+  拉萨: [91.11, 29.65], 海口: [110.32, 20.03], 三亚: [109.51, 18.25], 厦门: [118.09, 24.48], 贵阳: [106.63, 26.65], 郑州: [113.63, 34.75], 天津: [117.20, 39.08],
+  兰州: [103.83, 36.06], 台北: [121.57, 25.03],
+  新加坡: [103.82, 1.35], 吉隆坡: [101.69, 3.14], 曼谷: [100.50, 13.75], 东京: [139.69, 35.69], 大阪: [135.50, 34.69], 首尔: [126.98, 37.57], 马尼拉: [120.98, 14.60],
+  河内: [105.85, 21.03], 胡志明市: [106.70, 10.78], 雅加达: [106.85, -6.21], 巴厘岛: [115.17, -8.65], 金边: [104.92, 11.56], 德里: [77.21, 28.61], 加德满都: [85.32, 27.72],
+  迪拜: [55.27, 25.20], 多哈: [51.53, 25.29], 伊斯坦布尔: [28.98, 41.01],
+  伦敦: [-0.13, 51.51], 巴黎: [2.35, 48.86], 法兰克福: [8.68, 50.11], 阿姆斯特丹: [4.90, 52.37], 莫斯科: [37.62, 55.76], 罗马: [12.50, 41.90], 苏黎世: [8.54, 47.38], 马德里: [-3.70, 40.42],
+  内罗毕: [36.82, -1.29], 亚的斯亚贝巴: [38.75, 9.03], 约翰内斯堡: [28.05, -26.20],
+  悉尼: [151.21, -33.87], 墨尔本: [144.96, -37.81], 奥克兰: [174.76, -36.85], 珀斯: [115.86, -31.95], 布里斯班: [153.03, -27.47],
+  洛杉矶: [-118.24, 34.05], 旧金山: [-122.42, 37.77], 纽约: [-74.01, 40.71], 温哥华: [-123.12, 49.28], 多伦多: [-79.38, 43.65], 芝加哥: [-87.63, 41.88], 波士顿: [-71.06, 42.36],
+  达拉斯: [-96.80, 32.78], 墨西哥城: [-99.13, 19.43],
+};
+const AIR_CN = new Set(['北京', '上海', '成都', '重庆', '杭州', '西安', '昆明', '武汉', '南京', '青岛', '大连', '沈阳', '哈尔滨', '乌鲁木齐', '拉萨', '海口', '三亚', '厦门', '贵阳', '郑州', '天津', '兰州']);
+const AIR_BIG = new Set(['北京', '上海', '成都', '重庆', '杭州', '西安']);
+const AIR_ROUTES = {
+  CAN: '北京 上海 成都 重庆 杭州 西安 昆明 武汉 南京 青岛 哈尔滨 沈阳 大连 乌鲁木齐 拉萨 海口 三亚 厦门 贵阳 郑州 天津 兰州 新加坡 吉隆坡 曼谷 东京 大阪 首尔 马尼拉 河内 胡志明市 雅加达 金边 德里 加德满都 迪拜 多哈 伊斯坦布尔 伦敦 巴黎 法兰克福 阿姆斯特丹 莫斯科 罗马 内罗毕 亚的斯亚贝巴 悉尼 墨尔本 奥克兰 珀斯 布里斯班 洛杉矶 旧金山 纽约 温哥华 多伦多',
+  SZX: '北京 上海 成都 重庆 杭州 西安 昆明 武汉 南京 青岛 大连 哈尔滨 沈阳 乌鲁木齐 海口 三亚 厦门 贵阳 郑州 天津 兰州 新加坡 吉隆坡 曼谷 东京 大阪 首尔 河内 胡志明市 雅加达 金边 迪拜 法兰克福 伦敦 悉尼 墨西哥城',
+  HKG: '北京 上海 成都 杭州 厦门 台北 新加坡 吉隆坡 曼谷 东京 大阪 首尔 马尼拉 河内 胡志明市 雅加达 巴厘岛 德里 加德满都 迪拜 多哈 伊斯坦布尔 伦敦 巴黎 法兰克福 阿姆斯特丹 苏黎世 马德里 罗马 约翰内斯堡 悉尼 墨尔本 奥克兰 珀斯 布里斯班 洛杉矶 旧金山 纽约 温哥华 多伦多 芝加哥 波士顿 达拉斯',
+  MFM: '北京 上海 杭州 南京 台北 新加坡 吉隆坡 曼谷 东京 大阪 首尔 马尼拉 河内 胡志明市 金边',
+  ZUH: '北京 上海 成都 重庆 杭州 西安 武汉 南京 哈尔滨 沈阳 乌鲁木齐 海口 贵阳 郑州 天津 兰州',
+  HUZ: '北京 上海 成都 重庆 杭州 武汉 南京 西安',
+  FUO: '北京 上海 成都 重庆',
+};
+const Flights = {
+  on: false, built: false, speed: 600, base: 0, t0: 0, raf: 0, last: 0, lastUi: 0, sel: null, filter: 'all', saved: null, routes: [], live: 0,
+  init() {
+    const b = $('#zFlight'); if (!b) return;
+    b.setAttribute('aria-pressed', 'false');
+    b.addEventListener('click', () => this.toggle());
+    document.addEventListener('visibilitychange', () => { if (this.on && !document.hidden) this.loop(); });
+  },
+  // the routes: great-circle arcs (longitudes kept continuous across the date line), distance, time aloft, flights a day, departure times
+  prep() {
+    const R = Math.PI / 180, km = (a, b) => { const s = Math.sin((b[1] - a[1]) * R / 2) ** 2 + Math.cos(a[1] * R) * Math.cos(b[1] * R) * Math.sin((b[0] - a[0]) * R / 2) ** 2; return 12742 * Math.asin(Math.sqrt(s)); };
+    const vec = ([lo, la]) => [Math.cos(la * R) * Math.cos(lo * R), Math.cos(la * R) * Math.sin(lo * R), Math.sin(la * R)];
+    for (const ap of AIRPORTS) for (const name of AIR_ROUTES[ap.id].split(' ')) {
+      const to = AIR_DEST[name]; if (!to) continue;
+      const A = vec(ap.p), B = vec(to), w = Math.acos(Math.min(1, A[0] * B[0] + A[1] * B[1] + A[2] * B[2]));
+      const at = (f) => { const s = Math.sin(w) || 1, a = Math.sin((1 - f) * w) / s, b = Math.sin(f * w) / s, x = a * A[0] + b * B[0], y = a * A[1] + b * B[1], z = a * A[2] + b * B[2]; return [Math.atan2(y, x) / R, Math.atan2(z, Math.hypot(x, y)) / R]; };
+      const n = Math.max(8, Math.round(w / R / 1.5)), pts = [];
+      for (let i = 0; i <= n; i++) { const p = at(i / n); if (pts.length) { const q = pts[pts.length - 1][0]; while (p[0] - q > 180) p[0] -= 360; while (p[0] - q < -180) p[0] += 360; } pts.push(p); }
+      const d = km(ap.p, to), cn = AIR_CN.has(name), long = d > 6000;
+      const f = Math.max(1, Math.round((cn ? (AIR_BIG.has(name) ? 10 : 5) * (ap.id === 'HKG' ? 0.7 : 1) : long ? 1.5 : 4) * ap.k));
+      const dur = (d / 840 + 0.6) * 3600, id = ap.id + '-' + name, deps = [];
+      for (let dir = 0; dir < 2; dir++) for (let k = 0; k < f; k++) { const h = (hashStr(id + dir + k) % 1000) / 1000; deps.push([dir, long ? ((k + h) / f) * 86400 : 23400 + ((k + h) / f) * 61200]); }
+      this.routes.push({ id, ap, name, to, pts, at, d, dur, f, deps, endLon: pts[pts.length - 1][0] });
+    }
+  },
+  build() {
+    if (this.built) return; this.built = true; this.prep();
+    const fc = (features) => ({ type: 'FeatureCollection', features });
+    map.addSource('air-routes', { type: 'geojson', data: fc(this.routes.map((r) => ({ type: 'Feature', properties: { id: r.id, a: r.ap.id, c: r.ap.c }, geometry: { type: 'LineString', coordinates: r.pts } }))) });
+    map.addSource('air-trail', { type: 'geojson', data: fc([]), lineMetrics: true });
+    map.addSource('air-fly', { type: 'geojson', data: fc([]) });
+    map.addSource('air-pts', { type: 'geojson', data: fc([]) });
+    const before = map.getLayer('w-clabel') ? 'w-clabel' : undefined;
+    map.addLayer({ id: 'air-route', type: 'line', source: 'air-routes', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': ['get', 'c'], 'line-width': ['interpolate', ['linear'], ['zoom'], 1, 0.7, 4, 1.1, 7, 1.6], 'line-opacity': 0.42 } }, before);
+    map.addLayer({ id: 'air-route-sel', type: 'line', source: 'air-routes', filter: ['==', ['get', 'id'], ''], layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': ['get', 'c'], 'line-width': ['interpolate', ['linear'], ['zoom'], 1, 2, 6, 3.2], 'line-opacity': 0.95 } }, before);
+    map.addLayer({ id: 'air-route-hit', type: 'line', source: 'air-routes', paint: { 'line-color': '#000', 'line-width': 10, 'line-opacity': 0 } }, before);
+    map.addLayer({ id: 'air-trail', type: 'line', source: 'air-trail', layout: { 'line-cap': 'round' }, paint: { 'line-width': ['interpolate', ['linear'], ['zoom'], 1, 1.6, 6, 2.6], 'line-gradient': ['interpolate', ['linear'], ['line-progress'], 0, 'rgba(255,255,255,0)', 1, 'rgba(255,255,255,0.9)'] } });
+    map.addLayer({ id: 'air-glow', type: 'circle', source: 'air-fly', paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 1, 4.5, 6, 8], 'circle-color': ['get', 'c'], 'circle-blur': 1, 'circle-opacity': 0.55 } });
+    map.addLayer({ id: 'air-dot', type: 'circle', source: 'air-fly', paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 1, 1.8, 6, 3.2], 'circle-color': '#FFFFFF', 'circle-stroke-color': ['get', 'c'], 'circle-stroke-width': 1.2 } });
+    map.addLayer({ id: 'air-dest', type: 'circle', source: 'air-pts', filter: ['==', ['get', 'k'], 'dest'], paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 1, 1.6, 6, 3], 'circle-color': '#FFFFFF', 'circle-stroke-color': '#44597F', 'circle-stroke-width': 1 } });
+    map.addLayer({ id: 'air-port', type: 'circle', source: 'air-pts', filter: ['==', ['get', 'k'], 'port'], paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 1, 2.6, 6, 4.5, 9, 6], 'circle-color': ['get', 'c'], 'circle-stroke-color': '#FFFFFF', 'circle-stroke-width': 1.5 } });
+    map.addLayer({ id: 'air-label', type: 'symbol', source: 'air-pts', layout: { 'text-field': ['get', 'n'], 'text-font': FONT, 'text-size': ['interpolate', ['linear'], ['zoom'], 1, 10.5, 6, 13], 'text-offset': [0, 0.85], 'text-anchor': 'top', 'text-padding': 3, 'symbol-sort-key': ['get', 'r'] },
+      paint: { 'text-color': '#1C3463', 'text-halo-color': 'rgba(255,255,255,.92)', 'text-halo-width': 1.6 } });
+    if (Night.on) Night.set(true, false);   // the new layers take their night colours too
+    // one click handler: a flight (a lit dot) wins over the route lines under it
+    map.on('click', (e) => {
+      if (!this.on) return;
+      const f = map.queryRenderedFeatures(e.point, { layers: ['air-dot', 'air-glow'] })[0] || map.queryRenderedFeatures(e.point, { layers: ['air-route-hit'] })[0];
+      this.select(f ? f.properties.r || f.properties.id : null);
+    });
+    for (const id of ['air-dot', 'air-route-hit']) { map.on('mouseenter', id, () => { map.getCanvas().style.cursor = 'pointer'; }); map.on('mouseleave', id, () => { map.getCanvas().style.cursor = ''; }); }
+    this.points();
+  },
+  LAYERS: ['air-route', 'air-route-sel', 'air-route-hit', 'air-trail', 'air-glow', 'air-dot', 'air-dest', 'air-port', 'air-label'],
+  shown() { return this.routes.filter((r) => this.filter === 'all' || r.ap.id === this.filter); },
+  points() {   // the airports, and the cities the shown routes reach (at the arc's end, so they sit on the right copy of the world)
+    const f = [], seen = new Set();
+    for (const r of this.shown()) { if (seen.has(r.name)) continue; seen.add(r.name); f.push({ type: 'Feature', properties: { k: 'dest', n: r.name, r: 2 }, geometry: { type: 'Point', coordinates: r.pts[r.pts.length - 1] } }); }
+    for (const a of AIRPORTS) if (this.filter === 'all' || a.id === this.filter) f.push({ type: 'Feature', properties: { k: 'port', n: this.filter === 'all' ? (a.id === 'HKG' ? '粤港澳大湾区' : '') : a.n, c: a.c, r: 0 }, geometry: { type: 'Point', coordinates: a.p } });
+    map.getSource('air-pts').setData({ type: 'FeatureCollection', features: f });
+    const flt = this.filter === 'all' ? null : ['==', ['get', 'a'], this.filter];
+    for (const id of ['air-route', 'air-route-hit']) map.setFilter(id, flt);
+  },
+  toggle() { if (this.on) this.exit(); else this.enter(); },
+  enter() {
+    if (!map) return;
+    this.on = true; $('#zFlight').setAttribute('aria-pressed', 'true'); document.body.classList.add('air-on');
+    if (typeof closeDetail === 'function' && !$('#detail').hidden) closeDetail();
+    this.saved = { center: map.getCenter(), zoom: map.getZoom(), pitch: map.getPitch(), bearing: map.getBearing() };
+    this.build(); for (const id of this.LAYERS) map.setLayoutProperty(id, 'visibility', 'visible');
+    map.setRenderWorldCopies(true); map.setMinZoom(0.6);
+    this.base = this.realSec(); this.t0 = performance.now();
+    map.flyTo({ center: mq.matches ? [114, -4] : [128, 18], zoom: mq.matches ? 0.8 : 1.3, pitch: 0, bearing: 0, duration: reduceMotion ? 0 : 2600, essential: true });
+    this.card(true); this.loop();
+  },
+  exit() {
+    this.on = false; $('#zFlight').setAttribute('aria-pressed', 'false'); document.body.classList.remove('air-on');
+    cancelAnimationFrame(this.raf); this.raf = 0; this.sel = null;
+    for (const id of this.LAYERS) if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', 'none');
+    $('#flightCard').hidden = true;
+    const s = this.saved; this.saved = null;
+    const done = () => { map.setRenderWorldCopies(false); map.setMinZoom(1.6); };
+    if (s) { const c = s.center; map.flyTo({ center: [((c.lng + 540) % 360) - 180, c.lat], zoom: s.zoom, pitch: s.pitch, bearing: s.bearing, duration: reduceMotion ? 0 : 2200, essential: true }); map.once('moveend', done); } else done();
+  },
+  realSec() { const d = new Date(), s = d.getUTCHours() * 3600 + d.getUTCMinutes() * 60 + d.getUTCSeconds() + 8 * 3600; return s % 86400; },   // 广州时间
+  now() { return (this.base + ((performance.now() - this.t0) / 1000) * this.speed) % 86400; },
+  setSpeed(v) { this.base = v === 1 ? this.realSec() : this.now(); this.t0 = performance.now(); this.speed = v; this.card(); },   // 实时：回到真实的广州时间
+  // the flights in the air at moment T: each departure today or yesterday whose time aloft covers T
+  aloft(T) {
+    const out = [];
+    for (const r of this.shown()) for (const [dir, dep] of r.deps) for (const day of [0, -86400]) {
+      const t = T - (dep + day); if (t < 0 || t > r.dur) continue;
+      out.push({ r, dir, f: t / r.dur, dep: dep + day });
+    }
+    return out;
+  },
+  pos(r, f) { const p = r.at(f), q0 = r.pts[0][0]; let lo = p[0]; const ref = q0 + (r.endLon - q0) * f; while (lo - ref > 180) lo -= 360; while (lo - ref < -180) lo += 360; return [lo, p[1]]; },
+  loop() {
+    cancelAnimationFrame(this.raf);
+    const step = (ts) => {
+      if (!this.on || document.hidden) { this.raf = 0; return; }
+      this.raf = requestAnimationFrame(step);
+      if (ts - this.last < 66) return; this.last = ts;
+      const T = this.now(), fl = this.aloft(T), dots = [], trails = [];
+      for (const o of fl) {
+        const g = (f) => this.pos(o.r, o.dir ? 1 - f : f), tail = Math.min(o.f, 0.035 * Math.max(1, 6000 / o.r.d) ** 0.35);
+        dots.push({ type: 'Feature', properties: { c: o.r.ap.c, r: o.r.id, a: o.r.ap.id }, geometry: { type: 'Point', coordinates: g(o.f) } });
+        if (tail > 0.002) { const c = []; for (let i = 0; i <= 6; i++) c.push(g(o.f - tail + (tail * i) / 6)); trails.push({ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: c } }); }
+      }
+      this.live = fl.length;
+      map.getSource('air-fly').setData({ type: 'FeatureCollection', features: dots });
+      map.getSource('air-trail').setData({ type: 'FeatureCollection', features: trails });
+      if (ts - this.lastUi > 400) { this.lastUi = ts; this.card(); }
+    };
+    this.raf = requestAnimationFrame(step);
+  },
+  select(id) {
+    this.sel = this.routes.find((r) => r.id === id) || null;
+    map.setFilter('air-route-sel', ['==', ['get', 'id'], this.sel ? this.sel.id : '']);
+    this.card();
+  },
+  hm(s) { s = ((s % 86400) + 86400) % 86400; return `${String(Math.floor(s / 3600)).padStart(2, '0')}:${String(Math.floor((s % 3600) / 60)).padStart(2, '0')}`; },
+  dur(s) { const m = Math.round(s / 60); return m >= 60 ? `${Math.floor(m / 60)} 小时${m % 60 ? ` ${m % 60} 分` : ''}` : `${m} 分钟`; },
+  card(first) {
+    const box = $('#flightCard'); if (!this.on) { box.hidden = true; return; }
+    if (first || !box.dataset.ready) {
+      box.dataset.ready = '1';
+      box.innerHTML = `<button class="icon-btn x" data-x aria-label="关闭飞行界面">${ICONS.close}</button>
+        <div class="rk"><i style="background:linear-gradient(90deg,#2563EB,#E0435A)"></i>航空 · 示意航线</div><h3>从大湾区飞往世界</h3><p class="rnow" data-now></p>
+        <div class="fl-row" data-ap>${[['all', '全部', '#8194B8'], ...AIRPORTS.map((a) => [a.id, a.n, a.c])].map(([k, n, c]) => `<button type="button" class="fl-chip" data-ap="${k}" aria-pressed="${this.filter === k}"><i style="background:${c}"></i>${n}</button>`).join('')}</div>
+        <div class="fl-row fl-speed" data-sp>${[[1, '实时'], [100, '100×'], [600, '600×']].map(([v, n]) => `<button type="button" class="fl-chip" data-sp="${v}" aria-pressed="${this.speed === v}">${n}</button>`).join('')}</div>
+        <div class="fl-sel" data-sel></div><p class="fl-note">航线和班次是示意，不是实时航班；点一条航线或一个亮点看详情。</p>`;
+      box.querySelector('[data-x]').addEventListener('click', () => this.exit());
+      box.querySelectorAll('[data-ap]').forEach((b) => b.addEventListener('click', () => { if (!b.dataset.ap || b.tagName !== 'BUTTON') return; this.filter = b.dataset.ap; this.sel = null; map.setFilter('air-route-sel', ['==', ['get', 'id'], '']); this.points(); box.querySelectorAll('button[data-ap]').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); this.card(); }));
+      box.querySelectorAll('button[data-sp]').forEach((b) => b.addEventListener('click', () => { this.setSpeed(+b.dataset.sp); box.querySelectorAll('button[data-sp]').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); }));
+      box.hidden = false;
+    }
+    const T = this.now(), rs = this.shown();
+    box.querySelector('[data-now]').textContent = `广州时间 ${this.hm(T)}${this.speed > 1 ? `（${this.speed} 倍速）` : ''} · ${rs.length} 条航线 · 空中约 ${this.live} 班`;
+    const sel = box.querySelector('[data-sel]'), r = this.sel;
+    let html = '';
+    if (r) {
+      const up = this.aloft(T).filter((o) => o.r === r).length;
+      const next = r.deps.filter(([dir]) => dir === 0).map(([, d]) => d).sort((a, b) => ((a - T + 86400) % 86400) - ((b - T + 86400) % 86400))[0];
+      html = `<div class="rk"><i style="background:${r.ap.c}"></i>${r.ap.n}</div><h4 class="sroute">${esc(r.ap.n)}<span>⇄</span>${esc(r.name)}</h4>
+        <table><tr><td>距离</td><td>约 ${Math.round(r.d / 10) * 10} 公里</td></tr><tr><td>飞行时间</td><td>约 ${this.dur(r.dur)}</td></tr><tr><td>每天</td><td>往返各约 ${r.f} 班</td></tr><tr><td>下一班出发</td><td>${this.hm(next)}</td></tr><tr><td>正在飞</td><td>${up} 班</td></tr></table>`;
+    }
+    if (sel._h !== html) { sel._h = html; sel.innerHTML = html; }
+  },
+};
 // the boats as they really are: length and beam (m), height of the deck above the water (fb), hull and deck colours
 const VESSELS = {
   TJ: { name: '港澳高速客船', len: 47, beam: 12, fb: 2.6, kind: 'cat', hull: '#FFFFFF', deck: '#E9EDF2', s1: '#D62E3A', s2: '#22407F' },
@@ -8250,6 +8453,7 @@ const NIGHT_PAINT = [
   ['poi-label', 'text-color', '#BCD3FB'], ['bridge-label', 'text-color', '#9FB2D4'], ['area-label', 'text-color', '#8FB2F5'],
   ['dist-label', 'text-color', '#7AA7FF'], ['cover-label', 'text-color', '#7AA7FF'], ['city-label', 'text-color', '#C3D2EC'], ['city-label', 'text-halo-color', NIGHT_HALO],
   ['veil', 'fill-color', '#0A1426'], ['water-fix', 'fill-color', '#050D1B'],
+  ['air-label', 'text-color', '#C3D2EC'], ['air-dest', 'circle-stroke-color', '#8FA3C6'],
   ['w-sea', 'fill-color', '#050D1B'], ['w-land', 'fill-color', '#0A1426'], ['w-veil', 'fill-color', '#0A1426'], ['w-lake', 'fill-color', '#050D1B'], ['w-frame', 'fill-color', '#0A1426'],
   ['w-clabel', 'text-color', '#8FA3C6'], ['w-clabel', 'text-halo-color', NIGHT_HALO], ['w-plabel', 'text-color', '#7AA7FF'], ['w-plabel', 'text-halo-color', NIGHT_HALO], ['w-city', 'text-color', '#C3D2EC'], ['w-city', 'text-halo-color', NIGHT_HALO],
   ['shp-band', 'fill-extrusion-color', ['case', ['==', ['get', 'win'], 1], '#FFD58A', ['==', ['get', 'glow'], 1], ['get', 'gc'], ['get', 'color']]], ['shp-glow', 'circle-opacity', 0.5], ['icr-sel-st', 'circle-color', '#0A1426'], ['icr-sel-st-label', 'text-color', '#C3D2EC'], ['port-cargo', 'text-color', '#BCD3FB'], ['port-pax', 'text-color', '#9DB8E8'], ['shp-pier', 'circle-color', '#0A1426'], ['shp-pier-label', 'text-color', '#9DB8E8'],
