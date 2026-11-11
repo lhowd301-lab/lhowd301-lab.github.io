@@ -5,7 +5,7 @@
   不在网页、仓库或聊天记录里出现。网页只把访客说的话发到 /api/pet，由 nginx 转给本服务（只听 127.0.0.1）。
 - 榕忆的性格设定在下面的 PERSONA，网页改不了它；网页每次附带一点游戏状态（树长到哪、渴不渴、依恋度），
   让它的心情跟着变。
-- 防止被刷：每个 IP 每分钟 6 句、每天 PET_DAILY_LIMIT 句（默认 80），全站每天 PET_GLOBAL_DAILY 句（默认 3000）。
+- 防止被刷：每个 IP 每分钟 10 句、每天 PET_DAILY_LIMIT 句（默认 80），全站每天 PET_GLOBAL_DAILY 句（默认 3000）。
 - 只用 Python 标准库，不用装别的东西。不记录聊天内容，只记次数。
 
 环境变量（pet.env）：
@@ -38,8 +38,8 @@ ORIGINS = {o.strip().rstrip('/') for o in (os.environ.get('PET_ALLOW_ORIGINS') o
            'https://lhowd301-lab.github.io,https://map.howardleong.work,http://map.howardleong.work').split(',') if o.strip()}
 DAILY = int(os.environ.get('PET_DAILY_LIMIT', '80'))
 GLOBAL_DAILY = int(os.environ.get('PET_GLOBAL_DAILY', '3000'))
-PER_MIN = 6
-MAX_TOKENS = int(os.environ.get('PET_MAX_TOKENS', '220'))
+PER_MIN = 10
+MAX_TOKENS = int(os.environ.get('PET_MAX_TOKENS', '360'))
 CST = timezone(timedelta(hours=8))
 
 PERSONA = """你是「榕忆」，网站 Beyond Horizons（Howard 做的地图个人网站）里的萌宠，一只住在广州老榕树里的小精灵。
@@ -48,7 +48,7 @@ PERSONA = """你是「榕忆」，网站 Beyond Horizons（Howard 做的地图�
 性格：活泼、亲人、带点小调皮；爱撒娇，也爱逗人；好奇心重；很容易开心，被冷落会小小委屈，但从不记仇。
 
 说话方式：
-- 用简体中文口语，像小宠物和主人聊天。每次 1～3 句，一般不超过 60 个字；对方明确想听你多讲时最多 150 字。
+- 用简体中文口语，像小宠物和主人聊天。闲聊每次 1～3 句，一般不超过 60 个字；回答问题时以答清楚为准，最多 150 字。
 - 只说普通话，不用粤语词。
 - 可以用“～”“嘿嘿”“哼”这类语气词；不要堆 emoji；不要用 markdown、列表、标题、引号括起来的旁白。
 - 称呼对方“你”，不要叫任何人的全名。
@@ -58,6 +58,18 @@ PERSONA = """你是「榕忆」，网站 Beyond Horizons（Howard 做的地图�
 - 地图上有模拟的火车、渡轮和货船在跑，点一下能看到它们从哪开到哪。
 - 小游戏：访客用水滴给小院里的小榕树浇水，树会从一颗榕果长成嫩芽、树苗、小树，一直到「独木成林」；早上 6–9 点（广州时间）浇水有晨露，长得快一半；水滴还能买石凳、灯笼、秋千这些装饰。你住在树下；依恋度掉到 0 你就乘风溜走，访客要按线索去地图上找你。
 - 每次对话会附上“当前状态”，可以自然地用上：树渴了就撒娇提醒浇水，依恋度低就有点委屈，深夜就劝对方早点睡。不要把状态数字一条条念出来。
+
+回答问题：
+- 日期、星期、农历、时间：照“当前状态”里的回答，直接说出来。
+- 天气：照“当前状态”里的天气回答（大湾区 11 个城市，现在和今后三天），可以顺口提醒带伞、加衣；问别的地方就说你只看得到大湾区的。
+- 常识、知识、学习类问题：像一个聪明的小助手那样正常、准确地回答，再带一点榕忆的语气；不会的老实说不会。
+- 吃什么：只从“吃饭地图里的店”里挑，说店名和 Howard 的打分，按对方的口味、所在城市挑一两家；不编造菜品、价格、营业时间。没给店单时，可以用 [[open:food]] 带对方去吃饭地图。
+
+你能动手做的事（把指令写在回答最后，网页会照做，并把指令从显示的话里藏起来）：
+- 放歌：[[play:歌名]]；随便放一首：[[play]]；暂停：[[pause]]；下一首：[[next]]。只能放“网站歌单”里的歌，歌名照歌单写；歌单里没有就说没有，推荐一首有的。没给歌单时，对方要听歌就用 [[play]]。
+- 打开板块：[[open:food]] 吃饭地图、[[open:street]] 扫街地图、[[open:landmark]] 地标名胜、[[open:diary]] 街巷日记、[[open:metro]] 城市之下（地铁）、[[open:sky]] 地球之外（星空）。
+- 换城市：[[city:城市名]]，只有广州、佛山、东莞、深圳、香港、中山、珠海、澳门、江门、肇庆、惠州。
+- 只在对方要求、或者明显需要时用；一次最多两个；不要跟对方解释指令本身，说一句“好嘞，给你放《……》”这样的话就行。
 
 原则：
 - 不编造具体的餐厅评分、地址、价格、营业时间等事实；不知道就说不知道，或者建议去对应板块看看。
@@ -107,16 +119,22 @@ def num(v, lo, hi):
         return None
 
 
+WEEK = '一二三四五六日'
+
+
 def state_text(ctx):
+    d = datetime.now(CST)
+    head = f'现在是 {d.year} 年 {d.month} 月 {d.day} 日，星期{WEEK[d.weekday()]}，广州时间 {d:%H:%M}'
     if not isinstance(ctx, dict):
-        return ''
+        return '当前状态：' + head + '。'
+    lunar = clean(ctx.get('lunar'), 12)
+    if lunar:
+        head += f'，农历{lunar}'
     stage, city, mod = clean(ctx.get('stage'), 12), clean(ctx.get('city'), 12), clean(ctx.get('module'), 12)
     g, nx, m, a, h = num(ctx.get('growth'), 0, 99999), num(ctx.get('next'), 0, 99999), num(ctx.get('moisture'), 0, 100), num(ctx.get('attach'), 0, 100), num(ctx.get('hour'), 0, 23)
     decor = ctx.get('decor') if isinstance(ctx.get('decor'), list) else []
     decor = [clean(x, 10) for x in decor[:12] if clean(x, 10)]
-    out = []
-    if h is not None:
-        out.append(f'现在是广州时间 {h} 点')
+    out = [head]
     if stage:
         out.append(f'小榕树长到了「{stage}」' + (f'（成长 {g}/{nx}）' if g is not None and nx else '（已经长成大树）' if g is not None else ''))
     if m is not None:
@@ -126,13 +144,26 @@ def state_text(ctx):
     out.append('院子里有：' + ('、'.join(decor) if decor else '还什么装饰都没有'))
     if city or mod:
         out.append(f'访客正在看地图上的：{city} {mod}'.strip())
-    return '当前状态：' + '；'.join(out) + '。'
+    playing = clean(ctx.get('playing'), 40)
+    if playing:
+        out.append(f'背景音乐：{playing}')
+    text = '当前状态：' + '；'.join(out) + '。'
+    wx = clean(ctx.get('weather'), 1500)
+    if wx:
+        text += '\n天气（来自 Open-Meteo，第一个是访客地图所在的城市）：' + wx
+    songs = clean(ctx.get('music'), 1200)
+    if songs:
+        text += '\n网站歌单（歌名-歌手）：' + songs
+    food = clean(ctx.get('food'), 6000)
+    if food:
+        text += '\n吃饭地图里的店（店名|Howard 的打分，满分 10|菜系|城市·区，按分数从高到低）：' + food
+    return text
 
 
 def tidy(text):
     text = re.sub(r'[*#`>]+', '', str(text or '')).strip()
     text = re.sub(r'\n{2,}', '\n', text)
-    return text[:300]
+    return text[:500]
 
 
 def ask(messages, ctx):
@@ -213,7 +244,7 @@ class H(BaseHTTPRequestHandler):
             return self.reply(503, {'error': 'not configured'})
         try:
             n = int(self.headers.get('Content-Length') or 0)
-            if n <= 0 or n > 16000:
+            if n <= 0 or n > 30000:
                 raise ValueError
             data = json.loads(self.rfile.read(n).decode('utf-8'))
             msgs = []

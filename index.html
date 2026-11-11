@@ -5146,11 +5146,12 @@ const Weather = {
     const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 8000);
     try {
       const u = 'https://api.open-meteo.com/v1/forecast?latitude=' + WX_CITIES.map((c) => c[1]).join(',') + '&longitude=' + WX_CITIES.map((c) => c[2]).join(',') +
-        '&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,is_day,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min&timezone=Asia%2FShanghai&forecast_days=1';
+        '&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,is_day,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max&timezone=Asia%2FShanghai&forecast_days=3';
       const r = await fetch(u, { signal: ctl.signal, cache: 'no-store' });
       if (!r.ok) throw new Error('weather ' + r.status);
       const j = await r.json();
-      this.data = (Array.isArray(j) ? j : [j]).map((x, i) => ({ name: WX_CITIES[i][0], cur: x.current, lo: x.daily.temperature_2m_min[0], hi: x.daily.temperature_2m_max[0] }));
+      this.data = (Array.isArray(j) ? j : [j]).map((x, i) => ({ name: WX_CITIES[i][0], cur: x.current, lo: x.daily.temperature_2m_min[0], hi: x.daily.temperature_2m_max[0],
+        days: (x.daily.time || []).map((t, k) => ({ t, lo: x.daily.temperature_2m_min[k], hi: x.daily.temperature_2m_max[k], code: (x.daily.weather_code || [])[k], pp: (x.daily.precipitation_probability_max || [])[k] })) }));
       this.at = Date.now(); this.city = ''; this.show();
     } catch (e) { /* 拿不到就保留上一次的（或常年平均），下次再试 */ } finally { clearTimeout(t); }
   },
@@ -8327,7 +8328,7 @@ const Pet = {
     const t = this.now();
     if (this.s.status === 'home' && !document.hidden) {
       if (!this.chatAt) this.chatAt = t + (120 + Math.random() * 180) * 1000;
-      else if (t >= this.chatAt) { this.chatter(); this.chatAt = t + (200 + Math.random() * 240) * 1000; }
+      else if (t >= this.chatAt && !(PetChat.isOpen() && Date.now() - PetChat.lastSend < 180000)) { this.chatter(); this.chatAt = t + (200 + Math.random() * 240) * 1000; }   // no small talk in the middle of a chat
     }
     this.save(); this.updateDock(); if (this.isOpen()) this.renderStats();
   },
@@ -8619,7 +8620,9 @@ const Pet = {
    抓到以后点右下角的它：弹出一个小对话框。说的话发给网站自己的聊天服务（deploy/pet_api.py，在服务器上拿着 API key
    去问大模型，并给它榕忆的性格设定），回答按榕忆的口吻显示。页面里不放任何 key。
    连不上服务（claude.ai 上的预览、还没接好的 GitHub Pages）时，用几句本地的简单回答，并说明是“离线小脑袋”。
-   最近的对话存在访客自己的浏览器里（最多 30 条），每次只把最近 12 条发给服务 */
+   最近的对话存在访客自己的浏览器里（最多 30 条），每次只把最近 12 条发给服务。
+   它知道今天的日期和大湾区 11 个城市三天的天气（页面顶上那个天气），能看着歌单放歌、打开板块、换城市、从吃饭地图里推荐店：
+   回答里带 [[play:歌名]] [[pause]] [[next]] [[open:food]] [[city:深圳]] 这样的指令，页面照做，再把指令从显示的话里去掉 */
 const PetChat = {
   busy: false, offline: false, el: null, lastSend: 0,
   url() {
@@ -8669,10 +8672,69 @@ const PetChat = {
     el.querySelector('input').disabled = el.querySelector('button[type=submit]').disabled = this.busy;
     if (scroll) log.scrollTop = log.scrollHeight;
   },
+  KW: {
+    wx: /天气|下雨|下不下雨|雨伞|带伞|温度|气温|几度|多少度|冷不冷|热不热|冷吗|热吗|穿什么|晴|阴天|台风|潮湿|湿度|刮风|明天|后天/,
+    music: /歌|音乐|播放|来一首|放一首|放首|听|唱|暂停|别放|关掉|停一下|切歌|下一首|换一首|BGM/i,
+    food: /吃|饿|饭|餐|店|茶|咖啡|甜品|宵夜|夜宵|好吃|推荐|火锅|烧烤|日料|寿司|拉面|粥|面|粉|点心/,
+  },
+  recent() { return Pet.s.chat.filter((m) => m.r === 'u').slice(-2).map((m) => m.t).join(' '); },
+  wxText(all) {   // the weather the page already shows at the top: now, and three days
+    const W = Weather.data; if (!W) return '';
+    const days = ['今天', '明天', '后天'], one = (d) => {
+      const c = d.cur, [, now] = wxFromCode(c.weather_code, c.is_day);
+      const ds = (d.days || []).slice(0, 3).map((x, k) => `${days.at(k)}${x.code != null ? wxFromCode(x.code, 1).at(1) : ''}${Math.round(x.lo)}–${Math.round(x.hi)}°${x.pp != null ? `降雨${x.pp}%` : ''}`).join('，');
+      return `${d.name}现在${now}${Math.round(c.temperature_2m)}°体感${Math.round(c.apparent_temperature)}°湿度${Math.round(c.relative_humidity_2m)}%（${ds}）`;
+    };
+    const near = W[Weather.pick()] || W[0];
+    return all ? [near, ...W.filter((d) => d !== near)].map(one).join('；') : one(near);
+  },
+  songs() { return SITE.music.filter((m) => m.src || m.synth).map((m) => `${m.title}-${m.artist}`).join('；'); },
+  foods() {   // the food map, best first: name | score | cuisine | where
+    const cn = (id) => (SITE.cities.find((c) => c.id === (id || 'gz')) || {}).name || '';
+    return [...SITE.food].sort((a, b) => (b.score || 0) - (a.score || 0)).map((f) => `${f.name}|${f.score ?? '没打分'}|${f.cat}|${cn(f.city)}${f.area ? '·' + f.area : ''}`).join('；');
+  },
   ctx() {
     const st = Pet.stage(), T = Pet.s.tree, city = (SITE.cities.find((c) => c.id === state.city) || {}).name || '', mod = (MODULES.find((m) => m.id === state.module) || {}).name || '';
-    return { stage: Pet.STAGES[st.i].n, growth: Math.floor(T.g), next: st.next || 0, moisture: Math.round(T.m), attach: Math.round(Pet.s.attach), hour: Pet.gzHour(), city, module: mod,
-      decor: Pet.ITEMS.filter((i) => Pet.s.items[i.id]).map((i) => i.name) };
+    const talk = this.recent(), l = lunar(new Date()), now = SITE.music[Player.idx];
+    const c = { stage: Pet.STAGES[st.i].n, growth: Math.floor(T.g), next: st.next || 0, moisture: Math.round(T.m), attach: Math.round(Pet.s.attach), hour: Pet.gzHour(), city, module: mod,
+      decor: Pet.ITEMS.filter((i) => Pet.s.items[i.id]).map((i) => i.name), lunar: l ? l.month + l.day : '', weather: this.wxText(this.KW.wx.test(talk)),
+      playing: now ? `${Player.playing ? '正在放' : '暂停在'}${now.title}` : '没有在放歌' };
+    if (this.KW.music.test(talk)) c.music = this.songs();
+    if (this.KW.food.test(talk)) c.food = this.foods();
+    return c;
+  },
+  // ---- the things it can do: [[name:arg]] in a reply
+  act(text) {
+    const todo = [];
+    const shown = String(text).replace(/\[\[\s*(\w+)\s*(?:[:：]\s*([^\]]*?))?\s*\]\]/g, (_, n, a) => { todo.push([n.toLowerCase(), (a || '').trim()]); return ''; }).replace(/[ \t]+\n/g, '\n').trim();
+    if (todo.length) setTimeout(() => todo.slice(0, 2).forEach(([n, a]) => this.run(n, a)), 350);
+    return shown || (todo.length ? '好嘞～' : '');
+  },
+  findSong(q) {
+    const norm = (x) => String(x || '').replace(/[\s《》「」"'“”·・\-—]/g, '').toLowerCase(), n = norm(q), ok = (m) => m.src || m.synth;
+    if (!n) return -1;
+    let i = SITE.music.findIndex((m) => ok(m) && (norm(m.title) === n || n.includes(norm(m.title)) || norm(m.title).includes(n)));
+    if (i < 0) { const by = SITE.music.map((m, k) => k).filter((k) => ok(SITE.music.at(k)) && (n.includes(norm(SITE.music.at(k).artist)) || norm(SITE.music.at(k).artist).includes(n))); if (by.length) i = by.at(Math.floor(Math.random() * by.length)); }
+    return i;
+  },
+  run(n, a) {
+    if (n === 'play') {
+      let i = this.findSong(a);
+      if (i < 0 && !a && Player.idx >= 0 && !Player.playing) i = Player.idx;
+      if (i < 0) { const all = SITE.music.map((m, k) => k).filter((k) => SITE.music.at(k).src || SITE.music.at(k).synth); if (!all.length) return; i = all.at(Math.floor(Math.random() * all.length)); }
+      Player.play(i);
+    } else if (n === 'pause' || n === 'stop') Player.stop();
+    else if (n === 'next') Player.next();
+    else if (n === 'open') {
+      const id = { food: 'food', street: 'street', landmark: 'landmark', diary: 'diary', metro: 'metro', sky: 'sky' }[a.toLowerCase()];
+      if (!id) return;
+      if (id === 'sky' || id === 'metro') this.toggle(false);
+      setModule(id);
+    } else if (n === 'city') {
+      const c = SITE.cities.find((x) => x.ready && (x.name === a || a.includes(x.name) || x.en.toLowerCase() === a.toLowerCase()));
+      const b = c && document.querySelector(`#cityPanel .city-btn[data-city="${c.id}"]`);
+      if (b && state.city !== c.id) b.click();
+    }
   },
   async send(text) {
     text = String(text || '').trim().slice(0, 200);
@@ -8693,11 +8755,21 @@ const PetChat = {
       clearTimeout(to);
     }
     if (!reply) { this.offline = true; reply = this.local(text); }
-    this.busy = false; this.push('p', reply);
+    this.busy = false; this.push('p', this.act(reply));
     Pet.chatted(); if (this.isOpen()) { this.render(true); if (!matchMedia('(pointer: coarse)').matches) this.el.querySelector('input').focus({ preventScroll: true }); }
   },
   local(t) {   // a few canned answers in its voice, for when there's no chat service
     const st = Pet.stage(), T = Pet.s.tree, S = Pet.STAGES[st.i], pick = (a) => a[Math.floor(Math.random() * a.length)];
+    if (/几号|几月|日期|星期几|礼拜几|周几|几点|什么时候了|今天是/.test(t)) {
+      const d = new Date(Date.now() + GZ_OFF), l = lunar(new Date()), wk = '日一二三四五六'.at(d.getUTCDay());
+      return `今天是 ${d.getUTCFullYear()} 年 ${d.getUTCMonth() + 1} 月 ${d.getUTCDate()} 日，星期${wk}${l ? `，农历${l.month}${l.day}` : ''}，广州时间 ${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}～`;
+    }
+    if (this.KW.wx.test(t) && /天气|雨|温度|气温|度|冷|热|穿|伞|晴|阴/.test(t)) { const w = this.wxText(false); return w ? `${w.replace(/（/, '，').replace(/）$/, '')}。出门看着点哦～` : '我这里看不到实时天气…页面顶上有天气，你瞄一眼？'; }
+    if (/暂停|别放了|关掉音乐|停一下|不要放/.test(t)) return '好，先安静一下～[[pause]]';
+    if (/下一首|切歌|换一首/.test(t)) return '换一首！[[next]]';
+    if (this.KW.music.test(t) && /放|播|来一首|听|唱/.test(t)) { const i = this.findSong(t.replace(/放|播放|来一首|听|唱|歌|一下|首|给我|我想|吧|呀|嘛/g, '')); const m = SITE.music.at(i); return i >= 0 ? `来～《${m.title}》！[[play:${m.title}]]` : '给你随便挑一首～[[play]]'; }
+    const mods = [[/吃饭地图|美食地图/, 'food'], [/扫街/, 'street'], [/地标/, 'landmark'], [/日记/, 'diary'], [/地铁|城市之下/, 'metro'], [/星空|地球之外/, 'sky']];
+    if (/打开|去|看看|带我/.test(t)) for (const [re, id] of mods) if (re.test(t)) return `走，带你去～[[open:${id}]]`;
     if (/树|浇|水|榕|长|种/.test(t)) return T.m < 20 ? `小榕树口好渴…它现在是「${S.n}」，帮它浇点水嘛～` : `小榕树现在是「${S.n}」${st.next ? `，再长 ${Math.ceil(st.next - T.g)} 就到下一阶啦` : '，已经独木成林啦'}！`;
     if (/吃|饿|饭|餐|茶|宵夜|好味|推荐/.test(t)) return pick(['肚子咕咕叫了！「吃饭地图」里都是 Howard 自己吃过、打过分的店，去翻翻看～', '我最想去喝早茶，虾饺烧卖一笼一笼的！你去「吃饭地图」找找嘛～']);
     if (/星|月|天文|宇宙|银河/.test(t)) return '想看星星就去「地球之外」抬头看看，今晚的星空我帮你留着～';
