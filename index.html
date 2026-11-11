@@ -1277,6 +1277,8 @@ const SITE = {
     // 加一个城市：{ id: 'bj', name: '北京', en: 'BEIJING', center: [116.40, 39.91], zoom: 9, ready: true, far: true }
     { id: 'tokyo', name: '东京', en: 'TOKYO', center: [139.74, 35.684], zoom: 9.6, ready: true, far: true },
     { id: 'kyoto', name: '京都', en: 'KYOTO', center: [135.768, 35.012], zoom: 9.6, ready: true, far: true },
+    { id: 'sg', name: '新加坡', en: 'SINGAPORE', center: [103.84, 1.31], zoom: 9.8, ready: true, far: true },
+    { id: 'hlg', name: '海螺沟', en: 'HAILUOGOU', center: [102.03, 29.6], zoom: 9.4, ready: true, far: true },
     { id: 'world', name: '全国 · 世界', en: 'CHINA & WORLD', center: [105, 32], zoom: 3.3, ready: true, far: true, overview: true },
   ],
 
@@ -1489,10 +1491,16 @@ const SITE = {
     // 大湾区以外：一座城市一组照片，地图上只有一个点（在城市中心），卡片里左右翻
     { id: 's46', city: 'tokyo', title: '东京', place: '日本 · 东京', date: '',
       note: '东京：入夜的涩谷十字路口、六本木高处望出去的东京塔（阴天和亮灯后各一张）、新宿东口的霓虹、秋叶原的松本清、银座站的出入口、JR 站台。',
-      photos: [{ src: 'photos/jp-tokyo-02.jpg', thumb: 'photos/jp-tokyo-02-s.jpg', cap: '涩谷十字路口', ar: 1.5 }, { src: 'photos/jp-tokyo-07.jpg', thumb: 'photos/jp-tokyo-07-s.jpg', cap: '入夜亮灯的东京塔', ar: 1.5 }, { src: 'photos/jp-tokyo-03.jpg', thumb: 'photos/jp-tokyo-03-s.jpg', cap: '窗边的两个人和东京塔', ar: 0.667 }, { src: 'photos/jp-tokyo-05.jpg', thumb: 'photos/jp-tokyo-05-s.jpg', cap: '新宿东口的霓虹和车流', ar: 1.5 }, { src: 'photos/jp-tokyo-04.jpg', thumb: 'photos/jp-tokyo-04-s.jpg', cap: '秋叶原的松本清', ar: 1.5 }, { src: 'photos/jp-tokyo-06.jpg', thumb: 'photos/jp-tokyo-06-s.jpg', cap: '银座站 A8 出口', ar: 0.667 }, { src: 'photos/jp-tokyo-01.jpg', thumb: 'photos/jp-tokyo-01-s.jpg', cap: '京浜东北线和山手线的站台', ar: 1.5 }] },
+      photos: [{ src: 'photos/jp-tokyo-02.jpg', thumb: 'photos/jp-tokyo-02-s.jpg', cap: '涩谷十字路口', ar: 1.5 }, { src: 'photos/jp-tokyo-07.jpg', cap: '入夜亮灯的东京塔', ar: 1.5 }, { src: 'photos/jp-tokyo-03.jpg', cap: '窗边的两个人和东京塔', ar: 0.667 }, { src: 'photos/jp-tokyo-05.jpg', cap: '新宿东口的霓虹和车流', ar: 1.5 }, { src: 'photos/jp-tokyo-04.jpg', cap: '秋叶原的松本清', ar: 1.5 }, { src: 'photos/jp-tokyo-06.jpg', cap: '银座站 A8 出口', ar: 0.667 }, { src: 'photos/jp-tokyo-01.jpg', cap: '京浜东北线和山手线的站台', ar: 1.5 }] },
     { id: 's52', city: 'kyoto', title: '京都', place: '日本 · 京都', date: '',
       note: '京都：清水寺的三重塔和檐角、伏见稻荷大社的千本鸟居和山上的石鸟居、贵船神社的石阶和林间鸟居、夜里祇园小巷的舞伎、东山的松原通、写着“速度落せ”的住宅小巷。',
-      photos: [{ src: 'photos/jp-kyoto-05.jpg', thumb: 'photos/jp-kyoto-05-s.jpg', cap: '清水寺的三重塔', ar: 1.5 }, { src: 'photos/jp-kyoto-07.jpg', thumb: 'photos/jp-kyoto-07-s.jpg', cap: '三重塔的檐角', ar: 1.5 }, { src: 'photos/jp-kyoto-08.jpg', thumb: 'photos/jp-kyoto-08-s.jpg', cap: '伏见稻荷大社的千本鸟居', ar: 0.75 }, { src: 'photos/jp-kyoto-09.jpg', thumb: 'photos/jp-kyoto-09-s.jpg', cap: '山上的石鸟居和小祠', ar: 1.333 }, { src: 'photos/jp-kyoto-03.jpg', thumb: 'photos/jp-kyoto-03-s.jpg', cap: '贵船神社的石阶和红灯笼', ar: 0.75 }, { src: 'photos/jp-kyoto-01.jpg', thumb: 'photos/jp-kyoto-01-s.jpg', cap: '贵船林间的鸟居', ar: 0.666 }, { src: 'photos/jp-kyoto-02.jpg', thumb: 'photos/jp-kyoto-02-s.jpg', cap: '祇园夜里的小巷', ar: 1.333 }, { src: 'photos/jp-kyoto-06.jpg', thumb: 'photos/jp-kyoto-06-s.jpg', cap: '东山的松原通', ar: 0.666 }, { src: 'photos/jp-kyoto-04.jpg', thumb: 'photos/jp-kyoto-04-s.jpg', cap: '写着“速度落せ”的小巷', ar: 0.75 }] },
+      photos: [{ src: 'photos/jp-kyoto-05.jpg', thumb: 'photos/jp-kyoto-05-s.jpg', cap: '清水寺的三重塔', ar: 1.5 }, { src: 'photos/jp-kyoto-07.jpg', cap: '三重塔的檐角', ar: 1.5 }, { src: 'photos/jp-kyoto-08.jpg', cap: '伏见稻荷大社的千本鸟居', ar: 0.75 }, { src: 'photos/jp-kyoto-09.jpg', cap: '山上的石鸟居和小祠', ar: 1.333 }, { src: 'photos/jp-kyoto-03.jpg', cap: '贵船神社的石阶和红灯笼', ar: 0.75 }, { src: 'photos/jp-kyoto-01.jpg', cap: '贵船林间的鸟居', ar: 0.666 }, { src: 'photos/jp-kyoto-02.jpg', cap: '祇园夜里的小巷', ar: 1.333 }, { src: 'photos/jp-kyoto-06.jpg', cap: '东山的松原通', ar: 0.666 }, { src: 'photos/jp-kyoto-04.jpg', cap: '写着“速度落せ”的小巷', ar: 0.75 }] },
+    { id: 's59', city: 'hlg', title: '海螺沟', place: '四川 · 甘孜 · 海螺沟', date: '',
+      note: '海螺沟的雪：清晨贡嘎山被照成金色，雪地里停着一辆写着“核载7人”的面包车，雪松林中间的缆车，晚上下着雪的酒店，躺在床上就能看见窗外的雪林。',
+      photos: [{ src: 'photos/cn-hailuogou-03.jpg', thumb: 'photos/cn-hailuogou-03-s.jpg', cap: '日照金山', ar: 0.666 }, { src: 'photos/cn-hailuogou-06.jpg', cap: '雪地里的面包车和贡嘎山', ar: 0.666 }, { src: 'photos/cn-hailuogou-05.jpg', cap: '通往贡嘎山的雪路', ar: 0.666 }, { src: 'photos/cn-hailuogou-04.jpg', cap: '逆光的雪峰', ar: 1.501 }, { src: 'photos/cn-hailuogou-07.jpg', cap: '雪林上的缆车', ar: 1.501 }, { src: 'photos/cn-hailuogou-08.jpg', cap: '缆车站和雪松', ar: 1.618 }, { src: 'photos/cn-hailuogou-09.jpg', cap: '雪山下的蓝房子', ar: 0.666 }, { src: 'photos/cn-hailuogou-01.jpg', cap: '雪夜的酒店', ar: 1.501 }, { src: 'photos/cn-hailuogou-02.jpg', cap: '下雪的酒店门口', ar: 0.666 }, { src: 'photos/cn-hailuogou-10.jpg', cap: '窗外的雪林', ar: 1.333 }] },
+    { id: 's58', city: 'sg', title: '新加坡', place: '新加坡', date: '',
+      note: '新加坡福康宁公园的“树洞”：从螺旋楼梯底下往上看，圆形的井口四周垂满了蕨类，头顶一棵大树的枝叶被阳光照得透亮。',
+      photos: [{ src: 'photos/sg-01.jpg', thumb: 'photos/sg-01-s.jpg', cap: '福康宁公园的树洞', ar: 1.5 }] },
   ],
 
   // 地标名胜 —— 介绍为公开资料整理
@@ -5429,7 +5437,7 @@ function detailHTML(type, it) {
       <div class="stc-amb" aria-hidden="true"><img src="${ph[0].thumb || ph[0].src}" alt=""></div>
       <h2 class="sr">${esc(it.title)}</h2>
       <button class="stc-hero" aria-label="查看大图"><img src="${ph[0].thumb || ph[0].src}" alt="${esc(ph[0].cap || '')}" draggable="false"></button>
-      <div class="stc-bar">${ph.length > 1 ? `<div class="stc-strip">${ph.map((p, i) => `<button class="stc-th${i ? '' : ' on'}" data-k="${i}" style="--ar:${p.ar || 1.333}" aria-label="第 ${i + 1} 张：${esc(p.cap || '')}"><img src="${p.thumb || p.src}" alt="" draggable="false"></button>`).join('')}</div>` : ''}<span class="st-nav"><button class="icon-btn" ${flip ? 'data-ph="-1" aria-label="上一张"' : `data-go="${prev.id}" aria-label="上一个"`}>${ICONS.prev}</button>${it.lnglat ? `<button class="icon-btn" data-fly aria-label="在地图上定位">${ICONS.target}</button>` : ''}<button class="icon-btn" ${flip ? 'data-ph="1" aria-label="下一张"' : `data-go="${next.id}" aria-label="下一个"`}>${ICONS.next}</button></span></div></div>`;
+      <div class="stc-bar">${ph.length > 1 ? `<div class="stc-strip">${ph.map((p, i) => `<button class="stc-th${i ? '' : ' on'}" data-k="${i}" style="--ar:${p.ar || 1.333}" aria-label="第 ${i + 1} 张：${esc(p.cap || '')}"><img src="${p.thumb || p.src}" alt="" draggable="false" loading="lazy" decoding="async"></button>`).join('')}</div>` : ''}<span class="st-nav"><button class="icon-btn" ${flip ? 'data-ph="-1" aria-label="上一张"' : `data-go="${prev.id}" aria-label="上一个"`}>${ICONS.prev}</button>${it.lnglat ? `<button class="icon-btn" data-fly aria-label="在地图上定位">${ICONS.target}</button>` : ''}<button class="icon-btn" ${flip ? 'data-ph="1" aria-label="下一张"' : `data-go="${next.id}" aria-label="下一个"`}>${ICONS.next}</button></span></div></div>`;
   }
   if (type === 'landmark') {
     const facts = Object.entries(it.facts).map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('');
