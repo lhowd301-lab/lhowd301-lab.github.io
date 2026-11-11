@@ -32,7 +32,7 @@ if [ "${1:-}" != "--update" ] || [ ! -f "$ENVF" ]; then
     3) PROV=openai; BASE=https://dashscope.aliyuncs.com/compatible-mode/v1; MODEL=qwen-plus ;;
     4) PROV=openai; read -rp "接口地址（例如 https://xxx.com/v1，不含 /chat/completions）: " BASE; MODEL=gpt-4o-mini ;;
     5) PROV=anthropic; BASE=https://api.anthropic.com; MODEL=claude-haiku-5-5 ;;
-    *) PROV=openai; BASE=https://api.deepseek.com; MODEL=deepseek-chat ;;
+    *) PROV=openai; BASE=https://api.deepseek.com; MODEL=deepseek-flash ;;
   esac
   read -rp "模型名 [$MODEL]: " m; MODEL=${m:-$MODEL}
   KEY=""

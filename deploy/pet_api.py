@@ -12,7 +12,8 @@
   PET_API_KEY        必填
   PET_PROVIDER       openai（OpenAI 兼容接口：DeepSeek / Kimi / 通义千问 等，默认）或 anthropic
   PET_API_BASE       接口地址，例如 https://api.deepseek.com 、https://api.moonshot.cn/v1
-  PET_MODEL          模型名，例如 deepseek-chat
+  PET_MODEL          模型名，例如 deepseek-flash
+  PET_THINKING       auto（默认：DeepSeek 关掉思考模式，回答快）/ off（总是关）/ on（不管）
   PET_ALLOW_ORIGINS  允许跨站调用的网页地址，逗号分隔（GitHub Pages 那份网站要在这里）
   PET_DAILY_LIMIT / PET_GLOBAL_DAILY / PET_MAX_TOKENS / PET_PORT
 """
@@ -30,7 +31,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 KEY = os.environ.get('PET_API_KEY', '').strip()
 PROVIDER = os.environ.get('PET_PROVIDER', 'openai').strip().lower()
 BASE = os.environ.get('PET_API_BASE', 'https://api.anthropic.com' if PROVIDER == 'anthropic' else 'https://api.deepseek.com').strip().rstrip('/')
-MODEL = os.environ.get('PET_MODEL', 'claude-haiku-5-5' if PROVIDER == 'anthropic' else 'deepseek-chat').strip()
+MODEL = os.environ.get('PET_MODEL', 'claude-haiku-5-5' if PROVIDER == 'anthropic' else 'deepseek-flash').strip()
+THINKING = os.environ.get('PET_THINKING', 'auto').strip().lower()
 PORT = int(os.environ.get('PET_PORT', '8787'))
 ORIGINS = {o.strip().rstrip('/') for o in (os.environ.get('PET_ALLOW_ORIGINS') or
            'https://lhowd301-lab.github.io,https://map.howardleong.work,http://map.howardleong.work').split(',') if o.strip()}
@@ -142,6 +144,8 @@ def ask(messages, ctx):
     else:
         url = BASE + '/chat/completions'
         body = {'model': MODEL, 'max_tokens': MAX_TOKENS, 'temperature': 0.9, 'messages': [{'role': 'system', 'content': system}] + messages}
+        if THINKING == 'off' or (THINKING == 'auto' and 'deepseek.com' in BASE):   # DeepSeek thinks by default: slow, and it eats the reply's tokens
+            body['thinking'] = {'type': 'disabled'}
         headers = {'Authorization': 'Bearer ' + KEY, 'Content-Type': 'application/json'}
     req = urllib.request.Request(url, data=json.dumps(body, ensure_ascii=False).encode(), headers=headers, method='POST')
     with urllib.request.urlopen(req, timeout=30) as r:
