@@ -4227,12 +4227,38 @@ const ThreeModels = {
     return id && SITE.landmarks.some((l) => l.id === id) ? id : null;
   },
 };
+// 火车和船多久挪一步：放得越大越勤（大约一步一个像素），两边用同一个节拍，这样两边的更新落在同一帧里，地图只重画一次；
+// 拖动、缩放地图的时候先不挪（地图本来就在每帧重画，这时再改数据最容易卡），停下来再接着走
+function vehicleStep(z, follow) {
+  const ms = follow ? 80 : z < 9 ? 2000 : z < 10.5 ? 1000 : z < 12 ? 500 : z < 13.5 ? 250 : z < 15 ? 150 : 100;
+  return follow ? ms : ms - (Date.now() % ms) + 5;
+}
 // 模型数据（建模、桥梁）用 gzip + base64 打包，体积约为原来的六分之一
 async function loadPacked(path) {
   const j = await (await fetch(U(path))).json();
   const bin = Uint8Array.from(atob(j.gz), (c) => c.charCodeAt(0));
   return JSON.parse(await new Response(new Blob([bin]).stream().pipeThrough(new DecompressionStream('gzip'))).text());
 }
+// 电脑显卡跟不上时（拖动地图时每秒不到 24 帧，连着两次）自动降低一点清晰度换流畅，并记住，下次打开直接用
+const LiteGfx = {
+  on() { try { return localStorage.getItem('bh-lite') === '1'; } catch (e) { return false; } },
+  ratio() { const d = window.devicePixelRatio || 1; return this.on() ? Math.min(d, 1.25) : d; },
+  watch() {
+    let t0 = 0, frames = 0, slow = 0;
+    map.on('movestart', () => { t0 = performance.now(); frames = 0; });
+    map.on('render', () => { if (t0) frames++; });
+    map.on('moveend', () => {
+      if (!t0) return; const dt = performance.now() - t0; t0 = 0;
+      if (dt < 700 || this.on()) return;
+      if (frames / dt * 1000 < 24) { if (++slow >= 2) this.lite(); } else slow = 0;
+    });
+  },
+  lite() {
+    try { localStorage.setItem('bh-lite', '1'); } catch (e) { /* fine */ }
+    const r = Math.min(window.devicePixelRatio || 1, 1.25);
+    if (map.getPixelRatio() > r + 0.01) map.setPixelRatio(r);
+  },
+};
 function initMap() {
   if (!window.maplibregl) { $('#veil span').textContent = '地图引擎没能加载，请检查网络后刷新。'; return; }
   // 矢量瓦片：按区域打包成 tilepack/*.json（gzip + base64），用到哪块才下载哪块。
@@ -4279,8 +4305,10 @@ function initMap() {
     maxBounds: [[110.0, 20.4], [116.8, 25.4]],
     localIdeographFontFamily: '"Noto Sans SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC","Noto Sans CJK TC",sans-serif',
     attributionControl: false, fadeDuration: 180, dragRotate: true, touchPitch: true,
-    antialias: (window.devicePixelRatio || 1) < 2,
+    antialias: (window.devicePixelRatio || 1) < 2 && !LiteGfx.on(),
+    pixelRatio: LiteGfx.ratio(),
   });
+  LiteGfx.watch();
   map.setPadding(hudPadding());
   window.addEventListener('resize', () => map.setPadding(hudPadding()));
   map.on('error', (e) => { const m = String(e?.error?.message || ''); if (/Failed to fetch|404|NetworkError/i.test(m)) console.warn(m); });
@@ -7049,11 +7077,11 @@ const Rail = Object.assign(Object.create(Metro), {
   tick() {
     clearTimeout(this.timer); this.timer = 0;
     if (!this.enabled || !this.D || document.hidden) return;
+    if (!this.follow && map.isMoving()) { this.timer = setTimeout(() => this.tick(), 200); return; }   // let the map move smoothly first
     const z = map.getZoom();
     this.sim = Date.now() + GZ_OFF + (this.shift || 0); this.base = { sim: this.sim, wall: Date.now() }; this.speed = 1;
     if (!Metro.on) { this.render(z); this.blank = false; } else if (!this.blank) { this.blank = true; for (const id of ['rail-trains', 'rail-cars']) map.getSource(id).setData({ type: 'FeatureCollection', features: [] }); }   // underground, the streets above stay empty
-    // how often to move them: about a pixel a step at the zoom you are at
-    this.timer = setTimeout(() => this.tick(), this.follow ? 60 : z < 9 ? 2000 : z < 10.5 ? 900 : z < 12 ? 350 : z < 13.5 ? 140 : 70);
+    this.timer = setTimeout(() => this.tick(), vehicleStep(z, this.follow));
   },
   // the far-off symbol: a train seen from above, pointed at both ends, with windscreens, a light roof stripe and car joints
   // the far-off symbol: each train type side-on in its own livery (window band, stripes, windscreens), nose at both ends
@@ -7526,10 +7554,11 @@ const Ships = Object.assign(Object.create(Rail), {
   tick() {
     clearTimeout(this.timer); this.timer = 0;
     if (!this.enabled || !this.D || document.hidden) return;
+    if (!this.follow && map.isMoving()) { this.timer = setTimeout(() => this.tick(), 200); return; }
     const z = map.getZoom();
     this.sim = Date.now() + GZ_OFF + (this.shift || 0); this.base = { sim: this.sim, wall: Date.now() }; this.speed = 1;
     if (!Metro.on) { this.render(z); this.blank = false; } else if (!this.blank) { this.blank = true; for (const id of ['ship-icons', 'ship-body', 'ship-wake']) map.getSource(id).setData({ type: 'FeatureCollection', features: [] }); }
-    this.timer = setTimeout(() => this.tick(), this.follow ? 60 : z < 9 ? 2500 : z < 10.5 ? 1200 : z < 12 ? 500 : z < 13.5 ? 220 : z < 15 ? 120 : 80);
+    this.timer = setTimeout(() => this.tick(), vehicleStep(z, this.follow));
   },
   // where a ship is and which way it points: centre (mercator), heading d, starboard n, mercator units per metre k.
   // Ships keep to the right of the channel, so two meeting on the same route pass each other.
