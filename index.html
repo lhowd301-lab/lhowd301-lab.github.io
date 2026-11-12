@@ -8385,7 +8385,7 @@ const Ships = Object.assign(Object.create(Rail), {
   },
 });
 
-/* ---------- 卡片拖动：详情卡（吃饭、扫街、地标……）、列车卡、船只卡、星空里的星星卡，按住卡片空白处拖到别处；
+/* ---------- 卡片拖动：详情卡（吃饭、扫街、地标……）、列车卡、船只卡、飞行地图卡、星空里的星星卡，按住卡片空白处拖到别处；
    关掉再打开会回到原来的位置。手机上详情卡是底部抽屉，不拖 */
 const CardDrag = {
   NO: 'button,a,input,select,textarea,label,img,video,.rstops,[contenteditable]',
@@ -8426,7 +8426,7 @@ const CardDrag = {
   },
 };
 CardDrag.make($('#detail'), () => !mq.matches);
-CardDrag.make($('#railCard')); CardDrag.make($('#shipCard')); CardDrag.make($('#skyInfo'));
+CardDrag.make($('#railCard')); CardDrag.make($('#shipCard')); CardDrag.make($('#skyInfo')); CardDrag.make($('#flightCard'));
 
 /* ===================================================================== controls */
 $('#zIn').addEventListener('click', () => map && map.zoomIn());
