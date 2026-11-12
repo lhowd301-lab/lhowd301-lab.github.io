@@ -487,6 +487,7 @@ a.trk{text-decoration:none;color:inherit}
 body.air-on .maplibregl-marker{opacity:0!important;pointer-events:none!important}
 @media (max-width:1023px){.air-card .fl-note{display:none}.air-card .fl-chip{padding:2px 8px;font-size:11.5px}.air-card .fl-row{gap:5px;margin-top:7px}}
 @media (min-width:1024px){.air-card{width:min(360px,calc(100% - 32px))}}
+.sim-note{margin:8px 0 0;font-size:10.5px;line-height:1.4;color:var(--ink-3);text-align:center;opacity:.9}
 .rail-card .x{position:absolute;top:8px;right:8px;width:30px;height:30px}
 .rail-card .rk{display:flex;align-items:center;gap:7px;font-size:11.5px;letter-spacing:.06em;color:var(--ink-3);padding-right:30px}
 .rail-card .rk i{width:16px;height:5px;border-radius:3px;display:inline-block}
@@ -1190,7 +1191,7 @@ body.pure .pet-dock,body.pure .pet-bubble,body.pure .pet-chat{display:none!impor
 
   <div class="status glass" aria-live="off">
     <span class="coord" id="coord">23°07′N 113°16′E · 视高 —</span>
-    <span class="attr">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> 贡献者 · SRTM 地形</span>
+    <span class="attr">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> 贡献者 · SRTM 地形 · 火车、船、飞机均为模拟</span>
   </div>
   <button class="pet-dock" id="petDock" type="button" aria-label="萌宠榕忆"></button>
   <button class="pet-bubble" id="petBubble" type="button" hidden></button>
@@ -7290,7 +7291,7 @@ const Metro = {
     const kind = this.sel ? 't:' + this.sel : this.selSt ? 's:' + this.selSt.name : '';
     if (box.dataset.k !== kind) {
       box.dataset.k = kind;
-      box.innerHTML = `<button class="sky-btn x" data-x aria-label="关闭">${ICONS.close}</button><div data-body></div>${this.sel ? `<button type="button" class="sky-pill" data-follow aria-pressed="${this.follow}">${this.follow ? '停止跟随' : '跟着这列车'}</button>` : ''}`;
+      box.innerHTML = `<button class="sky-btn x" data-x aria-label="关闭">${ICONS.close}</button><div data-body></div>${this.sel ? `<button type="button" class="sky-pill" data-follow aria-pressed="${this.follow}">${this.follow ? '停止跟随' : '跟着这列车'}</button><p class="sim-note">列车位置是按时刻表模拟的，不是实时位置</p>` : ''}`;
     }
     const body = box.querySelector('[data-body]'); let html = '';
     if (this.sel) {
@@ -7703,7 +7704,7 @@ const Rail = Object.assign(Object.create(Metro), {
     const box = $('#railCard'), t = this.selTrain; if (box.hidden || !t) return;
     if (box.dataset.k !== this.sel) {   // buttons drawn once per train, so a click on them is never swallowed by a redraw
       box.dataset.k = this.sel;
-      box.innerHTML = `<button class="icon-btn x" data-x aria-label="关闭">${ICONS.close}</button><div data-body></div><div data-prog></div><ol class="rstops" data-stops></ol><div data-tab></div><button type="button" class="btn ghost" data-follow aria-pressed="${this.follow}">${this.follow ? '停止跟随' : '跟着这列车'}</button>`;
+      box.innerHTML = `<button class="icon-btn x" data-x aria-label="关闭">${ICONS.close}</button><div data-body></div><div data-prog></div><ol class="rstops" data-stops></ol><div data-tab></div><button type="button" class="btn ghost" data-follow aria-pressed="${this.follow}">${this.follow ? '停止跟随' : '跟着这列车'}</button><p class="sim-note">列车位置是按时刻表模拟的，不是实时位置</p>`;
     }
     const line = t.svc.line, tr = t.tr, q = t.q, T = TRAINS[this.typeOf(t)];
     const from = t.dir ? t.svc.b : t.svc.a;   // where it set out from (off the map, for the trains coming in from beyond it)
@@ -8233,7 +8234,7 @@ const Ships = Object.assign(Object.create(Rail), {
         line.fw = line.fleet.reduce((a, f) => a + f[1], 0);
         let h = 0; for (const ch of line.id) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
         line.ph = (h % 997) / 997;   // so that the lines do not all leave on the hour
-        line.svc.forEach((svc, j) => { const S = L.svc[j]; svc.sched = S.sched; svc.one = S.one; svc.deps = {}; svc.trip = [this.trip(svc, 0), this.trip(svc, 1)]; });
+        line.real = L.real; line.src = L.src; line.svc.forEach((svc, j) => { const S = L.svc[j]; svc.sched = S.sched; svc.times = S.times; svc.timesW = S.timesW; svc.one = S.one; svc.deps = {}; svc.trip = [this.trip(svc, 0), this.trip(svc, 1)]; });
       });
       this.anch = (d.anch || []).flatMap((a, i) => a.s.map(([x, y, ty, h], j) => ({ id: `A${i}.${j}`, n: a.n, p: [x, y], ty, h })));
       // the routes and their piers, for the 线路 button
@@ -8268,9 +8269,11 @@ const Ships = Object.assign(Object.create(Rail), {
     }
     return { st, u, arr, dep, T: dep[m - 1], pre: st[0].n ? END : 0, v, a, dA, to: svc.loop ? svc.b : dir ? svc.a : svc.b };
   },
-  deps(svc, dir, wk) {   // the day's sailings from this direction's first pier: every so many minutes within each period
+  deps(svc, dir, wk) {   // the day's sailings from this direction's first pier: the real timetable where there is one, else every so many minutes within each period
     const k = dir * 2 + wk; if (svc.deps[k]) return svc.deps[k];
     const out = [];
+    const tt = (wk && svc.timesW) || svc.times;
+    if (tt) return (svc.deps[k] = Float64Array.from(tt[dir] || []));
     if (!(svc.one && dir)) for (const [h0, h1, m] of svc.sched || []) for (let t = h0 * 3600 + ((dir ? 0.5 : 0) + svc.line.ph) * m * 60; t < h1 * 3600; t += m * 60) out.push(t);
     out.sort((x, y) => x - y);
     return (svc.deps[k] = Float64Array.from(out));
@@ -8491,8 +8494,10 @@ const Ships = Object.assign(Object.create(Rail), {
     const box = $('#shipCard'), it = this.selShip; if (box.hidden || !it) return;
     if (box.dataset.k !== this.sel) {   // buttons drawn once per ship, so a click on them is never swallowed by a redraw
       box.dataset.k = this.sel;
-      box.innerHTML = `<button class="icon-btn x" data-x aria-label="关闭">${ICONS.close}</button><div data-body></div><div data-prog></div><ol class="rstops" data-stops></ol><div data-tab></div><button type="button" class="btn ghost" data-follow aria-pressed="${this.follow}">${this.follow ? '停止跟随' : '跟着这条船'}</button>`;
+      box.innerHTML = `<button class="icon-btn x" data-x aria-label="关闭">${ICONS.close}</button><div data-body></div><div data-prog></div><ol class="rstops" data-stops></ol><div data-tab></div><button type="button" class="btn ghost" data-follow aria-pressed="${this.follow}">${this.follow ? '停止跟随' : '跟着这条船'}</button><p class="sim-note">船只位置是按班次模拟的，不是实时位置</p>`;
     }
+    const sn = box.querySelector('.sim-note'), ln = it.t && it.t.svc.line;   // where the sailings come from
+    if (sn) sn.textContent = ln && ln.real ? `班次按${ln.src}公布的时刻表，船只位置是模拟的` : '班次和船只位置都是模拟的';
     const V = VESSELS[it.ty], size = `<tr><td>船长</td><td>${V.len} 米 · 宽 ${V.beam} 米</td></tr>`;
     const h = this.hash(this.sel), pick = (a, k = 0) => a[(h >>> k) % a.length], cls = V.kind === 'box' ? 'box' : V.kind;
     let tab = '';
