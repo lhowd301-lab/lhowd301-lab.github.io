@@ -479,6 +479,10 @@ a.trk{text-decoration:none;color:inherit}
 .air-card .fl-speed .fl-chip{font-family:var(--f-mono);font-size:11.5px}
 .air-card .fl-sel:empty{display:none}.air-card .fl-sel{margin-top:10px;padding-top:9px;border-top:1px solid var(--line)}
 .air-card h4.sroute{margin:4px 0 2px;font-size:16px;font-family:var(--f-display);letter-spacing:.03em}.air-card h4.sroute span{margin:0 7px;color:var(--ink-3);font-weight:400}
+.air-card .fl-tag{margin-left:6px;padding:0 5px;border-radius:4px;background:var(--ice-2);color:var(--ink-3);font-size:10.5px;letter-spacing:0}
+.air-card .rk b.mono{color:var(--ink);font-weight:600;letter-spacing:.04em}
+.air-card .rnow b{color:var(--ink);font-weight:600}
+.air-card .fl-follow{width:100%;margin-top:2px}
 .air-card .fl-note{margin:8px 0 0;font-size:11px;line-height:1.5;color:var(--ink-3)}
 body.air-on .maplibregl-marker{opacity:0!important;pointer-events:none!important}
 @media (max-width:1023px){.air-card .fl-note{display:none}.air-card .fl-chip{padding:2px 8px;font-size:11.5px}.air-card .fl-row{gap:5px;margin-top:7px}}
@@ -7776,7 +7780,8 @@ const Routes = {
 /* ===================================================================== 航空：大湾区各机场飞往世界各地的航线（示意）
    七座机场（白云、宝安、赤鱲角、澳门、金湾、平潭、沙堤）飞往国内外的代表性航线，画成大圆航线；
    班次按航线远近给一个大致的每日架次，起飞时间是示意的（不是真实时刻表），飞行时间按距离估算。
-   点开飞行界面后地图缩到全世界，航线上一个个小亮点就是正在飞的航班（不画飞机），可以加速看 */
+   点开飞行界面后地图缩到全世界，航线上的小飞机就是正在飞的航班（机头朝飞行方向），可以加速看；
+   点一架飞机看这班的航司、航班号、机型和飞行状态（滑行、起飞、爬升、巡航、下降、进近、着陆），航司和机型也是示意 */
 const AIRPORTS = [
   { id: 'CAN', n: '广州白云', p: [113.299, 23.392], c: '#2563EB', k: 1 },
   { id: 'SZX', n: '深圳宝安', p: [113.811, 22.639], c: '#0EA5A4', k: 1 },
@@ -7811,33 +7816,95 @@ const AIR_ROUTES = {
   HUZ: '北京 上海 成都 重庆 杭州 武汉 南京 西安',
   FUO: '北京 上海 成都 重庆',
 };
+// 航司和机型（示意）：按各机场、各目的地常见的航司分配，机型按航司和航程挑，不是真实的航班
+const AIRLINES = {
+  CZ: ['中国南方航空', '#1D6FB8'], CA: ['中国国际航空', '#C8102E'], MU: ['中国东方航空', '#1B3E7A'], HU: ['海南航空', '#C7161D'], ZH: ['深圳航空', '#D7262B'],
+  '3U': ['四川航空', '#D99A0B'], MF: ['厦门航空', '#0D5BA8'], SC: ['山东航空', '#2C6CB0'], HO: ['吉祥航空', '#7A2A8C'], '9C': ['春秋航空', '#3F9E44'], GS: ['天津航空', '#B0182B'], TV: ['西藏航空', '#8A5A2B'],
+  CX: ['国泰航空', '#00645A'], HX: ['香港航空', '#B5232F'], UO: ['香港快运', '#6DAA3C'], NX: ['澳门航空', '#C8102E'],
+  SQ: ['新加坡航空', '#D99A00'], MH: ['马来西亚航空', '#0A3D91'], AK: ['亚洲航空', '#E31837'], TG: ['泰国国际航空', '#5B2C83'], JL: ['日本航空', '#CC0000'], NH: ['全日空', '#13448F'],
+  KE: ['大韩航空', '#0091C8'], OZ: ['韩亚航空', '#8E7C6D'], PR: ['菲律宾航空', '#0038A8'], VN: ['越南航空', '#00728B'], VJ: ['越捷航空', '#E0002A'], GA: ['印尼鹰航', '#00708A'],
+  AI: ['印度航空', '#DA291C'], EK: ['阿联酋航空', '#D71921'], QR: ['卡塔尔航空', '#5C0632'], TK: ['土耳其航空', '#C70A0C'], BA: ['英国航空', '#2E5C99'], AF: ['法国航空', '#002157'],
+  LH: ['汉莎航空', '#05164D'], KL: ['荷兰皇家航空', '#0091C8'], SU: ['俄罗斯航空', '#1A4C8C'], LX: ['瑞士国际航空', '#E2001A'], IB: ['伊比利亚航空', '#D7192D'], KQ: ['肯尼亚航空', '#B01E23'],
+  ET: ['埃塞俄比亚航空', '#2E8B3A'], SA: ['南非航空', '#00337F'], QF: ['澳洲航空', '#E0001B'], NZ: ['新西兰航空', '#1B1B1B'], AC: ['加拿大航空', '#D22630'], UA: ['美国联合航空', '#005DAA'],
+  AA: ['美国航空', '#0078D2'], CI: ['中华航空', '#C8102E'], BR: ['长荣航空', '#00704A'],
+};
+const AIR_HOME = {   // 各机场自己的航司：[国内和港澳台, 国际]
+  CAN: ['CZ CZ CZ CZ CZ CZ CA MU HU ZH', 'CZ'], SZX: ['ZH ZH ZH ZH CZ CZ HU CA MU', 'ZH ZH CZ HU'], HKG: ['CX CX HX', 'CX CX CX HX UO'],
+  MFM: ['NX', 'NX'], ZUH: ['CZ CZ CA MU HU', 'CZ'], HUZ: ['CZ HU', 'CZ'], FUO: ['CZ MU', 'CZ'],
+};
+const AIR_AT = {   // 目的地那边的航司
+  北京: 'CA', 上海: 'MU HO 9C', 成都: '3U', 重庆: '3U', 厦门: 'MF', 海口: 'HU', 三亚: 'HU', 青岛: 'SC', 天津: 'GS', 拉萨: 'TV', 昆明: 'MU', 南京: 'MU', 杭州: 'CA', 西安: 'MU',
+  台北: 'CI BR', 新加坡: 'SQ', 吉隆坡: 'MH AK', 曼谷: 'TG', 东京: 'JL NH', 大阪: 'JL NH', 首尔: 'KE OZ', 马尼拉: 'PR', 河内: 'VN', 胡志明市: 'VN VJ', 雅加达: 'GA', 巴厘岛: 'GA',
+  德里: 'AI', 迪拜: 'EK', 多哈: 'QR', 伊斯坦布尔: 'TK', 伦敦: 'BA', 巴黎: 'AF', 法兰克福: 'LH', 阿姆斯特丹: 'KL', 莫斯科: 'SU', 苏黎世: 'LX', 马德里: 'IB', 内罗毕: 'KQ',
+  亚的斯亚贝巴: 'ET', 约翰内斯堡: 'SA', 悉尼: 'QF', 墨尔本: 'QF', 奥克兰: 'NZ', 洛杉矶: 'AA UA', 旧金山: 'UA', 纽约: 'UA', 温哥华: 'AC', 多伦多: 'AC', 芝加哥: 'AA', 达拉斯: 'AA',
+};
+const AIR_FLEET = {   // [远程（4500 公里以上）, 中短程]，逗号分开
+  CZ: ['787-9,777-300ER,A350-900,A330-300', ''], CA: ['777-300ER,A350-900,787-9,A330-300', ''], MU: ['A350-900,777-300ER,A330-300', ''], HU: ['787-9,A330-300', ''], ZH: ['A330-300', 'A320neo,A321neo,737-800,737 MAX 8'],
+  CX: ['A350-900,A350-1000,777-300ER', 'A330-300,A321neo,A350-900'], HX: ['A330-300', 'A320,A330-300'], UO: ['A321', 'A320,A321'], NX: ['A321neo', 'A320neo,A321neo'],
+  SQ: ['A350-900,787-10', 'A350-900,787-10,737 MAX 8'], EK: ['777-300ER'], QR: ['787-9,777-300ER,A350-900'], TK: ['A350-900,777-300ER'], BA: ['787-9,777-200ER'], AF: ['777-300ER'],
+  LH: ['747-8,A350-900'], KL: ['787-9'], SU: ['A350-900,777-300ER'], LX: ['777-300ER'], IB: ['A350-900'], KQ: ['787-8'], ET: ['787-8,A350-900'], SA: ['A350-900'], QF: ['A330-300,787-9'],
+  NZ: ['787-9'], AC: ['787-9,777-300ER'], UA: ['777-300ER,787-9'], AA: ['787-9'], AK: ['A330-900', 'A320neo,A321neo'], '9C': ['A321neo', 'A320neo'], HO: ['787-9', 'A321neo,A320neo'],
+};
+const acName = (a) => (/^A/.test(a) ? '空客 ' : /^C9/.test(a) ? '中国商飞 ' : '波音 ') + a;
+const AIR_TO = 720, AIR_TI = 480;   // 滑行出去 12 分钟、落地后滑回停机位 8 分钟
+
 const Flights = {
-  on: false, built: false, speed: 600, base: 0, t0: 0, raf: 0, last: 0, lastUi: 0, sel: null, filter: 'all', saved: null, routes: [], live: 0,
+  on: false, built: false, speed: 600, base: 0, t0: 0, raf: 0, last: 0, lastUi: 0, sel: null, filter: 'all', saved: null, routes: [], byKey: new Map(), live: 0, follow: false, cur: [],
   init() {
     const b = $('#zFlight'); if (!b) return;
     b.setAttribute('aria-pressed', 'false');
     b.addEventListener('click', () => this.toggle());
     document.addEventListener('visibilitychange', () => { if (this.on && !document.hidden) this.loop(); });
   },
-  // the routes: great-circle arcs (longitudes kept continuous across the date line), distance, time aloft, flights a day, departure times
+  pick(list, u, sep = ' ') { const a = list.split(sep).filter(Boolean); return a[Math.min(a.length - 1, Math.floor(u * a.length))]; },
+  // the routes: great-circle arcs (longitudes kept continuous across the date line), distance, block time, flights a day,
+  // and for each flight its airline, flight number, aircraft and departure time
   prep() {
     const R = Math.PI / 180, km = (a, b) => { const s = Math.sin((b[1] - a[1]) * R / 2) ** 2 + Math.cos(a[1] * R) * Math.cos(b[1] * R) * Math.sin((b[0] - a[0]) * R / 2) ** 2; return 12742 * Math.asin(Math.sqrt(s)); };
     const vec = ([lo, la]) => [Math.cos(la * R) * Math.cos(lo * R), Math.cos(la * R) * Math.sin(lo * R), Math.sin(la * R)];
+    const u = (s) => (hashStr(s) % 10007) / 10007;
     for (const ap of AIRPORTS) for (const name of AIR_ROUTES[ap.id].split(' ')) {
       const to = AIR_DEST[name]; if (!to) continue;
       const A = vec(ap.p), B = vec(to), w = Math.acos(Math.min(1, A[0] * B[0] + A[1] * B[1] + A[2] * B[2]));
       const at = (f) => { const s = Math.sin(w) || 1, a = Math.sin((1 - f) * w) / s, b = Math.sin(f * w) / s, x = a * A[0] + b * B[0], y = a * A[1] + b * B[1], z = a * A[2] + b * B[2]; return [Math.atan2(y, x) / R, Math.atan2(z, Math.hypot(x, y)) / R]; };
       const n = Math.max(8, Math.round(w / R / 1.5)), pts = [];
       for (let i = 0; i <= n; i++) { const p = at(i / n); if (pts.length) { const q = pts[pts.length - 1][0]; while (p[0] - q > 180) p[0] -= 360; while (p[0] - q < -180) p[0] += 360; } pts.push(p); }
-      const d = km(ap.p, to), cn = AIR_CN.has(name), long = d > 6000;
+      const d = km(ap.p, to), cn = AIR_CN.has(name), dom = cn || name === '台北', long = d > 6000;
       const f = Math.max(1, Math.round((cn ? (AIR_BIG.has(name) ? 10 : 5) * (ap.id === 'HKG' ? 0.7 : 1) : long ? 1.5 : 4) * ap.k));
-      const dur = (d / 840 + 0.6) * 3600, id = ap.id + '-' + name, deps = [];
-      for (let dir = 0; dir < 2; dir++) for (let k = 0; k < f; k++) { const h = (hashStr(id + dir + k) % 1000) / 1000; deps.push([dir, long ? ((k + h) / f) * 86400 : 23400 + ((k + h) / f) * 61200]); }
-      this.routes.push({ id, ap, name, to, pts, at, d, dur, f, deps, endLon: pts[pts.length - 1][0] });
+      const dur = (d / 840 + 0.6) * 3600, id = ap.id + '-' + name;
+      const r = { id, ap, name, to, pts, at, d, dur, f, deps: [], endLon: pts[pts.length - 1][0] };
+      const home = AIR_HOME[ap.id][dom ? 0 : 1], away = AIR_AT[name], nOf = {};
+      for (let k = 0; k < f; k++) {
+        // who flies it: mostly the home airline, the rest the airline at the other end
+        const foreign = !!away && u(id + 'w' + k) < (dom ? (ap.id === 'CAN' || ap.id === 'SZX' ? 0.25 : 0.4) : 0.45);
+        const al = this.pick(foreign ? away : home, u(id + 'a' + k)), j = (nOf[al] = (nOf[al] || 0) + 1) - 1;
+        const fl = AIR_FLEET[al] || [], wide = d > 4500, cnAl = /^(CZ|CA|MU|HU|ZH|3U|MF|SC|HO|9C|GS|TV)$/.test(al);
+        const set = wide ? fl[0] || '787-9,A330-300,777-300ER'
+          : fl[1] || (d > 3000 ? '737 MAX 8,A321neo,A330-300' : d > 1200 ? 'A320neo,A321neo,737-800,737 MAX 8,A330-300' : /^(MU|CA|CZ)$/.test(al) ? 'A320neo,A321neo,737-800,737 MAX 8,C919' : 'A320neo,A321neo,737-800,737 MAX 8');
+        const ac = this.pick(set, u(id + 'p' + k), ',');
+        const h = hashStr(id + al), base = (cn && cnAl ? 2001 + 2 * (h % 3900) : 101 + 2 * (h % 440)) + 2 * j;   // 内地航司的国内航班四位数；去程单数、回程双数
+        for (let dir = 0; dir < 2; dir++) {
+          const q = (hashStr(id + dir + k) % 1000) / 1000, dep = long ? ((k + q) / f) * 86400 : 23400 + ((k + q) / f) * 61200;
+          const out = foreign ? dir === 1 : dir === 0;
+          const o = { r, dir, k, dep, al, no: al + (out ? base : base + 1), ac, key: `${id}|${dir}|${k}` };
+          r.deps.push(o); this.byKey.set(o.key, o);
+        }
+      }
+      this.routes.push(r);
+    }
+  },
+  planeIcons() {   // a small airliner from above, nose up, one per airport colour, white outline
+    const half = [[0, -24], [2.3, -21.5], [3.3, -16], [3.3, -5.5], [23, 6], [23, 10.2], [3.3, 4.2], [2.6, 14], [10.2, 19.3], [10.2, 22.8], [1.3, 20.8], [0, 22.6]];
+    const pts = [...half, ...half.slice(1, -1).reverse().map(([x, y]) => [-x, y])];
+    for (const a of AIRPORTS) {
+      const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d');
+      g.translate(32, 32); g.beginPath(); pts.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y))); g.closePath();
+      g.lineJoin = 'round'; g.lineWidth = 4.5; g.strokeStyle = 'rgba(255,255,255,0.95)'; g.stroke(); g.fillStyle = a.c; g.fill();
+      if (!map.hasImage('air-plane-' + a.id)) map.addImage('air-plane-' + a.id, g.getImageData(0, 0, 64, 64), { pixelRatio: 2 });
     }
   },
   build() {
-    if (this.built) return; this.built = true; this.prep();
+    if (this.built) return; this.built = true; this.prep(); this.planeIcons();
     const fc = (features) => ({ type: 'FeatureCollection', features });
     map.addSource('air-routes', { type: 'geojson', data: fc(this.routes.map((r) => ({ type: 'Feature', properties: { id: r.id, a: r.ap.id, c: r.ap.c }, geometry: { type: 'LineString', coordinates: r.pts } }))) });
     map.addSource('air-trail', { type: 'geojson', data: fc([]), lineMetrics: true });
@@ -7847,24 +7914,29 @@ const Flights = {
     map.addLayer({ id: 'air-route', type: 'line', source: 'air-routes', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': ['get', 'c'], 'line-width': ['interpolate', ['linear'], ['zoom'], 1, 0.7, 4, 1.1, 7, 1.6], 'line-opacity': 0.42 } }, before);
     map.addLayer({ id: 'air-route-sel', type: 'line', source: 'air-routes', filter: ['==', ['get', 'id'], ''], layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': ['get', 'c'], 'line-width': ['interpolate', ['linear'], ['zoom'], 1, 2, 6, 3.2], 'line-opacity': 0.95 } }, before);
     map.addLayer({ id: 'air-route-hit', type: 'line', source: 'air-routes', paint: { 'line-color': '#000', 'line-width': 10, 'line-opacity': 0 } }, before);
-    map.addLayer({ id: 'air-trail', type: 'line', source: 'air-trail', layout: { 'line-cap': 'round' }, paint: { 'line-width': ['interpolate', ['linear'], ['zoom'], 1, 1.6, 6, 2.6], 'line-gradient': ['interpolate', ['linear'], ['line-progress'], 0, 'rgba(255,255,255,0)', 1, 'rgba(255,255,255,0.9)'] } });
-    map.addLayer({ id: 'air-glow', type: 'circle', source: 'air-fly', paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 1, 4.5, 6, 8], 'circle-color': ['get', 'c'], 'circle-blur': 1, 'circle-opacity': 0.55 } });
-    map.addLayer({ id: 'air-dot', type: 'circle', source: 'air-fly', paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 1, 1.8, 6, 3.2], 'circle-color': '#FFFFFF', 'circle-stroke-color': ['get', 'c'], 'circle-stroke-width': 1.2 } });
     map.addLayer({ id: 'air-dest', type: 'circle', source: 'air-pts', filter: ['==', ['get', 'k'], 'dest'], paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 1, 1.6, 6, 3], 'circle-color': '#FFFFFF', 'circle-stroke-color': '#44597F', 'circle-stroke-width': 1 } });
     map.addLayer({ id: 'air-port', type: 'circle', source: 'air-pts', filter: ['==', ['get', 'k'], 'port'], paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 1, 2.6, 6, 4.5, 9, 6], 'circle-color': ['get', 'c'], 'circle-stroke-color': '#FFFFFF', 'circle-stroke-width': 1.5 } });
+    map.addLayer({ id: 'air-trail', type: 'line', source: 'air-trail', layout: { 'line-cap': 'round' }, paint: { 'line-width': ['interpolate', ['linear'], ['zoom'], 1, 1.4, 6, 2.4], 'line-gradient': ['interpolate', ['linear'], ['line-progress'], 0, 'rgba(255,255,255,0)', 1, 'rgba(255,255,255,0.85)'] } });
+    map.addLayer({ id: 'air-sel', type: 'circle', source: 'air-fly', filter: ['==', ['get', 'key'], ''], paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 1, 11, 6, 16], 'circle-color': 'rgba(37,99,235,0.12)', 'circle-stroke-color': ['get', 'c'], 'circle-stroke-width': 1.6 } });
+    map.addLayer({ id: 'air-plane', type: 'symbol', source: 'air-fly', layout: { 'icon-image': ['concat', 'air-plane-', ['get', 'a']], 'icon-rotate': ['get', 'b'], 'icon-rotation-alignment': 'map', 'icon-allow-overlap': true, 'icon-ignore-placement': true, 'symbol-z-order': 'source', 'icon-size': this.planeSize('') } });
+    map.addLayer({ id: 'air-hit', type: 'circle', source: 'air-fly', paint: { 'circle-radius': 11, 'circle-opacity': 0 } });
     map.addLayer({ id: 'air-label', type: 'symbol', source: 'air-pts', layout: { 'text-field': ['get', 'n'], 'text-font': FONT, 'text-size': ['interpolate', ['linear'], ['zoom'], 1, 10.5, 6, 13], 'text-offset': [0, 0.85], 'text-anchor': 'top', 'text-padding': 3, 'symbol-sort-key': ['get', 'r'] },
       paint: { 'text-color': '#1C3463', 'text-halo-color': 'rgba(255,255,255,.92)', 'text-halo-width': 1.6 } });
     if (Night.on) Night.set(true, false);   // the new layers take their night colours too
-    // one click handler: a flight (a lit dot) wins over the route lines under it
+    // one click handler: a plane wins over the route lines under it
     map.on('click', (e) => {
       if (!this.on) return;
-      const f = map.queryRenderedFeatures(e.point, { layers: ['air-dot', 'air-glow'] })[0] || map.queryRenderedFeatures(e.point, { layers: ['air-route-hit'] })[0];
-      this.select(f ? f.properties.r || f.properties.id : null);
+      const p = map.queryRenderedFeatures(e.point, { layers: ['air-hit'] })[0];
+      if (p) return this.select({ key: p.properties.key });
+      const r = map.queryRenderedFeatures(e.point, { layers: ['air-route-hit'] })[0];
+      this.select(r ? { route: r.properties.id } : null);
     });
-    for (const id of ['air-dot', 'air-route-hit']) { map.on('mouseenter', id, () => { map.getCanvas().style.cursor = 'pointer'; }); map.on('mouseleave', id, () => { map.getCanvas().style.cursor = ''; }); }
+    for (const id of ['air-hit', 'air-route-hit']) { map.on('mouseenter', id, () => { map.getCanvas().style.cursor = 'pointer'; }); map.on('mouseleave', id, () => { map.getCanvas().style.cursor = ''; }); }
+    map.on('dragstart', () => { if (this.follow) this.setFollow(false); });
     this.points();
   },
-  LAYERS: ['air-route', 'air-route-sel', 'air-route-hit', 'air-trail', 'air-glow', 'air-dot', 'air-dest', 'air-port', 'air-label'],
+  planeSize(key) { const s = ['case', ['==', ['get', 'key'], key || '-'], 1.4, 1]; return ['interpolate', ['linear'], ['zoom'], 1, ['*', 0.5, s], 4, ['*', 0.64, s], 8, ['*', 0.9, s]]; },
+  LAYERS: ['air-route', 'air-route-sel', 'air-route-hit', 'air-dest', 'air-port', 'air-trail', 'air-sel', 'air-plane', 'air-hit', 'air-label'],
   shown() { return this.routes.filter((r) => this.filter === 'all' || r.ap.id === this.filter); },
   points() {   // the airports, and the cities the shown routes reach (at the arc's end, so they sit on the right copy of the world)
     const f = [], seen = new Set();
@@ -7887,7 +7959,7 @@ const Flights = {
     this.card(true); this.loop();
   },
   exit() {
-    this.on = false; $('#zFlight').setAttribute('aria-pressed', 'false'); document.body.classList.remove('air-on');
+    this.on = false; this.follow = false; $('#zFlight').setAttribute('aria-pressed', 'false'); document.body.classList.remove('air-on');
     cancelAnimationFrame(this.raf); this.raf = 0; this.sel = null;
     for (const id of this.LAYERS) if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', 'none');
     $('#flightCard').hidden = true;
@@ -7898,67 +7970,127 @@ const Flights = {
   realSec() { const d = new Date(), s = d.getUTCHours() * 3600 + d.getUTCMinutes() * 60 + d.getUTCSeconds() + 8 * 3600; return s % 86400; },   // 广州时间
   now() { return (this.base + ((performance.now() - this.t0) / 1000) * this.speed) % 86400; },
   setSpeed(v) { this.base = v === 1 ? this.realSec() : this.now(); this.t0 = performance.now(); this.speed = v; this.card(); },   // 实时：回到真实的广州时间
-  // the flights in the air at moment T: each departure today or yesterday whose time aloft covers T
-  aloft(T) {
-    const out = [];
-    for (const r of this.shown()) for (const [dir, dep] of r.deps) for (const day of [0, -86400]) {
-      const t = T - (dep + day); if (t < 0 || t > r.dur) continue;
-      out.push({ r, dir, f: t / r.dur, dep: dep + day });
+  // where a flight is in its day at moment T: t is the time since it left the gate (negative before), taking yesterday's departures that are still out
+  since(o, T) { let t = (((T - o.dep) % 86400) + 86400) % 86400; if (t > o.r.dur + 3 * 3600) t -= 86400; return t; },
+  // the flight's state: taxi out, take-off, climb, cruise, descent, approach, landing, taxi in
+  phase(o, t) {
+    const r = o.r, A = r.dur - AIR_TO - AIR_TI, H0 = r.d < 900 ? 8900 : r.d < 2500 ? 9800 : 10700, vc = r.d > 6000 ? 900 : r.d > 2500 ? 860 : 800;
+    if (t < 0) return { st: '计划', f: 0, alt: 0, v: 0, ground: true, out: true };
+    if (t < AIR_TO) return { st: t < 120 ? '推出' : '滑行 · 准备起飞', f: 0, alt: 0, v: t < 120 ? 5 : 25, ground: true };
+    const a = t - AIR_TO, C = Math.min(1320, 0.3 * A), D = Math.min(1920, 0.36 * A), AP = Math.min(560, 0.12 * A), H = H0 + (r.d > 6000 && a > A / 2 ? 900 : 0);
+    if (a < A) {
+      const f = a / A;
+      if (a < 50) return { st: '起飞', f, alt: Math.round(a * 1.2), v: 150 + a * 3, air: true };
+      if (a < C) { const k = (a - 50) / (C - 50); return { st: '爬升', f, alt: H * Math.pow(k, 0.75), v: 330 + (vc - 330) * Math.sqrt(k), air: true }; }
+      if (a < A - D) return { st: '巡航', f, alt: H, v: vc + 18 * Math.sin(a / 900), air: true };
+      if (a < A - AP) { const k = (A - AP - a) / (D - AP); return { st: '下降', f, alt: 900 + (H - 900) * k, v: 430 + (vc - 430) * k, air: true }; }
+      if (a < A - 40) { const k = (A - 40 - a) / (AP - 40); return { st: '进近', f, alt: 900 * k, v: 260 + 170 * k, air: true }; }
+      return { st: '着陆', f, alt: 0, v: 250 - (a - (A - 40)) * 3, air: true };
     }
-    return out;
+    if (a < A + AIR_TI) return { st: '落地 · 滑行到停机位', f: 1, alt: 0, v: 20, ground: true };
+    return { st: '已到达', f: 1, alt: 0, v: 0, ground: true, done: true };
   },
   pos(r, f) { const p = r.at(f), q0 = r.pts[0][0]; let lo = p[0]; const ref = q0 + (r.endLon - q0) * f; while (lo - ref > 180) lo -= 360; while (lo - ref < -180) lo += 360; return [lo, p[1]]; },
+  at(o, f) { return this.pos(o.r, o.dir ? 1 - f : f); },
+  head(o, f) {   // compass heading along the arc at f (for the plane symbol, which points north)
+    const a = this.at(o, Math.min(f, 0.995)), b = this.at(o, Math.min(f, 0.995) + 0.004), y = (la) => Math.log(Math.tan(Math.PI / 4 + (la * Math.PI) / 360)) * 180 / Math.PI;
+    return (Math.atan2(b[0] - a[0], y(b[1]) - y(a[1])) * 180) / Math.PI;
+  },
+  // the flights at their gate, taxiing or in the air at moment T
+  active(T) {
+    const out = [];
+    for (const r of this.shown()) for (const o of r.deps) { const t = this.since(o, T); if (t >= 0 && t <= r.dur) out.push({ o, t, ph: this.phase(o, t) }); }
+    return out;
+  },
   loop() {
     cancelAnimationFrame(this.raf);
     const step = (ts) => {
       if (!this.on || document.hidden) { this.raf = 0; return; }
       this.raf = requestAnimationFrame(step);
       if (ts - this.last < 66) return; this.last = ts;
-      const T = this.now(), fl = this.aloft(T), dots = [], trails = [];
-      for (const o of fl) {
-        const g = (f) => this.pos(o.r, o.dir ? 1 - f : f), tail = Math.min(o.f, 0.035 * Math.max(1, 6000 / o.r.d) ** 0.35);
-        dots.push({ type: 'Feature', properties: { c: o.r.ap.c, r: o.r.id, a: o.r.ap.id }, geometry: { type: 'Point', coordinates: g(o.f) } });
-        if (tail > 0.002) { const c = []; for (let i = 0; i <= 6; i++) c.push(g(o.f - tail + (tail * i) / 6)); trails.push({ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: c } }); }
+      const T = this.now(), fl = this.active(T), planes = [], trails = [], selKey = this.sel && this.sel.o ? this.sel.o.key : '';
+      let air = 0, selPos = null;
+      for (const x of fl) {
+        const { o, ph } = x, p = this.at(o, ph.f);
+        if (ph.air) {
+          air++;
+          const tail = Math.min(ph.f, 0.035 * Math.max(1, 6000 / o.r.d) ** 0.35);
+          if (tail > 0.002) { const c = []; for (let i = 0; i <= 6; i++) c.push(this.at(o, ph.f - tail + (tail * i) / 6)); trails.push({ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: c } }); }
+        }
+        const feat = { type: 'Feature', properties: { a: o.r.ap.id, c: o.r.ap.c, key: o.key, b: Math.round(this.head(o, ph.f)) }, geometry: { type: 'Point', coordinates: p } };
+        if (o.key === selKey) { selPos = p; continue; }
+        planes.push(feat);
       }
-      this.live = fl.length;
-      map.getSource('air-fly').setData({ type: 'FeatureCollection', features: dots });
+      if (selPos) planes.push({ type: 'Feature', properties: { a: this.sel.o.r.ap.id, c: this.sel.o.r.ap.c, key: selKey, b: Math.round(this.head(this.sel.o, this.phase(this.sel.o, this.since(this.sel.o, T)).f)) }, geometry: { type: 'Point', coordinates: selPos } });   // drawn last: on top
+      this.live = air; this.cur = fl;
+      map.getSource('air-fly').setData({ type: 'FeatureCollection', features: planes });
       map.getSource('air-trail').setData({ type: 'FeatureCollection', features: trails });
+      if (this.follow && selPos && !map.isEasing()) map.jumpTo({ center: selPos });
       if (ts - this.lastUi > 400) { this.lastUi = ts; this.card(); }
     };
     this.raf = requestAnimationFrame(step);
   },
-  select(id) {
-    this.sel = this.routes.find((r) => r.id === id) || null;
-    map.setFilter('air-route-sel', ['==', ['get', 'id'], this.sel ? this.sel.id : '']);
+  select(s) {
+    const o = s && s.key ? this.byKey.get(s.key) : null, r = o ? o.r : s && s.route ? this.routes.find((x) => x.id === s.route) : null;
+    this.sel = o ? { o } : r ? { r } : null;
+    if (!o && this.follow) this.setFollow(false);
+    map.setFilter('air-route-sel', ['==', ['get', 'id'], r ? r.id : '']);
+    map.setFilter('air-sel', ['==', ['get', 'key'], o ? o.key : '']);
+    map.setLayoutProperty('air-plane', 'icon-size', this.planeSize(o ? o.key : ''));
     this.card();
   },
+  setFollow(v) {
+    this.follow = v;
+    const b = $('#flightCard [data-follow]'); if (b) { b.setAttribute('aria-pressed', String(v)); b.textContent = v ? '停止跟随' : '跟随这班飞机'; }
+    if (v && this.sel && this.sel.o) { const ph = this.phase(this.sel.o, this.since(this.sel.o, this.now())); map.easeTo({ center: this.at(this.sel.o, ph.f), zoom: Math.max(map.getZoom(), 4.2), duration: reduceMotion ? 0 : 900 }); }
+  },
   hm(s) { s = ((s % 86400) + 86400) % 86400; return `${String(Math.floor(s / 3600)).padStart(2, '0')}:${String(Math.floor((s % 3600) / 60)).padStart(2, '0')}`; },
-  dur(s) { const m = Math.round(s / 60); return m >= 60 ? `${Math.floor(m / 60)} 小时${m % 60 ? ` ${m % 60} 分` : ''}` : `${m} 分钟`; },
+  dur(s) { const m = Math.max(0, Math.round(s / 60)); return m >= 60 ? `${Math.floor(m / 60)} 小时${m % 60 ? ` ${m % 60} 分` : ''}` : `${m} 分钟`; },
   card(first) {
     const box = $('#flightCard'); if (!this.on) { box.hidden = true; return; }
     if (first || !box.dataset.ready) {
       box.dataset.ready = '1';
       box.innerHTML = `<button class="icon-btn x" data-x aria-label="关闭飞行界面">${ICONS.close}</button>
         <div class="rk"><i style="background:linear-gradient(90deg,#2563EB,#E0435A)"></i>航空 · 示意航线</div><h3>飞行地图</h3><p class="rnow" data-now></p>
-        <div class="fl-row" data-ap>${[['all', '全部', '#8194B8'], ...AIRPORTS.map((a) => [a.id, a.n, a.c])].map(([k, n, c]) => `<button type="button" class="fl-chip" data-ap="${k}" aria-pressed="${this.filter === k}"><i style="background:${c}"></i>${n}</button>`).join('')}</div>
-        <div class="fl-row fl-speed" data-sp>${[[1, '实时'], [100, '100×'], [600, '600×']].map(([v, n]) => `<button type="button" class="fl-chip" data-sp="${v}" aria-pressed="${this.speed === v}">${n}</button>`).join('')}</div>
-        <div class="fl-sel" data-sel></div><p class="fl-note">航线和班次是示意，不是实时航班；点一条航线或一个亮点看详情。</p>`;
+        <div class="fl-row">${[['all', '全部', '#8194B8'], ...AIRPORTS.map((a) => [a.id, a.n, a.c])].map(([k, n, c]) => `<button type="button" class="fl-chip" data-ap="${k}" aria-pressed="${this.filter === k}"><i style="background:${c}"></i>${n}</button>`).join('')}</div>
+        <div class="fl-row fl-speed">${[[1, '实时'], [100, '100×'], [600, '600×']].map(([v, n]) => `<button type="button" class="fl-chip" data-sp="${v}" aria-pressed="${this.speed === v}">${n}</button>`).join('')}</div>
+        <div class="fl-sel" data-sel></div><p class="fl-note">航线、班次、航司和机型都是示意，不是实时航班；点一架小飞机看这班飞机，点一条航线看航线。</p>`;
       box.querySelector('[data-x]').addEventListener('click', () => this.exit());
-      box.querySelectorAll('[data-ap]').forEach((b) => b.addEventListener('click', () => { if (!b.dataset.ap || b.tagName !== 'BUTTON') return; this.filter = b.dataset.ap; this.sel = null; map.setFilter('air-route-sel', ['==', ['get', 'id'], '']); this.points(); box.querySelectorAll('button[data-ap]').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); this.card(); }));
+      box.querySelectorAll('button[data-ap]').forEach((b) => b.addEventListener('click', () => {
+        this.filter = b.dataset.ap; if (this.sel && (this.sel.o || this.sel).r && this.filter !== 'all' && (this.sel.o ? this.sel.o.r : this.sel.r).ap.id !== this.filter) this.select(null);
+        this.points(); box.querySelectorAll('button[data-ap]').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); this.card();
+      }));
       box.querySelectorAll('button[data-sp]').forEach((b) => b.addEventListener('click', () => { this.setSpeed(+b.dataset.sp); box.querySelectorAll('button[data-sp]').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); }));
       box.hidden = false;
     }
-    const T = this.now(), rs = this.shown();
-    box.querySelector('[data-now]').textContent = `广州时间 ${this.hm(T)}${this.speed > 1 ? `（${this.speed} 倍速）` : ''} · ${rs.length} 条航线 · 空中约 ${this.live} 班`;
-    const sel = box.querySelector('[data-sel]'), r = this.sel;
-    let html = '';
-    if (r) {
-      const up = this.aloft(T).filter((o) => o.r === r).length;
-      const next = r.deps.filter(([dir]) => dir === 0).map(([, d]) => d).sort((a, b) => ((a - T + 86400) % 86400) - ((b - T + 86400) % 86400))[0];
-      html = `<div class="rk"><i style="background:${r.ap.c}"></i>${r.ap.n}</div><h4 class="sroute">${esc(r.ap.n)}<span>⇄</span>${esc(r.name)}</h4>
-        <table><tr><td>距离</td><td>约 ${Math.round(r.d / 10) * 10} 公里</td></tr><tr><td>飞行时间</td><td>约 ${this.dur(r.dur)}</td></tr><tr><td>每天</td><td>往返各约 ${r.f} 班</td></tr><tr><td>下一班出发</td><td>${this.hm(next)}</td></tr><tr><td>正在飞</td><td>${up} 班</td></tr></table>`;
+    const T = this.now();
+    box.querySelector('[data-now]').textContent = `广州时间 ${this.hm(T)}${this.speed > 1 ? `（${this.speed} 倍速）` : ''} · ${this.shown().length} 条航线 · 空中约 ${this.live} 班`;
+    const sel = box.querySelector('[data-sel]'), S = this.sel, k = S ? (S.o ? 'o:' + S.o.key : 'r:' + S.r.id) : '';
+    if (sel.dataset.k !== k) {   // drawn once per selection, so the button inside is never swallowed by a redraw
+      sel.dataset.k = k; sel.innerHTML = '';
+      if (S && S.o) {
+        sel.innerHTML = `<div data-h></div><p class="rnow" data-st></p><div data-prog></div><div data-tab></div><button type="button" class="btn ghost fl-follow" data-follow aria-pressed="false">跟随这班飞机</button>`;
+        sel.querySelector('[data-follow]').addEventListener('click', () => this.setFollow(!this.follow));
+      } else if (S) sel.innerHTML = '<div data-tab></div>';
     }
-    if (sel._h !== html) { sel._h = html; sel.innerHTML = html; }
+    if (!S) return;
+    const set = (q, h) => { const e = sel.querySelector(q); if (e && e._h !== h) { e._h = h; e.innerHTML = h; } };
+    if (S.r) {
+      const r = S.r, up = this.active(T).filter((x) => x.o.r === r && x.ph.air).length;
+      const next = r.deps.filter((o) => o.dir === 0).map((o) => o.dep).sort((a, b) => ((a - T + 86400) % 86400) - ((b - T + 86400) % 86400))[0];
+      const als = [...new Set(r.deps.map((o) => AIRLINES[o.al][0]))].join('、');
+      set('[data-tab]', `<div class="rk"><i style="background:${r.ap.c}"></i>航线</div><h4 class="sroute">${esc(r.ap.n)}<span>⇄</span>${esc(r.name)}</h4>
+        <table><tr><td>距离</td><td>约 ${Math.round(r.d / 10) * 10} 公里</td></tr><tr><td>飞行时间</td><td>约 ${this.dur(r.dur)}</td></tr><tr><td>每天</td><td>往返各约 ${r.f} 班</td></tr><tr><td>航司</td><td>${esc(als)}</td></tr><tr><td>下一班出发</td><td>${this.hm(next)}</td></tr><tr><td>正在飞</td><td>${up} 班</td></tr></table>`);
+      return;
+    }
+    const o = S.o, r = o.r, t = this.since(o, T), ph = this.phase(o, t), [aln, alc] = AIRLINES[o.al];
+    const from = o.dir ? r.name : r.ap.n, to = o.dir ? r.ap.n : r.name;
+    set('[data-h]', `<div class="rk"><i style="background:${alc}"></i>${esc(aln)} · <b class="mono">${o.no}</b><span class="fl-tag">示意</span></div><h4 class="sroute">${esc(from)}<span>→</span>${esc(to)}</h4>`);
+    const nums = (n) => Math.round(n).toLocaleString('zh-CN');
+    set('[data-st]', ph.air ? `<b>${ph.st}</b> · 高度 ${nums(Math.round(ph.alt / 10) * 10)} 米 · 地速 ${nums(ph.v)} km/h` : ph.done ? `<b>已到达</b> ${esc(to)}` : t < 0 ? `<b>计划</b> · ${this.hm(o.dep)} 从${esc(from)}出发` : `<b>${ph.st}</b> · ${esc(ph.f ? to : from)}`);
+    const p = Math.max(0, Math.min(1, t / r.dur)), pc = (p * 100).toFixed(1);
+    set('[data-prog]', `<div class="rprog" style="--lc:${r.ap.c}"><div class="rp-bar"><i style="width:${pc}%"></i><b style="left:${pc}%"></b></div><div class="rp-txt"><span>出发 <b>${this.hm(o.dep)}</b></span><span>${t > 0 && !ph.done ? `剩余约 ${this.dur(r.dur - t)}` : ''}</span><span>到达 <b>${this.hm(o.dep + r.dur)}</b></span></div></div>`);
+    set('[data-tab]', `<table><tr><td>机型</td><td>${acName(o.ac)}</td></tr><tr><td>航程</td><td>约 ${Math.round(r.d / 10) * 10} 公里</td></tr><tr><td>计划时长</td><td>约 ${this.dur(r.dur)}</td></tr></table>`);
   },
 };
 // the boats as they really are: length and beam (m), height of the deck above the water (fb), hull and deck colours
