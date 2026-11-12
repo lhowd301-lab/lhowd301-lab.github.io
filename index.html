@@ -7939,7 +7939,7 @@ const Flights = {
     if (first || !box.dataset.ready) {
       box.dataset.ready = '1';
       box.innerHTML = `<button class="icon-btn x" data-x aria-label="关闭飞行界面">${ICONS.close}</button>
-        <div class="rk"><i style="background:linear-gradient(90deg,#2563EB,#E0435A)"></i>航空 · 示意航线</div><h3>从大湾区飞往世界</h3><p class="rnow" data-now></p>
+        <div class="rk"><i style="background:linear-gradient(90deg,#2563EB,#E0435A)"></i>航空 · 示意航线</div><h3>飞行地图</h3><p class="rnow" data-now></p>
         <div class="fl-row" data-ap>${[['all', '全部', '#8194B8'], ...AIRPORTS.map((a) => [a.id, a.n, a.c])].map(([k, n, c]) => `<button type="button" class="fl-chip" data-ap="${k}" aria-pressed="${this.filter === k}"><i style="background:${c}"></i>${n}</button>`).join('')}</div>
         <div class="fl-row fl-speed" data-sp>${[[1, '实时'], [100, '100×'], [600, '600×']].map(([v, n]) => `<button type="button" class="fl-chip" data-sp="${v}" aria-pressed="${this.speed === v}">${n}</button>`).join('')}</div>
         <div class="fl-sel" data-sel></div><p class="fl-note">航线和班次是示意，不是实时航班；点一条航线或一个亮点看详情。</p>`;
