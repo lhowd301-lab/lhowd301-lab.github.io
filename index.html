@@ -6904,7 +6904,7 @@ const Metro = {
     const sysById = Object.fromEntries(this.systems.map((s) => [s.id, s]));
     const named = new Map();
     for (const L of D.lines) {
-      const line = { id: L.id, sys: L.sys || ['gz'], hours: L.hours, name: L.name, kind: L.kind, color: L.color || '#7A9BD6', vis: this.vis(L.color || '#7A9BD6'), tlen: L.tlen, v: (L.vmax / 3.6) * (L.kind === 'tram' ? 0.72 : 0.9), a: L.acc, svc: [], box: [1, 1, 0, 0] };
+      const line = { id: L.id, sys: L.sys || ['gz'], hours: L.hours, name: L.name, ends: L.ends, kind: L.kind, color: L.color || '#7A9BD6', vis: this.vis(L.color || '#7A9BD6'), tlen: L.tlen, v: (L.vmax / 3.6) * (L.kind === 'tram' ? 0.72 : 0.9), a: L.acc, svc: [], box: [1, 1, 0, 0] };
       L.svc.forEach((S, si) => {
         const n = S.p.length / 2, mx = new Float64Array(n), my = new Float64Array(n), cs = new Float64Array(n);
         let X = 0, Y = 0, pl = 0, pt = 0;
@@ -6915,8 +6915,8 @@ const Metro = {
           pl = lng; pt = lat;
           line.box = [Math.min(line.box[0], mx[i]), Math.min(line.box[1], my[i]), Math.max(line.box[2], mx[i]), Math.max(line.box[3], my[i])];
         }
-        const svc = { line, si, mx, my, cs, L: cs[n - 1], st: S.st, loop: S.loop, open: S.open, hw: S.hw, a: S.a, b: S.b, deps: {} };
-        for (const [s, name] of S.st) { const q = this.at(svc, s); if (!named.has(name)) named.set(name, []); named.get(name).push({ line, x: q[0], y: q[1] }); }
+        const svc = { line, si, mx, my, cs, L: cs[n - 1], st: S.st, loop: S.loop, open: S.open, hw: S.hw, a: S.a, b: S.b, deps: {}, soon: S.soon || '', what: S.what || '' };
+        for (const [s, name] of S.st) { const q = this.at(svc, s); if (!named.has(name)) named.set(name, []); named.get(name).push({ line, x: q[0], y: q[1], soon: !!svc.soon }); }
         line.svc.push(svc); this.svcs.push(svc);
       });
       this.lines.push(line);
@@ -6934,13 +6934,21 @@ const Metro = {
         if (g) { g.pts.push(o); g.x = g.pts.reduce((s, q) => s + q.x, 0) / g.pts.length; g.y = g.pts.reduce((s, q) => s + q.y, 0) / g.pts.length; } else groups.push({ x: o.x, y: o.y, pts: [o] });
       }
       for (const g of groups) {
-        const lines = [...new Set(g.pts.map((q) => q.line))];
-        const st = { name, x: g.x, y: g.y, lines, inter: new Set(lines.map((l) => l.id)).size > 1, metro: lines.some((l) => l.kind !== 'tram') };
+        const lines = [...new Set(g.pts.map((q) => q.line))], live = new Set(g.pts.filter((q) => !q.soon).map((q) => q.line));
+        // soon: only on a section that has not opened yet; soonLines: the lines that come here only once it opens
+        const st = { name, x: g.x, y: g.y, lines, inter: new Set(lines.map((l) => l.id)).size > 1, metro: lines.some((l) => l.kind !== 'tram'), soon: !live.size, soonLines: lines.filter((l) => !live.has(l)) };
         if (st.inter) this.inter.add(name);
         this.stations.push(st);
       }
     }
     this.stations.sort((a, b) => b.inter - a.inter || b.lines.length - a.lines.length);
+    // two stations with different names joined by a passage inside the fare gates (淘金 ⇄ 建设六马路): the nearest pair
+    this.links = [];
+    for (const [na, nb] of D.links || []) {
+      let best = null;
+      for (const a of this.stations) if (a.name === na) for (const b of this.stations) if (b.name === nb) { const d = Math.hypot(a.x - b.x, a.y - b.y); if (!best || d < best.d) best = { a, b, d }; }
+      if (best && best.d < 1e-4) { this.links.push(best); best.a.link = best.b; best.b.link = best.a; }
+    }
     for (const svc of this.svcs) svc.trip = [this.trip(svc, 0), this.trip(svc, 1)];
   },
   at(svc, s) {   // mercator point s metres along a service's track
@@ -7007,6 +7015,7 @@ const Metro = {
   update() {   // every train that is out on the network right now
     const { day, sec } = this.clock(), out = this.trains; out.length = 0;
     for (const svc of this.svcs) for (let dir = 0; dir < 2; dir++) {
+      if (svc.soon) break;   // built, not open yet: no trains
       const tr = svc.trip[dir];
       for (let back = 0; back < 2; back++) {
         const dd = day - back, t = sec + back * 86400, deps = this.deps(svc, dir, this.wkOf(dd)), t0 = t - tr.T;
@@ -7091,18 +7100,29 @@ const Metro = {
         const dim = hi && hi !== line ? 0.16 : 1, lw = line.kind === 'tram' ? tw : w;
         ctx.strokeStyle = line.vis; ctx.globalAlpha = k * dim * (glow ? 0.2 : 1); ctx.lineWidth = glow ? lw * 3.4 : lw;
         for (const svc of line.svc) {
+          if (svc.soon && glow) continue;
           ctx.beginPath(); let pen = false;
           for (let i = 0; i < svc.mx.length; i++) {
             const q = this.P(V, svc.mx[i], svc.my[i], D);
             if (!q) { pen = false; continue; }
             if (pen) ctx.lineTo(q[0], q[1]); else { ctx.moveTo(q[0], q[1]); pen = true; }
           }
-          ctx.stroke();
+          if (svc.soon) {   // not open yet: dashed and a little faint, the way the operator's map draws it
+            ctx.save(); ctx.setLineDash([lw * 1.7, lw * 1.3]); ctx.lineCap = 'butt'; ctx.globalAlpha = k * dim * 0.78; ctx.stroke(); ctx.restore();
+          } else ctx.stroke();
         }
       }
     };
     ctx.lineCap = ctx.lineJoin = 'round';
     pass(true); pass(false); ctx.globalAlpha = 1;
+    // a passage between two differently named stations: a short white connector
+    for (const { a, b } of this.links || []) {
+      const qa = this.P(V, a.x, a.y, D), qb = this.P(V, b.x, b.y, D); if (!qa || !qb || V.z < 12.2) continue;
+      const dim = hi && !a.lines.includes(hi) && !b.lines.includes(hi) ? 0.18 : 1;
+      ctx.globalAlpha = k * dim; ctx.lineWidth = Math.max(2.4, w * 0.9); ctx.strokeStyle = '#0A1426'; ctx.beginPath(); ctx.moveTo(qa[0], qa[1]); ctx.lineTo(qb[0], qb[1]); ctx.stroke();
+      ctx.lineWidth = Math.max(1.2, w * 0.45); ctx.strokeStyle = '#F8FBFF'; ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
     // stations and their names
     this.stHits.length = 0;
     const font = this.font || (this.font = getComputedStyle(document.body).fontFamily), boxes = [];
@@ -7112,7 +7132,7 @@ const Metro = {
       if (!s.inter && V.z < 12.2) continue;
       if (!s.metro && V.z < 13) continue;
       const q = this.P(V, s.x, s.y, D); if (!q || q[0] < -40 || q[0] > W + 40 || q[1] < -40 || q[1] > H + 40) continue;
-      const dim = hi && !s.lines.includes(hi) ? 0.18 : 1;
+      const dim = (hi && !s.lines.includes(hi) ? 0.18 : 1) * (s.soon ? 0.8 : 1);
       const r = s.inter ? Math.max(3.2, w * 0.95) : Math.max(2, w * 0.62);
       ctx.globalAlpha = k * dim;
       ctx.beginPath(); ctx.arc(q[0], q[1], r, 0, Math.PI * 2);
@@ -7120,13 +7140,13 @@ const Metro = {
       ctx.lineWidth = s.inter ? 1.6 : Math.max(1.2, w * 0.36); ctx.strokeStyle = s.inter ? '#0A1426' : s.lines[0].vis; ctx.stroke();
       if (this.selSt === s) { ctx.beginPath(); ctx.arc(q[0], q[1], r + 5, 0, Math.PI * 2); ctx.lineWidth = 2; ctx.strokeStyle = '#93C5FD'; ctx.stroke(); }
       this.stHits.push([q[0], q[1], s]);
-      if (!(showAll || (showInter && s.inter)) || dim < 1) continue;
+      if (!(showAll || (showInter && s.inter)) || dim < 0.8) continue;
       const fs = s.inter ? 12 : 11; ctx.font = `${s.inter ? 600 : 500} ${fs}px ${font}`;
       const tw2 = ctx.measureText(s.name).width, bx = [q[0] + r + 4, q[1] - fs / 2 - 1, tw2 + 2, fs + 2];
       if (bx[0] + bx[2] > W - 4 || boxes.some((b) => bx[0] < b[0] + b[2] && b[0] < bx[0] + bx[2] && bx[1] < b[1] + b[3] && b[1] < bx[1] + bx[3])) continue;
       boxes.push(bx);
       ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(3,7,16,.92)'; ctx.strokeText(s.name, bx[0], q[1]);
-      ctx.fillStyle = s.inter ? '#F1F6FF' : '#B9CBEA'; ctx.fillText(s.name, bx[0], q[1]);
+      ctx.fillStyle = s.inter ? '#F1F6FF' : s.soon ? '#8C9FC0' : '#B9CBEA'; ctx.fillText(s.name, bx[0], q[1]);
     }
     ctx.globalAlpha = 1;
   },
@@ -7293,14 +7313,15 @@ const Metro = {
       if (!line.sys.includes(this.cur)) continue;
       const b = document.createElement('button');
       b.className = 'sub-line'; b.type = 'button'; b.dataset.line = line.id; b.setAttribute('aria-pressed', String(this.hi === line)); b.setAttribute('role', 'listitem');
-      const svc = line.svc[0], ends = line.svc.length > 1 && line.id === '14' ? '含知识城支线' : svc.loop ? '环线' : `${svc.a} ⇄ ${svc.b}${line.svc.length > 1 ? ' 等' : ''}`;
-      b.innerHTML = `<i style="background:${line.vis}"></i><b>${line.name}</b><small>${ends}</small>`;
+      const svc = line.svc[0], soon = line.svc.find((v) => v.soon);
+      const ends = line.ends || (line.svc.length > 1 && line.id === '14' ? '含知识城支线' : svc.loop ? '环线' : `${svc.a} ⇄ ${svc.b}${line.svc.length > 1 ? ' 等' : ''}`);
+      b.innerHTML = `<i style="background:${line.vis}"></i><b>${line.name}</b><small>${ends}${soon ? ` · ${soon.what}${soon.soon.replace(/^\d+\s*/, '')}开通` : ''}</small>`;
       b.addEventListener('click', () => this.highlight(line));
       list.appendChild(b);
     }
     const S = this.sysNow(), mine = this.lines.filter((l) => l.sys.includes(S.id)), nMetro = mine.filter((l) => l.kind !== 'tram').length, nTram = mine.length - nMetro;
-    const nSt = this.stations.filter((st) => st.lines.some((l) => l.sys.includes(S.id))).length;
-    $('#subStat').textContent = `${S.name} · ${nMetro} 条线路${nTram ? ` · ${S.tl || '有轨电车'} ${nTram} 条` : ''} · ${nSt} 座车站`;
+    const here = this.stations.filter((st) => st.lines.some((l) => l.sys.includes(S.id))), nSt = here.filter((st) => !st.soon).length, nSoon = here.length - nSt;
+    $('#subStat').textContent = `${S.name} · ${nMetro} 条线路${nTram ? ` · ${S.tl || '有轨电车'} ${nTram} 条` : ''} · ${nSt} 座车站${nSoon ? ` · ${nSoon} 座新站年底开通` : ''}`;
   },
   period(sec, wk, n) {
     const h = sec / 3600, S = this.sysNow(), late = S.h1 >= 24 && h < S.h1 - 24 + 0.4;
@@ -7351,15 +7372,18 @@ const Metro = {
         <table><tr><td>速度</td><td>${Math.round(q.v * 3.6)} km/h</td></tr><tr><td>列车长</td><td>约 ${line.tlen} 米</td></tr><tr><td>还剩</td><td>${left} 站</td></tr></table>`;
     } else if (this.selSt) {
       const s = this.selSt, rows = this.board(s);
-      html = `<div class="k">${s.lines.map((l) => `<i style="background:${l.vis}"></i>`).join('')}${s.lines.map((l) => l.name).join(' · ')}</div><h3>${s.name}</h3>
-        <table>${rows.length ? rows.map((r) => `<tr><td><i style="background:${r.line.vis}"></i>往 ${r.to}</td><td>${r.eta < 30 ? '进站中' : r.eta < 3600 ? Math.ceil(r.eta / 60) + ' 分钟' : `${r.first ? '首班 ' : ''}${String(Math.floor(r.at / 3600) % 24).padStart(2, '0')}:${String(Math.floor((r.at % 3600) / 60)).padStart(2, '0')}`}</td></tr>`).join('') : '<tr><td>今天的车已经开完了</td><td></td></tr>'}</table>`;
+      const when = (l) => { const v = l.svc.find((x) => x.soon); return v ? v.soon + '开通' : ''; };
+      const later = s.soonLines.map((l) => `<tr><td><i style="background:${l.vis}"></i>${l.name}</td><td>${when(l)}</td></tr>`).join('');
+      const link = s.link ? `<p class="sub-now">与${s.link.name}站有通道相连，换乘不用出闸${s.soon || s.link.soon ? '（通道随新线开通）' : ''}</p>` : '';
+      html = `<div class="k">${s.lines.map((l) => `<i style="background:${l.vis}"></i>`).join('')}${s.lines.map((l) => l.name).join(' · ')}</div><h3>${s.name}</h3>${link}
+        <table>${rows.length ? rows.map((r) => `<tr><td><i style="background:${r.line.vis}"></i>往 ${r.to}</td><td>${r.eta < 30 ? '进站中' : r.eta < 3600 ? Math.ceil(r.eta / 60) + ' 分钟' : `${r.first ? '首班 ' : ''}${String(Math.floor(r.at / 3600) % 24).padStart(2, '0')}:${String(Math.floor((r.at % 3600) / 60)).padStart(2, '0')}`}</td></tr>`).join('') : s.soon ? '' : '<tr><td>今天的车已经开完了</td><td></td></tr>'}${later}</table>`;
     }
     if (body && body._h !== html) { body._h = html; body.innerHTML = html; }
   },
   board(s) {   // the next train each way at a station
     const { day, sec } = this.clock(), best = new Map();
     for (const svc of this.svcs) {
-      if (!s.lines.includes(svc.line)) continue;
+      if (svc.soon || !s.lines.includes(svc.line)) continue;
       for (let dir = 0; dir < 2; dir++) {
         const tr = svc.trip[dir], j = tr.st.findIndex((o, i) => o.n === s.name && i < tr.st.length - 1);
         if (j < 0) continue;
