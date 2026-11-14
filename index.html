@@ -533,6 +533,9 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
 .status .coord{font-family:var(--f-mono);font-size:11.5px;color:var(--ink);white-space:nowrap}
 .status .attr{color:var(--ink-3)}
 .status .attr a{color:var(--ink-2)}
+.status .icp{color:var(--ink-3);text-decoration:none}
+.status .icp:hover{color:var(--ink-2);text-decoration:underline}
+.icp-m{display:none}
 
 /* ---------- detail card */
 .detail{position:fixed;z-index:6;top:calc(80px + env(safe-area-inset-top,0px));right:calc(max(16px,env(safe-area-inset-right,0px)) + 260px + 14px);width:380px;max-height:calc(100% - 120px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;border-radius:20px;background:var(--glass-strong);border:1px solid var(--line);box-shadow:0 24px 60px -24px rgba(29,78,216,.45),0 2px 10px rgba(29,78,216,.08);overflow:hidden;animation:rise .28s cubic-bezier(.2,.8,.2,1)}
@@ -829,6 +832,9 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
   .zoom{grid-area:zoom;width:38px}
   .zoom button{height:36px}
   .status{display:none}
+  /* 手机上状态栏不显示：备案号单独一行，贴在最底下正中 */
+  .icp-m:not([hidden]){display:block;position:fixed;left:50%;transform:translateX(-50%);bottom:calc(2px + env(safe-area-inset-bottom,0px));font-size:9.5px;line-height:13px;padding:0 7px;border-radius:7px;background:var(--glass);color:var(--ink-3);text-decoration:none;white-space:nowrap}
+  body.icp-on #ui{padding-bottom:calc(20px + env(safe-area-inset-bottom,0px))}
   .detail{left:0;right:0;bottom:0;top:auto;width:auto;max-height:72%;border-radius:20px 20px 0 0;padding-bottom:env(safe-area-inset-bottom,0px)}
   #calPop,#diaryPop,#musicPop{left:max(8px,env(safe-area-inset-left,0px));right:max(8px,env(safe-area-inset-right,0px));width:auto;max-width:none}
   .sky-title h2{font-size:18px}
@@ -1192,7 +1198,9 @@ body.pure .pet-dock,body.pure .pet-bubble,body.pure .pet-chat{display:none!impor
   <div class="status glass" aria-live="off">
     <span class="coord" id="coord">23°07′N 113°16′E · 视高 —</span>
     <span class="attr">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> 贡献者 · SRTM 地形 · 火车、船、飞机均为模拟</span>
+    <a class="icp" data-icp href="https://beian.miit.gov.cn/" target="_blank" rel="noopener" hidden>粤ICP备2026181407号</a>
   </div>
+  <a class="icp-m" data-icp href="https://beian.miit.gov.cn/" target="_blank" rel="noopener" hidden>粤ICP备2026181407号</a>
   <button class="pet-dock" id="petDock" type="button" aria-label="萌宠榕忆"></button>
   <button class="pet-bubble" id="petBubble" type="button" hidden></button>
   <section class="pet-chat" id="petChat" hidden role="dialog" aria-label="和榕忆聊天">
@@ -1986,6 +1994,10 @@ const MODULES = [
 ];
 const ICON_OF = { food: ICONS.food, street: ICONS.street, landmark: ICONS.landmark, diary: ICONS.diary, metro: ICONS.metro, sky: ICONS.sky, pet: ICONS.pet };
 const state = { module: 'street', foodCat: 'all', active: null, city: 'gz', cityOpen: true, is3d: true, ready: false, navMin: false, cityMin: false, pure: false };
+// 备案号：只在备案过的域名（howardleong.work 及其子域名）和服务器 IP 上显示，链接到工信部的备案系统
+if (/(^|\.)howardleong\.work$/.test(location.hostname) || location.hostname === '129.204.194.163') {
+  document.querySelectorAll('[data-icp]').forEach((a) => { a.hidden = false; }); document.body.classList.add('icp-on');
+}
 
 /* ===================================================================== profile + socials + friends */
 function renderProfile() {
