@@ -1,7 +1,7 @@
 """核对服务器上的网站文件和 GitHub 上的最新版是否一致（按 server/manifest.txt 里每个文件的 sha256）。
 在服务器上运行：sudo python3 /var/www/beyond-horizons/server/check.py"""
 import hashlib, os, sys
-ROOT = '/var/www/beyond-horizons'
+ROOT = os.environ.get('BH_ROOT', '/var/www/beyond-horizons')
 man = os.path.join(ROOT, 'server', 'manifest.txt')
 if not os.path.exists(man): sys.exit('没有 server/manifest.txt，没法核对')
 bad, n = [], 0
