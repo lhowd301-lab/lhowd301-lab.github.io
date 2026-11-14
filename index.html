@@ -578,6 +578,12 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
 .f-logo img{max-width:82%;max-height:82%;object-fit:contain}
 .d-sub{margin:-8px 0 0;font-size:12.5px;color:var(--ink-2)}
 .d-text{margin:0;font-size:14px;line-height:1.8;color:var(--ink)}
+.d-diary{white-space:pre-line}
+.d-photos{display:grid;gap:8px;margin:14px 0 2px}
+.d-photos a{display:block;overflow:hidden;border-radius:12px;background:var(--ice)}
+.d-photos img{width:100%;height:100%;object-fit:cover;display:block}
+.pick-bar{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:30;display:flex;gap:10px;align-items:baseline;padding:10px 16px;border-radius:14px;font-size:13px;color:var(--ink-2);max-width:calc(100% - 32px)}
+.pick-bar b{color:var(--blue);white-space:nowrap}
 .d-quote{margin:0;padding:12px 14px;border-radius:12px;background:var(--ice-2);font-size:13.5px;line-height:1.8;color:var(--ink-2)}
 .d-quote b{display:block;font-size:11px;letter-spacing:.14em;color:var(--blue);margin-bottom:4px;font-weight:500}
 .d-meta{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 14px;margin:0;font-size:12.5px}
@@ -1198,7 +1204,7 @@ body.pure .pet-dock,body.pure .pet-bubble,body.pure .pet-chat{display:none!impor
   <div class="status glass" aria-live="off">
     <span class="coord" id="coord">23°07′N 113°16′E · 视高 —</span>
     <span class="attr">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> 贡献者 · SRTM 地形 · 火车、船、飞机均为模拟</span>
-    <a class="icp" data-icp href="https://beian.miit.gov.cn/" target="_blank" rel="noopener" hidden>粤ICP备2026181407号</a>
+    <span class="icp" data-icp hidden><a class="icp" href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备2026181407号</a> · 匿名统计访问量，不记录 IP</span>
   </div>
   <a class="icp-m" data-icp href="https://beian.miit.gov.cn/" target="_blank" rel="noopener" hidden>粤ICP备2026181407号</a>
   <button class="pet-dock" id="petDock" type="button" aria-label="萌宠榕忆"></button>
@@ -1998,6 +2004,63 @@ const state = { module: 'street', foodCat: 'all', active: null, city: 'gz', city
 if (/(^|\.)howardleong\.work$/.test(location.hostname) || location.hostname === '129.204.194.163') {
   document.querySelectorAll('[data-icp]').forEach((a) => { a.hidden = false; }); document.body.classList.add('icp-on');
 }
+// 自己服务器上的网站（备案过的域名 / 服务器 IP）才有后台（deploy/bh_admin.py）：访问统计、实时日记
+const BACKEND = /(^|\.)howardleong\.work$/.test(location.hostname) || location.hostname === '129.204.194.163' || (() => { try { return localStorage.getItem('bh-backend') === '1'; } catch (e) { return false; } })();
+const rid = () => Array.from(crypto.getRandomValues(new Uint8Array(9)), (b) => b.toString(36).padStart(2, '0')).join('');
+// 匿名访问统计：只发「打开了网站、换了板块和城市、点开了哪一项、还在看」，不用 cookie，不存 IP；
+// 浏览器开了「请勿追踪」就不发；后台登录过的人（自己）的访问不算
+const Stats = {
+  on: false, v: '', s: '',
+  init() {
+    if (!BACKEND || navigator.doNotTrack === '1' || navigator.globalPrivacyControl) return;
+    try {
+      if (localStorage.getItem('bh-admin-token')) return;
+      this.v = localStorage.getItem('bh-vid') || ''; if (!this.v) { this.v = rid(); localStorage.setItem('bh-vid', this.v); }
+    } catch (e) { this.v = rid(); }
+    this.s = rid(); this.on = true;
+    this.send('view', { m: state.module, c: (SITE.cities.find((x) => x.id === state.city) || {}).name || state.city, r: document.referrer, w: `${screen.width}x${screen.height}` });
+    setInterval(() => { if (document.visibilityState === 'visible') this.send('ping'); }, 30000);
+    addEventListener('pagehide', () => this.send('leave'));
+  },
+  send(e, o = {}) {
+    if (!this.on) return;
+    const body = JSON.stringify({ v: this.v, s: this.s, e, ...o });
+    try { if (navigator.sendBeacon && navigator.sendBeacon('/api/stat', new Blob([body], { type: 'text/plain' }))) return; } catch (err) { /* fall back to fetch */ }
+    fetch('/api/stat', { method: 'POST', body, keepalive: true, headers: { 'Content-Type': 'text/plain' } }).catch(() => {});
+  },
+};
+// 实时日记：后台（/admin）发布的日记从 /api/diary 读，发布后别人一打开网站就能看到；网站里写死的日记照样保留
+const LiveDiary = {
+  load() {
+    if (!BACKEND) return;
+    fetch('/api/diary', { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : [])).then((list) => {
+      if (!Array.isArray(list) || !list.length) return;
+      const ids = new Set(list.map((d) => d.id));
+      SITE.diary = [...SITE.diary.filter((d) => !ids.has(d.id)), ...list.map((d) => ({ ...d, lnglat: d.lnglat || undefined }))];
+      markers.diary.forEach((x) => x.m.remove()); markers.diary = [];
+      if (map && state.ready && state.module === 'diary') showMarkers('diary');
+      renderCities();
+    }).catch(() => {});
+  },
+};
+// 后台写日记时「在地图上选位置」：打开 网址/#pick-diary，在地图上点一下，位置存进本机，后台页面自动收到
+const PickMode = {
+  on: BACKEND && location.hash === '#pick-diary',
+  init() {
+    if (!this.on || !map) return;
+    const bar = document.createElement('div'); bar.className = 'pick-bar glass'; bar.setAttribute('role', 'status');
+    bar.innerHTML = '<b>选日记的位置</b><span>在地图上点一下写日记的地方</span>';
+    document.body.appendChild(bar); map.getCanvas().style.cursor = 'crosshair';
+    let mk = null;
+    map.on('click', (e) => {
+      const p = [+e.lngLat.lng.toFixed(6), +e.lngLat.lat.toFixed(6)];
+      try { localStorage.setItem('bh-pick', JSON.stringify({ lnglat: p, t: Date.now() })); } catch (err) { /* storage blocked */ }
+      if (mk) mk.setLngLat(p); else mk = new maplibregl.Marker({ color: '#2563EB' }).setLngLat(p).addTo(map);
+      bar.innerHTML = `<b>已选好</b><span>${p[1].toFixed(5)}, ${p[0].toFixed(5)}　回到后台页面就能看到；想换个位置就再点一下</span>`;
+    });
+  },
+};
+Stats.init(); LiveDiary.load();
 
 /* ===================================================================== profile + socials + friends */
 function renderProfile() {
@@ -5053,6 +5116,7 @@ function initMap() {
     $('#veil').classList.add('gone');
     setTimeout(() => $('#veil').remove(), 800);
     setModule(state.module, { fit: false });
+    PickMode.init();
     const home = HOME();
     if (reduceMotion) map.jumpTo(home); else map.flyTo({ ...home, duration: 3200, curve: 1.2, essential: true });
   });
@@ -5407,6 +5471,7 @@ $('#cityPanel').addEventListener('click', (e) => {
   if (cb && !cb.disabled) {
     const c = SITE.cities.find((x) => x.id === cb.dataset.city);
     const wasOpen = state.city === c.id && state.cityOpen;
+    if (state.city !== c.id) Stats.send('city', { c: c.name });
     state.city = c.id;
     if (mq.matches) state.cityOpen = !wasOpen;
     else { state.cityOpen = true; if (Auto.on()) Auto.dismiss('city'); else { state.cityMin = true; applyHud('none'); } }
@@ -5513,6 +5578,7 @@ function applyHud(mode = 'ease') {
 }
 
 function setModule(id, opts = {}) {
+  if (state.ready && id !== state.module) Stats.send('mod', { m: id });
   if (id === 'sky') { Sky.open(); return; }
   if (id === 'metro') { Metro.go(); return; }
   if (id === 'pet') { Pet.open(); return; }
@@ -5539,6 +5605,7 @@ function openDetail(type, id, opts = {}) {
   const item = findItem(type, id);
   if (!item) return;
   Pet.saw(type, id);
+  Stats.send('open', { m: type, i: id, t: item.title || item.name || item.place || '' });
   if (state.module !== type) setModule(type, { fit: false });
   state.active = id;
   closePops();
@@ -5778,7 +5845,8 @@ function detailHTML(type, it) {
   return `<div class="d-body" style="padding-top:22px">
     <div class="d-kicker">${it.sample ? SAMPLE : ''}${ktag(it)}<span class="mono">${esc(it.date)}</span><span>${esc(it.place)}</span></div>
     <h2 class="d-title">${esc(it.title)}</h2>
-    <p class="d-text">${esc(it.text)}</p>
+    <p class="d-text d-diary">${esc(it.text)}</p>
+    ${(it.photos || []).length ? `<div class="d-photos">${it.photos.map((p) => `<a href="${esc(p.src)}" target="_blank" rel="noopener" style="aspect-ratio:${+p.ar || 1.333}"><img src="${esc(p.src)}" alt="" loading="lazy"></a>`).join('')}</div>` : ''}
     ${navRow(list, it)}</div>`;
 }
 

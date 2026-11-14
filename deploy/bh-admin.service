@@ -1,0 +1,21 @@
+# 网站后台：访问统计 + 日记（deploy/bh_admin.py）。由 deploy/admin-setup.sh 装到 /etc/systemd/system/bh-admin.service
+[Unit]
+Description=Beyond Horizons admin (stats + diary)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+EnvironmentFile=/etc/beyond-horizons/admin.env
+ExecStart=/usr/bin/python3 /opt/beyond-horizons/bh_admin.py
+Restart=on-failure
+RestartSec=3
+DynamicUser=yes
+StateDirectory=bh-admin
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+
+[Install]
+WantedBy=multi-user.target

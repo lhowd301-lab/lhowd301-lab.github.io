@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Beyond Horizons 后台</title>
+<style>
+:root{--blue:#2563EB;--blue-2:#1D4ED8;--ice:#EFF6FF;--ice-2:#DBEAFE;--ink:#0F172A;--ink-2:#475569;--ink-3:#94A3B8;--line:#E2E8F0;--bg:#F4F7FC;--card:#FFFFFF;--ok:#059669;--warn:#D97706;--bad:#DC2626;
+  --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;--r:16px;--shadow:0 1px 2px rgba(15,23,42,.05),0 8px 24px rgba(37,99,235,.06)}
+@media (prefers-color-scheme:dark){:root{--ice:#172554;--ice-2:#1E3A8A;--ink:#E2E8F0;--ink-2:#A5B4CC;--ink-3:#64748B;--line:#1E293B;--bg:#0B1220;--card:#111A2E;--shadow:none}}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.55 -apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;-webkit-font-smoothing:antialiased}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:var(--blue)}
+.wrap{max-width:1180px;margin:0 auto;padding:18px max(16px,env(safe-area-inset-left)) 60px}
+header{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+header h1{margin:0;font-size:19px;letter-spacing:.01em}
+header h1 small{display:block;font-size:12px;font-weight:500;color:var(--ink-3);letter-spacing:.04em}
+.tabs{display:flex;gap:4px;background:var(--card);padding:4px;border-radius:12px;box-shadow:var(--shadow);margin-left:auto}
+.tabs button{border:0;background:none;padding:7px 14px;border-radius:9px;color:var(--ink-2);font-weight:600}
+.tabs button[aria-selected="true"]{background:var(--blue);color:#fff}
+.ghost{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:7px 12px;color:var(--ink-2)}
+.ghost:hover{border-color:var(--ice-2);color:var(--blue)}
+.btn{border:0;background:var(--blue);color:#fff;border-radius:10px;padding:9px 16px;font-weight:600}
+.btn:hover{background:var(--blue-2)}
+.btn:disabled{opacity:.55;cursor:default}
+.btn.light{background:var(--ice);color:var(--blue)}
+.btn.danger{background:none;color:var(--bad);border:1px solid color-mix(in srgb,var(--bad) 30%,transparent)}
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:16px 18px}
+.card h3{margin:0 0 12px;font-size:14px;color:var(--ink-2);font-weight:600;display:flex;align-items:center;gap:8px}
+.card h3 .sub{font-weight:400;color:var(--ink-3);font-size:12px}
+.grid{display:grid;gap:14px}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:900px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.g3,.g2{grid-template-columns:1fr}}
+.kpi .v{font:600 28px/1.1 var(--mono);letter-spacing:-.02em}
+.kpi .l{color:var(--ink-3);font-size:12.5px;margin-top:6px}
+.bar-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:center;padding:5px 0}
+.bar-row .k{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-row .n{font-family:var(--mono);font-size:12.5px;color:var(--ink-2)}
+.bar-row .b{grid-column:1/-1;height:5px;border-radius:3px;background:var(--ice)}
+.bar-row .b i{display:block;height:100%;border-radius:3px;background:var(--blue)}
+.empty{color:var(--ink-3);font-size:13px;padding:6px 0}
+.seg{display:flex;gap:4px;flex-wrap:wrap}
+.seg button{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:5px 13px;color:var(--ink-2)}
+.seg button[aria-pressed="true"]{background:var(--ice);border-color:var(--ice-2);color:var(--blue);font-weight:600}
+.toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;background:var(--card);box-shadow:var(--shadow);font-size:13px;color:var(--ink-2)}
+.pill i{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px color-mix(in srgb,var(--ok) 20%,transparent)}
+.muted{color:var(--ink-3)}
+svg text{fill:var(--ink-3);font:10.5px var(--mono)}
+.chart{width:100%;height:auto;display:block}
+table{width:100%;border-collapse:collapse}
+td,th{padding:9px 8px;border-top:1px solid var(--line);text-align:left;vertical-align:top;font-size:13px}
+th{color:var(--ink-3);font-weight:500;border-top:0;font-size:12px}
+.tag{display:inline-block;padding:1px 8px;border-radius:999px;background:var(--ice);color:var(--blue);font-size:11.5px;white-space:nowrap}
+.tag.new{background:color-mix(in srgb,var(--ok) 14%,transparent);color:var(--ok)}
+.tag.draft{background:color-mix(in srgb,var(--warn) 16%,transparent);color:var(--warn)}
+.scroll-x{overflow-x:auto}
+/* login */
+.login{max-width:360px;margin:12vh auto 0;text-align:center}
+.login h1{font-size:22px;margin:0 0 4px}
+.login p{color:var(--ink-3);margin:0 0 22px}
+.field{display:flex;flex-direction:column;gap:6px;text-align:left;margin-bottom:14px}
+.field label{font-size:12.5px;color:var(--ink-2);font-weight:600}
+.input{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 12px;outline:none;width:100%}
+.input:focus{border-color:var(--blue);box-shadow:0 0 0 3px color-mix(in srgb,var(--blue) 18%,transparent)}
+textarea.input{min-height:220px;resize:vertical;line-height:1.75}
+.err{color:var(--bad);font-size:13px;min-height:20px}
+/* diary */
+.diary{display:grid;grid-template-columns:300px minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:900px){.diary{grid-template-columns:1fr}}
+.d-list{display:flex;flex-direction:column;gap:2px;max-height:70vh;overflow:auto;margin:0 -8px}
+.d-item{border:0;background:none;text-align:left;padding:9px 8px;border-radius:10px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 10px}
+.d-item:hover{background:var(--ice)}
+.d-item[aria-current="true"]{background:var(--ice);box-shadow:inset 3px 0 0 var(--blue)}
+.d-item .dt{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);grid-row:span 2;padding-top:2px}
+.d-item b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.d-item small{color:var(--ink-3);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:600px){.row{grid-template-columns:1fr}}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chips button{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:6px 14px;color:var(--ink-2)}
+.chips button[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.loc{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.loc .coord{font-family:var(--mono);font-size:12.5px;color:var(--ink-2);background:var(--ice);padding:6px 10px;border-radius:8px}
+.photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
+.ph{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;background:var(--ice)}
+.ph img{width:100%;height:100%;object-fit:cover;display:block}
+.ph button{position:absolute;top:5px;right:5px;width:24px;height:24px;border-radius:50%;border:0;background:rgba(15,23,42,.6);color:#fff;font-size:14px;line-height:24px;padding:0}
+.ph .up{position:absolute;inset:0;display:grid;place-items:center;background:rgba(255,255,255,.7);font-size:12px;color:var(--ink-2)}
+.add-ph{aspect-ratio:1;border-radius:10px;border:1.5px dashed var(--ice-2);display:grid;place-items:center;color:var(--blue);background:none;font-size:13px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:18px}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:13.5px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:50;max-width:calc(100% - 32px)}
+.toast.on{opacity:1}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section class="login" id="login" hidden>
+    <h1>Beyond Horizons 后台</h1>
+    <p>访问统计 · 写日记</p>
+    <form id="loginForm" class="card" autocomplete="on">
+      <div class="field"><label for="pw">密码</label><input class="input" id="pw" type="password" autocomplete="current-password" required></div>
+      <div class="err" id="loginErr"></div>
+      <button class="btn" style="width:100%" type="submit">登录</button>
+    </form>
+  </section>
+
+  <section id="app" hidden>
+    <header>
+      <h1>Beyond Horizons 后台<small>访问统计 · 日记</small></h1>
+      <div class="tabs" role="tablist">
+        <button role="tab" data-tab="stats" aria-selected="true">访问统计</button>
+        <button role="tab" data-tab="diary" aria-selected="false">写日记</button>
+      </div>
+      <a class="ghost" href="/" target="_blank" rel="noopener" style="text-decoration:none">打开网站</a>
+      <button class="ghost" id="logout">退出</button>
+    </header>
+
+    <div id="tab-stats">
+      <div class="toolbar">
+        <div class="seg" id="range">
+          <button data-d="1" aria-pressed="false">今天</button><button data-d="7" aria-pressed="true">近 7 天</button><button data-d="30" aria-pressed="false">近 30 天</button><button data-d="0" aria-pressed="false">全部</button>
+        </div>
+        <span class="pill" id="online"><i></i>正在看：—</span>
+        <button class="ghost" id="refresh" style="margin-left:auto">刷新</button>
+      </div>
+      <div class="grid g4" id="kpis"></div>
+      <div class="grid g2" style="margin-top:14px">
+        <div class="card"><h3>每天的访问 <span class="sub">浅色：访问次数　深色：访客人数</span></h3><div id="chartDay"></div></div>
+        <div class="card"><h3>一天里什么时候来 <span class="sub">按北京时间</span></h3><div id="chartHour"></div></div>
+      </div>
+      <div class="grid g3" style="margin-top:14px">
+        <div class="card"><h3>来自哪里 <span class="sub">访客数</span></h3><div id="regions"></div></div>
+        <div class="card"><h3>从哪里点进来</h3><div id="refs"></div></div>
+        <div class="card"><h3>看了哪些板块</h3><div id="modules"></div></div>
+        <div class="card"><h3>设备</h3><div id="devices"></div></div>
+        <div class="card"><h3>系统</h3><div id="os"></div></div>
+        <div class="card"><h3>浏览器 / App</h3><div id="browsers"></div></div>
+      </div>
+      <div class="grid g2" style="margin-top:14px">
+        <div class="card"><h3>最常被点开 <span class="sub">次数 · 人数</span></h3><div id="items"></div></div>
+        <div class="card"><h3>切换到的城市</h3><div id="cities"></div></div>
+      </div>
+      <div class="card" style="margin-top:14px">
+        <h3>最近的访问 <span class="sub">每一行是一次打开网站</span></h3>
+        <div class="scroll-x"><table><thead><tr><th>时间</th><th>来自</th><th>设备</th><th>从哪来</th><th>停留</th><th>点开了</th></tr></thead><tbody id="recent"></tbody></table></div>
+      </div>
+      <p class="muted" style="font-size:12px;margin-top:14px">统计是匿名的：不存 IP（只用它当场查出省市），不用 cookie；浏览器开了「请勿追踪」的访客不计；你登录后台的这台设备上的访问也不计。</p>
+    </div>
+
+    <div id="tab-diary" hidden>
+      <div class="diary">
+        <div class="card">
+          <h3>我的日记 <span class="sub" id="dCount"></span></h3>
+          <button class="btn" id="dNew" style="width:100%;margin-bottom:10px">＋ 写新日记</button>
+          <div class="d-list" id="dList"></div>
+        </div>
+        <form class="card" id="dForm" autocomplete="off">
+          <h3 id="dHead">写新日记</h3>
+          <div class="field"><label for="fTitle">标题</label><input class="input" id="fTitle" maxlength="80" required placeholder="今天想记下的事"></div>
+          <div class="row">
+            <div class="field"><label for="fDate">日期</label><input class="input" id="fDate" type="date" required></div>
+            <div class="field"><label>分类</label><div class="chips" id="fTag"><button type="button" data-t="日常">日常</button><button type="button" data-t="技术">技术</button><button type="button" data-t="随想">随想</button></div></div>
+            <div class="field"><label for="fPlace">写在哪里</label><input class="input" id="fPlace" maxlength="60" placeholder="比如：东山口的咖啡店"></div>
+          </div>
+          <div class="field"><label>地图上的位置 <span class="muted" style="font-weight:400">（日记会在这里出现一个图钉；不选就只出现在日记列表里）</span></label>
+            <div class="loc"><span class="coord" id="fCoord">还没选</span>
+              <button type="button" class="btn light" id="pickMap">在地图上选</button>
+              <button type="button" class="btn light" id="pickHere">用我现在的位置</button>
+              <button type="button" class="ghost" id="pickClear">清除</button></div>
+          </div>
+          <div class="field"><label for="fText">正文</label><textarea class="input" id="fText" maxlength="20000" placeholder="写点什么…（换行会保留）"></textarea></div>
+          <div class="field"><label>照片 <span class="muted" style="font-weight:400">（会自动缩小再上传；最多 12 张）</span></label>
+            <div class="photos" id="fPhotos"></div>
+            <input type="file" id="fFile" accept="image/*" multiple hidden>
+          </div>
+          <div class="err" id="dErr"></div>
+          <div class="actions">
+            <button class="btn" type="submit" id="dPublish">发布</button>
+            <button class="btn light" type="button" id="dDraft">存草稿（网站上不显示）</button>
+            <button class="btn danger" type="button" id="dDelete" hidden style="margin-left:auto">删除这篇</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<script>
+'use strict';
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* blocked */ } }, del(k) { try { localStorage.removeItem(k); } catch (e) { /* blocked */ } } };
+let token = store.get('bh-admin-token') || '';
+const MOD = { food: '吃饭地图', street: '扫街地图', landmark: '地标名胜', diary: '街巷日记', metro: '城市之下', sky: '地球之外', pet: '萌宠榕忆' };
+function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), 2600); }
+
+async function api(path, opts = {}) {
+  const r = await fetch(path, { ...opts, headers: { ...(opts.headers || {}), ...(token ? { Authorization: 'Bearer ' + token } : {}) } });
+  if (r.status === 401) { showLogin(); throw new Error('请先登录'); }
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error || ('出错了（' + r.status + '）'));
+  return j;
+}
+
+/* ---------------- login */
+function showLogin() { token = ''; store.del('bh-admin-token'); $('#app').hidden = true; $('#login').hidden = false; setTimeout(() => $('#pw').focus(), 50); }
+function showApp() { $('#login').hidden = true; $('#app').hidden = false; loadStats(); }
+$('#loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault(); $('#loginErr').textContent = '';
+  try {
+    const r = await fetch('/api/admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: $('#pw').value }) });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.error || (r.status === 404 || r.status === 502 ? '后台服务还没装好（先在服务器上运行 admin-setup.sh）' : '登录失败'));
+    token = j.token; store.set('bh-admin-token', token); $('#pw').value = ''; showApp();
+  } catch (err) { $('#loginErr').textContent = err.message === 'Failed to fetch' ? '连不上后台' : err.message; }
+});
+$('#logout').addEventListener('click', showLogin);
+
+/* ---------------- tabs */
+document.querySelectorAll('[data-tab]').forEach((b) => b.addEventListener('click', () => {
+  document.querySelectorAll('[data-tab]').forEach((x) => x.setAttribute('aria-selected', String(x === b)));
+  $('#tab-stats').hidden = b.dataset.tab !== 'stats'; $('#tab-diary').hidden = b.dataset.tab !== 'diary';
+  if (b.dataset.tab === 'diary') loadDiary(); else loadStats();
+}));
+
+/* ---------------- stats */
+let days = 7;
+document.querySelectorAll('#range button').forEach((b) => b.addEventListener('click', () => {
+  days = +b.dataset.d; document.querySelectorAll('#range button').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); loadStats();
+}));
+$('#refresh').addEventListener('click', () => loadStats());
+const fmtDur = (s) => (s < 60 ? `${Math.round(s)} 秒` : s < 3600 ? `${Math.floor(s / 60)} 分 ${Math.round(s % 60)} 秒` : `${Math.floor(s / 3600)} 小时 ${Math.round((s % 3600) / 60)} 分`);
+const cst = (t) => new Date(t * 1000 + 8 * 3600e3);
+function when(t, now) {
+  const d = now - t; if (d < 60) return '刚刚'; if (d < 3600) return `${Math.floor(d / 60)} 分钟前`;
+  const a = cst(t), b = cst(now), hm = `${String(a.getUTCHours()).padStart(2, '0')}:${String(a.getUTCMinutes()).padStart(2, '0')}`;
+  if (a.toISOString().slice(0, 10) === b.toISOString().slice(0, 10)) return '今天 ' + hm;
+  return `${a.getUTCMonth() + 1}月${a.getUTCDate()}日 ${hm}`;
+}
+function bars(el, rows, fmtK = (k) => k, max = 8) {
+  rows = rows.filter((r) => r.n > 0).slice(0, max);
+  if (!rows.length) { el.innerHTML = '<div class="empty">还没有数据</div>'; return; }
+  const top = Math.max(...rows.map((r) => r.n)), sum = rows.reduce((s, r) => s + r.n, 0);
+  el.innerHTML = rows.map((r) => `<div class="bar-row"><span class="k">${esc(fmtK(r.k, r))}</span><span class="n">${r.n}${sum ? `<span class="muted"> · ${Math.round((100 * r.n) / sum)}%</span>` : ''}</span><span class="b"><i style="width:${(100 * r.n) / top}%"></i></span></div>`).join('');
+}
+function chart(el, data, labels, opts = {}) {
+  const W = 560, H = 170, pl = 30, pb = 22, pt = 8, n = data.length, top = Math.max(1, ...data.map((d) => d[0]));
+  const nice = top <= 4 ? 4 : Math.ceil(top / 4) * 4, bw = (W - pl - 6) / Math.max(1, n), y = (v) => pt + (H - pt - pb) * (1 - v / nice);
+  let s = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img">`;
+  for (let i = 0; i <= 4; i++) { const v = (nice * i) / 4, yy = y(v); s += `<line x1="${pl}" x2="${W}" y1="${yy}" y2="${yy}" stroke="currentColor" stroke-opacity=".08"/><text x="${pl - 6}" y="${yy + 3.5}" text-anchor="end">${v}</text>`; }
+  const every = Math.ceil(n / (opts.labels || 10));
+  data.forEach((d, i) => {
+    const x = pl + i * bw + bw * 0.15, w = bw * 0.7;
+    s += `<rect x="${x}" y="${y(d[0])}" width="${w}" height="${Math.max(0, H - pb - y(d[0]))}" rx="2.5" fill="#93C5FD"><title>${esc(labels[i])}：${d[0]}${d.length > 1 ? ` 次 · ${d[1]} 人` : ''}</title></rect>`;
+    if (d.length > 1) s += `<rect x="${x + w * 0.2}" y="${y(d[1])}" width="${w * 0.6}" height="${Math.max(0, H - pb - y(d[1]))}" rx="2" fill="#2563EB" pointer-events="none"/>`;
+    if (i % every === 0) s += `<text x="${x + w / 2}" y="${H - 6}" text-anchor="middle">${esc(labels[i])}</text>`;
+  });
+  el.innerHTML = s + '</svg>';
+}
+async function loadStats() {
+  let d;
+  try { d = await api('/api/admin/stats?days=' + days); } catch (e) { if (e.message !== '请先登录') toast(e.message); return; }
+  $('#online').innerHTML = `<i></i>正在看：${d.online} 人`;
+  $('#kpis').innerHTML = [[d.pv, '访问次数'], [d.uv, '访客人数'], [d.newVisitors, '其中新访客'], [fmtDur(d.avg), '平均每次停留']]
+    .map(([v, l]) => `<div class="card kpi"><div class="v">${esc(v)}</div><div class="l">${l}</div></div>`).join('');
+  // 每天：从起点补齐到今天
+  const by = Object.fromEntries(d.byDay.map((r) => [r.day, r])), out = [], lab = [];
+  const end = cst(d.now); let t = d.from ? cst(d.from) : (d.byDay[0] ? new Date(d.byDay[0].day + 'T00:00:00Z') : cst(d.now));
+  for (let k = 0; k < 400 && t <= end; k++, t = new Date(t.getTime() + 864e5)) { const key = t.toISOString().slice(0, 10), r = by[key]; out.push([r ? r.pv : 0, r ? r.uv : 0]); lab.push(key.slice(5).replace('-', '/')); }
+  chart($('#chartDay'), out, lab, { labels: 8 });
+  const hours = Array.from({ length: 24 }, (_, h) => [(d.byHour.find((r) => r.hour === h) || {}).pv || 0]);
+  chart($('#chartHour'), hours, hours.map((_, h) => String(h)), { labels: 12 });
+  bars($('#regions'), d.regions, (k) => k || '未知', 10);
+  bars($('#refs'), d.refs, (k) => k || '直接打开（输网址、收藏、微信等 App 里点开）', 8);
+  bars($('#modules'), d.modules, (k) => MOD[k] || k, 8);
+  bars($('#devices'), d.devices); bars($('#os'), d.os); bars($('#browsers'), d.browsers);
+  bars($('#cities'), d.cities, (k) => k, 10);
+  const it = $('#items');
+  it.innerHTML = d.items.length ? d.items.slice(0, 15).map((r) => `<div class="bar-row"><span class="k"><span class="tag">${esc(MOD[r.mod] || r.mod)}</span> ${esc(r.title || r.item)}</span><span class="n">${r.n} 次 · ${r.u} 人</span></div>`).join('') : '<div class="empty">还没有人点开过</div>';
+  $('#recent').innerHTML = d.recent.length ? d.recent.map((r) => `<tr><td style="white-space:nowrap">${when(r.t0, d.now)}${r.new ? ' <span class="tag new">新</span>' : ''}</td><td>${esc(r.region || '未知')}</td><td style="white-space:nowrap">${esc([r.dev, r.os, r.br].filter(Boolean).join(' · '))}</td><td>${esc(r.ref || '直接打开')}</td><td style="white-space:nowrap">${fmtDur(Math.max(0, r.t1 - r.t0))}</td><td class="muted">${esc(r.opened || '—')}</td></tr>`).join('')
+    : '<tr><td colspan="6" class="empty">这段时间还没有人来过</td></tr>';
+}
+
+/* ---------------- diary */
+let entries = [], cur = null, photos = [], lnglat = null, tag = '日常', pickT = 0;
+const today = () => new Date(Date.now() + 8 * 3600e3).toISOString().slice(0, 10);
+async function loadDiary(keep) {
+  try { entries = await api('/api/admin/diary'); } catch (e) { if (e.message !== '请先登录') toast(e.message); return; }
+  $('#dCount').textContent = `${entries.length} 篇`;
+  $('#dList').innerHTML = entries.length ? entries.map((d) => `<button class="d-item" data-id="${d.id}" aria-current="${cur && cur.id === d.id}"><span class="dt">${esc(d.date.slice(5))}</span><b>${esc(d.title)}</b><small>${d.published ? '' : '<span class="tag draft">草稿</span> '}${esc(d.place || '')}${d.photos.length ? ` · ${d.photos.length} 张照片` : ''}</small></button>`).join('')
+    : '<div class="empty" style="padding:6px 8px">还没有日记。写下第一篇吧。</div>';
+  document.querySelectorAll('.d-item').forEach((b) => b.addEventListener('click', () => edit(entries.find((x) => x.id === b.dataset.id))));
+  if (!keep) edit(cur && entries.find((x) => x.id === cur.id));
+}
+function setTag(t) { tag = t; document.querySelectorAll('#fTag button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.t === t))); }
+function setLoc(p) { lnglat = p; $('#fCoord').textContent = p ? `${p[1].toFixed(5)}, ${p[0].toFixed(5)}` : '还没选'; }
+function edit(d) {
+  cur = d || null;
+  $('#dHead').textContent = d ? '修改日记' : '写新日记';
+  $('#fTitle').value = d ? d.title : ''; $('#fDate').value = d ? d.date : today(); $('#fPlace').value = d ? d.place || '' : ''; $('#fText').value = d ? d.text || '' : '';
+  setTag(d ? d.tag || '日常' : '日常'); setLoc(d ? d.lnglat : null); photos = d ? d.photos.map((p) => ({ ...p })) : []; renderPhotos();
+  $('#dDelete').hidden = !d; $('#dErr').textContent = '';
+  document.querySelectorAll('.d-item').forEach((b) => b.setAttribute('aria-current', String(!!d && b.dataset.id === d.id)));
+}
+document.querySelectorAll('#fTag button').forEach((b) => b.addEventListener('click', () => setTag(b.dataset.t)));
+$('#dNew').addEventListener('click', () => { edit(null); $('#fTitle').focus(); });
+// 位置：在网站地图上点选（同一个网址下，选好的位置经本机存储传回来）、用手机定位、或清除
+$('#pickMap').addEventListener('click', () => { pickT = Date.now(); window.open('/#pick-diary', '_blank'); toast('在新打开的地图上点一下写日记的地方，再回到这个页面'); });
+function readPick() { try { const p = JSON.parse(store.get('bh-pick') || 'null'); if (p && p.t >= pickT && pickT) { setLoc(p.lnglat); toast('位置已选好'); pickT = 0; } } catch (e) { /* ignore */ } }
+addEventListener('storage', (e) => { if (e.key === 'bh-pick') readPick(); });
+addEventListener('focus', readPick);
+$('#pickHere').addEventListener('click', () => {
+  if (!navigator.geolocation) return toast('这个浏览器不能定位');
+  toast('正在定位…');
+  navigator.geolocation.getCurrentPosition((pos) => { setLoc([+pos.coords.longitude.toFixed(6), +pos.coords.latitude.toFixed(6)]); toast('已用你现在的位置'); },
+    (err) => toast(err.code === 1 ? '没有定位权限（要在浏览器里允许，而且网址要是 https）' : '定位失败，可以改用「在地图上选」'), { enableHighAccuracy: true, timeout: 15000 });
+});
+$('#pickClear').addEventListener('click', () => setLoc(null));
+// 照片：在浏览器里缩小（长边 1600 像素）再上传，另做一张小图
+function renderPhotos() {
+  $('#fPhotos').innerHTML = photos.map((p, i) => `<div class="ph"><img src="${esc(p.preview || p.src)}" alt="">${p.busy ? '<span class="up">上传中…</span>' : ''}<button type="button" data-rm="${i}" aria-label="去掉这张">×</button></div>`).join('')
+    + (photos.length < 12 ? '<button type="button" class="add-ph" id="addPh">＋ 加照片</button>' : '');
+  $('#fPhotos').querySelectorAll('[data-rm]').forEach((b) => b.addEventListener('click', () => { photos.splice(+b.dataset.rm, 1); renderPhotos(); }));
+  $('#addPh')?.addEventListener('click', () => $('#fFile').click());
+}
+async function shrink(file, max, q) {
+  let img;
+  try { img = await createImageBitmap(file, { imageOrientation: 'from-image' }); } catch (e) {
+    img = await new Promise((ok, no) => { const im = new Image(); im.onload = () => ok(im); im.onerror = () => no(new Error('这张照片打不开')); im.src = URL.createObjectURL(file); });
+  }
+  const w = img.width, h = img.height, s = Math.min(1, max / Math.max(w, h)), c = document.createElement('canvas');
+  c.width = Math.round(w * s); c.height = Math.round(h * s); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+  return { blob: await new Promise((ok) => c.toBlob(ok, 'image/jpeg', q)), ar: w / h };
+}
+$('#fFile').addEventListener('change', async (e) => {
+  const files = [...e.target.files].slice(0, 12 - photos.length); e.target.value = '';
+  for (const f of files) {
+    const p = { busy: true, preview: URL.createObjectURL(f) }; photos.push(p); renderPhotos();
+    try {
+      const big = await shrink(f, 1600, 0.85), small = await shrink(f, 480, 0.8);
+      const a = await api('/api/admin/upload', { method: 'POST', body: big.blob, headers: { 'Content-Type': 'image/jpeg' } });
+      const b = await api('/api/admin/upload?thumb=1', { method: 'POST', body: small.blob, headers: { 'Content-Type': 'image/jpeg' } });
+      Object.assign(p, { src: a.src, thumb: b.src, ar: +big.ar.toFixed(3), busy: false });
+    } catch (err) { photos.splice(photos.indexOf(p), 1); toast(err.message); }
+    renderPhotos();
+  }
+});
+async function save(published) {
+  $('#dErr').textContent = '';
+  if (photos.some((p) => p.busy)) return ($('#dErr').textContent = '照片还在上传，等一下');
+  const body = { id: cur ? cur.id : undefined, title: $('#fTitle').value.trim(), date: $('#fDate').value, tag, place: $('#fPlace').value.trim(), text: $('#fText').value, lnglat, published,
+    photos: photos.filter((p) => p.src).map((p) => ({ src: p.src, thumb: p.thumb || p.src, ar: p.ar })) };
+  if (!body.title) return ($('#dErr').textContent = '标题还没写');
+  try {
+    const r = await api('/api/admin/diary', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    cur = { id: r.id }; await loadDiary(); toast(published ? '已发布，网站上马上就能看到' : '草稿已保存');
+  } catch (e) { $('#dErr').textContent = e.message; }
+}
+$('#dForm').addEventListener('submit', (e) => { e.preventDefault(); save(true); });
+$('#dDraft').addEventListener('click', () => save(false));
+$('#dDelete').addEventListener('click', async () => {
+  if (!cur || !confirmDel()) return;
+  try { await api('/api/admin/diary/' + cur.id, { method: 'DELETE' }); cur = null; await loadDiary(); toast('已删除'); } catch (e) { toast(e.message); }
+});
+function confirmDel() { const b = $('#dDelete'); if (b.dataset.sure) { delete b.dataset.sure; b.textContent = '删除这篇'; return true; } b.dataset.sure = '1'; b.textContent = '再点一次确认删除'; setTimeout(() => { delete b.dataset.sure; b.textContent = '删除这篇'; }, 4000); return false; }
+
+/* ---------------- start */
+if (token) api('/api/admin/ping').then(showApp, (e) => { if (e.message !== '请先登录') { showLogin(); $('#loginErr').textContent = '连不上后台，稍后再试'; } }); else showLogin();
+</script>
+</body>
+</html>
