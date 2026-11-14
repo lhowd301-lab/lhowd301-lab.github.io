@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""Beyond Horizons 后台：访问统计 + 日记发布。
+"""Beyond Horizons 后台：访问统计 + 日记 + 吃饭地图的店 + 扫街照片。
 
 - 只听 127.0.0.1（默认 8788 端口），由 nginx 把 /api/stat、/api/diary、/api/admin、/api/u/ 转过来。
 - 访问统计：网页匿名发来「打开了网站 / 换了板块 / 点开了哪张照片、哪家店 / 还在看」这些事件。
   不存 IP（只用它当场查出省市，查完就丢），访客编号也只存加盐后的哈希；后台登录的人自己的访问不计。
 - 日记：后台写好、点发布，网页打开时从 /api/diary 读，马上就能看到；照片存在服务器上，由 /api/u/ 发出去。
+- 吃饭地图的店、扫街照片：后台新加的、或改过的网站自带条目（同一个 id 替换），也从 /api/diary?all=1 一起读；
+  藏起来的条目（hidden）网站上就不显示。删掉后台记录 = 恢复成网站自带的样子。
 - 后台密码只以 PBKDF2 哈希存在 /etc/beyond-horizons/admin.env（deploy/admin-setup.sh 在服务器上输入），
   登录后发一张 30 天有效的凭证；连续输错 8 次要等 15 分钟。
 - 只用 Python 标准库；省市用 ip2region 离线库（deploy/ip2region/，Apache-2.0）。
@@ -105,6 +107,8 @@ with db() as c:
     CREATE INDEX IF NOT EXISTS ev_sid ON events(sid);
     CREATE TABLE IF NOT EXISTS diary (id TEXT PRIMARY KEY, date TEXT, tag TEXT, title TEXT, place TEXT, lng REAL, lat REAL,
         text TEXT, photos TEXT, published INTEGER, created INTEGER, updated INTEGER);
+    CREATE TABLE IF NOT EXISTS items (kind TEXT, id TEXT, data TEXT, hidden INTEGER DEFAULT 0, builtin INTEGER DEFAULT 0,
+        created INTEGER, updated INTEGER, PRIMARY KEY (kind, id));
     ''')
 
 EVENTS = {'view', 'mod', 'city', 'open', 'ping', 'leave'}
@@ -206,17 +210,131 @@ def save_diary(o):
     return did
 
 
+def drop_unused(c, photos):
+    """删掉不再被任何日记 / 条目用到的上传照片"""
+    used = ' '.join(r['photos'] or '' for r in c.execute('SELECT photos FROM diary')) + ' '.join(r['data'] or '' for r in c.execute('SELECT data FROM items'))
+    for p in photos:
+        for k in ('src', 'thumb'):
+            name = os.path.basename(str(p.get(k) or ''))
+            if PHOTO.match('/api/u/' + name) and name not in used:
+                try: os.remove(os.path.join(UPLOADS, name))
+                except OSError: pass
+
+
 def delete_diary(did):
     with LOCK, db() as c:
         row = c.execute('SELECT photos FROM diary WHERE id=?', (did,)).fetchone()
         c.execute('DELETE FROM diary WHERE id=?', (did,))
-        used = ' '.join(r['photos'] or '' for r in c.execute('SELECT photos FROM diary'))
-    for p in json.loads(row['photos'] or '[]') if row else []:
-        for k in ('src', 'thumb'):
-            name = os.path.basename(p.get(k, ''))
-            if name and name not in used:
-                try: os.remove(os.path.join(UPLOADS, name))
-                except OSError: pass
+        drop_unused(c, json.loads(row['photos'] or '[]') if row else [])
+
+
+# ------------------------------------------------------------------ 吃饭地图的店、扫街照片
+SITE_PHOTO = re.compile(r'^photos/[A-Za-z0-9_\-/]+\.(jpg|jpeg|png|webp)$')
+CITY = re.compile(r'^[a-z]{2,12}$')
+ITEM_ID = {'food': re.compile(r'^f[0-9a-z]{1,15}$'), 'street': re.compile(r'^s[0-9a-z]{1,15}$')}
+
+
+def photo_ok(s):
+    s = str(s or '')
+    return bool(PHOTO.match(s) or (SITE_PHOTO.match(s) and '..' not in s))
+
+
+def lnglat(v):
+    lng, lat = float(v[0]), float(v[1])
+    if not (-180 <= lng <= 180 and -85 <= lat <= 85): raise ValueError('位置不对')
+    return [round(lng, 6), round(lat, 6)]
+
+
+def text(o, k, n): return clip(o.get(k), n).strip()
+
+
+def clean_food(o):
+    d = {'name': text(o, 'name', 60), 'cat': text(o, 'cat', 20) or '其他', 'score': None, 'area': text(o, 'area', 20), 'review': clip(o.get('review'), 6000).strip()}
+    if not d['name']: raise ValueError('店名不能空着')
+    if o.get('score') not in (None, ''):
+        try: sc = float(o['score'])
+        except (TypeError, ValueError): raise ValueError('评分要是数字')
+        if not 0 <= sc <= 10: raise ValueError('评分要在 0 到 10 之间')
+        d['score'] = round(sc, 1)
+    if text(o, 'note', 1000): d['note'] = text(o, 'note', 1000)
+    city = str(o.get('city') or '')
+    if CITY.match(city) and city != 'gz': d['city'] = city
+    if o.get('chain'): d['chain'] = True
+    if o.get('unfound'): d['unfound'] = True
+    locs = []
+    for L in (o.get('locs') or [])[:30]:
+        if not isinstance(L, dict): continue
+        try: p = lnglat(L.get('p'))
+        except (TypeError, ValueError, IndexError): continue
+        x = {'b': text(L, 'b', 40), 's': text(L, 's', 40), 'p': p}
+        if text(L, 'a', 160): x['a'] = text(L, 'a', 160)
+        if text(L, 'm', 40): x['m'] = text(L, 'm', 40)
+        if L.get('af'): x['af'] = 1
+        if L.get('approx'): x['approx'] = True
+        locs.append(x)
+    if locs: d['locs'] = locs
+    br = []
+    for b in (o.get('branches') or [])[:400]:
+        try: br.append({**{k: clip(v, 80) for k, v in b.items() if k != 'p' and isinstance(v, str)}, 'p': lnglat(b['p'])})
+        except (TypeError, ValueError, KeyError, IndexError, AttributeError): continue
+    if br: d['branches'] = br
+    return d
+
+
+def clean_street(o):
+    d = {'city': str(o.get('city') or 'gz'), 'title': text(o, 'title', 60), 'place': text(o, 'place', 80), 'date': text(o, 'date', 40), 'note': clip(o.get('note'), 3000).strip()}
+    if not CITY.match(d['city']): d['city'] = 'gz'
+    if not d['title']: raise ValueError('标题不能空着')
+    if o.get('lnglat'): d['lnglat'] = lnglat(o['lnglat'])
+    photos = []
+    for p in (o.get('photos') or [])[:60]:
+        if not isinstance(p, dict) or not photo_ok(p.get('src')): continue
+        try: ar = float(p.get('ar') or 1.5)
+        except (TypeError, ValueError): ar = 1.5
+        x = {'src': p['src'], 'cap': text(p, 'cap', 80), 'ar': round(min(5, max(0.2, ar)), 3)}
+        if photo_ok(p.get('thumb')): x['thumb'] = p['thumb']
+        if text(p, 'loc', 80): x['loc'] = text(p, 'loc', 80)
+        if text(p, 'area', 100): x['area'] = text(p, 'area', 100)
+        photos.append(x)
+    if not photos: raise ValueError('至少要有一张照片')
+    d['photos'] = photos
+    return d
+
+
+def items_rows(public):
+    with db() as c: rows = c.execute('SELECT * FROM items ORDER BY updated DESC').fetchall()
+    out = {'food': [], 'street': []}
+    for r in rows:
+        if r['kind'] not in out: continue
+        data = json.loads(r['data'] or '{}')
+        if public: out[r['kind']].append({'id': r['id'], 'hidden': True} if r['hidden'] or not data else {**data, 'id': r['id']})
+        else: out[r['kind']].append({'id': r['id'], 'data': data, 'hidden': bool(r['hidden']), 'builtin': bool(r['builtin']), 'updated': r['updated']})
+    return out
+
+
+def save_item(o):
+    kind = o.get('kind')
+    if kind not in ITEM_ID: raise ValueError('不知道是哪一类')
+    builtin = bool(o.get('builtin')); iid = clip(o.get('id'), 16)
+    if builtin and not ITEM_ID[kind].match(iid): raise ValueError('编号不对')
+    if not ITEM_ID[kind].match(iid): iid = kind[0] + 'x' + secrets.token_hex(4)
+    hidden = bool(o.get('hidden'))
+    data = {} if hidden and builtin and not o.get('data') else (clean_food if kind == 'food' else clean_street)(o.get('data') or {})
+    now = int(time.time())
+    with LOCK, db() as c:
+        old = c.execute('SELECT created, data, builtin FROM items WHERE kind=? AND id=?', (kind, iid)).fetchone()
+        c.execute('REPLACE INTO items (kind,id,data,hidden,builtin,created,updated) VALUES (?,?,?,?,?,?,?)',
+                  (kind, iid, json.dumps(data, ensure_ascii=False), 1 if hidden else 0, 1 if (builtin or (old and old['builtin'])) else 0,
+                   old['created'] if old else now, now))
+        if old: drop_unused(c, json.loads(old['data'] or '{}').get('photos') or [])
+    return iid
+
+
+def delete_item(kind, iid):
+    with LOCK, db() as c:
+        row = c.execute('SELECT data FROM items WHERE kind=? AND id=?', (kind, iid)).fetchone()
+        c.execute('DELETE FROM items WHERE kind=? AND id=?', (kind, iid))
+        drop_unused(c, json.loads(row['data'] or '{}').get('photos') or [] if row else [])
 
 
 # ------------------------------------------------------------------ 登录凭证
@@ -276,7 +394,9 @@ class H(BaseHTTPRequestHandler):
 
     def do_GET(self):
         u = urlparse(self.path); p = u.path
-        if p == '/api/diary': return self.send(200, diary_rows(True), cache='no-cache')
+        if p == '/api/diary':   # ?all=1：日记 + 后台加的店和扫街照片一起回（旧版网页不带参数，只要日记数组）
+            if 'all=1' in u.query: return self.send(200, {'diary': diary_rows(True), **items_rows(True)}, cache='no-cache')
+            return self.send(200, diary_rows(True), cache='no-cache')
         m = re.match(r'^/api/u/([0-9a-f]{20}(?:-s)?\.jpg)$', p)
         if m:
             f = os.path.join(UPLOADS, m.group(1))
@@ -287,6 +407,7 @@ class H(BaseHTTPRequestHandler):
         if p == '/api/admin/stats':
             days = int((parse_qs(u.query).get('days') or ['7'])[0]); return self.send(200, stats(days))
         if p == '/api/admin/diary': return self.send(200, diary_rows(False))
+        if p == '/api/admin/items': return self.send(200, items_rows(False))
         if p == '/api/admin/ping': return self.send(200, {'ok': True})
         return self.send(404, {'error': 'not found'})
 
@@ -309,6 +430,10 @@ class H(BaseHTTPRequestHandler):
             if not self.authed(): return self.send(401, {'error': '请先登录'})
             if p == '/api/admin/diary':
                 return self.send(200, {'id': save_diary(json.loads(self.body(200000) or b'{}'))})
+            if p == '/api/admin/items':
+                o = json.loads(self.body(400000) or b'{}')
+                if not isinstance(o, dict): raise ValueError('格式不对')
+                return self.send(200, {'id': save_item(o)})
             if p == '/api/admin/upload':
                 data = self.body(8 * 1024 * 1024)
                 if data[:3] != b'\xff\xd8\xff': return self.send(400, {'error': '只收 JPEG'})
@@ -316,15 +441,17 @@ class H(BaseHTTPRequestHandler):
                 with open(os.path.join(UPLOADS, name), 'wb') as f: f.write(data)
                 return self.send(200, {'src': '/api/u/' + name})
             return self.send(404, {'error': 'not found'})
-        except ValueError as e:
-            return self.send(400, {'error': str(e) or '格式不对'})
+        except (ValueError, TypeError) as e:
+            return self.send(400, {'error': str(e) if isinstance(e, ValueError) and str(e) else '格式不对'})
 
     def do_DELETE(self):
         p = urlparse(self.path).path
         if not self.authed(): return self.send(401, {'error': '请先登录'})
         m = re.match(r'^/api/admin/diary/(d[0-9a-z]{4,22})$', p)
-        if not m: return self.send(404, {'error': 'not found'})
-        delete_diary(m.group(1)); return self.send(200, {'ok': True})
+        if m: delete_diary(m.group(1)); return self.send(200, {'ok': True})
+        m = re.match(r'^/api/admin/items/(food|street)/([fs][0-9a-z]{1,15})$', p)
+        if m: delete_item(m.group(1), m.group(2)); return self.send(200, {'ok': True})
+        return self.send(404, {'error': 'not found'})
 
 
 def cleanup():

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 装好网站后台（访问统计 + 写日记）。在服务器上运行（只需一次）：
+# 装好网站后台（访问统计、写日记、管理吃饭地图的店和扫街照片）。在服务器上运行（只需一次）：
 #   sudo bash /var/www/beyond-horizons/deploy/admin-setup.sh
 # 它会：让你设一个后台密码（输入时不显示，只存哈希）→ 装好后台服务（本机 127.0.0.1:8788，开机自启）
 #      → 在网站的 nginx 配置里加上 /api/stat、/api/diary、/api/admin、/api/u 转发（检查不通过就还原）。

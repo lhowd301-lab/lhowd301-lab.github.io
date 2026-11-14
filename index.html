@@ -317,8 +317,29 @@ button.seg:hover,button.seg[aria-expanded="true"]{background:var(--ice-2)}
 .cal-day.muted{opacity:.35}
 .cal-day.today{background:var(--blue);color:var(--white)}
 .cal-day.today small{color:rgba(255,255,255,.8)}
-.cal-day.has::after{content:"";position:absolute;bottom:2px;width:4px;height:4px;border-radius:50%;background:var(--bright)}
-.cal-day.today.has::after{background:var(--white)}
+.cal-day.has{border:0;cursor:pointer;color:#14532D;background:color-mix(in srgb,#52C98B 24%,transparent);font-weight:600}
+.cal-day.has:hover{background:color-mix(in srgb,#52C98B 40%,transparent)}
+.cal-day.has::after{content:"";position:absolute;bottom:2px;width:5px;height:5px;border-radius:50%;background:#52C98B}
+.cal-day.has small{color:#3F8F63}
+.cal-day.today.has{background:var(--blue);color:var(--white);box-shadow:inset 0 0 0 2px #52C98B}
+.cal-day.today.has::after{background:#7BE0A8}
+.cal-day em{position:absolute;top:1px;right:3px;font-style:normal;font-size:9px;line-height:13px;min-width:13px;padding:0 3px;border-radius:999px;background:#52C98B;color:#0B3B22;font-family:var(--f-mono)}
+.cal-key{display:inline-block;width:10px;height:10px;border-radius:3px;background:color-mix(in srgb,#52C98B 45%,transparent);box-shadow:inset 0 0 0 1.5px #52C98B;margin-right:6px;vertical-align:-1px}
+.cal-diary{margin-top:10px;padding:10px 10px 6px;border-radius:12px;background:color-mix(in srgb,#52C98B 10%,transparent)}
+.cal-diary h4{margin:0 0 4px;font-size:12px;font-weight:500;color:#166534;display:flex;align-items:center;gap:6px}
+.cal-diary h4 i{width:7px;height:7px;border-radius:50%;background:#52C98B}
+.cal-d{display:grid;grid-template-columns:auto minmax(0,1fr);gap:0 8px;width:100%;border:0;background:none;text-align:left;padding:5px 4px;border-radius:8px;font-size:13px;color:var(--ink)}
+.cal-d:hover{background:color-mix(in srgb,#52C98B 18%,transparent)}
+.cal-d .mono{font-size:11.5px;color:#3F8F63;grid-row:span 2;padding-top:1px}
+.cal-d span:not(.mono){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cal-d small{font-size:11px;color:var(--ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cal-more{border:0;background:none;color:#166534;font-size:12px;padding:4px;cursor:pointer}
+/* 月历按钮上的新日记提示 */
+.cal-new{position:absolute;top:3px;left:24px;width:8px;height:8px;border-radius:50%;background:#52C98B;box-shadow:0 0 0 2px var(--white);animation:calNew 2.4s ease-in-out infinite}
+@keyframes calNew{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
+@media (prefers-reduced-motion:reduce){.cal-new{animation:none}}
+.top-handle.has-new{position:relative}
+.top-handle.has-new::before{content:"";position:absolute;top:4px;right:6px;width:7px;height:7px;border-radius:50%;background:#52C98B;box-shadow:0 0 0 2px var(--white)}
 .cal-day.term small{color:var(--blue);font-weight:500}
 .cal-foot{display:flex;align-items:center;gap:10px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:12px;color:var(--ink-2)}
 .moon-ic{width:26px;height:26px;flex:none}
@@ -700,16 +721,29 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
 .pin-diary:hover .pb,.pin-diary.is-active .pb,#map.near .pin-diary .pb{gap:5px;padding-right:9px}
 .pin-diary:hover .lbl,.pin-diary.is-active .lbl,#map.near .pin-diary .lbl{max-width:200px}
 .pin-diary.is-active .pb{background:var(--c);color:var(--white)}
+.pin-diary.note.is-active .pb{color:#0B3B22;font-weight:600}
 .pin-diary.is-active .pb i{background:var(--white);box-shadow:none}
 .pin-diary.work.is-active .pb i{background:transparent;box-shadow:inset 0 0 0 3px var(--white)}
 .pin-diary .pin-tail{height:4px;background:var(--c)}
+/* 同一个地方的几篇日记：一个图钉 + 篇数，后面叠一张"纸"表示不止一篇 */
+.pin-dstack .pb{gap:5px;padding-right:4px}
+.pin-dstack .lbl{max-width:150px;text-overflow:ellipsis;white-space:nowrap}
+#map.far .pin-dstack .lbl{max-width:0}
+#map.far .pin-dstack:hover .lbl,#map.far .pin-dstack.is-active .lbl{max-width:150px}
+.pin-dstack .sc{font-style:normal;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--c);color:#0B3B22;font-family:var(--f-mono);font-size:11px;font-weight:700;display:grid;place-items:center}
+.pin-dstack.is-active .sc{background:var(--white)}
+.pin-dstack .pk{position:absolute;left:4px;right:4px;top:-3px;height:100%;max-height:26px;border-radius:999px;background:color-mix(in srgb,var(--c) 45%,var(--white));box-shadow:var(--shadow);transform:rotate(-4deg);z-index:-1}
+.pin-dstack .pin-in{position:relative}
+.dstack-list .sl-i .kname{display:flex;align-items:center;min-width:0}
+.dstack-list .sl-i em{font-style:normal;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px}
+.dstack-list .sl-i b{color:var(--ink-3);font-weight:500}
 .pin-diary .pin-tail::after{width:5px;height:5px;margin-top:3px;margin-left:-1.5px;background:var(--c)}
 /* colour key: list dots + the small tag in the detail card */
 .kdot{display:inline-block;width:9px;height:9px;flex:none;border-radius:50%;background:var(--c);margin-right:7px;vertical-align:0}
 .kdot.work{background:var(--white);box-shadow:inset 0 0 0 2.5px var(--c)}
 .item-btn .kname{display:flex;align-items:center;min-width:0}
 .item-btn .kname em{font-style:normal;overflow:hidden;text-overflow:ellipsis}
-.ktag{display:inline-flex;align-items:center;gap:5px;padding:2px 9px 2px 7px;border-radius:999px;font-size:11.5px;font-weight:500;color:var(--c);background:color-mix(in srgb,var(--c) 12%,#fff)}
+.ktag{display:inline-flex;align-items:center;gap:5px;padding:2px 9px 2px 7px;border-radius:999px;font-size:11.5px;font-weight:500;color:var(--ci,var(--c));background:color-mix(in srgb,var(--c) 12%,#fff)}
 .ktag::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--c)}
 .ktag.work::before{background:transparent;box-shadow:inset 0 0 0 2px var(--c)}
 .pin:hover{z-index:4}
@@ -2029,38 +2063,93 @@ const Stats = {
     fetch('/api/stat', { method: 'POST', body, keepalive: true, headers: { 'Content-Type': 'text/plain' } }).catch(() => {});
   },
 };
-// 实时日记：后台（/admin）发布的日记从 /api/diary 读，发布后别人一打开网站就能看到；网站里写死的日记照样保留
-const LiveDiary = {
+// 后台（/admin）实时发布的内容：日记、吃饭地图的店、扫街照片，从 /api/diary?all=1 一次读回来，发布后别人一打开网站就能看到。
+// 网站里写死的内容照样保留；后台改过的同 id 条目替换它，hidden 的从网站上拿掉。旧版后台只回日记数组，也照样能用
+const Live = {
   load() {
     if (!BACKEND) return;
-    fetch('/api/diary', { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : [])).then((list) => {
-      if (!Array.isArray(list) || !list.length) return;
-      const ids = new Set(list.map((d) => d.id));
-      SITE.diary = [...SITE.diary.filter((d) => !ids.has(d.id)), ...list.map((d) => ({ ...d, lnglat: d.lnglat || undefined }))];
-      markers.diary.forEach((x) => x.m.remove()); markers.diary = [];
-      if (map && state.ready && state.module === 'diary') showMarkers('diary');
+    fetch('/api/diary?all=1', { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : null)).then((d) => {
+      if (!d) return;
+      const diary = Array.isArray(d) ? d : d.diary || [], touched = [];
+      if (diary.length) {
+        const ids = new Set(diary.map((x) => x.id));
+        SITE.diary = [...SITE.diary.filter((x) => !ids.has(x.id)), ...diary.map((x) => ({ ...x, lnglat: x.lnglat || undefined, live: true }))];
+        touched.push('diary'); CalBadge.update();
+      }
+      if (!Array.isArray(d)) for (const k of ['food', 'street']) if (this.merge(k, d[k] || [])) touched.push(k);
+      if (!touched.length) return;
+      for (const k of touched) { markers[k].forEach((x) => x.m.remove()); markers[k] = []; }
+      if (stackPop) { stackPop.remove(); stackPop = null; }
+      if (map && state.ready && touched.includes(state.module)) showMarkers(state.module);
       renderCities();
+      if (!$('#calPop').hidden) renderCal();
     }).catch(() => {});
   },
+  merge(kind, recs) {
+    if (!recs.length) return false;
+    const L = SITE[kind];
+    for (const r of recs) {
+      const i = L.findIndex((x) => x.id === r.id);
+      if (r.hidden) { if (i >= 0) L.splice(i, 1); continue; }
+      const it = { ...r, live: true };
+      if (kind === 'food') {
+        it.lnglat = it.locs && it.locs.length ? it.locs[0].p : undefined;
+        if (!FOOD_CATS.includes(it.cat)) FOOD_CATS.push(it.cat);
+      } else {
+        it.photos = (it.photos || []).map((p) => ({ ...p, thumb: p.thumb || p.src }));
+        const c = SITE.cities.find((x) => x.id === it.city);
+        if (!it.lnglat && i >= 0 && L[i].approx) { it.lnglat = L[i].lnglat; it.approx = true; }
+        if (!c) it.city = 'gz';
+        else if (!it.lnglat && c.far) {   // 没选位置的外地照片：和网站里写死的一样，摆在城市中心附近
+          const k = L.filter((x) => x.city === c.id && x.approx).length, a = k * 2.4, rr = k ? 0.014 * Math.sqrt(k) : 0;
+          it.lnglat = [+(c.center[0] + rr * Math.cos(a)).toFixed(5), +(c.center[1] + rr * Math.sin(a) * 0.92).toFixed(5)]; it.approx = true;
+        }
+      }
+      if (i >= 0) L[i] = it; else L.push(it);
+    }
+    return true;
+  },
 };
-// 后台写日记时「在地图上选位置」：打开 网址/#pick-diary，在地图上点一下，位置存进本机，后台页面自动收到
+// 月历按钮上的小绿点：有访客还没看过的新日记（最近 14 天写的）时亮起，打开月历后熄灭
+const CalBadge = {
+  key: 'bh-cal-seen',
+  newest() { return SITE.diary.filter((d) => d.date).map((d) => d.date).sort().pop() || ''; },
+  update() {
+    const b = $('#calBtn'); if (!b) return;
+    const n = this.newest(); let seen = '';
+    try { seen = localStorage.getItem(this.key) || ''; } catch (e) { /* storage blocked */ }
+    const fresh = n && n > seen && (Date.now() - new Date(n + 'T00:00:00+08:00')) < 14 * 864e5;
+    let dot = b.querySelector('.cal-new');
+    if (fresh && !dot) { dot = document.createElement('i'); dot.className = 'cal-new'; dot.setAttribute('aria-hidden', 'true'); b.appendChild(dot); }
+    if (dot) dot.hidden = !fresh;
+    b.title = fresh ? `月历 · ${n.slice(5).replace('-', '月')}日写了新日记` : '月历';
+    $('#topHandle')?.classList.toggle('has-new', !!fresh);
+  },
+  seen() { try { localStorage.setItem(this.key, this.newest()); } catch (e) { /* storage blocked */ } this.update(); },
+};
+// 后台「在地图上选位置」：打开 网址/#pick-diary（或 #pick-food、#pick-street），在地图上点一下，位置存进本机，后台页面自动收到。
+// 后面可以带 @经度,纬度,缩放：地图直接从那里开始（外地的照片、改已经选过的位置时用）
 const PickMode = {
-  on: BACKEND && location.hash === '#pick-diary',
+  m: BACKEND ? location.hash.match(/^#pick-(diary|food|street)(?:@(-?[\d.]+),(-?[\d.]+)(?:,([\d.]+))?)?$/) : null,
+  get on() { return !!this.m; },
+  home() { const m = this.m; return m && m[2] ? { center: [+m[2], +m[3]], zoom: +(m[4] || 15), pitch: 0, bearing: 0 } : null; },
   init() {
     if (!this.on || !map) return;
+    const what = { diary: ['选日记的位置', '写日记的地方'], food: ['选这家店的位置', '这家店（分店）在的地方'], street: ['选照片的位置', '拍照的地方'] }[this.m[1]];
     const bar = document.createElement('div'); bar.className = 'pick-bar glass'; bar.setAttribute('role', 'status');
-    bar.innerHTML = '<b>选日记的位置</b><span>在地图上点一下写日记的地方</span>';
+    bar.innerHTML = `<b>${what[0]}</b><span>在地图上点一下${what[1]}</span>`;
     document.body.appendChild(bar); map.getCanvas().style.cursor = 'crosshair';
     let mk = null;
+    const h = this.home(); if (h) mk = new maplibregl.Marker({ color: '#94A3B8' }).setLngLat(h.center).addTo(map);
     map.on('click', (e) => {
       const p = [+e.lngLat.lng.toFixed(6), +e.lngLat.lat.toFixed(6)];
-      try { localStorage.setItem('bh-pick', JSON.stringify({ lnglat: p, t: Date.now() })); } catch (err) { /* storage blocked */ }
-      if (mk) mk.setLngLat(p); else mk = new maplibregl.Marker({ color: '#2563EB' }).setLngLat(p).addTo(map);
+      try { localStorage.setItem('bh-pick', JSON.stringify({ lnglat: p, t: Date.now(), kind: this.m[1] })); } catch (err) { /* storage blocked */ }
+      if (mk) mk.remove(); mk = new maplibregl.Marker({ color: '#2563EB' }).setLngLat(p).addTo(map);
       bar.innerHTML = `<b>已选好</b><span>${p[1].toFixed(5)}, ${p[0].toFixed(5)}　回到后台页面就能看到；想换个位置就再点一下</span>`;
     });
   },
 };
-Stats.init(); LiveDiary.load();
+Stats.init(); Live.load();
 
 /* ===================================================================== profile + socials + friends */
 function renderProfile() {
@@ -5117,7 +5206,7 @@ function initMap() {
     setTimeout(() => $('#veil').remove(), 800);
     setModule(state.module, { fit: false });
     PickMode.init();
-    const home = HOME();
+    const home = PickMode.home() || HOME();
     if (reduceMotion) map.jumpTo(home); else map.flyTo({ ...home, duration: 3200, curve: 1.2, essential: true });
   });
   map.on('rotate', syncCompass); map.on('pitch', syncCompass);
@@ -5222,14 +5311,15 @@ function cantonTower() {
 /* ===================================================================== markers */
 // 街巷日记 colour key — each life stage (and the work spots / diary tags) gets a colour instead of a character
 const STAGE_COL = { 出生: '#EC4899', 幼儿园: '#2563EB', 小学: '#2563EB', 初中: '#2563EB', 高中: '#2563EB', 本科: '#2563EB' };   // 学校一律蓝色
-const TAG_COL = { 技术: '#0F766E', 日常: '#2563EB', 随想: '#A855F7' };
+// 写的日记（后台发布的）一律浅绿色，和成长轨迹、办公地点的蓝色分开；分类（日常 / 技术 / 随想）写在标签上。浅绿上的字用深绿（DIARY_INK）
+const DIARY_COL = '#52C98B', DIARY_INK = '#15803D';
 function diaryKind(it) {
   if (it.stage) return { kind: 'life', col: STAGE_COL[it.stage] || '#1E3A8A', name: it.stage };
   if (!it.date) return { kind: 'work', col: '#2563EB', name: '非常驻办公地点' };
-  return { kind: 'note', col: TAG_COL[it.tag] || '#2563EB', name: it.tag || '日记' };
+  return { kind: 'note', col: DIARY_COL, ink: DIARY_INK, name: it.tag || '日记' };
 }
 const kdot = (it) => { const k = diaryKind(it); return `<span class="kdot${k.kind === 'work' ? ' work' : ''}" style="--c:${k.col}" aria-hidden="true"></span>`; };
-const ktag = (it, text) => { const k = diaryKind(it); return `<span class="ktag${k.kind === 'work' ? ' work' : ''}" style="--c:${k.col}">${esc(text || k.name)}</span>`; };
+const ktag = (it, text) => { const k = diaryKind(it); return `<span class="ktag${k.kind === 'work' ? ' work' : ''}" style="--c:${k.col}${k.ink ? `;--ci:${k.ink}` : ''}">${esc(text || k.name)}</span>`; };
 function pinEl(type, item, loc) {
   const el = document.createElement('button');
   el.type = 'button';
@@ -5263,16 +5353,54 @@ function pinEl(type, item, loc) {
 function ensureMarkers(type) {
   if (markers[type].length) return markers[type];
   const list = MODULES.find((m) => m.id === type).items().filter((i) => i.lnglat);
-  const stacks = new Map();
+  const stacks = new Map(), dstacks = type === 'diary' ? diaryPlaces(list) : null;
   markers[type] = list.flatMap((item) => (item.locs && item.locs.length ? item.locs : [{ p: item.lnglat }]).flatMap((loc) => {
     if (type === 'food' && loc.m) { if (!stacks.has(loc.m)) stacks.set(loc.m, []); stacks.get(loc.m).push({ item, loc }); return []; }
+    if (dstacks && dstacks.has(item.id)) return [];   // 同一个地方写的几篇日记合成一个图钉（见 diaryStackMarker）
     const el = pinEl(type, item, loc); const label = el.getAttribute('aria-label');
     const m = new maplibregl.Marker({ element: el, anchor: 'bottom' }).setLngLat(loc.p);
     el.setAttribute('aria-label', label);
     return [{ id: item.id, cat: item.cat, m }];
   }));
   for (const [name, mem] of stacks) markers[type].push(stackMarker(name, mem));
+  if (dstacks) for (const g of new Set(dstacks.values())) markers[type].push(diaryStackMarker(g));
   return markers[type];
+}
+// 街巷日记：在同一个地方（相距 60 米以内，或地点名字一样且在 400 米以内）写的几篇日记，地图上只放一个图钉，
+// 上面写地点和篇数，点开是按日期排的小列表；成长轨迹和办公地点不合并
+function diaryPlaces(list) {
+  const notes = list.filter((i) => i.date && !i.stage && i.lnglat), groups = [];
+  const dist = (a, b) => Math.hypot((a[0] - b[0]) * 102000, (a[1] - b[1]) * 111000);
+  for (const it of notes) {
+    const g = groups.find((x) => x.mem.some((o) => { const d = dist(o.lnglat, it.lnglat); return d < 60 || (d < 400 && it.place && o.place === it.place); }));
+    if (g) g.mem.push(it); else groups.push({ mem: [it] });
+  }
+  const out = new Map();
+  for (const g of groups) {
+    if (g.mem.length < 2) continue;
+    g.mem.sort((a, b) => b.date.localeCompare(a.date));
+    const names = {}; g.mem.forEach((i) => { if (i.place) names[i.place] = (names[i.place] || 0) + 1; });
+    g.name = Object.keys(names).sort((a, b) => names[b] - names[a])[0] || '同一个地方';
+    g.c = [g.mem.reduce((s, i) => s + i.lnglat[0], 0) / g.mem.length, g.mem.reduce((s, i) => s + i.lnglat[1], 0) / g.mem.length];
+    g.mem.forEach((i) => out.set(i.id, g));
+  }
+  return out;
+}
+function diaryStackMarker(g) {
+  const el = document.createElement('button'); el.type = 'button'; el.className = 'pin pin-diary note pin-dstack'; el.style.setProperty('--c', DIARY_COL);
+  el.innerHTML = `<span class="pin-in"><span class="pk"></span><span class="pb"><i></i><span class="lbl">${esc(g.name)}</span><em class="sc">${g.mem.length}</em></span><span class="pin-tail"></span></span>`;
+  const m = new maplibregl.Marker({ element: el, anchor: 'bottom' }).setLngLat(g.c);
+  el.setAttribute('aria-label', `${g.name}：${g.mem.length} 篇日记`);
+  const entry = { ids: g.mem.map((i) => i.id), m, name: g.name, mem: g.mem };
+  el.addEventListener('click', (e) => { e.stopPropagation(); openDiaryStack(entry); });
+  return entry;
+}
+function openDiaryStack(entry) {
+  if (stackPop) stackPop.remove();
+  const box = document.createElement('div'); box.className = 'stack-list dstack-list';
+  box.innerHTML = `<div class="sl-h">${esc(entry.name)} · ${entry.mem.length} 篇日记</div>` + entry.mem.map((i) => `<button class="sl-i" data-id="${i.id}"><span class="kname">${kdot(i)}<em>${esc(i.title)}</em></span><b>${esc(i.date.slice(2).replace(/-/g, '.'))}</b></button>`).join('');
+  box.addEventListener('click', (e) => { const b = e.target.closest('[data-id]'); if (!b) return; stackPop.remove(); stackPop = null; openDetail('diary', b.dataset.id, { fly: false }); });
+  stackPop = new maplibregl.Popup({ closeButton: false, focusAfterOpen: false, anchor: 'bottom', offset: [0, -34], maxWidth: '320px', className: 'stack-pop' }).setLngLat(entry.m.getLngLat()).setDOMContent(box).addTo(map);
 }
 // several shops in one building: one pin that opens a short list
 function stackMarker(name, mem) {
@@ -5451,7 +5579,7 @@ function renderCities() {
       const lmGroups = mod.id === 'landmark' ? [['名胜古迹', list.filter((i) => i.kind !== 'new')], ['城市新地标', list.filter((i) => i.kind === 'new')]].filter((g) => g[1].length) : null;
       if (mod.id !== 'food') for (const [gname, g] of lmGroups || [[null, list]]) {
         if (gname) html += `<li class="group-label">${gname} · ${g.length}</li>`;
-        for (const i of g) { const [a, b] = itemLabel(mod.id, i); html += `<li><button class="item-btn" data-item="${i.id}" data-type="${mod.id}" aria-current="${state.active === i.id}"><span>${esc(a)}</span><span class="meta">${esc(b)}</span></button></li>`; }
+        for (const i of g) { const [a, b] = itemLabel(mod.id, i); html += `<li><button class="item-btn" data-item="${i.id}" data-type="${mod.id}" aria-current="${state.active === i.id}">${mod.id === 'diary' ? `<span class="kname">${kdot(i)}<em>${esc(a)}</em></span>` : `<span>${esc(a)}</span>`}<span class="meta">${esc(b)}</span></button></li>`; }
       }
       html += '</ul>';
     }
@@ -6011,7 +6139,8 @@ function moonSVG(phase, size = 26) {
 }
 function renderCal() {
   const { y, m } = cal; const first = new Date(y, m, 1); const start = (first.getDay() + 6) % 7; const days = new Date(y, m + 1, 0).getDate();
-  const today = new Date(); const diaryDays = new Set(SITE.diary.map((d) => d.date));
+  const today = new Date(); const byDay = {};
+  SITE.diary.forEach((d) => { if (d.date) (byDay[d.date] = byDay[d.date] || []).push(d); });
   let cells = ['一', '二', '三', '四', '五', '六', '日'].map((d) => `<span class="dow">${d}</span>`).join('');
   const prevDays = new Date(y, m, 0).getDate();
   for (let i = 0; i < start; i++) cells += `<span class="cal-day muted">${prevDays - start + 1 + i}</span>`;
@@ -6019,13 +6148,24 @@ function renderCal() {
     const dt = new Date(y, m, d); const l = lunar(dt);
     const iso = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
     const isT = dt.toDateString() === today.toDateString();
-    cells += `<span class="cal-day${isT ? ' today' : ''}${diaryDays.has(iso) ? ' has' : ''}${l && l.first ? ' term' : ''}" ${diaryDays.has(iso) ? `title="这天写了日记"` : ''}>${d}<small>${l ? (l.first ? l.month : l.day) : ''}</small></span>`;
+    const dd = byDay[iso], inner = `${d}<small>${l ? (l.first ? l.month : l.day) : ''}</small>`, cls = `cal-day${isT ? ' today' : ''}${dd ? ' has' : ''}${l && l.first ? ' term' : ''}`;
+    cells += dd ? `<button type="button" class="${cls}" data-day="${iso}" title="${esc(dd.map((x) => x.title).join('、'))}" aria-label="${m + 1}月${d}日写了 ${dd.length} 篇日记：${esc(dd.map((x) => x.title).join('、'))}">${inner}${dd.length > 1 ? `<em>${dd.length}</em>` : ''}</button>`
+      : `<span class="${cls}">${inner}</span>`;
   }
+  // 这个月写的日记：月历下面列出来，点一下飞到写下它的地方
+  const mon = `${y}-${String(m + 1).padStart(2, '0')}`;
+  const inMonth = SITE.diary.filter((d) => d.date && d.date.startsWith(mon)).sort((a, b) => b.date.localeCompare(a.date));
+  const monList = inMonth.length ? `<div class="cal-diary"><h4><i></i>这个月写了 <b class="mono">${inMonth.length}</b> 篇日记</h4>${inMonth.slice(0, 6).map((d) => `<button type="button" class="cal-d" data-id="${d.id}"><span class="mono">${d.date.slice(8)}日</span><span>${esc(d.title)}</span>${d.place ? `<small>${esc(d.place)}</small>` : ''}</button>`).join('')}${inMonth.length > 6 ? `<button type="button" class="cal-more" data-more>还有 ${inMonth.length - 6} 篇 · 打开日记</button>` : ''}</div>` : '';
   const mi = moonInfo(new Date());
   const tl = lunar(today);
   $('#calPop').innerHTML = `<div class="pop-head"><button class="icon-btn" id="calPrev" aria-label="上个月">${ICONS.prev}</button><h3><span class="mono">${y}</span> 年 <span class="mono">${m + 1}</span> 月</h3><button class="icon-btn" id="calNext" aria-label="下个月">${ICONS.next}</button></div>
-    <div class="cal-grid">${cells}</div>
-    <div class="cal-foot">${moonSVG(mi.phase)}<div>今天${tl ? ` 农历${tl.month}${tl.day}` : ''} · ${mi.name}，月面照亮 <span class="mono">${Math.round(mi.illum * 100)}%</span><br><span style="color:var(--ink-3)">蓝点表示这天写了日记</span></div></div>`;
+    <div class="cal-grid">${cells}</div>${monList}
+    <div class="cal-foot">${moonSVG(mi.phase)}<div>今天${tl ? ` 农历${tl.month}${tl.day}` : ''} · ${mi.name}，月面照亮 <span class="mono">${Math.round(mi.illum * 100)}%</span><br><span style="color:var(--ink-3)"><i class="cal-key"></i>浅绿色的日子写了日记，点一下就能看</span></div></div>`;
+  const openD = (id) => { closePops(); openDetail('diary', id); };
+  $('#calPop').querySelectorAll('[data-day]').forEach((b) => b.addEventListener('click', () => openD(byDay[b.dataset.day][0].id)));
+  $('#calPop').querySelectorAll('.cal-d').forEach((b) => b.addEventListener('click', () => openD(b.dataset.id)));
+  $('#calPop').querySelector('[data-more]')?.addEventListener('click', () => { closePops(); setTimeout(() => $('#diaryBtn').click(), 0); });
+  CalBadge.seen();
   $('#calPrev').onclick = () => { cal.m--; if (cal.m < 0) { cal.m = 11; cal.y--; } renderCal(); };
   $('#calNext').onclick = () => { cal.m++; if (cal.m > 11) { cal.m = 0; cal.y++; } renderCal(); };
 }

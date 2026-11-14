@@ -94,6 +94,34 @@ textarea.input{min-height:220px;resize:vertical;line-height:1.75}
 .ph .up{position:absolute;inset:0;display:grid;place-items:center;background:rgba(255,255,255,.7);font-size:12px;color:var(--ink-2)}
 .add-ph{aspect-ratio:1;border-radius:10px;border:1.5px dashed var(--ice-2);display:grid;place-items:center;color:var(--blue);background:none;font-size:13px}
 .actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:18px}
+.split{display:grid;grid-template-columns:320px minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:900px){.split{grid-template-columns:1fr}}
+.list-tools{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+.list-tools .input{padding:7px 10px}
+.seg.sm button{padding:3px 10px;font-size:12.5px}
+.tag.edit{background:color-mix(in srgb,var(--blue) 12%,transparent);color:var(--blue)}
+.tag.hid{background:color-mix(in srgb,var(--ink-3) 18%,transparent);color:var(--ink-2)}
+.tag.own{background:color-mix(in srgb,#52C98B 20%,transparent);color:#15803D}
+.d-item .dt.sc{font-weight:600;color:var(--ink-2)}
+.row2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.row4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:600px){.row2,.row4{grid-template-columns:1fr}}
+textarea.input.short{min-height:110px}
+.locs{display:flex;flex-direction:column;gap:10px}
+.loc-card{border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;gap:10px}
+.loc-card .hd{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-3);font-weight:600}
+.loc-card .hd .ghost{margin-left:auto;padding:4px 10px;font-size:12px}
+.sphotos{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.sph{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--card);display:flex;flex-direction:column}
+.sph .im{position:relative;aspect-ratio:4/3;background:var(--ice)}
+.sph .im img{width:100%;height:100%;object-fit:cover;display:block}
+.sph .im .up{position:absolute;inset:0;display:grid;place-items:center;background:rgba(255,255,255,.7);font-size:12px;color:var(--ink-2)}
+.sph .im .tb{position:absolute;top:6px;right:6px;display:flex;gap:4px}
+.sph .im .tb button{width:26px;height:26px;border-radius:50%;border:0;background:rgba(15,23,42,.62);color:#fff;font-size:13px;line-height:26px;padding:0}
+.sph .fs{display:grid;gap:6px;padding:8px}
+.sph .fs .input{padding:6px 9px;font-size:13px}
+.add-sph{min-height:160px;border-radius:12px;border:1.5px dashed var(--ice-2);display:grid;place-items:center;color:var(--blue);background:none;font-size:13px}
+.hint{font-size:12px;color:var(--ink-3);font-weight:400}
 .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:13.5px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:50;max-width:calc(100% - 32px)}
 .toast.on{opacity:1}
 [hidden]{display:none!important}
@@ -103,7 +131,7 @@ textarea.input{min-height:220px;resize:vertical;line-height:1.75}
 <div class="wrap">
   <section class="login" id="login" hidden>
     <h1>Beyond Horizons 后台</h1>
-    <p>访问统计 · 写日记</p>
+    <p>访问统计 · 日记 · 吃饭地图 · 扫街照片</p>
     <form id="loginForm" class="card" autocomplete="on">
       <div class="field"><label for="pw">密码</label><input class="input" id="pw" type="password" autocomplete="current-password" required></div>
       <div class="err" id="loginErr"></div>
@@ -113,10 +141,12 @@ textarea.input{min-height:220px;resize:vertical;line-height:1.75}
 
   <section id="app" hidden>
     <header>
-      <h1>Beyond Horizons 后台<small>访问统计 · 日记</small></h1>
+      <h1>Beyond Horizons 后台<small>访问统计 · 日记 · 吃饭地图 · 扫街照片</small></h1>
       <div class="tabs" role="tablist">
         <button role="tab" data-tab="stats" aria-selected="true">访问统计</button>
         <button role="tab" data-tab="diary" aria-selected="false">写日记</button>
+        <button role="tab" data-tab="food" aria-selected="false">吃饭地图</button>
+        <button role="tab" data-tab="street" aria-selected="false">扫街照片</button>
       </div>
       <a class="ghost" href="/" target="_blank" rel="noopener" style="text-decoration:none">打开网站</a>
       <button class="ghost" id="logout">退出</button>
@@ -171,6 +201,7 @@ textarea.input{min-height:220px;resize:vertical;line-height:1.75}
           </div>
           <div class="field"><label>地图上的位置 <span class="muted" style="font-weight:400">（日记会在这里出现一个图钉；不选就只出现在日记列表里）</span></label>
             <div class="loc"><span class="coord" id="fCoord">还没选</span>
+              <button type="button" class="btn light" id="pickLast" hidden>用回上次的地点</button>
               <button type="button" class="btn light" id="pickMap">在地图上选</button>
               <button type="button" class="btn light" id="pickHere">用我现在的位置</button>
               <button type="button" class="ghost" id="pickClear">清除</button></div>
@@ -185,6 +216,83 @@ textarea.input{min-height:220px;resize:vertical;line-height:1.75}
             <button class="btn" type="submit" id="dPublish">发布</button>
             <button class="btn light" type="button" id="dDraft">存草稿（网站上不显示）</button>
             <button class="btn danger" type="button" id="dDelete" hidden style="margin-left:auto">删除这篇</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="tab-food" hidden>
+      <div class="split">
+        <div class="card">
+          <h3>吃饭地图 <span class="sub" id="fdCount"></span></h3>
+          <button class="btn" id="fdNew" style="width:100%;margin-bottom:10px">＋ 加一家店</button>
+          <div class="list-tools"><input class="input" id="fdQ" type="search" placeholder="搜店名 / 菜式 / 区"></div>
+          <div class="list-tools seg sm" id="fdF"><button data-f="all" aria-pressed="true">全部</button><button data-f="own" aria-pressed="false">后台加的</button><button data-f="edit" aria-pressed="false">改过的</button><button data-f="hid" aria-pressed="false">藏起来的</button></div>
+          <div class="d-list" id="fdList"></div>
+        </div>
+        <form class="card" id="fdForm" autocomplete="off">
+          <h3 id="fdHead">加一家店</h3>
+          <div class="row2">
+            <div class="field"><label for="fdName">店名</label><input class="input" id="fdName" maxlength="60" required placeholder="比如：莲香楼（东风店）"></div>
+            <div class="field"><label for="fdCat">菜式</label><input class="input" id="fdCat" maxlength="20" list="catList" placeholder="选一个，或者写新的"><datalist id="catList"></datalist></div>
+          </div>
+          <div class="row4">
+            <div class="field"><label for="fdScore">评分 <span class="hint">满分 10，可不填</span></label><input class="input" id="fdScore" type="number" min="0" max="10" step="0.1" inputmode="decimal"></div>
+            <div class="field"><label for="fdCity">城市</label><select class="input" id="fdCity"></select></div>
+            <div class="field"><label for="fdArea">区</label><input class="input" id="fdArea" maxlength="20" list="areaList" placeholder="越秀"><datalist id="areaList"></datalist></div>
+            <div class="field"><label>&nbsp;</label><label style="display:flex;gap:6px;align-items:center;font-weight:400;color:var(--ink-2)"><input type="checkbox" id="fdChain"> 连锁店（不标分店）</label></div>
+          </div>
+          <div class="field"><label for="fdReview">评价</label><textarea class="input short" id="fdReview" maxlength="6000" placeholder="好不好吃、贵不贵、环境怎样…"></textarea></div>
+          <div class="field"><label for="fdNote">备注 <span class="hint">可不填，卡片上小字显示</span></label><input class="input" id="fdNote" maxlength="1000"></div>
+          <div class="field"><label>分店和位置 <span class="hint">每个分店在地图上一个图钉；第一个是主位置</span></label>
+            <div class="locs" id="fdLocs"></div>
+            <button type="button" class="btn light" id="fdAddLoc" style="margin-top:8px;justify-self:start">＋ 加一个分店</button>
+          </div>
+          <div class="err" id="fdErr"></div>
+          <div class="actions">
+            <button class="btn" type="submit">保存并发布</button>
+            <button class="btn light" type="button" id="fdHide">藏起来（网站上先不显示）</button>
+            <button class="btn danger" type="button" id="fdDel" hidden style="margin-left:auto">删除</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="tab-street" hidden>
+      <div class="split">
+        <div class="card">
+          <h3>扫街照片 <span class="sub" id="stCount"></span></h3>
+          <button class="btn" id="stNew" style="width:100%;margin-bottom:10px">＋ 加一组照片</button>
+          <div class="list-tools"><input class="input" id="stQ" type="search" placeholder="搜标题 / 地点 / 城市"></div>
+          <div class="list-tools seg sm" id="stF"><button data-f="all" aria-pressed="true">全部</button><button data-f="own" aria-pressed="false">后台加的</button><button data-f="edit" aria-pressed="false">改过的</button><button data-f="hid" aria-pressed="false">藏起来的</button></div>
+          <div class="d-list" id="stList"></div>
+        </div>
+        <form class="card" id="stForm" autocomplete="off">
+          <h3 id="stHead">加一组照片</h3>
+          <div class="row2">
+            <div class="field"><label for="stTitle">标题</label><input class="input" id="stTitle" maxlength="60" required placeholder="比如：西湖花街"></div>
+            <div class="field"><label for="stCity">城市</label><select class="input" id="stCity"></select></div>
+          </div>
+          <div class="row2">
+            <div class="field"><label for="stPlace">地点</label><input class="input" id="stPlace" maxlength="80" placeholder="越秀 · 西湖路"></div>
+            <div class="field"><label for="stDate">什么时候拍的 <span class="hint">随便写，比如 2024-02 · 春节</span></label><input class="input" id="stDate" maxlength="40"></div>
+          </div>
+          <div class="field"><label for="stNote">说明</label><textarea class="input short" id="stNote" maxlength="3000" placeholder="这组照片的故事"></textarea></div>
+          <div class="field"><label>地图上的位置 <span class="hint" id="stLocHint">图钉放在这里</span></label>
+            <div class="loc"><span class="coord" id="stCoord">还没选</span>
+              <button type="button" class="btn light" id="stPick">在地图上选</button>
+              <button type="button" class="btn light" id="stHere">用我现在的位置</button>
+              <button type="button" class="ghost" id="stClear">清除</button></div>
+          </div>
+          <div class="field"><label>照片 <span class="hint">会自动缩小再上传；第一张是图钉上的封面，用 ← 调顺序</span></label>
+            <div class="sphotos" id="stPhotos"></div>
+            <input type="file" id="stFile" accept="image/*" multiple hidden>
+          </div>
+          <div class="err" id="stErr"></div>
+          <div class="actions">
+            <button class="btn" type="submit">保存并发布</button>
+            <button class="btn light" type="button" id="stHide">藏起来（网站上先不显示）</button>
+            <button class="btn danger" type="button" id="stDel" hidden style="margin-left:auto">删除</button>
           </div>
         </form>
       </div>
@@ -224,11 +332,39 @@ $('#loginForm').addEventListener('submit', async (e) => {
 $('#logout').addEventListener('click', showLogin);
 
 /* ---------------- tabs */
+const TABS = { stats: () => loadStats(), diary: () => loadDiary(), food: () => Items.food.load(), street: () => Items.street.load() };
 document.querySelectorAll('[data-tab]').forEach((b) => b.addEventListener('click', () => {
   document.querySelectorAll('[data-tab]').forEach((x) => x.setAttribute('aria-selected', String(x === b)));
-  $('#tab-stats').hidden = b.dataset.tab !== 'stats'; $('#tab-diary').hidden = b.dataset.tab !== 'diary';
-  if (b.dataset.tab === 'diary') loadDiary(); else loadStats();
+  for (const k of Object.keys(TABS)) $('#tab-' + k).hidden = b.dataset.tab !== k;
+  TABS[b.dataset.tab]();
 }));
+// 在网站地图上点选位置：打开 /#pick-xxx（可带 @经度,纬度,缩放 从那里开始），选好的位置经本机存储传回来，交给 pickCb
+let pickT = 0, pickCb = null;
+function pickOnMap(kind, at, cb, zoom = 16) {
+  pickT = Date.now(); pickCb = cb;
+  window.open('/#pick-' + kind + (at ? `@${at[0]},${at[1]},${zoom}` : ''), '_blank');
+  toast('在新打开的地图上点一下位置，再回到这个页面');
+}
+function readPick() {
+  try { const p = JSON.parse(store.get('bh-pick') || 'null'); if (p && pickT && p.t >= pickT && pickCb) { const cb = pickCb; pickT = 0; pickCb = null; cb(p.lnglat); toast('位置已选好'); } } catch (e) { /* ignore */ }
+}
+addEventListener('storage', (e) => { if (e.key === 'bh-pick') readPick(); });
+addEventListener('focus', readPick);
+function locate(cb) {
+  if (!navigator.geolocation) return toast('这个浏览器不能定位');
+  toast('正在定位…');
+  navigator.geolocation.getCurrentPosition((pos) => { cb([+pos.coords.longitude.toFixed(6), +pos.coords.latitude.toFixed(6)]); toast('已用你现在的位置'); },
+    (err) => toast(err.code === 1 ? '没有定位权限（要在浏览器里允许，而且网址要是 https）' : '定位失败，可以改用「在地图上选」'), { enableHighAccuracy: true, timeout: 15000 });
+}
+const fmtLL = (p) => (p ? `${(+p[1]).toFixed(5)}, ${(+p[0]).toFixed(5)}` : '还没选');
+// 照片：在浏览器里缩小（长边 1600 像素）再上传，另做一张小图
+async function uploadPhoto(f) {
+  const big = await shrink(f, 1600, 0.85), small = await shrink(f, 480, 0.8);
+  const a = await api('/api/admin/upload', { method: 'POST', body: big.blob, headers: { 'Content-Type': 'image/jpeg' } });
+  const b = await api('/api/admin/upload?thumb=1', { method: 'POST', body: small.blob, headers: { 'Content-Type': 'image/jpeg' } });
+  return { src: a.src, thumb: b.src, ar: +big.ar.toFixed(3) };
+}
+const imgUrl = (src) => (/^(\/|https?:|blob:|data:)/.test(src || '') ? src : '/' + src);   // 网站自带的照片是 photos/…，从网站根目录读
 
 /* ---------------- stats */
 let days = 7;
@@ -288,8 +424,9 @@ async function loadStats() {
     : '<tr><td colspan="6" class="empty">这段时间还没有人来过</td></tr>';
 }
 
+const Items = {};
 /* ---------------- diary */
-let entries = [], cur = null, photos = [], lnglat = null, tag = '日常', pickT = 0;
+let entries = [], cur = null, photos = [], lnglat = null, tag = '日常';
 const today = () => new Date(Date.now() + 8 * 3600e3).toISOString().slice(0, 10);
 async function loadDiary(keep) {
   try { entries = await api('/api/admin/diary'); } catch (e) { if (e.message !== '请先登录') toast(e.message); return; }
@@ -299,31 +436,31 @@ async function loadDiary(keep) {
   document.querySelectorAll('.d-item').forEach((b) => b.addEventListener('click', () => edit(entries.find((x) => x.id === b.dataset.id))));
   if (!keep) edit(cur && entries.find((x) => x.id === cur.id));
 }
+// 「用回上次的地点」：最近改过的另一篇有位置的日记的地点和坐标
+function lastPlace() {
+  return [...entries].filter((d) => (!cur || d.id !== cur.id) && d.lnglat).sort((a, b) => (b.updated || 0) - (a.updated || 0))[0] || null;
+}
+function updateLast() {
+  const l = lastPlace(), b = $('#pickLast');
+  b.hidden = !l; if (l) { b.textContent = `用回上次的地点：${l.place || fmtLL(l.lnglat)}`; b.title = `${l.title} · ${fmtLL(l.lnglat)}`; }
+}
+$('#pickLast').addEventListener('click', () => { const l = lastPlace(); if (!l) return; setLoc(l.lnglat); if (l.place) $('#fPlace').value = l.place; toast('已用回上次的地点' + (l.place ? '：' + l.place : '')); });
 function setTag(t) { tag = t; document.querySelectorAll('#fTag button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.t === t))); }
-function setLoc(p) { lnglat = p; $('#fCoord').textContent = p ? `${p[1].toFixed(5)}, ${p[0].toFixed(5)}` : '还没选'; }
+function setLoc(p) { lnglat = p; $('#fCoord').textContent = fmtLL(p); }
 function edit(d) {
   cur = d || null;
   $('#dHead').textContent = d ? '修改日记' : '写新日记';
   $('#fTitle').value = d ? d.title : ''; $('#fDate').value = d ? d.date : today(); $('#fPlace').value = d ? d.place || '' : ''; $('#fText').value = d ? d.text || '' : '';
   setTag(d ? d.tag || '日常' : '日常'); setLoc(d ? d.lnglat : null); photos = d ? d.photos.map((p) => ({ ...p })) : []; renderPhotos();
-  $('#dDelete').hidden = !d; $('#dErr').textContent = '';
+  $('#dDelete').hidden = !d; $('#dErr').textContent = ''; updateLast();
   document.querySelectorAll('.d-item').forEach((b) => b.setAttribute('aria-current', String(!!d && b.dataset.id === d.id)));
 }
 document.querySelectorAll('#fTag button').forEach((b) => b.addEventListener('click', () => setTag(b.dataset.t)));
 $('#dNew').addEventListener('click', () => { edit(null); $('#fTitle').focus(); });
-// 位置：在网站地图上点选（同一个网址下，选好的位置经本机存储传回来）、用手机定位、或清除
-$('#pickMap').addEventListener('click', () => { pickT = Date.now(); window.open('/#pick-diary', '_blank'); toast('在新打开的地图上点一下写日记的地方，再回到这个页面'); });
-function readPick() { try { const p = JSON.parse(store.get('bh-pick') || 'null'); if (p && p.t >= pickT && pickT) { setLoc(p.lnglat); toast('位置已选好'); pickT = 0; } } catch (e) { /* ignore */ } }
-addEventListener('storage', (e) => { if (e.key === 'bh-pick') readPick(); });
-addEventListener('focus', readPick);
-$('#pickHere').addEventListener('click', () => {
-  if (!navigator.geolocation) return toast('这个浏览器不能定位');
-  toast('正在定位…');
-  navigator.geolocation.getCurrentPosition((pos) => { setLoc([+pos.coords.longitude.toFixed(6), +pos.coords.latitude.toFixed(6)]); toast('已用你现在的位置'); },
-    (err) => toast(err.code === 1 ? '没有定位权限（要在浏览器里允许，而且网址要是 https）' : '定位失败，可以改用「在地图上选」'), { enableHighAccuracy: true, timeout: 15000 });
-});
+// 位置：在网站地图上点选、用回上次的地点、用手机定位、或清除
+$('#pickMap').addEventListener('click', () => pickOnMap('diary', lnglat, setLoc));
+$('#pickHere').addEventListener('click', () => locate(setLoc));
 $('#pickClear').addEventListener('click', () => setLoc(null));
-// 照片：在浏览器里缩小（长边 1600 像素）再上传，另做一张小图
 function renderPhotos() {
   $('#fPhotos').innerHTML = photos.map((p, i) => `<div class="ph"><img src="${esc(p.preview || p.src)}" alt="">${p.busy ? '<span class="up">上传中…</span>' : ''}<button type="button" data-rm="${i}" aria-label="去掉这张">×</button></div>`).join('')
     + (photos.length < 12 ? '<button type="button" class="add-ph" id="addPh">＋ 加照片</button>' : '');
@@ -343,12 +480,7 @@ $('#fFile').addEventListener('change', async (e) => {
   const files = [...e.target.files].slice(0, 12 - photos.length); e.target.value = '';
   for (const f of files) {
     const p = { busy: true, preview: URL.createObjectURL(f) }; photos.push(p); renderPhotos();
-    try {
-      const big = await shrink(f, 1600, 0.85), small = await shrink(f, 480, 0.8);
-      const a = await api('/api/admin/upload', { method: 'POST', body: big.blob, headers: { 'Content-Type': 'image/jpeg' } });
-      const b = await api('/api/admin/upload?thumb=1', { method: 'POST', body: small.blob, headers: { 'Content-Type': 'image/jpeg' } });
-      Object.assign(p, { src: a.src, thumb: b.src, ar: +big.ar.toFixed(3), busy: false });
-    } catch (err) { photos.splice(photos.indexOf(p), 1); toast(err.message); }
+    try { Object.assign(p, await uploadPhoto(f), { busy: false }); } catch (err) { photos.splice(photos.indexOf(p), 1); toast(err.message); }
     renderPhotos();
   }
 });
@@ -369,7 +501,194 @@ $('#dDelete').addEventListener('click', async () => {
   if (!cur || !confirmDel()) return;
   try { await api('/api/admin/diary/' + cur.id, { method: 'DELETE' }); cur = null; await loadDiary(); toast('已删除'); } catch (e) { toast(e.message); }
 });
-function confirmDel() { const b = $('#dDelete'); if (b.dataset.sure) { delete b.dataset.sure; b.textContent = '删除这篇'; return true; } b.dataset.sure = '1'; b.textContent = '再点一次确认删除'; setTimeout(() => { delete b.dataset.sure; b.textContent = '删除这篇'; }, 4000); return false; }
+function confirmDel(b = $('#dDelete')) { const t = b.dataset.t || (b.dataset.t = b.textContent); if (b.dataset.sure) { delete b.dataset.sure; b.textContent = t; return true; } b.dataset.sure = '1'; b.textContent = '再点一次确认'; setTimeout(() => { delete b.dataset.sure; b.textContent = t; }, 4000); return false; }
+
+/* ---------------- 吃饭地图的店、扫街照片
+   网站自带的条目来自 admin/meta.json（导出网站时生成）；后台的记录：新加的（own）、改过的自带条目（edit，同 id 替换）、
+   藏起来的（hid）。删除后台记录 = 新加的就没了，自带的恢复原样。 */
+let META = null;
+async function meta() {
+  if (META) return META;
+  try { const r = await fetch('meta.json', { cache: 'no-cache' }); META = r.ok ? await r.json() : null; } catch (e) { META = null; }
+  if (!META) { META = { cities: [{ id: 'gz', name: '广州', center: [113.29, 23.118] }], cats: [], areas: [], food: [], street: [] }; toast('没读到网站自带的数据（admin/meta.json），只能管后台加的'); }
+  return META;
+}
+const clone = (o) => JSON.parse(JSON.stringify(o));
+const cityName = (id) => ((META && META.cities.find((c) => c.id === (id || 'gz'))) || { name: id || '广州' }).name;
+function makeItems(kind, ui) {
+  const M = {
+    kind, rows: [], cur: null, filter: 'all',
+    async load() {
+      await meta(); let recs;
+      try { recs = (await api('/api/admin/items'))[kind]; } catch (e) { if (e.message !== '请先登录') toast(e.message); return; }
+      const byId = new Map(recs.map((r) => [r.id, r])), rows = [];
+      for (const b of META[kind]) {
+        const r = byId.get(b.id); byId.delete(b.id);
+        rows.push({ id: b.id, builtin: true, base: b, rec: r || null, data: r && r.data && Object.keys(r.data).length ? r.data : b, hidden: !!(r && r.hidden), edited: !!(r && r.data && Object.keys(r.data).length) });
+      }
+      const own = [...byId.values()].map((r) => ({ id: r.id, builtin: false, rec: r, data: r.data, hidden: r.hidden, own: true, updated: r.updated }));
+      own.sort((a, b) => b.updated - a.updated);
+      this.rows = [...own, ...rows];
+      ui.fillSelects();
+      this.renderList();
+      this.edit(this.cur && this.rows.find((x) => x.id === this.cur.id));
+    },
+    status(r) { return r.hidden ? '<span class="tag hid">已藏起来</span> ' : r.own ? '<span class="tag own">后台加的</span> ' : r.edited ? '<span class="tag edit">改过</span> ' : ''; },
+    renderList() {
+      const q = $(ui.q).value.trim().toLowerCase(), f = this.filter;
+      const list = this.rows.filter((r) => (f === 'all' || (f === 'own' && r.own) || (f === 'edit' && r.edited) || (f === 'hid' && r.hidden)) && (!q || ui.text(r.data).toLowerCase().includes(q)));
+      $(ui.count).textContent = `${this.rows.filter((r) => !r.hidden).length} 条在网站上` + (this.rows.some((r) => r.own) ? ` · 后台加了 ${this.rows.filter((r) => r.own).length} 条` : '');
+      $(ui.list).innerHTML = list.slice(0, 300).map((r) => `<button class="d-item" data-id="${r.id}" aria-current="${!!this.cur && this.cur.id === r.id}">${ui.row(r, this.status(r))}</button>`).join('') || '<div class="empty" style="padding:6px 8px">没有找到</div>';
+      $(ui.list).querySelectorAll('.d-item').forEach((b) => b.addEventListener('click', () => this.edit(this.rows.find((x) => x.id === b.dataset.id))));
+    },
+    edit(r) {
+      this.cur = r || null;
+      $(ui.head).textContent = r ? (r.builtin ? (r.edited ? '改网站自带的条目（已改过）' : '改网站自带的条目') : '修改') : ui.newTitle;
+      ui.fill(r ? clone(r.data) : null);
+      const del = $(ui.del); del.hidden = !r || (r.builtin && !r.rec);
+      del.textContent = del.dataset.t = r && r.builtin ? '恢复成网站自带的样子' : '删除';
+      $(ui.hide).textContent = r && r.hidden ? '重新在网站上显示' : '藏起来（网站上先不显示）';
+      $(ui.hide).hidden = !r;
+      $(ui.err).textContent = '';
+      $(ui.list).querySelectorAll('.d-item').forEach((b) => b.setAttribute('aria-current', String(!!r && b.dataset.id === r.id)));
+    },
+    async post(body, msg) {
+      try { const j = await api('/api/admin/items', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kind, ...body }) }); this.cur = { id: j.id }; await this.load(); toast(msg); }
+      catch (e) { $(ui.err).textContent = e.message; }
+    },
+    async save() {
+      $(ui.err).textContent = '';
+      let data; try { data = ui.read(this.cur ? clone(this.cur.data) : {}); } catch (e) { $(ui.err).textContent = e.message; return; }
+      const r = this.cur;
+      await this.post({ id: r ? r.id : undefined, builtin: !!(r && r.builtin), hidden: false, data }, r && r.hidden ? '已保存，并重新在网站上显示' : '已保存，网站上马上就能看到');
+    },
+    async toggleHide() {
+      const r = this.cur; if (!r) return;
+      if (r.hidden && r.builtin && !r.edited) return this.remove(true);
+      await this.post({ id: r.id, builtin: r.builtin, hidden: !r.hidden, data: r.builtin && !r.edited ? undefined : r.data }, r.hidden ? '已重新在网站上显示' : '已藏起来，网站上不再显示');
+    },
+    async remove(quiet) {
+      const r = this.cur; if (!r || (!quiet && !confirmDel($(ui.del)))) return;
+      try { await api(`/api/admin/items/${kind}/${r.id}`, { method: 'DELETE' }); if (!r.builtin) this.cur = null; await this.load(); toast(r.builtin ? (quiet ? '已重新在网站上显示' : '已恢复成网站自带的样子') : '已删除'); }
+      catch (e) { toast(e.message); }
+    },
+  };
+  $(ui.form).addEventListener('submit', (e) => { e.preventDefault(); M.save(); });
+  $(ui.hide).addEventListener('click', () => M.toggleHide());
+  $(ui.del).addEventListener('click', () => M.remove());
+  $(ui.newBtn).addEventListener('click', () => { M.edit(null); $(ui.first).focus(); });
+  $(ui.q).addEventListener('input', () => M.renderList());
+  document.querySelectorAll(ui.filters + ' button').forEach((b) => b.addEventListener('click', () => {
+    M.filter = b.dataset.f; document.querySelectorAll(ui.filters + ' button').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); M.renderList();
+  }));
+  return M;
+}
+const cityOpts = (sel, list) => { sel.innerHTML = list.map((c) => `<option value="${c.id}">${esc(c.name)}</option>`).join(''); };
+const cityOf = (id) => (META.cities.find((c) => c.id === id) || META.cities[0]);
+
+/* 吃饭地图 */
+let fdLocs = [];
+function renderLocs() {
+  $('#fdLocs').innerHTML = fdLocs.map((l, i) => `<div class="loc-card" data-i="${i}">
+      <div class="hd">${i ? `分店 ${i + 1}` : '分店 1（主位置）'}<button type="button" class="ghost" data-rm>去掉这个分店</button></div>
+      <div class="row2"><input class="input" data-k="b" maxlength="40" placeholder="分店名，比如 东风店" value="${esc(l.b)}"><input class="input" data-k="s" maxlength="40" placeholder="片区，比如 东山口（卡片上的小标签）" value="${esc(l.s)}"></div>
+      <input class="input" data-k="a" maxlength="160" placeholder="地址" value="${esc(l.a)}">
+      <div class="loc"><span class="coord">${fmtLL(l.p)}</span><button type="button" class="btn light" data-pick>在地图上选</button><button type="button" class="btn light" data-here>用我现在的位置</button></div>
+    </div>`).join('') || '<div class="empty">还没有分店。不加的话，这家店只出现在列表里，地图上没有图钉。</div>';
+  $('#fdLocs').querySelectorAll('.loc-card').forEach((card) => {
+    const l = fdLocs[+card.dataset.i];
+    card.querySelectorAll('[data-k]').forEach((inp) => inp.addEventListener('input', () => { l[inp.dataset.k] = inp.value; }));
+    card.querySelector('[data-rm]').addEventListener('click', () => { fdLocs.splice(+card.dataset.i, 1); renderLocs(); });
+    const set = (p) => { l.p = p; delete l.approx; card.querySelector('.coord').textContent = fmtLL(p); };
+    card.querySelector('[data-pick]').addEventListener('click', () => pickOnMap('food', l.p || (fdLocs[0] && fdLocs[0].p) || cityOf($('#fdCity').value).center, set, l.p || (fdLocs[0] && fdLocs[0].p) ? 16 : 12.5));
+    card.querySelector('[data-here]').addEventListener('click', () => locate(set));
+  });
+}
+$('#fdAddLoc').addEventListener('click', () => { fdLocs.push({ b: '', s: '', a: '', p: null }); renderLocs(); });
+Items.food = makeItems('food', {
+  form: '#fdForm', list: '#fdList', count: '#fdCount', head: '#fdHead', err: '#fdErr', del: '#fdDel', hide: '#fdHide', newBtn: '#fdNew', first: '#fdName', q: '#fdQ', filters: '#fdF', newTitle: '加一家店',
+  text: (d) => [d.name, d.cat, d.area, cityName(d.city)].join(' '),
+  row: (r, st) => `<span class="dt sc">${r.data.score != null ? (+r.data.score).toFixed(1) : '—'}</span><b>${esc(r.data.name)}</b><small>${st}${esc(r.data.cat || '')}${r.data.area ? ' · ' + esc(r.data.area) : ''}${r.data.city && r.data.city !== 'gz' ? ' · ' + esc(cityName(r.data.city)) : ''}</small>`,
+  fillSelects() {
+    $('#catList').innerHTML = META.cats.map((c) => `<option value="${esc(c)}">`).join('');
+    $('#areaList').innerHTML = META.areas.map((c) => `<option value="${esc(c)}">`).join('');
+    if (!$('#fdCity').options.length) cityOpts($('#fdCity'), META.cities.filter((c) => !c.far));
+  },
+  fill(d) {
+    d = d || { cat: '', city: 'gz', locs: [] };
+    $('#fdName').value = d.name || ''; $('#fdCat').value = d.cat || ''; $('#fdScore').value = d.score != null ? d.score : ''; $('#fdArea').value = d.area || '';
+    $('#fdCity').value = d.city || 'gz'; if (!$('#fdCity').value) $('#fdCity').value = 'gz';
+    $('#fdChain').checked = !!d.chain; $('#fdReview').value = d.review || ''; $('#fdNote').value = d.note || '';
+    fdLocs = (d.locs || []).map((l) => ({ ...l, b: l.b || '', s: l.s || '', a: l.a || '' }));
+    if (!d.name && !fdLocs.length) fdLocs.push({ b: '', s: '', a: '', p: null });
+    renderLocs();
+  },
+  read(d) {
+    const sc = $('#fdScore').value.trim();
+    Object.assign(d, { name: $('#fdName').value.trim(), cat: $('#fdCat').value.trim(), score: sc === '' ? null : +sc, area: $('#fdArea').value.trim(), city: $('#fdCity').value, review: $('#fdReview').value.trim(), note: $('#fdNote').value.trim(), chain: $('#fdChain').checked });
+    if (!d.name) throw new Error('店名还没写');
+    if (!d.cat) throw new Error('菜式还没填');
+    if (sc !== '' && !(+sc >= 0 && +sc <= 10)) throw new Error('评分要在 0 到 10 之间');
+    const bad = fdLocs.findIndex((l) => !l.p);
+    if (bad >= 0) throw new Error(`分店 ${bad + 1} 还没选位置（不需要的话点「去掉这个分店」）`);
+    d.locs = fdLocs.map((l) => { const x = { ...l }; for (const k of ['b', 's', 'a']) x[k] = (x[k] || '').trim(); return x; });
+    if (!d.chain) delete d.chain; if (!d.note) delete d.note;
+    return d;
+  },
+});
+
+/* 扫街照片 */
+let stPhotos = [], stLL = null;
+function stSetLoc(p) { stLL = p; $('#stCoord').textContent = fmtLL(p); }
+function stHint() { const c = cityOf($('#stCity').value); $('#stLocHint').textContent = c.far ? `（${c.name}在大湾区以外：不选的话，图钉放在城市中心附近）` : '图钉放在这里'; }
+$('#stCity').addEventListener('change', stHint);
+$('#stPick').addEventListener('click', () => pickOnMap('street', stLL || cityOf($('#stCity').value).center, stSetLoc, stLL ? 16 : cityOf($('#stCity').value).far ? 11 : 12.5));
+$('#stHere').addEventListener('click', () => locate(stSetLoc));
+$('#stClear').addEventListener('click', () => stSetLoc(null));
+function renderSt() {
+  $('#stPhotos').innerHTML = stPhotos.map((p, i) => `<div class="sph" data-i="${i}"><div class="im"><img src="${esc(p.preview || imgUrl(p.thumb || p.src))}" alt="" loading="lazy">${p.busy ? '<span class="up">上传中…</span>' : ''}<span class="tb">${i ? '<button type="button" data-left title="往前挪">←</button>' : ''}<button type="button" data-rm title="去掉这张">×</button></span></div>
+      <div class="fs"><input class="input" data-k="cap" maxlength="80" placeholder="照片说明" value="${esc(p.cap)}"><input class="input" data-k="loc" maxlength="80" placeholder="拍摄地点（可不填）" value="${esc(p.loc)}"><input class="input" data-k="area" maxlength="100" placeholder="所在区域，比如 中国 · 广州 · 越秀区（可不填）" value="${esc(p.area)}"></div></div>`).join('')
+    + (stPhotos.length < 60 ? '<button type="button" class="add-sph" id="stAdd">＋ 加照片</button>' : '');
+  $('#stPhotos').querySelectorAll('.sph').forEach((el) => {
+    const i = +el.dataset.i, p = stPhotos[i];
+    el.querySelectorAll('[data-k]').forEach((inp) => inp.addEventListener('input', () => { p[inp.dataset.k] = inp.value; }));
+    el.querySelector('[data-rm]').addEventListener('click', () => { stPhotos.splice(i, 1); renderSt(); });
+    el.querySelector('[data-left]')?.addEventListener('click', () => { stPhotos.splice(i - 1, 0, stPhotos.splice(i, 1)[0]); renderSt(); });
+  });
+  $('#stAdd')?.addEventListener('click', () => $('#stFile').click());
+}
+$('#stFile').addEventListener('change', async (e) => {
+  const files = [...e.target.files].slice(0, 60 - stPhotos.length); e.target.value = '';
+  for (const f of files) {
+    const p = { busy: true, preview: URL.createObjectURL(f), cap: '', loc: '', area: '' }; stPhotos.push(p); renderSt();
+    try { Object.assign(p, await uploadPhoto(f), { busy: false }); } catch (err) { stPhotos.splice(stPhotos.indexOf(p), 1); toast(err.message); }
+    renderSt();
+  }
+});
+Items.street = makeItems('street', {
+  form: '#stForm', list: '#stList', count: '#stCount', head: '#stHead', err: '#stErr', del: '#stDel', hide: '#stHide', newBtn: '#stNew', first: '#stTitle', q: '#stQ', filters: '#stF', newTitle: '加一组照片',
+  text: (d) => [d.title, d.place, cityName(d.city)].join(' '),
+  row: (r, st) => { const p = (r.data.photos || [])[0]; return `<span class="dt" style="grid-row:span 2">${p ? `<img src="${esc(imgUrl(p.thumb || p.src))}" alt="" loading="lazy" style="width:42px;height:42px;border-radius:8px;object-fit:cover;display:block">` : ''}</span><b>${esc(r.data.title)}</b><small>${st}${esc(cityName(r.data.city))} · ${(r.data.photos || []).length} 张${r.data.place ? ' · ' + esc(r.data.place) : ''}</small>`; },
+  fillSelects() { if (!$('#stCity').options.length) cityOpts($('#stCity'), META.cities); },
+  fill(d) {
+    d = d || { city: 'gz', photos: [] };
+    $('#stTitle').value = d.title || ''; $('#stCity').value = d.city || 'gz'; if (!$('#stCity').value) $('#stCity').value = 'gz';
+    $('#stPlace').value = d.place || ''; $('#stDate').value = d.date || ''; $('#stNote').value = d.note || '';
+    stSetLoc(d.lnglat || null); stHint();
+    stPhotos = (d.photos || []).map((p) => ({ ...p, cap: p.cap || '', loc: p.loc || '', area: p.area || '' })); renderSt();
+  },
+  read(d) {
+    if (stPhotos.some((p) => p.busy)) throw new Error('照片还在上传，等一下');
+    Object.assign(d, { title: $('#stTitle').value.trim(), city: $('#stCity').value, place: $('#stPlace').value.trim(), date: $('#stDate').value.trim(), note: $('#stNote').value.trim() });
+    if (!d.title) throw new Error('标题还没写');
+    if (!stLL && !cityOf(d.city).far) throw new Error('还没选地图上的位置');
+    if (stLL) d.lnglat = stLL; else delete d.lnglat;
+    delete d.approx;
+    d.photos = stPhotos.filter((p) => p.src).map((p) => { const x = { src: p.src, cap: (p.cap || '').trim(), ar: p.ar || 1.5 }; if (p.thumb) x.thumb = p.thumb; if ((p.loc || '').trim()) x.loc = p.loc.trim(); if ((p.area || '').trim()) x.area = p.area.trim(); return x; });
+    if (!d.photos.length) throw new Error('至少要加一张照片');
+    return d;
+  },
+});
 
 /* ---------------- start */
 if (token) api('/api/admin/ping').then(showApp, (e) => { if (e.message !== '请先登录') { showLogin(); $('#loginErr').textContent = '连不上后台，稍后再试'; } }); else showLogin();
