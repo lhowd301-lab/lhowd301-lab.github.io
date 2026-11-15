@@ -777,6 +777,22 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
 .scrim{position:fixed;inset:0;z-index:7;background:rgba(14,31,64,.18)}
 
 /* ---------- toast */
+/* 开场操作提示：开场动画结束后在底部弹一张小卡片，教怎么用键鼠（触屏教手势），几秒后或一动地图就收起；按 ? 再看一次 */
+.howto{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translate(-50%,0);z-index:29;width:max-content;max-width:calc(100% - 32px);padding:10px 12px 10px 14px;border-radius:14px;font-size:12.5px;color:var(--ink-2);display:flex;gap:12px;align-items:flex-start;transition:opacity .35s ease,transform .35s ease}
+.howto[hidden]{display:none}
+.howto.off{opacity:0;transform:translate(-50%,10px);pointer-events:none}
+.howto b{display:block;font-size:12px;font-weight:600;color:var(--ink);margin-bottom:5px;letter-spacing:.04em}
+.howto ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:auto auto;gap:4px 16px}
+.howto li{display:flex;align-items:center;gap:6px;white-space:nowrap}
+.howto kbd{font-family:var(--f-mono);font-size:10.5px;line-height:16px;min-width:18px;text-align:center;padding:0 5px;border-radius:5px;background:var(--white);border:1px solid var(--line);border-bottom-width:2px;color:var(--ink)}
+.howto .mi{width:15px;height:15px;color:var(--blue);flex:none}
+.howto small{display:block;margin-top:6px;font-size:11px;color:var(--ink-3)}
+.howto .x{border:0;background:none;color:var(--ink-3);font-size:16px;line-height:1;padding:2px 4px;margin:-2px -4px 0 0;cursor:pointer}
+.howto .x:hover{color:var(--ink)}
+/* 手机 / 平板：底部有导航栏和榕忆的气泡，提示改放在顶栏下面（top 由 HowTo.show 按顶栏实际高度算） */
+@media (max-width:1023px){.howto{bottom:auto;top:calc(130px + env(safe-area-inset-top,0px))}.howto.off{transform:translate(-50%,-10px)}}
+@media (max-width:560px){.howto ul{grid-template-columns:auto}}
+@media (prefers-reduced-motion:reduce){.howto{transition:none}}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:30;padding:9px 14px;border-radius:12px;background:var(--ink);color:var(--white);font-size:13px;box-shadow:var(--shadow);max-width:calc(100% - 32px)}
 
 /* ---------- loading veil */
@@ -1309,6 +1325,7 @@ body.pure .pet-dock,body.pure .pet-bubble,body.pure .pet-chat{display:none!impor
 <div class="pet-catch" id="petCatch" hidden></div>
 
 <div class="toast" id="toast" hidden role="status"></div>
+<div class="howto glass" id="howto" role="note" aria-label="地图操作提示" hidden></div>
 
 <script src="vendor/maplibre-gl.js"></script>
 <script src="vendor/astronomy.browser.min.js"></script>
@@ -2011,6 +2028,58 @@ function toast(msg, ms = 3200) {
   const t = $('#toast'); t.textContent = msg; t.hidden = false;
   clearTimeout(toast._t); toast._t = setTimeout(() => (t.hidden = true), ms);
 }
+// 开场操作提示：前 3 次打开网站时，开场动画一结束弹出来；点 × 以后就不再自动弹；按 ? 随时再看
+const HowTo = {
+  key: 'bh-howto',
+  touch: window.matchMedia('(hover:none) and (pointer:coarse)').matches,
+  html() {
+    const M = (d) => `<svg class="mi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+    const mouse = '<rect x="6.5" y="3" width="11" height="18" rx="5.5"/><path d="M6.5 9.5h11M12 3v6.5"/>';   // 鼠标：涂满的那一半是要按的键
+    const rows = this.touch
+      ? [[M('<path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V11"/><path d="M12 10.5V9a1.5 1.5 0 0 1 3 0v3"/><path d="M15 11a1.5 1.5 0 0 1 3 0v3.5a6 6 0 0 1-6 6h-.5a5.5 5.5 0 0 1-4.6-2.5L5 15.2a1.5 1.5 0 0 1 2.4-1.8L9 15"/>'), '单指拖动　平移'],
+         [M('<path d="M7 7l-3-3M17 7l3-3M7 17l-3 3M17 17l3 3"/><circle cx="12" cy="12" r="3"/>'), '双指张合　缩放'],
+         [M('<path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v4h-4"/>'), '双指转动　旋转'],
+         [M('<path d="M8 16V8M16 16V8"/><path d="M5 11l3-3 3 3M13 11l3-3 3 3"/>'), '双指上下推　倾斜'],
+         [M('<path d="M12 21s-6-5.3-6-10a6 6 0 0 1 12 0c0 4.7-6 10-6 10z"/><circle cx="12" cy="11" r="2"/>'), '点图钉　看详情']]
+      : [[M(mouse + '<path d="M12 3a5.5 5.5 0 0 0-5.5 5.5v1H12z" fill="currentColor"/>'), '左键拖动　平移'],
+         [M(mouse + '<rect x="10.6" y="4.6" width="2.8" height="4" rx="1.4" fill="currentColor"/>'), '滚轮　缩放'],
+         [M(mouse + '<path d="M12 3a5.5 5.5 0 0 1 5.5 5.5v1H12z" fill="currentColor"/>'), '右键拖动（或 <kbd>Ctrl</kbd> + 拖动）　旋转、倾斜'],
+         ['<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>', '走动，<kbd>Q</kbd><kbd>E</kbd> 转身，<kbd>Shift</kbd> 加速'],
+         [M('<path d="M12 21s-6-5.3-6-10a6 6 0 0 1 12 0c0 4.7-6 10-6 10z"/><circle cx="12" cy="11" r="2"/>'), '点图钉看详情'],
+         ['<kbd>Esc</kbd>', '关掉卡片 / 弹窗']];
+    return `<div><b>怎么逛这张地图</b><ul>${rows.map(([ic, t]) => `<li>${ic}<span>${t}</span></li>`).join('')}</ul>${this.touch ? '' : '<small>按 <kbd>?</kbd> 再看一次</small>'}</div><button class="x" type="button" aria-label="关闭提示，以后不再自动弹出">×</button>`;
+  },
+  auto() {   // 开场动画结束时调用
+    let n = 0; try { n = +localStorage.getItem(this.key) || 0; } catch (e) { /* storage blocked */ }
+    if (n >= 3) return;
+    try { localStorage.setItem(this.key, String(n + 1)); } catch (e) { /* storage blocked */ }
+    this.show(9000);
+  },
+  show(ms = 9000) {
+    const el = $('#howto'); if (!el) return;
+    el.innerHTML = this.html(); el.hidden = false; el.classList.add('off');
+    const tb = $('#topbar'), r = tb && tb.getBoundingClientRect();
+    el.style.top = mq.matches && r && r.height ? Math.round(r.bottom + 12) + 'px' : '';
+    void el.offsetWidth; el.classList.remove('off');   // 先量一次布局，淡入的过渡才会生效
+    el.querySelector('.x').onclick = () => { try { localStorage.setItem(this.key, '99'); } catch (e) { /* storage blocked */ } this.hide(); };
+    clearTimeout(this._t); this._t = setTimeout(() => this.hide(), ms);
+    // 一动地图（拖、缩放、转）就收起；刚弹出的 1.5 秒内不算，免得开场的惯性把它马上收掉
+    const since = performance.now();
+    this._off && this._off();
+    const onMove = (e) => { if (e && e.originalEvent && performance.now() - since > 1500) this.hide(); };
+    if (map) { map.on('movestart', onMove); this._off = () => map.off('movestart', onMove); }
+  },
+  hide() {
+    const el = $('#howto'); if (!el || el.hidden) return;
+    clearTimeout(this._t); this._off && this._off(); this._off = null;
+    el.classList.add('off'); setTimeout(() => { if (el.classList.contains('off')) el.hidden = true; }, 380);
+  },
+};
+document.addEventListener('keydown', (e) => {
+  if (e.key !== '?' || e.ctrlKey || e.metaKey || e.altKey) return;
+  const t = e.target; if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+  if ($('#howto').hidden) HowTo.show(12000); else HowTo.hide();
+});
 function rng(seed) { let a = seed >>> 0; return () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 function hashStr(s) { let h = 2166136261; for (const c of s) { h ^= c.codePointAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
 const AVATAR = 'data:image/jpeg;base64,' + document.getElementById('avatar-data').textContent.trim();
@@ -5278,6 +5347,7 @@ function initMap() {
     PickMode.init();
     const home = PickMode.home() || HOME();
     if (reduceMotion) map.jumpTo(home); else map.flyTo({ ...home, duration: 3200, curve: 1.2, essential: true });
+    if (!PickMode.on) map.once('moveend', () => setTimeout(() => HowTo.auto(), reduceMotion ? 1200 : 500));   // 开场动画结束后弹操作提示
   });
   map.on('rotate', syncCompass); map.on('pitch', syncCompass);
   map.on('pitch', () => map.getContainer().classList.toggle('tilted', map.getPitch() > 30));
@@ -9325,7 +9395,8 @@ $('#scrim').addEventListener('click', closeDrawer);
 $('#profileDrawer').addEventListener('click', (e) => { if (e.target.closest('[data-close-drawer]')) closeDrawer(); });
 document.addEventListener('keydown', (e) => {
   if (e.key !== 'Escape') return;
-  if (!$('#petCatch').hidden) $('#petCatch').hidden = true;
+  if (!$('#howto').hidden && !$('#howto').classList.contains('off')) HowTo.hide();
+  else if (!$('#petCatch').hidden) $('#petCatch').hidden = true;
   else if (!$('#pet').hidden) Pet.close();
   else if (PetChat.isOpen()) PetChat.toggle(false);
   else if (!$('#sky').hidden) Sky.close();
