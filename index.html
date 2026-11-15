@@ -1250,9 +1250,8 @@ body.pure .pet-dock,body.pure .pet-bubble,body.pure .pet-chat{display:none!impor
   <div class="status glass" aria-live="off">
     <span class="coord" id="coord">23°07′N 113°16′E · 视高 —</span>
     <span class="attr">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> 贡献者 · SRTM 地形 · 火车、船、飞机均为模拟</span>
-    <span class="icp" data-icp hidden><a class="icp" href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备2026181407号</a> · 匿名统计访问量，不记录 IP</span>
+    <span class="icp" data-icp hidden>匿名统计访问量，不记录 IP</span>
   </div>
-  <a class="icp-m" data-icp href="https://beian.miit.gov.cn/" target="_blank" rel="noopener" hidden>粤ICP备2026181407号</a>
   <button class="pet-dock" id="petDock" type="button" aria-label="萌宠榕忆"></button>
   <button class="pet-bubble" id="petBubble" type="button" hidden></button>
   <section class="pet-chat" id="petChat" hidden role="dialog" aria-label="和榕忆聊天">
@@ -2104,9 +2103,9 @@ const MODULES = [
 ];
 const ICON_OF = { food: ICONS.food, street: ICONS.street, landmark: ICONS.landmark, diary: ICONS.diary, metro: ICONS.metro, sky: ICONS.sky, pet: ICONS.pet };
 const state = { module: 'street', foodCat: 'all', active: null, city: 'gz', cityOpen: true, is3d: true, ready: false, navMin: false, cityMin: false, pure: false };
-// 备案号：只在备案过的域名（howardleong.work 及其子域名）和服务器 IP 上显示，链接到工信部的备案系统
+// 自己服务器上（howardleong.work / 服务器 IP）状态栏写一句「匿名统计访问量，不记录 IP」（备案号不在网页上显示）
 if (/(^|\.)howardleong\.work$/.test(location.hostname) || location.hostname === '129.204.194.163') {
-  document.querySelectorAll('[data-icp]').forEach((a) => { a.hidden = false; }); document.body.classList.add('icp-on');
+  document.querySelectorAll('[data-icp]').forEach((a) => { a.hidden = false; });
 }
 // 自己服务器上的网站（备案过的域名 / 服务器 IP）才有后台（deploy/bh_admin.py）：访问统计、实时日记
 const BACKEND = /(^|\.)howardleong\.work$/.test(location.hostname) || location.hostname === '129.204.194.163' || (() => { try { return localStorage.getItem('bh-backend') === '1'; } catch (e) { return false; } })();
