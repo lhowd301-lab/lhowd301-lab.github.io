@@ -376,7 +376,16 @@ button.seg:hover,button.seg[aria-expanded="true"]{background:var(--ice-2)}
 .transport .play{width:40px;height:40px;border-radius:50%;border:0;background:var(--blue);color:var(--white);display:grid;place-items:center}
 .transport .play svg{width:18px;height:18px}
 .transport input[type=range]{flex:1;accent-color:var(--blue)}
-.tracks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px;max-height:230px;overflow:auto}
+.tracks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px;max-height:270px;overflow:auto}
+/* 按歌手选歌：一排可以左右滑的歌手标签；列表里每位歌手一个小标题 */
+.m-artists{display:flex;gap:6px;overflow-x:auto;margin:0 -2px 8px;padding:2px 2px 6px;scrollbar-width:thin;-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);mask-image:linear-gradient(90deg,#000 88%,transparent)}
+.m-artists button{flex:none;border:1px solid var(--line);background:var(--white);border-radius:999px;padding:4px 10px;font-size:12px;color:var(--ink-2);white-space:nowrap}
+.m-artists button i{font-style:normal;font-family:var(--f-mono);font-size:10.5px;color:var(--ink-3);margin-left:2px}
+.m-artists button[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:var(--white)}
+.m-artists button[aria-pressed="true"] i{color:rgba(255,255,255,.8)}
+.m-artists button:last-child{margin-right:24px}
+.trk-h{display:flex;align-items:center;justify-content:space-between;padding:8px 8px 2px;font-size:11px;letter-spacing:.08em;color:var(--ink-3);position:sticky;top:0;background:var(--white);z-index:1}
+.trk-h button{border:0;background:none;color:var(--blue);font-size:11px;padding:0 2px;letter-spacing:0}
 .trk{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:8px;align-items:center;width:100%;padding:7px 8px;border:0;border-radius:10px;background:transparent;text-align:left}
 .trk:hover{background:var(--ice-2)}
 .trk[aria-current="true"]{background:var(--ice);color:var(--blue)}
@@ -1916,6 +1925,7 @@ const SITE = {
   diary: [],
 
   // BGM —— src：歌曲文件（mp3）的地址，填了就能在页面里直接播放；link：没有文件时点击跳转收听的页面
+  // 背景音乐：播放器里按歌手排（by 是归到哪位歌手名下，不写就用 artist），可以按歌手筛选
   music: [
     { title: '任我行', artist: '陈奕迅', src: 'music/renwoxing.mp3' },
     { title: '神奇的糊涂魔药', artist: '林家谦', src: 'music/shenqi.mp3' },
@@ -1930,11 +1940,30 @@ const SITE = {
     { title: '葡萄成熟时', artist: '陈奕迅', src: 'music/putaochengshushi.mp3' },
     { title: '岁月如歌', artist: '陈奕迅', src: 'music/suiyueruge.mp3' },
     { title: '斯德哥尔摩情人', artist: '陈奕迅', src: 'music/sidegeermoqingren.mp3' },
-    { title: '我们万岁', artist: '陈奕迅 Eason and the Duo Band', src: 'music/womenwansui.mp3' },
+    { title: '我们万岁', artist: '陈奕迅 Eason and the Duo Band', by: '陈奕迅', src: 'music/womenwansui.mp3' },
     { title: '夜阑人静', artist: 'Moon Tang', src: 'music/yelanrenjing.mp3' },
     { title: '老派约会之必要', artist: 'MC 张天赋', src: 'music/laopaiyuehui.mp3' },
     { title: '月亮代表我', artist: 'Moon Tang', src: 'music/yueliangdaibiaowo.mp3' },
-    { title: '世一', artist: 'MC 张天赋 feat. Kiri T', src: 'music/shiyi.mp3' },
+    { title: '皇后大道东', artist: '罗大佑', src: 'music/huanghoudadaodong.mp3' },
+    { title: '一个眼神', artist: '我的小飞机场', src: 'music/yigeyanshen.mp3' },
+    { title: 'Honest', artist: 'Gareth.T feat. Moon Tang', by: 'Gareth.T', src: 'music/honest.mp3' },
+    { title: '土瓜湾情歌', artist: '我的小飞机场', src: 'music/tuguawanqingge.mp3' },
+    { title: '词不达意', artist: '林忆莲', src: 'music/cibudayi.mp3' },
+    { title: '梦中人', artist: '王菲', src: 'music/mengzhongren.mp3' },
+    { title: '百年孤寂', artist: '王菲', src: 'music/bainianguji.mp3' },
+    { title: '泥菩萨', artist: 'Gareth.T', src: 'music/nipusa.mp3' },
+    { title: '劲浪漫 超温馨', artist: 'Gareth.T', src: 'music/jinglangman.mp3' },
+    { title: '用背脊唱情歌', artist: 'Gareth.T', src: 'music/yongbeijichangqingge.mp3' },
+    { title: '程艾影', artist: '赵雷', src: 'music/chengaiying.mp3' },
+    { title: '踊り子', artist: 'Vaundy', src: 'music/odoriko.mp3' },
+    { title: '3 AM', artist: 'AGA', src: 'music/3am.mp3' },
+    { title: '电台情歌', artist: '莫文蔚', src: 'music/diantaiqingge.mp3' },
+    { title: '爱爱爱', artist: '方大同', src: 'music/aiaiai.mp3' },
+    { title: '长城', artist: 'Beyond', src: 'music/changcheng.mp3' },
+    { title: '早班火车', artist: 'Beyond', src: 'music/zaobanhuoche.mp3' },
+    { title: '小小虫', artist: '方大同', src: 'music/xiaoxiaochong.mp3' },
+    { title: '芳草地', artist: '陈粒', src: 'music/fangcaodi.mp3' },
+    { title: '冬天一个游', artist: 'Gordon Flanders', src: 'music/dongtianyigeyou.mp3' },
   ],
 };
 </script>
@@ -2016,6 +2045,19 @@ function blueprintArt(item, w = 640, h = 360) {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1E3A8A"/><stop offset="1" stop-color="#2563EB"/></linearGradient></defs><rect width="${w}" height="${h}" fill="url(#g)"/>${grid}<circle cx="${w - 92}" cy="${h / 2}" r="64" fill="none" stroke="#DBEAFE" stroke-opacity=".5"/><path d="M${w - 92} ${h / 2 - 80}V${h / 2 + 80}M${w - 172} ${h / 2}H${w - 12}" stroke="#DBEAFE" stroke-opacity=".5"/><text x="36" y="${h / 2 - 6}" font-family="Noto Serif SC,Songti SC,serif" font-weight="700" font-size="44" fill="#FFFFFF">${esc(item.name)}</text><text x="38" y="${h / 2 + 30}" font-family="JetBrains Mono,monospace" font-size="15" letter-spacing="2" fill="#BFDBFE">${esc(item.en.toUpperCase())}</text><text x="38" y="${h - 30}" font-family="JetBrains Mono,monospace" font-size="13" fill="#DBEAFE" opacity=".85">${lat.toFixed(4)}°N  ${lon.toFixed(4)}°E · 图片待添加</text></svg>`;
   return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
 }
+// BGM 按歌手排：中文名按拼音首字母和英文名混在一起排（Beyond、陈奕迅、Gareth.T、林家谦……），同一位歌手的歌挨在一起、保持原来的顺序
+const songBy = (m) => m.by || m.artist;
+const PY_COLL = (() => { try { return new Intl.Collator('zh-Hans-CN-u-co-pinyin'); } catch (e) { return null; } })();
+function pyInitial(str) {
+  const c = String(str || '').trim().charAt(0);
+  if (/[A-Za-z0-9]/.test(c)) return c.toUpperCase();
+  if (!PY_COLL || !/[\u4e00-\u9fff]/.test(c)) return '~';
+  const B = '阿八嚓哒妸发旮哈讥咔垃妈拏噢妑七呥仨他穵夕丫帀', L = 'ABCDEFGHJKLMNOPQRSTWXYZ';
+  let k = -1; for (let i = 0; i < B.length && PY_COLL.compare(c, B[i]) >= 0; i++) k = i;
+  return k >= 0 ? L[k] : '~';
+}
+{ const ord = new Map(SITE.music.map((m, i) => [m, i])), cmp = PY_COLL ? PY_COLL.compare : (a, b) => a.localeCompare(b);
+  SITE.music.sort((a, b) => { const A = songBy(a), B = songBy(b); return A === B ? ord.get(a) - ord.get(b) : pyInitial(A).localeCompare(pyInitial(B)) || cmp(A, B); }); }
 SITE.street.forEach((s) => s.photos.forEach((p, i) => { if (!p.src) { p.src = photoArt(hashStr(s.id + i), p.cap); p.placeholder = true; } }));
 // 大湾区以外的扫街只标到城市：没写坐标的放在城市中心附近，同一座城市的几组照片绕着中心排开
 { const n = {}; SITE.street.forEach((s) => { const c = SITE.cities.find((x) => x.id === s.city); if (s.lnglat || !c || !c.far) return; const k = (n[c.id] = (n[c.id] || 0) + 1) - 1, a = k * 2.4, r = k ? 0.014 * Math.sqrt(k) : 0; s.lnglat = [+(c.center[0] + r * Math.cos(a)).toFixed(5), +(c.center[1] + r * Math.sin(a) * 0.92).toFixed(5)]; s.approx = true; }); }
@@ -6185,6 +6227,9 @@ function renderDiaryPop() {
 /* ===================================================================== BGM */
 const Player = {
   idx: -1, playing: false, ctx: null, master: null, nodes: [], timer: null, audio: null, vol: 0.6,
+  by: (() => { try { const v = localStorage.getItem('bh-music-by') || ''; return SITE.music.some((m) => songBy(m) === v) ? v : ''; } catch (e) { return ''; } })(),   // 只听这位歌手（'' = 全部）
+  setBy(v) { this.by = v; try { localStorage.setItem('bh-music-by', v); } catch (e) { /* storage blocked */ } renderMusic(); },
+  pool() { return SITE.music.map((m, i) => i).filter((i) => (SITE.music[i].src || SITE.music[i].synth) && (!this.by || songBy(SITE.music[i]) === this.by)); },
   ensureCtx() {
     if (this.ctx) return;
     const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
@@ -6239,8 +6284,13 @@ const Player = {
     }
     this.playing = true; this.sync();
   },
-  toggle() { if (this.playing) this.stop(); else this.play(this.idx < 0 ? 0 : this.idx); },
-  next() { const n = SITE.music.length; for (let k = 1; k <= n; k++) { const j = (this.idx + k) % n; const t = SITE.music[j]; if (t.synth || t.src) { this.play(j); return; } } },
+  toggle() { if (this.playing) this.stop(); else { const p = this.pool(); this.play(this.idx >= 0 && (!this.by || p.includes(this.idx)) ? this.idx : (p[0] ?? 0)); } },
+  next() {   // 选了歌手就在这位歌手的歌里轮着放，否则按列表顺序
+    let p = this.pool(); if (!p.length) p = SITE.music.map((m, i) => i).filter((i) => SITE.music[i].src || SITE.music[i].synth);
+    if (!p.length) return;
+    const k = p.indexOf(this.idx);
+    this.play(k >= 0 ? p[(k + 1) % p.length] : (p.find((i) => i > this.idx) ?? p[0]));
+  },
   setVol(v) { this.vol = v; if (this.master) this.master.gain.value = v * 0.5; if (this.audio) this.audio.volume = v; },
   sync() {
     const t = SITE.music[this.idx];
@@ -6255,22 +6305,35 @@ function renderMusic() {
   const playable = (m) => !!(m.synth || m.src); const anyPlayable = SITE.music.some(playable);
   const pop = $('#musicPop');
   pop.classList.toggle('playing', Player.playing);
+  const groups = []; SITE.music.forEach((m) => { const by = songBy(m), g = groups.find((x) => x[0] === by); if (g) g[1]++; else groups.push([by, 1]); });
+  const artistChips = `<div class="m-artists" role="group" aria-label="按歌手选歌"><button type="button" data-by="" aria-pressed="${!Player.by}">全部 <i>${SITE.music.length}</i></button>${groups.map(([by, c]) => `<button type="button" data-by="${esc(by)}" aria-pressed="${Player.by === by}">${esc(by)} <i>${c}</i></button>`).join('')}</div>`;
+  const keepX = pop.querySelector('.m-artists')?.scrollLeft || 0;
   pop.innerHTML = `<div class="pop-head"><h3>背景音乐</h3><span class="mono" style="font-size:12px;color:var(--ink-3)">${SITE.music.length} 首</span></div>
     <div class="now"><div class="disc" aria-hidden="true"></div><div style="min-width:0"><b>${esc(t.title)}</b><small>${esc(t.artist)}</small></div></div>
     <div class="transport"><button class="play" id="mPlay" ${anyPlayable ? '' : 'disabled title="还没有可以直接播放的歌曲文件"'} aria-label="${Player.playing ? '暂停' : '播放'}">${Player.playing ? ICONS.pause : ICONS.play}</button><button class="icon-btn" id="mNext" ${anyPlayable ? '' : 'disabled'} aria-label="下一首">${ICONS.skip}</button><input type="range" id="mVol" min="0" max="1" step="0.05" value="${Player.vol}" aria-label="音量"></div>
     <div class="prog"><span class="mono" id="mCur">${fmtT(Player.audio ? Player.audio.currentTime : 0)}</span><input type="range" id="mProg" min="0" max="1000" step="1" value="${Player.audio && Player.audio.duration ? Math.round(Player.audio.currentTime / Player.audio.duration * 1000) : 0}" aria-label="播放进度"><span class="mono" id="mDur">${fmtT(Player.audio && Player.audio.duration ? Player.audio.duration : 0)}</span></div>
-    <ol class="tracks">${SITE.music.map((m, i) => {
-      const inner = `<span class="n">${String(i + 1).padStart(2, '0')}</span><span style="min-width:0;display:flex;flex-direction:column"><b>${esc(m.title)}</b><small>${esc(m.artist)}</small></span>`;
-      return playable(m)
-        ? `<li><button class="trk" data-i="${i}" aria-current="${i === Player.idx}">${inner}<span class="mono" style="font-size:10.5px;color:var(--ink-3)">${i === Player.idx && Player.playing ? '播放中' : (m.src.split('.').pop() || '').toUpperCase()}</span></button></li>`
-        : `<li><a class="trk" href="${esc(m.link || '#')}" target="_blank" rel="noopener">${inner}<span class="ext">去收听 ↗</span></a></li>`;
-    }).join('')}</ol>
+    ${artistChips}
+    <ol class="tracks">${(() => {
+      let n = 0, last = null, html = '';
+      SITE.music.forEach((m, i) => {
+        const by = songBy(m); if (Player.by && by !== Player.by) return;
+        if (!Player.by && by !== last) { html += `<li class="trk-h"><span>${esc(by)}</span><button type="button" data-by="${esc(by)}">只听 TA</button></li>`; last = by; }
+        const inner = `<span class="n">${String(++n).padStart(2, '0')}</span><span style="min-width:0;display:flex;flex-direction:column"><b>${esc(m.title)}</b>${m.artist !== by ? `<small>${esc(m.artist)}</small>` : ''}</span>`;   // 歌手名在小标题 / 标签上已经有了，只有合唱等不一样时才另写
+        html += playable(m)
+          ? `<li><button class="trk" data-i="${i}" aria-current="${i === Player.idx}">${inner}<span class="mono" style="font-size:10.5px;color:var(--ink-3)">${i === Player.idx && Player.playing ? '播放中' : ((/\.(\w{2,4})$/.exec(m.src) || [])[1] || '').toUpperCase()}</span></button></li>`
+          : `<li><a class="trk" href="${esc(m.link || '#')}" target="_blank" rel="noopener">${inner}<span class="ext">去收听 ↗</span></a></li>`;
+      });
+      return html;
+    })()}</ol>
     <p class="note">${anyPlayable ? '点一首歌开始播放。' : '点歌名会在新窗口打开 Spotify 收听。把歌曲的 mp3 文件放进网站后，就能在这里直接播放。'}</p>`;
   $('#mPlay').onclick = () => Player.toggle();
   $('#mNext').onclick = () => Player.next();
   $('#mVol').oninput = (e) => Player.setVol(+e.target.value);
   $('#mProg').oninput = (e) => { const a = Player.audio; if (a && a.duration) a.currentTime = (+e.target.value / 1000) * a.duration; };
   pop.querySelectorAll('.trk').forEach((b) => (b.onclick = () => Player.play(+b.dataset.i)));
+  pop.querySelectorAll('[data-by]').forEach((b) => (b.onclick = () => Player.setBy(b.dataset.by)));
+  const row = pop.querySelector('.m-artists'); row.scrollLeft = keepX;
+  const on = row.querySelector('[aria-pressed="true"]'); if (on && (on.offsetLeft < row.scrollLeft || on.offsetLeft + on.offsetWidth > row.scrollLeft + row.clientWidth)) row.scrollLeft = on.offsetLeft - 8;
 }
 
 /* ===================================================================== immersive sky */
