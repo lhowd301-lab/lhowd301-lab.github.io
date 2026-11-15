@@ -272,6 +272,9 @@ body.sunk .maplibregl-marker,body.sunk .look-hint{visibility:hidden}
 .friend{display:flex;align-items:center;gap:10px;padding:6px 4px;border-radius:10px;text-decoration:none;color:var(--ink)}
 .friend:hover{background:var(--ice-2)}
 .friend .fav{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:13px;color:var(--blue);background:var(--ice);flex:none}
+.friend img.fav{object-fit:cover;background:var(--white);box-shadow:0 0 0 1px var(--line)}
+.friend img.fav.app{border-radius:7px;box-shadow:none;background:none}
+#ui.fr-chip .friend img.fav.app{border-radius:6px}
 .friend .ft{min-width:0;display:flex;flex-direction:column;line-height:1.3}
 .friend .ft b{font-weight:500;font-size:13px}
 .friend .ft small{font-size:11px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1336,8 +1339,9 @@ const SITE = {
     { id: 'gh', label: 'GitHub', url: 'https://github.com/lhowd301-lab', glyph: 'icons/gh-m.png' },
   ],
   friends: [
-    { name: "Vinson's Blog", url: 'https://vinsonblog.cn/', desc: 'Vinson 的个人博客 · 保持好奇，探索世界' },
-    { name: '城市与地铁', url: 'https://city-and-metro.pages.dev/', desc: '朋友做的网页游戏：在广州、杭州、香港等城市规划地铁' },
+    // avatar：头像（取自对方网站），shape: 'app' 是圆角方形的应用图标；不写 desc 就只显示名字
+    { name: "Vinson's Blog", url: 'https://vinsonblog.cn/', desc: 'Vinson 的个人博客 · 保持好奇，探索世界', avatar: 'photos/friends/vinson.webp' },
+    { name: '城市与地铁', url: 'https://city-and-metro.pages.dev/', avatar: 'photos/friends/citymetro.webp', shape: 'app' },
   ],
   cities: [
     { id: 'gz', name: '广州', en: 'GUANGZHOU', center: [113.29, 23.118], zoom: 12.6, ready: true },
@@ -2204,7 +2208,8 @@ function renderProfile() {
   const sIcon = (s) => s.glyph ? `<i class="sg" aria-hidden="true" style="-webkit-mask-image:url('${esc(s.glyph)}');mask-image:url('${esc(s.glyph)}')"></i>` : s.icon ? `<img src="${esc(s.icon)}" alt="">` : (ICONS[s.id] || ICONS.link);
   $('#socials').innerHTML = SITE.socials.map((s) => `<a href="${esc(s.url)}" target="_blank" rel="noopener" data-label="${esc(s.label)}" aria-label="${esc(s.label)}">${sIcon(s)}</a>`).join('');
   const friendRows = SITE.friends.map((f) => {
-    const inner = `<span class="fav">${esc(f.name.slice(0, 1))}</span><span class="ft"><b>${esc(f.name)} ${f.sample ? SAMPLE : ''}</b><small>${esc(f.desc || f.url)}</small></span>`;
+    const fav = f.avatar ? `<img class="fav${f.shape === 'app' ? ' app' : ''}" src="${esc(f.avatar)}" alt="" loading="lazy" width="28" height="28">` : `<span class="fav">${esc(f.name.slice(0, 1))}</span>`;
+    const inner = `${fav}<span class="ft"><b>${esc(f.name)} ${f.sample ? SAMPLE : ''}</b>${f.desc ? `<small>${esc(f.desc)}</small>` : ''}</span>`;
     return f.url ? `<a class="friend" href="${esc(f.url)}" target="_blank" rel="noopener">${inner}</a>` : `<div class="friend">${inner}</div>`;
   }).join('');
   $('#friends').innerHTML = `<h2><span>友情链接</span><span class="mono">${String(SITE.friends.length).padStart(2, '0')}</span></h2>${friendRows}`;
