@@ -11,6 +11,8 @@
 - 天文新闻：每月 1 日（或这个月第一次启动时）从 NASA、ESA、Sky & Telescope 等的 RSS 抓最近的天文新闻；
   如果服务器上配了榕忆用的 AI（/etc/beyond-horizons/pet.env 里的 PET_API_KEY），就让它挑出最值得看的几条、写成中文。
   也跟着 /api/diary?all=1 发给网页（「地球之外」的天象速报）。后台可以手动「现在更新」。
+- 访客留言：访客在网页上选位置、写昵称和留言，POST /api/diary/guest（借用已经转发的 /api/diary/ 路径），
+  先存成「待审核」；在后台改好、通过以后，才跟着 /api/diary?all=1 出现在地图上。不存访客 IP。
 - 后台密码只以 PBKDF2 哈希存在 /etc/beyond-horizons/admin.env（deploy/admin-setup.sh 在服务器上输入），
   登录后发一张 30 天有效的凭证；连续输错 8 次要等 15 分钟。
 - 只用 Python 标准库；省市用 ip2region 离线库（deploy/ip2region/，Apache-2.0）。
@@ -118,6 +120,8 @@ with db() as c:
     CREATE TABLE IF NOT EXISTS items (kind TEXT, id TEXT, data TEXT, hidden INTEGER DEFAULT 0, builtin INTEGER DEFAULT 0,
         created INTEGER, updated INTEGER, PRIMARY KEY (kind, id));
     CREATE TABLE IF NOT EXISTS kv (k TEXT PRIMARY KEY, v TEXT);
+    CREATE TABLE IF NOT EXISTS guest (id TEXT PRIMARY KEY, name TEXT, text TEXT, place TEXT, lng REAL, lat REAL,
+        status TEXT, created INTEGER, updated INTEGER, edited INTEGER DEFAULT 0);
     ''')
 
 EVENTS = {'view', 'mod', 'city', 'open', 'ping', 'leave'}
@@ -392,7 +396,6 @@ AI_PROVIDER = os.environ.get('PET_PROVIDER', 'openai').strip().lower()
 AI_BASE = os.environ.get('PET_API_BASE', 'https://api.anthropic.com' if AI_PROVIDER == 'anthropic' else 'https://api.deepseek.com').strip().rstrip('/')
 AI_MODEL = os.environ.get('PET_MODEL', 'claude-haiku-5-5' if AI_PROVIDER == 'anthropic' else 'deepseek-flash').strip()
 NEWS_RUN = threading.Lock()
-CST = timezone(timedelta(hours=8))
 
 
 def kv_get(k, default=None):
@@ -530,6 +533,60 @@ def news_public():
     return {'updated': st.get('updated'), 'items': [{k: x.get(k) for k in ('title', 'summary', 'link', 'source', 'date', 'zh')} for x in st['items']]}
 
 
+# ------------------------------------------------------------------ 访客留言
+GUEST_RATE = {}
+GUEST_STATUS = ('pending', 'approved', 'rejected')
+
+
+def guest_clean(o):
+    name = re.sub(r'\s+', ' ', clip(o.get('name'), 20)).strip()
+    text = re.sub(r'\n{3,}', '\n\n', clip(o.get('text'), 300).replace('\r', '')).strip()
+    place = re.sub(r'\s+', ' ', clip(o.get('place'), 30)).strip()
+    if not name: raise ValueError('写一个昵称吧')
+    if not text: raise ValueError('还没写想说的话')
+    try: lng, lat = lnglat(o.get('lnglat'))
+    except (TypeError, ValueError, IndexError): raise ValueError('还没选位置')
+    return name, text, place, lng, lat
+
+
+def guest_submit(o, ip):
+    if str(o.get('website') or '').strip(): return 'gx'   # 机器人填了隐藏的栏：假装收下
+    now = time.time()
+    hits = [t for t in GUEST_RATE.get(ip, []) if now - t < 86400]
+    if len([t for t in hits if now - t < 600]) >= 4 or len(hits) >= 20: raise PermissionError('留言太快了，过一会儿再来吧')
+    name, text, place, lng, lat = guest_clean(o)
+    with LOCK, db() as c:
+        if c.execute("SELECT COUNT(*) n FROM guest WHERE status='pending'").fetchone()['n'] >= 500: raise PermissionError('待审核的留言太多了，晚点再来吧')
+        gid = 'g' + secrets.token_hex(5); ts = int(now)
+        c.execute('INSERT INTO guest (id,name,text,place,lng,lat,status,created,updated) VALUES (?,?,?,?,?,?,?,?,?)', (gid, name, text, place, lng, lat, 'pending', ts, ts))
+    GUEST_RATE[ip] = hits + [now]
+    return gid
+
+
+def guest_rows(public):
+    with db() as c:
+        rows = c.execute("SELECT * FROM guest WHERE status='approved' ORDER BY created DESC" if public else
+                         "SELECT * FROM guest ORDER BY CASE status WHEN 'pending' THEN 0 ELSE 1 END, created DESC LIMIT 2000").fetchall()
+    day = lambda t: datetime.fromtimestamp(t or 0, CST).strftime('%Y-%m-%d')
+    if public: return [{'id': r['id'], 'name': r['name'], 'text': r['text'], 'place': r['place'], 'lnglat': [r['lng'], r['lat']], 'date': day(r['created'])} for r in rows]
+    return [{'id': r['id'], 'name': r['name'], 'text': r['text'], 'place': r['place'], 'lnglat': [r['lng'], r['lat']], 'status': r['status'],
+             'date': day(r['created']), 'created': r['created'], 'updated': r['updated'], 'edited': bool(r['edited'])} for r in rows]
+
+
+def guest_save(o):
+    gid = str(o.get('id') or '')
+    if not re.match(r'^g[0-9a-f]{10}$', gid): raise ValueError('编号不对')
+    status = o.get('status')
+    if status not in GUEST_STATUS: raise ValueError('状态不对')
+    name, text, place, lng, lat = guest_clean(o)
+    with LOCK, db() as c:
+        old = c.execute('SELECT * FROM guest WHERE id=?', (gid,)).fetchone()
+        if not old: raise ValueError('这条留言不在了')
+        edited = old['edited'] or (name, text, place, round(lng, 6), round(lat, 6)) != (old['name'], old['text'], old['place'], round(old['lng'], 6), round(old['lat'], 6))
+        c.execute('UPDATE guest SET name=?, text=?, place=?, lng=?, lat=?, status=?, updated=?, edited=? WHERE id=?', (name, text, place, lng, lat, status, int(time.time()), 1 if edited else 0, gid))
+    return gid
+
+
 # ------------------------------------------------------------------ 登录凭证
 def check_pass(pw):
     try:
@@ -614,7 +671,7 @@ class H(BaseHTTPRequestHandler):
     def do_GET(self):
         u = urlparse(self.path); p = u.path
         if p == '/api/diary':   # ?all=1：日记 + 后台加的店和扫街照片一起回（旧版网页不带参数，只要日记数组）
-            if 'all=1' in u.query: return self.send(200, {'diary': diary_rows(True), **items_rows(True), 'news': news_public()}, cache='no-cache')
+            if 'all=1' in u.query: return self.send(200, {'diary': diary_rows(True), **items_rows(True), 'news': news_public(), 'guest': guest_rows(True)}, cache='no-cache')
             return self.send(200, diary_rows(True), cache='no-cache')
         m = re.match(r'^/api/u/([0-9a-f]{20}(?:-s)?\.(jpg|mp3|m4a))$', p)
         if m: return self.send_file(os.path.join(UPLOADS, m.group(1)), {'jpg': 'image/jpeg', 'mp3': 'audio/mpeg', 'm4a': 'audio/mp4'}[m.group(2)])
@@ -624,6 +681,9 @@ class H(BaseHTTPRequestHandler):
             days = int((parse_qs(u.query).get('days') or ['7'])[0]); return self.send(200, stats(days))
         if p == '/api/admin/diary': return self.send(200, diary_rows(False))
         if p == '/api/admin/items': return self.send(200, items_rows(False))
+        if p == '/api/admin/guest':
+            rows = guest_rows(False)
+            return self.send(200, {'items': rows, 'pending': sum(1 for r in rows if r['status'] == 'pending')})
         if p == '/api/admin/news':
             st = kv_get('news', {}) or {}
             return self.send(200, {**st, 'feeds': [n for n, _ in NEWS_FEEDS], 'ai': bool(AI_KEY), 'model': AI_MODEL if AI_KEY else ''})
@@ -651,7 +711,17 @@ class H(BaseHTTPRequestHandler):
                 if check_pass(str(o.get('password', ''))): FAILS.pop(ip, None); return self.send(200, {'token': make_token()})
                 FAILS.setdefault(ip, []).append(time.time()); time.sleep(0.6)
                 return self.send(403, {'error': '密码不对'})
+            if p == '/api/diary/guest':   # 访客留言（不用登录）
+                try: o = json.loads(self.body(8192) or b'{}')
+                except ValueError: return self.send(400, {'error': '格式不对'})
+                if not isinstance(o, dict): return self.send(400, {'error': '格式不对'})
+                try: return self.send(200, {'ok': True, 'id': guest_submit(o, ip)})
+                except PermissionError as e: return self.send(429, {'error': str(e)})
             if not self.authed(): return self.send(401, {'error': '请先登录'})
+            if p == '/api/admin/guest':
+                o = json.loads(self.body(16384) or b'{}')
+                if not isinstance(o, dict): raise ValueError('格式不对')
+                return self.send(200, {'id': guest_save(o)})
             if p == '/api/admin/diary':
                 return self.send(200, {'id': save_diary(json.loads(self.body(200000) or b'{}'))})
             if p == '/api/admin/items':
@@ -685,6 +755,10 @@ class H(BaseHTTPRequestHandler):
         if not self.authed(): return self.send(401, {'error': '请先登录'})
         m = re.match(r'^/api/admin/diary/(d[0-9a-z]{4,22})$', p)
         if m: delete_diary(m.group(1)); return self.send(200, {'ok': True})
+        m = re.match(r'^/api/admin/guest/(g[0-9a-f]{10})$', p)
+        if m:
+            with LOCK, db() as c: c.execute('DELETE FROM guest WHERE id=?', (m.group(1),))
+            return self.send(200, {'ok': True})
         m = re.match(r'^/api/admin/items/(food|street|music)/([fsm][0-9a-z]{1,40})$', p)
         if m: delete_item(m.group(1), m.group(2)); return self.send(200, {'ok': True})
         return self.send(404, {'error': 'not found'})

@@ -123,6 +123,9 @@ textarea.input.short{min-height:110px}
 .sph .fs .input{padding:6px 9px;font-size:13px}
 .add-sph{min-height:160px;border-radius:12px;border:1.5px dashed var(--ice-2);display:grid;place-items:center;color:var(--blue);background:none;font-size:13px}
 .hint{font-size:12px;color:var(--ink-3);font-weight:400}
+.tbadge{display:inline-block;min-width:18px;height:18px;line-height:18px;padding:0 5px;margin-left:5px;border-radius:999px;background:#F59E0B;color:#fff;font-size:11px;font-weight:700;text-align:center}
+.tag.pend{background:#FEF3C7;color:#B45309}.tag.ok{background:color-mix(in srgb,#52C98B 20%,transparent);color:#15803D}.tag.no{background:color-mix(in srgb,var(--ink-3) 18%,transparent);color:var(--ink-2)}
+.g-orig{font-size:12px;color:var(--ink-3);background:var(--ice);border-radius:10px;padding:8px 10px;white-space:pre-line}
 .pdate{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-2)}
 .pdate .input{flex:1;min-width:0}
 .news-st{font-size:13px;color:var(--ink-2);line-height:1.7}
@@ -147,7 +150,7 @@ textarea.input.short{min-height:110px}
 <div class="wrap">
   <section class="login" id="login" hidden>
     <h1>Beyond Horizons 后台</h1>
-    <p>访问统计 · 日记 · 吃饭地图 · 扫街照片 · 背景音乐 · 天文新闻</p>
+    <p>访问统计 · 日记 · 吃饭地图 · 扫街照片 · 背景音乐 · 天文新闻 · 访客留言</p>
     <form id="loginForm" class="card" autocomplete="on">
       <div class="field"><label for="pw">密码</label><input class="input" id="pw" type="password" autocomplete="current-password" required></div>
       <div class="err" id="loginErr"></div>
@@ -157,7 +160,7 @@ textarea.input.short{min-height:110px}
 
   <section id="app" hidden>
     <header>
-      <h1>Beyond Horizons 后台<small>访问统计 · 日记 · 吃饭地图 · 扫街照片 · 背景音乐 · 天文新闻</small></h1>
+      <h1>Beyond Horizons 后台<small>访问统计 · 日记 · 吃饭地图 · 扫街照片 · 背景音乐 · 天文新闻 · 访客留言</small></h1>
       <div class="tabs" role="tablist">
         <button role="tab" data-tab="stats" aria-selected="true">访问统计</button>
         <button role="tab" data-tab="diary" aria-selected="false">写日记</button>
@@ -165,6 +168,7 @@ textarea.input.short{min-height:110px}
         <button role="tab" data-tab="street" aria-selected="false">扫街照片</button>
         <button role="tab" data-tab="music" aria-selected="false">背景音乐</button>
         <button role="tab" data-tab="news" aria-selected="false">天文新闻</button>
+        <button role="tab" data-tab="guest" aria-selected="false">访客留言<span class="tbadge" id="gBadge" hidden></span></button>
       </div>
       <a class="ghost" href="/" target="_blank" rel="noopener" style="text-decoration:none">打开网站</a>
       <button class="ghost" id="logout">退出</button>
@@ -362,6 +366,40 @@ textarea.input.short{min-height:110px}
         <div class="card"><h3>网站上现在显示的新闻 <span class="sub" id="nwCount"></span></h3><div id="nwList"></div></div>
       </div>
     </div>
+
+    <div id="tab-guest" hidden>
+      <div class="split">
+        <div class="card">
+          <h3>访客留言 <span class="sub" id="gCount"></span></h3>
+          <div class="list-tools seg sm" id="gF"><button data-f="pending" aria-pressed="true">待审核</button><button data-f="approved" aria-pressed="false">已发布</button><button data-f="rejected" aria-pressed="false">没通过</button><button data-f="all" aria-pressed="false">全部</button></div>
+          <div class="d-list" id="gList"></div>
+        </div>
+        <form class="card" id="gForm" autocomplete="off">
+          <h3 id="gHead">选左边的一条留言</h3>
+          <div id="gBody" hidden>
+            <div class="row2">
+              <div class="field"><label for="gName">昵称</label><input class="input" id="gName" maxlength="20" required></div>
+              <div class="field"><label for="gPlace">地点名 <span class="hint">可不填</span></label><input class="input" id="gPlace" maxlength="30"></div>
+            </div>
+            <div class="field"><label for="gText">想说的话 <span class="hint">可以帮访客改错字、删掉不合适的话</span></label><textarea class="input short" id="gText" maxlength="300" required></textarea></div>
+            <div class="field"><label>地图上的位置</label>
+              <div class="loc"><span class="coord" id="gCoord">—</span>
+                <button type="button" class="btn light" id="gPick">在地图上改位置</button>
+                <button type="button" class="btn light" id="gSee">在网站上看看这里</button></div>
+            </div>
+            <div class="field" id="gOrigWrap" hidden><label>访客原来写的</label><div class="g-orig" id="gOrig"></div></div>
+            <div class="err" id="gErr"></div>
+            <div class="actions">
+              <button class="btn" type="submit" data-st="approved">通过并发布</button>
+              <button class="btn light" type="button" data-st="keep">只保存修改</button>
+              <button class="btn light" type="button" data-st="rejected">不通过</button>
+              <button class="btn danger" type="button" id="gDel" style="margin-left:auto">删除</button>
+            </div>
+            <p class="hint" style="margin:10px 0 0">通过以后，网站的「留言板」里马上就有，图钉在访客选的位置（你改过就按你改的）。「不通过」的留言不会显示，访客也不会知道。</p>
+          </div>
+        </form>
+      </div>
+    </div>
   </section>
 </div>
 <div class="toast" id="toast" role="status"></div>
@@ -371,7 +409,7 @@ const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* blocked */ } }, del(k) { try { localStorage.removeItem(k); } catch (e) { /* blocked */ } } };
 let token = store.get('bh-admin-token') || '';
-const MOD = { food: '吃饭地图', street: '扫街地图', landmark: '地标名胜', diary: '街巷日记', metro: '城市之下', sky: '地球之外', pet: '萌宠榕忆' };
+const MOD = { food: '吃饭地图', street: '扫街地图', landmark: '地标名胜', diary: '街巷日记', metro: '城市之下', sky: '地球之外', pet: '榕忆', guest: '留言板' };
 function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), 2600); }
 
 async function api(path, opts = {}) {
@@ -384,7 +422,11 @@ async function api(path, opts = {}) {
 
 /* ---------------- login */
 function showLogin() { token = ''; store.del('bh-admin-token'); $('#app').hidden = true; $('#login').hidden = false; setTimeout(() => $('#pw').focus(), 50); }
-function showApp() { $('#login').hidden = true; $('#app').hidden = false; loadStats(); }
+function showApp() {
+  $('#login').hidden = true; $('#app').hidden = false; loadStats();
+  // 有新的访客留言：标签上显示数字，再提醒一句
+  setTimeout(async () => { await Guest.load(); const n = Guest.rows.filter((r) => r.status === 'pending').length; if (n) toast(`有 ${n} 条访客留言等你审核（「访客留言」那一栏）`); }, 400);
+}
 $('#loginForm').addEventListener('submit', async (e) => {
   e.preventDefault(); $('#loginErr').textContent = '';
   try {
@@ -397,7 +439,7 @@ $('#loginForm').addEventListener('submit', async (e) => {
 $('#logout').addEventListener('click', showLogin);
 
 /* ---------------- tabs */
-const TABS = { stats: () => loadStats(), diary: () => loadDiary(), food: () => Items.food.load(), street: () => Items.street.load(), music: () => Items.music.load(), news: () => News.load() };
+const TABS = { stats: () => loadStats(), diary: () => loadDiary(), food: () => Items.food.load(), street: () => Items.street.load(), music: () => Items.music.load(), news: () => News.load(), guest: () => Guest.load() };
 document.querySelectorAll('[data-tab]').forEach((b) => b.addEventListener('click', () => {
   document.querySelectorAll('[data-tab]').forEach((x) => x.setAttribute('aria-selected', String(x === b)));
   for (const k of Object.keys(TABS)) $('#tab-' + k).hidden = b.dataset.tab !== k;
@@ -863,6 +905,62 @@ const News = {
 };
 $('#nwRefresh').addEventListener('click', async () => {
   try { await api('/api/admin/news/refresh', { method: 'POST' }); toast('开始抓新闻了，要一两分钟'); setTimeout(() => News.load(), 800); } catch (e) { toast(e.message); }
+});
+
+/* 访客留言：审核、改字、改位置 */
+const Guest = {
+  rows: [], cur: null, filter: 'pending', orig: {}, ll: null,
+  async load(keep) {
+    let j; try { j = await api('/api/admin/guest'); } catch (e) { if (e.message !== '请先登录') toast(e.message); return; }
+    this.rows = j.items; this.badge(j.pending);
+    for (const r of this.rows) if (!this.orig[r.id] && !r.edited) this.orig[r.id] = { name: r.name, text: r.text, place: r.place };
+    this.render();
+    if (this.cur) this.edit(this.rows.find((r) => r.id === this.cur.id) || null);
+  },
+  badge(n) { const b = $('#gBadge'); b.hidden = !n; b.textContent = n > 99 ? '99+' : n; },
+  render() {
+    const f = this.filter, L = this.rows.filter((r) => f === 'all' || r.status === f);
+    const n = (st) => this.rows.filter((r) => r.status === st).length;
+    $('#gCount').textContent = `待审核 ${n('pending')} · 已发布 ${n('approved')}`;
+    const tag = { pending: '<span class="tag pend">待审核</span> ', approved: '<span class="tag ok">已发布</span> ', rejected: '<span class="tag no">没通过</span> ' };
+    $('#gList').innerHTML = L.map((r) => `<button class="d-item" data-id="${r.id}" aria-current="${!!this.cur && this.cur.id === r.id}"><span class="dt">${r.date.slice(5)}</span><b>${esc(r.name)}：${esc(r.text.slice(0, 40))}</b><small>${tag[r.status] || ''}${r.edited ? '改过 · ' : ''}${esc(r.place || `${r.lnglat[1].toFixed(2)}, ${r.lnglat[0].toFixed(2)}`)}</small></button>`).join('')
+      || `<div class="empty" style="padding:6px 8px">${f === 'pending' ? '没有待审核的留言 🎉' : '没有'}</div>`;
+    $('#gList').querySelectorAll('.d-item').forEach((b) => b.addEventListener('click', () => this.edit(this.rows.find((r) => r.id === b.dataset.id))));
+  },
+  edit(r) {
+    this.cur = r; $('#gBody').hidden = !r; $('#gErr').textContent = '';
+    $('#gHead').textContent = r ? `${r.name} 的留言 · ${r.date}` : '选左边的一条留言';
+    if (!r) return;
+    $('#gName').value = r.name; $('#gText').value = r.text; $('#gPlace').value = r.place || ''; this.setLL(r.lnglat);
+    const o = this.orig[r.id], changed = o && (o.name !== r.name || o.text !== r.text || (o.place || '') !== (r.place || ''));
+    $('#gOrigWrap').hidden = !changed; if (changed) $('#gOrig').textContent = `${o.name}：${o.text}${o.place ? '（' + o.place + '）' : ''}`;
+    $('#gList').querySelectorAll('.d-item').forEach((b) => b.setAttribute('aria-current', String(b.dataset.id === r.id)));
+  },
+  setLL(p) { this.ll = p; $('#gCoord').textContent = fmtLL(p); },
+  async save(status) {
+    const r = this.cur; if (!r) return;
+    const body = { id: r.id, name: $('#gName').value.trim(), text: $('#gText').value.trim(), place: $('#gPlace').value.trim(), lnglat: this.ll, status: status === 'keep' ? r.status : status };
+    if (!body.name || !body.text) { $('#gErr').textContent = '昵称和留言都不能空着'; return; }
+    try {
+      await api('/api/admin/guest', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      toast({ approved: '已通过，网站上马上就能看到', rejected: '已设为不通过，网站上不会显示', keep: '已保存' }[status] || '已保存');
+      // 审核完一条，自动跳到下一条待审核的
+      const next = status !== 'keep' && this.filter === 'pending' ? this.rows.find((x) => x.status === 'pending' && x.id !== r.id) : null;
+      if (status !== 'keep' && this.filter === 'pending') this.cur = next || null;
+      await this.load();
+    } catch (e) { $('#gErr').textContent = e.message; }
+  },
+};
+document.querySelectorAll('#gF button').forEach((b) => b.addEventListener('click', () => {
+  Guest.filter = b.dataset.f; document.querySelectorAll('#gF button').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); Guest.render();
+}));
+$('#gForm').addEventListener('submit', (e) => { e.preventDefault(); Guest.save('approved'); });
+$('#gForm').querySelectorAll('button[data-st]:not([type=submit])').forEach((b) => b.addEventListener('click', () => Guest.save(b.dataset.st)));
+$('#gPick').addEventListener('click', () => pickOnMap('guest', Guest.ll, (p) => Guest.setLL(p), 14));
+$('#gSee').addEventListener('click', () => Guest.ll && window.open(`/#pick-guest@${Guest.ll[0]},${Guest.ll[1]},15`, '_blank'));
+$('#gDel').addEventListener('click', async () => {
+  const r = Guest.cur; if (!r || !confirmDel($('#gDel'))) return;
+  try { await api('/api/admin/guest/' + r.id, { method: 'DELETE' }); Guest.cur = null; toast('已删除'); await Guest.load(); } catch (e) { toast(e.message); }
 });
 
 if (token) api('/api/admin/ping').then(showApp, (e) => { if (e.message !== '请先登录') { showLogin(); $('#loginErr').textContent = '连不上后台，稍后再试'; } }); else showLogin();

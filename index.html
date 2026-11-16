@@ -215,6 +215,7 @@ body.sunk .maplibregl-marker,body.sunk .look-hint{visibility:hidden}
 .nav-btn .ic svg{width:19px;height:19px}
 .nav-btn .nm{display:flex;flex-direction:column;min-width:0}
 .nav-btn .nm b{font-weight:500;font-size:15px;letter-spacing:.04em}
+.nav-btn .nm b.sh{display:none}
 .nav-btn .nm small{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.18em;color:var(--ink-3)}
 .nav-btn .ct{font-family:var(--f-mono);font-size:12px;color:var(--ink-3);min-width:22px;text-align:right}
 .nav-btn[aria-pressed="true"]{background:var(--blue);color:var(--white)}
@@ -749,6 +750,51 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
 .pin-diary.is-active .pb i{background:var(--white);box-shadow:none}
 .pin-diary.work.is-active .pb i{background:transparent;box-shadow:inset 0 0 0 3px var(--white)}
 .pin-diary .pin-tail{height:4px;background:var(--c)}
+/* 访客留言的图钉：橙色对话气泡 + 昵称和前几个字 */
+.pin-guest{--c:#F59E0B}
+.pin-guest .pb{display:flex;align-items:center;gap:6px;padding:3px 10px 3px 3px;border-radius:999px;background:var(--white);box-shadow:var(--shadow);max-width:220px}
+.pin-guest .pb i{width:24px;height:24px;border-radius:50%;background:var(--c);color:#fff;display:grid;place-items:center;flex:none}
+.pin-guest .pb i svg{width:15px;height:15px}
+.pin-guest .lbl{font-size:12px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pin-guest .lbl b{color:var(--ink);font-weight:600;margin-right:4px}
+#map.far .pin-guest .lbl{display:none}
+#map.far .pin-guest .pb{padding-right:3px}
+.pin-guest .pin-tail{width:2px;height:6px;margin:0 auto;background:var(--c)}
+.pin-guest.is-active .pb{background:var(--c)}.pin-guest.is-active .lbl,.pin-guest.is-active .lbl b{color:#fff}.pin-guest.is-active .pb i{background:#fff;color:var(--c)}
+.gstack-list .sl-i em{font-style:normal;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px;display:block;text-align:left}
+.gstack-list .sl-i em b{color:var(--ink)}
+.gstack-list .sl-i > b{color:var(--ink-3);font-weight:500}
+/* 留言板：地图上的「写留言」按钮 */
+.guest-fab{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(26px + env(safe-area-inset-bottom,0px));z-index:6;border-radius:999px;padding:11px 20px}
+.guest-fab[hidden]{display:none}
+@media (max-width:1023px){.guest-fab{bottom:calc(162px + env(safe-area-inset-bottom,0px))}}
+.guest-mk{width:34px;height:34px;border-radius:50% 50% 50% 4px;transform:rotate(-45deg);background:#F59E0B;box-shadow:0 4px 14px rgba(0,0,0,.25);display:grid;place-items:center;cursor:grab}
+.guest-mk svg{width:18px;height:18px;color:#fff;transform:rotate(45deg)}
+.guest-cta{list-style:none;padding:4px 4px 10px;display:flex;flex-direction:column;gap:6px}
+.guest-cta small{font-size:11.5px;color:var(--ink-3);line-height:1.5}
+.btn-guest{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:0;border-radius:12px;background:#F59E0B;color:#fff;font-weight:600;font-size:14px;padding:10px 16px;cursor:pointer;box-shadow:0 4px 14px rgba(245,158,11,.3)}
+.btn-guest:hover{background:#EA8A06}.btn-guest:disabled{opacity:.5;cursor:not-allowed}
+.btn-guest svg{width:18px;height:18px}
+.g-badge{display:inline-flex;align-items:center;gap:5px;color:#B45309;font-weight:600}
+.g-badge svg{width:15px;height:15px}
+.g-badge.big{width:54px;height:54px;border-radius:50%;background:#FEF3C7;justify-content:center}.g-badge.big svg{width:28px;height:28px}
+.g-text{font-size:17px;line-height:1.75;color:var(--ink);white-space:pre-line;margin:14px 0 6px}
+.g-from{text-align:right;color:var(--ink-2);font-size:14px;margin:0 0 18px}
+.g-form{display:flex;flex-direction:column;gap:12px}
+.g-tip{font-size:13px;color:var(--ink-2);line-height:1.65;margin:0}.g-tip.small{font-size:12px;color:var(--ink-3)}
+.g-f{display:flex;flex-direction:column;gap:5px;font-size:12.5px;color:var(--ink-2);font-weight:600}
+.g-f small{font-weight:400;color:var(--ink-3);margin-left:4px}
+.g-f input,.g-f textarea{font:inherit;font-weight:400;font-size:14px;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:9px 11px;background:var(--white);resize:vertical}
+.g-f input:focus,.g-f textarea:focus{outline:2px solid #FBBF24;outline-offset:0;border-color:transparent}
+.g-loc{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-weight:400}
+.g-loc b{font-weight:500;font-size:13px;color:var(--ink);font-family:var(--f-mono);margin-right:auto}
+.g-btn{border:1px solid #F59E0B;background:#FFFBEB;color:#B45309;border-radius:9px;padding:6px 10px;font-size:12.5px;cursor:pointer}
+.g-btn.ghost{border-color:var(--line);background:var(--white);color:var(--ink-2)}
+.g-hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+.g-err{margin:0;min-height:1em;color:#DC2626;font-size:12.5px}
+.g-done{text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px}
+#guestPick .g-btn{margin-left:6px}
+body.guest-picking .maplibregl-marker:not(.guest-mk),body.guest-picking .maplibregl-popup{pointer-events:none}   /* 选位置时点到别的图钉也算选位置 */
 /* 同一个地方的几篇日记：一个图钉 + 篇数，后面叠一张"纸"表示不止一篇 */
 .pin-dstack .pb{gap:5px;padding-right:4px}
 .pin-dstack .lbl{max-width:150px;text-overflow:ellipsis;white-space:nowrap}
@@ -929,6 +975,8 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
   .nav-btn .ic{width:30px;height:30px}
   .nav-btn .nm{align-items:center}
   .nav-btn .nm b{font-size:11.5px;letter-spacing:0;white-space:nowrap}
+  /* 手机底栏 8 个板块放不下四个字：用两个字的简称 */
+  .nav-btn .nm b:not(.sh){display:none}.nav-btn .nm b.sh{display:block;font-size:12px}
   .nav-btn .nm small,.nav-btn .ct{display:none}
   .friends{display:none}
   .cities{display:none}
@@ -965,7 +1013,7 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
 
-/* ---------- 萌宠榕忆: the pet page (full screen, warm paper), the desk pet in the corner, its bubble, the catch card */
+/* ---------- 榕忆: the pet page (full screen, warm paper), the desk pet in the corner, its bubble, the catch card */
 .pet,.pet-catch{--p-ink:#4A3428;--p-ink-2:#6A4F3E;--p-line:#5A3B2A;--p-paper:#FFF9F1;--p-card:#FFFFFF;--p-soft:#F3E8DA;--p-sky:#E3F1FD;--p-sky-2:#2F6DB0;--p-peach:#FFF0DE;--p-love:#FF7E8C}
 .pet{position:fixed;inset:0;z-index:14;background:var(--p-paper);color:var(--p-ink);overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;font-family:var(--f-body)}
 .pet[hidden]{display:none}
@@ -1307,7 +1355,7 @@ body.pure .pet-dock,body.pure .pet-bubble,body.pure .pet-chat{display:none!impor
     <span class="attr">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> 贡献者 · SRTM 地形 · 火车、船、飞机均为模拟</span>
     <span class="icp" data-icp hidden>匿名统计访问量，不记录 IP</span>
   </div>
-  <button class="pet-dock" id="petDock" type="button" aria-label="萌宠榕忆"></button>
+  <button class="pet-dock" id="petDock" type="button" aria-label="榕忆"></button>
   <button class="pet-bubble" id="petBubble" type="button" hidden></button>
   <section class="pet-chat" id="petChat" hidden role="dialog" aria-label="和榕忆聊天">
     <header><img data-av alt=""><div><b>榕忆</b><small data-st>在小榕树下</small></div><button type="button" class="pc-home" data-home>小院</button><button type="button" class="pc-x" data-x aria-label="关闭聊天"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
@@ -1349,13 +1397,13 @@ body.pure .pet-dock,body.pure .pet-bubble,body.pure .pet-chat{display:none!impor
   </div>
 </section>
 
-<section class="pet" id="pet" hidden aria-label="萌宠榕忆">
+<section class="pet" id="pet" hidden aria-label="榕忆">
   <header class="pet-top">
     <button class="pet-back" id="petClose" type="button" aria-label="返回地图"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
     <div class="pet-title"><h2>榕忆的小院</h2><p id="petSub">—</p></div>
     <div class="pet-stats"><span class="pet-chip coins" id="petCoins"></span><span class="pet-chip" id="petLove"></span></div>
   </header>
-  <div class="pet-tabs" role="tablist" aria-label="萌宠页面">
+  <div class="pet-tabs" role="tablist" aria-label="榕忆页面">
     <button type="button" role="tab" data-tab="about" aria-selected="true">认识榕忆</button>
     <button type="button" role="tab" data-tab="home" aria-selected="false">榕树小院</button>
     <button type="button" role="tab" data-tab="quest" aria-selected="false">线索与任务<span class="dot" aria-hidden="true"></span></button>
@@ -1983,6 +2031,7 @@ const SITE = {
   // 街巷日记 —— 每篇一条，tag 可用：技术 / 日常 / 随想，例如：
   // { id: 'd1', date: '2026-10-20', tag: '日常', title: '标题', place: '写下它的地方', lnglat: [经度, 纬度], text: '正文' },
   diary: [],
+  guest: [],   // 访客留言：访客在后台审核通过后才出现（Live 从 /api/diary?all=1 读）
 
   // BGM —— src：歌曲文件（mp3）的地址，填了就能在页面里直接播放；link：没有文件时点击跳转收听的页面
   // 背景音乐：播放器里按歌手排（by 是归到哪位歌手名下，不写就用 artist），可以按歌手筛选；added 是加进来的日子（月历上标出来）。
@@ -2131,6 +2180,7 @@ const ICONS = {
   food: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 11.5h17a8.5 8.5 0 0 1-17 0Z"/><path d="M9 3.5l2.6 6M15.8 2.8l-1.5 6.8"/><path d="M8 20.5h8"/></svg>',
   street: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2.5"/><circle cx="12" cy="13.5" r="3.6"/><path d="M8.5 7l1.4-2.6h4.2L15.5 7"/></svg>',
   landmark: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5v2.5"/><path d="M8.5 9h7L14 5H10z"/><path d="M7 14.5h10L15.6 9H8.4z"/><path d="M5 20.5h14l-1.8-6H6.8z"/><path d="M11 20.5v-3h2v3"/></svg>',
+  guest: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 5.5h15a1.5 1.5 0 0 1 1.5 1.5v8.5a1.5 1.5 0 0 1-1.5 1.5H11l-4.5 3.5V17h-2A1.5 1.5 0 0 1 3 15.5V7a1.5 1.5 0 0 1 1.5-1.5z"/><path d="M7.5 10h9M7.5 13h5.5"/></svg>',
   diary: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.5-5.6-6.5-11A6.5 6.5 0 0 1 18.5 10c0 5.4-6.5 11-6.5 11Z"/><path d="M9.5 9.5h5M9.5 12.2h3"/></svg>',
   sky: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="13" r="5"/><path d="M3.2 16.2c-1.5 2.1 3.9 1.7 9.1-1.3 5.2-3 8.4-7.2 6.9-8.9-.6-.7-2-.6-3.8 0"/><path d="M19 2.5v3M17.5 4h3"/></svg>',
   link: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>',
@@ -2209,15 +2259,16 @@ SITE.landmarks.forEach((l) => { if (!l.img) { l.img = `photos/lm/${l.id}.jpg`; l
 
 /* ===================================================================== modules */
 const MODULES = [
-  { id: 'food', name: '吃饭地图', en: 'EAT', items: () => SITE.food },
-  { id: 'street', name: '扫街地图', en: 'STREET', items: () => SITE.street },
-  { id: 'landmark', name: '地标名胜', en: 'SIGHTS', items: () => SITE.landmarks },
-  { id: 'diary', name: '街巷日记', en: 'DIARY', items: () => [...SITE.diary, ...SITE.life.filter((l) => l.lnglat), ...SITE.spots.filter((l) => l.lnglat)] },
-  { id: 'metro', name: '城市之下', en: 'BENEATH', items: () => [] },
-  { id: 'sky', name: '地球之外', en: 'BEYOND', items: () => [] },
-  { id: 'pet', name: '萌宠榕忆', en: 'PET', items: () => [] },
+  { id: 'food', short: '吃饭', name: '吃饭地图', en: 'EAT', items: () => SITE.food },
+  { id: 'street', short: '扫街', name: '扫街地图', en: 'STREET', items: () => SITE.street },
+  { id: 'landmark', short: '地标', name: '地标名胜', en: 'SIGHTS', items: () => SITE.landmarks },
+  { id: 'diary', short: '日记', name: '街巷日记', en: 'DIARY', items: () => [...SITE.diary, ...SITE.life.filter((l) => l.lnglat), ...SITE.spots.filter((l) => l.lnglat)] },
+  { id: 'guest', short: '留言', name: '留言板', en: 'GUESTS', items: () => SITE.guest },
+  { id: 'metro', short: '地铁', name: '城市之下', en: 'BENEATH', items: () => [] },
+  { id: 'sky', short: '星空', name: '地球之外', en: 'BEYOND', items: () => [] },
+  { id: 'pet', short: '榕忆', name: '榕忆', en: 'PET', items: () => [] },
 ];
-const ICON_OF = { food: ICONS.food, street: ICONS.street, landmark: ICONS.landmark, diary: ICONS.diary, metro: ICONS.metro, sky: ICONS.sky, pet: ICONS.pet };
+const ICON_OF = { food: ICONS.food, street: ICONS.street, landmark: ICONS.landmark, diary: ICONS.diary, guest: ICONS.guest, metro: ICONS.metro, sky: ICONS.sky, pet: ICONS.pet };
 const state = { module: 'street', foodCat: 'all', active: null, city: 'gz', cityOpen: true, is3d: true, ready: false, navMin: false, cityMin: false, pure: false };
 // 自己服务器上（howardleong.work / 服务器 IP）状态栏写一句「匿名统计访问量，不记录 IP」（备案号不在网页上显示）
 if (/(^|\.)howardleong\.work$/.test(location.hostname) || location.hostname === '129.204.194.163') {
@@ -2264,6 +2315,7 @@ const Live = {
       }
       if (!Array.isArray(d)) for (const k of ['food', 'street']) if (this.merge(k, d[k] || [])) touched.push(k);
       if (!Array.isArray(d) && (d.music || []).length) this.music(d.music);
+      if (!Array.isArray(d) && Array.isArray(d.guest)) { SITE.guest = d.guest.map((g) => ({ ...g, city: nearestCity(g.lnglat) })); touched.push('guest'); renderNav(); }
       if (!Array.isArray(d) && d.news && (d.news.items || []).length) { this.news = d.news; if (!$('#sky').hidden) Sky.renderNews(); }   // 天文新闻（后台每月抓一次）
       if (!touched.length) return;
       for (const k of touched) { markers[k].forEach((x) => x.m.remove()); markers[k] = []; }
@@ -2331,15 +2383,111 @@ const CalBadge = {
   },
   seen() { try { localStorage.setItem(this.key, this.newest()); } catch (e) { /* storage blocked */ } this.update(); },
 };
+// 留言落在哪座城市（城市栏里按城市分组）：80 公里内最近的城市，都不近就算「全国 · 世界」
+function nearestCity(p) {
+  if (!p) return 'world';
+  let best = 'world', bd = 80;
+  for (const c of SITE.cities) {
+    if (c.overview || !c.center) continue;
+    const d = Math.hypot((c.center[0] - p[0]) * 111 * Math.cos(p[1] * Math.PI / 180), (c.center[1] - p[1]) * 111);
+    if (d < bd) { bd = d; best = c.id; }
+  }
+  return best;
+}
+// 访客留言：昵称 + 想说的话 + 在地图上点一下选位置 → 交给后台，审核通过后出现在那个位置
+const GuestFab = {
+  el: null,
+  sync() {
+    if (!this.el) { this.el = document.createElement('button'); this.el.type = 'button'; this.el.className = 'btn-guest guest-fab'; this.el.innerHTML = `${ICONS.guest}我也要留言`; this.el.addEventListener('click', () => GuestForm.open()); document.body.appendChild(this.el); }
+    this.el.hidden = state.module !== 'guest' || !$('#detail').hidden || GuestForm.picking || !$('#sky').hidden || !$('#pet').hidden || (typeof Metro !== 'undefined' && Metro.on) || state.pure;
+  },
+};
+const GuestForm = {
+  picking: false, data: { name: '', text: '', place: '', lnglat: null }, mk: null,
+  open() {
+    if (state.module !== 'guest') setModule('guest', { fit: false });
+    try { const n = localStorage.getItem('bh-guest-name'); if (n && !this.data.name) this.data.name = n; } catch (e) { /* storage blocked */ }
+    const g = this.data, d = $('#detail');
+    state.active = null;
+    d.classList.remove('is-street');
+    d.innerHTML = `<button class="icon-btn close" id="detailClose" aria-label="关闭">${ICONS.close}</button><div class="detail-scroll"><form class="d-body g-form" style="padding-top:22px" novalidate>
+      <div class="d-kicker"><span class="g-badge">${ICONS.guest}留言板</span></div>
+      <h2 class="d-title">在地图上留一句话</h2>
+      <p class="g-tip">选一个地方，留下你的昵称和想说的话。审核通过后，它就会出现在你选的位置上，所有人都能看到。</p>
+      <label class="g-f"><span>昵称</span><input name="name" maxlength="20" required placeholder="怎么称呼你" value="${esc(g.name)}" autocomplete="nickname"></label>
+      <label class="g-f"><span>想说的话 <small class="mono" data-count>${g.text.length}/300</small></span><textarea name="text" maxlength="300" rows="4" required placeholder="比如：路过广州，这里的早茶真好吃！">${esc(g.text)}</textarea></label>
+      <div class="g-f"><span>位置</span><div class="g-loc"><b data-coord>${g.lnglat ? `已选：${g.lnglat[1].toFixed(4)}, ${g.lnglat[0].toFixed(4)}` : '还没选'}</b>
+        <button type="button" class="g-btn" data-pick>${g.lnglat ? '重新选' : '在地图上点一下'}</button><button type="button" class="g-btn ghost" data-here>用我现在的位置</button></div></div>
+      <label class="g-f"><span>地点名 <small>可不填</small></span><input name="place" maxlength="30" placeholder="比如：新加坡 · 滨海湾" value="${esc(g.place)}"></label>
+      <input class="g-hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <p class="g-err" data-err role="alert"></p>
+      <button class="btn-guest" type="submit" ${BACKEND ? '' : 'disabled'}>${ICONS.guest}提交留言</button>
+      <p class="g-tip small">${BACKEND ? '提交后要先审核，通过了才会显示。不会记录你的 IP。' : '这个版本的网站不能留言，请到 <a href="https://www.howardleong.work/" target="_blank" rel="noopener">www.howardleong.work</a> 留言。'}</p>
+    </form></div>`;
+    d.hidden = false; d.style.animation = 'none'; void d.offsetWidth; d.style.animation = '';
+    GuestFab.sync();
+    $('#detailClose').addEventListener('click', () => { this.clearMarker(); closeDetail(); });
+    const f = d.querySelector('form');
+    f.addEventListener('input', (e) => { const k = e.target.name; if (k in g) g[k] = e.target.value; if (k === 'text') f.querySelector('[data-count]').textContent = `${g.text.length}/300`; });
+    f.querySelector('[data-pick]').addEventListener('click', () => this.startPick());
+    f.querySelector('[data-here]').addEventListener('click', () => {
+      if (!navigator.geolocation) return this.err('这个浏览器不能定位，请在地图上点一下');
+      this.err('正在定位…');
+      navigator.geolocation.getCurrentPosition((pos) => { this.err(''); this.set([+pos.coords.longitude.toFixed(5), +pos.coords.latitude.toFixed(5)], true); this.open(); },
+        () => this.err('没能定位（可能没给权限），请在地图上点一下'), { enableHighAccuracy: false, timeout: 12000 });
+    });
+    f.addEventListener('submit', (e) => { e.preventDefault(); this.submit(f); });
+    if (g.lnglat) this.showMarker();
+  },
+  err(t) { const e = $('#detail [data-err]'); if (e) e.textContent = t; },
+  startPick() {
+    this.picking = true; $('#detail').hidden = true; document.body.classList.add('guest-picking'); GuestFab.sync();
+    let bar = $('#guestPick');
+    if (!bar) { bar = document.createElement('div'); bar.id = 'guestPick'; bar.className = 'pick-bar glass'; bar.setAttribute('role', 'status'); document.body.appendChild(bar); }
+    bar.innerHTML = '<b>选留言的位置</b><span>在地图上点一下；想选别的城市或国家，先缩小地图</span><button type="button" class="g-btn ghost" data-cancel>取消</button>';
+    bar.hidden = false; bar.querySelector('[data-cancel]').onclick = () => this.endPick();
+    if (map) map.getCanvas().style.cursor = 'crosshair';
+  },
+  endPick() { this.picking = false; document.body.classList.remove('guest-picking'); const bar = $('#guestPick'); if (bar) bar.hidden = true; if (map) map.getCanvas().style.cursor = ''; this.open(); },
+  picked(ll) { this.set([+ll.lng.toFixed(5), +ll.lat.toFixed(5)]); this.endPick(); },
+  set(p, fly) { this.data.lnglat = p; this.showMarker(); if (fly && map) map.flyTo({ center: p, zoom: Math.max(map.getZoom(), 12), essential: true }); },
+  showMarker() {
+    if (!map || !this.data.lnglat) return;
+    if (!this.mk) {
+      const el = document.createElement('div'); el.className = 'guest-mk'; el.innerHTML = ICONS.guest;
+      this.mk = new maplibregl.Marker({ element: el, anchor: 'bottom', draggable: true }).setLngLat(this.data.lnglat).addTo(map);
+      this.mk.on('dragend', () => { const ll = this.mk.getLngLat(); this.data.lnglat = [+ll.lng.toFixed(5), +ll.lat.toFixed(5)]; const c = $('#detail [data-coord]'); if (c) c.textContent = `已选：${this.data.lnglat[1].toFixed(4)}, ${this.data.lnglat[0].toFixed(4)}`; });
+    } else this.mk.setLngLat(this.data.lnglat);
+  },
+  clearMarker() { if (this.mk) { this.mk.remove(); this.mk = null; } },
+  async submit(f) {
+    const g = this.data;
+    g.name = g.name.trim(); g.text = g.text.trim(); g.place = g.place.trim();
+    if (!g.name) return this.err('写一个昵称吧');
+    if (!g.text) return this.err('还没写想说的话');
+    if (!g.lnglat) return this.err('还没选位置：点「在地图上点一下」');
+    const btn = f.querySelector('[type=submit]'); btn.disabled = true; this.err('');
+    try {
+      const r = await fetch('/api/diary/guest', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...g, website: f.website.value }) });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error || '没提交成功，稍后再试');
+      try { localStorage.setItem('bh-guest-name', g.name); } catch (e) { /* storage blocked */ }
+      Stats.send('open', { m: 'guest', i: 'new', t: '提交留言' });
+      this.clearMarker(); this.data = { name: g.name, text: '', place: '', lnglat: null };
+      $('#detail .detail-scroll').innerHTML = `<div class="d-body g-done" style="padding-top:28px"><div class="g-badge big">${ICONS.guest}</div><h2 class="d-title">收到啦，谢谢你！</h2><p class="g-tip">审核通过后，你的留言就会出现在地图上你选的位置。过几天回来看看吧。</p><button class="btn-guest" type="button" data-close-guest>好的</button></div>`;
+      $('#detail [data-close-guest]').addEventListener('click', closeDetail);
+    } catch (e) { this.err(e.message); btn.disabled = false; }
+  },
+};
 // 后台「在地图上选位置」：打开 网址/#pick-diary（或 #pick-food、#pick-street），在地图上点一下，位置存进本机，后台页面自动收到。
 // 后面可以带 @经度,纬度,缩放：地图直接从那里开始（外地的照片、改已经选过的位置时用）
 const PickMode = {
-  m: BACKEND ? location.hash.match(/^#pick-(diary|food|street)(?:@(-?[\d.]+),(-?[\d.]+)(?:,([\d.]+))?)?$/) : null,
+  m: BACKEND ? location.hash.match(/^#pick-(diary|food|street|guest)(?:@(-?[\d.]+),(-?[\d.]+)(?:,([\d.]+))?)?$/) : null,
   get on() { return !!this.m; },
   home() { const m = this.m; return m && m[2] ? { center: [+m[2], +m[3]], zoom: +(m[4] || 15), pitch: 0, bearing: 0 } : null; },
   init() {
     if (!this.on || !map) return;
-    const what = { diary: ['选日记的位置', '写日记的地方'], food: ['选这家店的位置', '这家店（分店）在的地方'], street: ['选照片的位置', '拍照的地方'] }[this.m[1]];
+    const what = { diary: ['选日记的位置', '写日记的地方'], food: ['选这家店的位置', '这家店（分店）在的地方'], street: ['选照片的位置', '拍照的地方'], guest: ['改留言的位置', '这条留言该在的地方'] }[this.m[1]];
     const bar = document.createElement('div'); bar.className = 'pick-bar glass'; bar.setAttribute('role', 'status');
     bar.innerHTML = `<b>${what[0]}</b><span>在地图上点一下${what[1]}</span>`;
     document.body.appendChild(bar); map.getCanvas().style.cursor = 'crosshair';
@@ -2555,7 +2703,7 @@ function buildStyle() {
 /* ===================================================================== map */
 const GLYPH0 = (() => { const b = atob(document.getElementById('glyph-data').textContent.trim()); const u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u.buffer; })();
 let map = null;
-const markers = { food: [], street: [], landmark: [], diary: [] };
+const markers = { food: [], street: [], landmark: [], diary: [], guest: [] };
 // 吃饭地图：第一个分店作为这家店的主坐标；菜式按清单里出现的顺序
 for (const f of SITE.food) if (f.locs && f.locs.length) f.lnglat = f.locs[0].p;
 const FOOD_CATS = [...new Set(SITE.food.map((f) => f.cat))];
@@ -5419,12 +5567,12 @@ function initMap() {
   map.on('pitch', () => map.getContainer().classList.toggle('tilted', map.getPitch() > 30));
   // 点建模也能打开地标卡片
   const lmId = (e) => { const id = e.features[0] && e.features[0].properties.l; return SITE.landmarks.some((l) => l.id === id) ? id : null; };
-  map.on('click', 'lm-3d', (e) => { if (state.pure || Metro.on) return; const id = lmId(e); if (id) openDetail('landmark', id); });
+  map.on('click', 'lm-3d', (e) => { if (state.pure || Metro.on || GuestForm.picking) return; const id = lmId(e); if (id) openDetail('landmark', id); });
   map.on('mousemove', 'lm-3d', (e) => { if (!Metro.on) map.getCanvas().style.cursor = lmId(e) ? 'pointer' : ''; });
   map.on('mouseleave', 'lm-3d', () => { map.getCanvas().style.cursor = ''; });
   // three.js 建模（广州塔、珠江新城、博物馆、猎德大桥……）：点到哪座就开哪座的地标卡片
   const onPin = (e) => e.originalEvent && e.originalEvent.target && e.originalEvent.target.closest && e.originalEvent.target.closest('.maplibregl-marker, .maplibregl-popup');
-  map.on('click', (e) => { if (state.pure || Metro.on || onPin(e) || Rail.onTrain(e.point) || Ships.onShip(e.point)) return; const id = ThreeModels.pick(e.point); if (id) openDetail('landmark', id); });
+  map.on('click', (e) => { if (GuestForm.picking) { GuestForm.picked(e.lngLat); return; } if (state.pure || Metro.on || onPin(e) || Rail.onTrain(e.point) || Ships.onShip(e.point)) return; const id = ThreeModels.pick(e.point); if (id) openDetail('landmark', id); });
   let pickQ = null, pickBusy = false, pickHot = false;
   map.on('mousemove', (e) => {
     if (state.pure || Metro.on || !ThreeModels.pickables) return;
@@ -5542,6 +5690,10 @@ function pinEl(type, item, loc) {
     el.style.setProperty('--d', `${(hashStr(item.id) % 9) * 45}ms`);   // pins pop up one after another
     el.innerHTML = `<span class="pin-in">${multi ? '<span class="pk"></span>' : ''}<span class="pb">${ph.map((p, k) => `<img ${k ? 'data-src' : 'class="on" loading="lazy" src'}="${p.thumb || p.src}" alt="">`).join('')}</span><span class="pin-tail"></span></span>`;
     el.setAttribute('aria-label', `扫街：${item.title}`);
+  } else if (type === 'guest') {
+    el.className = 'pin pin-guest';
+    el.innerHTML = `<span class="pin-in"><span class="pb"><i>${ICONS.guest}</i><span class="lbl"><b>${esc(item.name)}</b>${esc(item.text.length > 14 ? item.text.slice(0, 14) + '…' : item.text)}</span></span><span class="pin-tail"></span></span>`;
+    el.setAttribute('aria-label', `${item.name} 的留言：${item.text}`);
   } else if (type === 'landmark') {
     el.className = 'pin pin-mark';
     el.innerHTML = `<span class="pin-in"><span class="pb">${ICONS.landmark}<span class="lbl">${esc(item.name)}</span></span><span class="pin-tail"></span></span>`;
@@ -5559,7 +5711,7 @@ function pinEl(type, item, loc) {
 function ensureMarkers(type) {
   if (markers[type].length) return markers[type];
   const list = MODULES.find((m) => m.id === type).items().filter((i) => i.lnglat);
-  const stacks = new Map(), dstacks = type === 'diary' ? diaryPlaces(list) : null;
+  const stacks = new Map(), dstacks = type === 'diary' ? diaryPlaces(list) : type === 'guest' ? guestPlaces(list) : null;
   markers[type] = list.flatMap((item) => (item.locs && item.locs.length ? item.locs : [{ p: item.lnglat }]).flatMap((loc) => {
     if (type === 'food' && loc.m) { if (!stacks.has(loc.m)) stacks.set(loc.m, []); stacks.get(loc.m).push({ item, loc }); return []; }
     if (dstacks && dstacks.has(item.id)) return [];   // 同一个地方写的几篇日记合成一个图钉（见 diaryStackMarker）
@@ -5569,7 +5721,7 @@ function ensureMarkers(type) {
     return [{ id: item.id, cat: item.cat, m }];
   }));
   for (const [name, mem] of stacks) markers[type].push(stackMarker(name, mem));
-  if (dstacks) for (const g of new Set(dstacks.values())) markers[type].push(diaryStackMarker(g));
+  if (dstacks) for (const g of new Set(dstacks.values())) markers[type].push(type === 'guest' ? guestStackMarker(g) : diaryStackMarker(g));
   return markers[type];
 }
 // 街巷日记：在同一个地方（相距 60 米以内，或地点名字一样且在 400 米以内）写的几篇日记，地图上只放一个图钉，
@@ -5591,6 +5743,35 @@ function diaryPlaces(list) {
     g.mem.forEach((i) => out.set(i.id, g));
   }
   return out;
+}
+// 留言：同一个地方（60 米内）的几条合成一个图钉，写「N 条留言」，点开是列表
+function guestPlaces(list) {
+  const groups = [], dist = (a, b) => Math.hypot((a[0] - b[0]) * 102000, (a[1] - b[1]) * 111000);
+  for (const it of list) { const g = groups.find((x) => x.mem.some((o) => dist(o.lnglat, it.lnglat) < 60)); if (g) g.mem.push(it); else groups.push({ mem: [it] }); }
+  const out = new Map();
+  for (const g of groups) {
+    if (g.mem.length < 2) continue;
+    g.mem.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    g.name = g.mem.find((i) => i.place)?.place || `${g.mem.length} 条留言`;
+    g.c = [g.mem.reduce((s, i) => s + i.lnglat[0], 0) / g.mem.length, g.mem.reduce((s, i) => s + i.lnglat[1], 0) / g.mem.length];
+    g.mem.forEach((i) => out.set(i.id, g));
+  }
+  return out;
+}
+function guestStackMarker(g) {
+  const el = document.createElement('button'); el.type = 'button'; el.className = 'pin pin-guest stack';
+  el.innerHTML = `<span class="pin-in"><span class="pb"><i>${ICONS.guest}</i><span class="lbl"><b>${g.mem.length} 条留言</b>${esc(g.mem.map((i) => i.name).slice(0, 3).join('、'))}</span></span><span class="pin-tail"></span></span>`;
+  el.setAttribute('aria-label', `这里有 ${g.mem.length} 条留言`);
+  const m = new maplibregl.Marker({ element: el, anchor: 'bottom' }).setLngLat(g.c);
+  const entry = { ids: g.mem.map((i) => i.id), m };
+  el.addEventListener('click', (e) => {
+    e.stopPropagation(); if (stackPop) stackPop.remove();
+    const box = document.createElement('div'); box.className = 'stack-list gstack-list';
+    box.innerHTML = `<div class="sl-h">这里有 ${g.mem.length} 条留言</div>` + g.mem.map((i) => `<button class="sl-i" data-id="${i.id}"><em><b>${esc(i.name)}：</b>${esc(i.text)}</em><b>${esc((i.date || '').slice(5).replace('-', '.'))}</b></button>`).join('');
+    box.addEventListener('click', (ev) => { const b = ev.target.closest('[data-id]'); if (!b) return; stackPop.remove(); stackPop = null; openDetail('guest', b.dataset.id, { fly: false }); });
+    stackPop = new maplibregl.Popup({ closeButton: false, focusAfterOpen: false, anchor: 'bottom', offset: [0, -36], maxWidth: '320px', className: 'stack-pop' }).setLngLat(g.c).setDOMContent(box).addTo(map);
+  });
+  return entry;
 }
 function diaryStackMarker(g) {
   const el = document.createElement('button'); el.type = 'button'; el.className = 'pin pin-diary note pin-dstack'; el.style.setProperty('--c', DIARY_COL);
@@ -5730,7 +5911,7 @@ function renderNav() {
     const b = document.createElement('button');
     b.className = 'nav-btn'; b.dataset.mod = m.id; b.dataset.name = m.name; b.setAttribute('aria-pressed', String(state.module === m.id));
     const n = m.id === 'sky' ? '今夜' : m.id === 'metro' ? '实时' : m.id === 'pet' ? Pet.navLabel() : String(m.items().length).padStart(2, '0');
-    b.innerHTML = `<span class="ic">${ICON_OF[m.id]}</span><span class="nm"><b>${m.name}</b><small>${m.en}</small></span><span class="ct">${n}</span>`;
+    b.innerHTML = `<span class="ic">${ICON_OF[m.id]}</span><span class="nm"><b>${m.name}</b><b class="sh" aria-hidden="true">${m.short}</b><small>${m.en}</small></span><span class="ct">${n}</span>`;
     b.addEventListener('click', () => {
       if (m.id !== 'sky' && m.id !== 'pet' && m.id !== 'metro' && !mq.matches) { if (Auto.on()) Auto.dismiss('nav'); else if (!state.navMin) { state.navMin = true; applyHud('set'); } }
       setModule(m.id);
@@ -5740,8 +5921,14 @@ function renderNav() {
   requestAnimationFrame(fitLeft);
 }
 const FAR = new Set(SITE.cities.filter((c) => c.far && !c.overview).map((c) => c.id));   // 大湾区以外的城市
-function itemsFor(mod, city) { const all = MODULES.find((m) => m.id === mod).items(); return city === 'world' ? all.filter((i) => FAR.has(i.city)) : all.filter((i) => (i.city || 'gz') === city); }
+function itemsFor(mod, city) {
+  const all = MODULES.find((m) => m.id === mod).items();
+  if (mod === 'guest' && city === 'world') return all.filter((i) => !GBA_IDS.has(i.city));   // 留言：大湾区以外的都算「全国 · 世界」
+  return city === 'world' ? all.filter((i) => FAR.has(i.city)) : all.filter((i) => (i.city || 'gz') === city);
+}
+const GBA_IDS = new Set(SITE.cities.filter((c) => !c.far).map((c) => c.id));
 function itemLabel(mod, i) {
+  if (mod === 'guest') return [`${i.name}：${i.text}`, i.date ? i.date.slice(5).replace('-', '.') : ''];
   if (mod === 'food') return [i.name, i.lnglat ? scoreTxt(i) : i.branches ? `连锁 ${i.branches.length}` : '未标点'];
   if (mod === 'street') return [i.title, i.date ? i.date.slice(2, 7).replace('-', '.') : i.place.split(' · ').pop()];
   if (mod === 'landmark') return [i.name, i.meta || ''];
@@ -5754,6 +5941,7 @@ function renderCities() {
   const panel = $('#cityPanel');
   const total = mod.items().length;
   let html = `<header><div><div class="eyebrow">城市 · ${mod.en}</div><h2>${mod.name}</h2></div><span style="display:flex;align-items:center;gap:6px"><span class="mono" style="font-size:12px;color:var(--ink-3)">${String(total).padStart(2, '0')} 处</span><button class="mini-btn" id="cityMinBtn" aria-label="收起城市选择">${ICONS.up}</button></span></header><ul class="city-list">`;
+  if (mod.id === 'guest') html += `<li class="guest-cta"><button class="btn-guest" type="button" data-guest-new>${ICONS.guest}在地图上留一句话</button><small>${SITE.guest.length ? '选一个地方，写下你想说的话；审核通过后，它就会出现在那里' : '还没有留言。选一个地方，写下你想说的话，做第一个留言的人吧'}</small></li>`;
   let farHead = false;
   for (const c of SITE.cities) {
     const list = c.ready ? (mod.id === 'diary' && !c.far ? [...SITE.diary].sort((a, b) => b.date.localeCompare(a.date)) : itemsFor(mod.id, c.id)) : [];
@@ -5800,6 +5988,7 @@ function renderCities() {
   $('#cityPill').setAttribute('aria-label', `展开城市选择：${cityName} · ${mod.name}`);
 }
 $('#cityPanel').addEventListener('click', (e) => {
+  if (e.target.closest('[data-guest-new]')) { GuestForm.open(); return; }
   if (e.target.closest('#cityMinBtn')) { if (mq.matches) toggleCitySheet(false); else if (Auto.on()) Auto.dismiss('city'); else { state.cityMin = true; applyHud('ease'); } return; }
   const cb = e.target.closest('.city-btn');
   if (cb && !cb.disabled) {
@@ -5917,7 +6106,7 @@ function setModule(id, opts = {}) {
   if (id === 'metro') { Metro.go(); return; }
   if (id === 'pet') { Pet.open(); return; }
   state.module = id; state.active = null;
-  closeDetail();
+  closeDetail(); GuestFab.sync();
   document.querySelectorAll('.nav-btn').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mod === id)));
   renderCities();
   if (!map || !state.ready) return;
@@ -5947,9 +6136,11 @@ function openDetail(type, id, opts = {}) {
   d.classList.toggle('is-street', type === 'street');
   d.innerHTML = `<button class="icon-btn close" id="detailClose" aria-label="关闭">${ICONS.close}</button><div class="detail-scroll">${detailHTML(type, item)}</div>`;
   d.hidden = false; d.style.animation = 'none'; void d.offsetWidth; d.style.animation = '';
+  GuestFab.sync();
   $('#detailClose').addEventListener('click', closeDetail);
   d.querySelectorAll('[data-go]').forEach((b) => b.addEventListener('click', () => openDetail(type, b.dataset.go)));
   d.querySelector('[data-fly]')?.addEventListener('click', () => flyToItem(item, true));
+  d.querySelector('[data-guest-new]')?.addEventListener('click', () => GuestForm.open());
   if (type === 'landmark') d.querySelector('.d-hero img')?.addEventListener('error', (e) => { e.target.src = blueprintArt(item); e.target.nextElementSibling?.remove(); }, { once: true });
   d.querySelectorAll('[data-loc]').forEach((b) => b.addEventListener('click', () => flyToItem({ lnglat: item.locs[+b.dataset.loc].p }, true)));
   d.querySelectorAll('[data-copy]').forEach((b) => b.addEventListener('click', () => {
@@ -6082,7 +6273,7 @@ function openViewer(photos, i = 0, tiles = null, onStep = null) {
   else img.animate([{ opacity: 0, transform: 'scale(.96)' }, { opacity: 1, transform: 'none' }], { duration: 300 });
 }
 function closeDetail() {
-  $('#detail').hidden = true; state.active = null; ChainView.hide();
+  $('#detail').hidden = true; state.active = null; ChainView.hide(); if (typeof GuestFab !== 'undefined') setTimeout(() => GuestFab.sync(), 0);
   for (const k of Object.keys(markers)) markers[k].forEach((x) => x.m.getElement().classList.remove('is-active'));
 }
 function navRow(list, item) {
@@ -6117,6 +6308,14 @@ const FOOD_LOGOS = {
   f31: { src: 'logos/genki.png', by: 'Bodhikun', lic: 'CC BY 3.0', url: 'https://commons.wikimedia.org/wiki/File:Genki_sushi_logo.jpg' },
 };
 function detailHTML(type, it) {
+  if (type === 'guest') {
+    return `<div class="d-body g-detail" style="padding-top:22px">
+      <div class="d-kicker"><span class="g-badge">${ICONS.guest}访客留言</span>${it.date ? `<span class="mono">${esc(it.date)}</span>` : ''}${it.place ? `<span>${esc(it.place)}</span>` : ''}</div>
+      <p class="g-text">${esc(it.text)}</p>
+      <p class="g-from">—— ${esc(it.name)}</p>
+      <button class="btn-guest" type="button" data-guest-new>${ICONS.guest}我也要留一句</button>
+      ${navRow(SITE.guest, it)}</div>`;
+  }
   if (type === 'food') {
     const list = SITE.food.filter(foodVisible).includes(it) ? SITE.food.filter(foodVisible) : SITE.food;
     const subs = [...new Set((it.locs || []).map((l) => l.s).filter(Boolean))];   // 第三个标签：细分区域
@@ -6812,7 +7011,7 @@ const Sky = {
     this.hide();
   },
   hide() {
-    const sec = $('#sky'); sec.hidden = true; sec.classList.remove('from-map', 'leaving');
+    const sec = $('#sky'); sec.hidden = true; sec.classList.remove('from-map', 'leaving'); setTimeout(() => GuestFab.sync(), 0);
     cancelAnimationFrame(this.raf); this.raf = 0; this.anim = null; this.fromMap = false; this.leaving = false; this.os = 0;
     $('#skyBack').classList.remove('show');
     document.querySelectorAll('.nav-btn').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mod === state.module)));
@@ -9796,7 +9995,7 @@ const Garden = {
   foot(st) { return st >= 3 ? [0.70, 0.90, 0.12, 0.32] : [0.75, 0.85, 0.17, 0.27]; },
 };
 
-/* ===================================================================== 萌宠榕忆
+/* ===================================================================== 榕忆
    每位访客一份自己的游戏，存在各自浏览器的 localStorage（bh-pet-v1，v: 2），换设备或清缓存会从头开始：
    - 走失：榕忆藏在地图上某个地标 / 餐厅 / 扫街点旁边，不定时发消息给线索（完成任务、花水滴也能换线索）；
      地图放大到 15.5 级以上才看得见它，点一下它会蹦开，再点一下就抓住了
@@ -10266,7 +10465,7 @@ const Pet = {
     if (key !== this.dockKey) {
       this.dockKey = key;
       d.innerHTML = (home ? `<img src="${this.img(pose)}" alt="">` : '<span class="lost" aria-hidden="true">?</span>') + `<span class="tag">${home ? '榕忆 · 聊天' : '走失中'}</span>` + (this._badge ? '<span class="badge" aria-hidden="true"></span>' : '');
-      d.setAttribute('aria-label', home ? '萌宠榕忆在家，点一下和它聊天' : '萌宠榕忆走失了，点开看线索');
+      d.setAttribute('aria-label', home ? '榕忆在家，点一下和它聊天' : '榕忆走失了，点开看线索');
     }
     const ct = document.querySelector('.nav-btn[data-mod="pet"] .ct'); if (ct) ct.textContent = this.navLabel();
   },
@@ -10384,7 +10583,7 @@ const PetChat = {
     } else if (n === 'pause' || n === 'stop') Player.stop();
     else if (n === 'next') Player.next();
     else if (n === 'open') {
-      const id = { food: 'food', street: 'street', landmark: 'landmark', diary: 'diary', metro: 'metro', sky: 'sky' }[a.toLowerCase()];
+      const id = { food: 'food', street: 'street', landmark: 'landmark', diary: 'diary', guest: 'guest', metro: 'metro', sky: 'sky' }[a.toLowerCase()];
       if (!id) return;
       if (id === 'sky' || id === 'metro') this.toggle(false);
       setModule(id);
@@ -10426,7 +10625,7 @@ const PetChat = {
     if (/暂停|别放了|关掉音乐|停一下|不要放/.test(t)) return '好，先安静一下～[[pause]]';
     if (/下一首|切歌|换一首/.test(t)) return '换一首！[[next]]';
     if (this.KW.music.test(t) && /放|播|来一首|听|唱/.test(t)) { const i = this.findSong(t.replace(/放|播放|来一首|听|唱|歌|一下|首|给我|我想|吧|呀|嘛/g, '')); const m = SITE.music.at(i); return i >= 0 ? `来～《${m.title}》！[[play:${m.title}]]` : '给你随便挑一首～[[play]]'; }
-    const mods = [[/吃饭地图|美食地图/, 'food'], [/扫街/, 'street'], [/地标/, 'landmark'], [/日记/, 'diary'], [/地铁|城市之下/, 'metro'], [/星空|地球之外/, 'sky']];
+    const mods = [[/吃饭地图|美食地图/, 'food'], [/扫街/, 'street'], [/地标/, 'landmark'], [/日记/, 'diary'], [/地铁|城市之下/, 'metro'], [/星空|地球之外/, 'sky'], [/留言/, 'guest']];
     if (/打开|去|看看|带我/.test(t)) for (const [re, id] of mods) if (re.test(t)) return `走，带你去～[[open:${id}]]`;
     if (/树|浇|水|榕|长|种/.test(t)) return T.m < 20 ? `小榕树口好渴…它现在是「${S.n}」，帮它浇点水嘛～` : `小榕树现在是「${S.n}」${st.next ? `，再长 ${Math.ceil(st.next - T.g)} 就到下一阶啦` : '，已经独木成林啦'}！`;
     if (/吃|饿|饭|餐|茶|宵夜|好味|推荐/.test(t)) return pick(['肚子咕咕叫了！「吃饭地图」里都是 Howard 自己吃过、打过分的店，去翻翻看～', '我最想去喝早茶，虾饺烧卖一笼一笼的！你去「吃饭地图」找找嘛～']);
