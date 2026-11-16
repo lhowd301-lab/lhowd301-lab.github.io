@@ -1040,27 +1040,12 @@ body.guest-picking .maplibregl-marker:not(.guest-mk),body.guest-picking .maplibr
 .pet-card.shadow{box-shadow:6px 6px 0 #EADFCF}
 .pet-card h3{margin:0 0 10px;font-size:16px}
 .pet-card + .pet-card{margin-top:18px}
-.pet-hero{display:grid;place-items:center;position:relative;min-height:360px}
-.pet-hero img{width:min(100%,460px);height:auto;animation:petBob 3.2s ease-in-out infinite}
-.pet-hero .tag{position:absolute;top:14px;left:18px;font-size:12px;font-weight:700;letter-spacing:.12em;color:var(--p-ink-2)}
-.pet-name{font-family:"ZCOOL KuaiLe",var(--f-body);font-weight:400;font-size:64px;line-height:1;margin:0;color:var(--p-line)}
-.pet-pills{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
-.pet-pills span{padding:6px 12px;border-radius:999px;border:2px solid var(--p-line);font-weight:700;font-size:13px;background:var(--p-peach)}
-.pet-pills span:nth-child(1){background:var(--p-sky)}
-.pet-pills span:nth-child(3){background:#FDE7DE}
-.pet-lead{font-size:15.5px;line-height:1.8;margin:0 0 4px;color:#5C4334}
-.pet-feats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.pet-feats div{border:2px solid var(--p-line);border-radius:16px;padding:10px 12px;background:#FFFCF7}
-.pet-feats b{display:block;font-size:14px;margin-bottom:2px}
-.pet-feats span{font-size:13px;line-height:1.55;color:var(--p-ink-2)}
-.pet-acts{width:100%;border-collapse:collapse;font-size:13.5px}
-.pet-acts td{padding:7px 4px;border-top:1px dashed #E4D3BF;vertical-align:top}
-.pet-acts td:first-child{width:72px;font-weight:700;white-space:nowrap}
-.pet-poses{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
-.pet-poses figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:4px;border:2px solid var(--p-line);border-radius:16px;padding:8px 6px;background:#FFFCF7}
-.pet-poses img{height:92px;width:auto;max-width:100%;object-fit:contain}
-.pet-poses figcaption{font-size:12.5px;font-weight:700}
+.pet-grid > .pet-card + .pet-card{margin-top:0}
+.pet-catchfig{display:flex;align-items:center;gap:12px;margin:0 0 12px;font-size:13.5px;font-weight:700;color:var(--p-ink-2)}
+.pet-catchfig img{height:76px;width:auto;flex:none;animation:petPeek 1.8s ease-in-out infinite;transform-origin:50% 100%}
+.pet-note{margin:12px 0 0;font-size:12.5px;color:var(--p-ink-2)}
 .pet-rules{margin:0;padding-left:20px;font-size:14px;line-height:1.75;color:#5C4334}
+.pet-rules li+li{margin-top:6px}
 .pet-rules b{color:var(--p-ink)}
 /* the garden */
 .pet-room{position:relative;width:100%;aspect-ratio:520/470;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;overflow:hidden;border-radius:14px;background:linear-gradient(180deg,#CFE8FA 0%,#E6F3FC 48%,#F7F2E6 100%);transition:background .8s}
@@ -1166,12 +1151,9 @@ body.guest-picking .maplibregl-marker:not(.guest-mk),body.guest-picking .maplibr
 .pet-status p{margin:0;font-size:14.5px;line-height:1.7}
 @media (max-width:860px){
   .pet-grid{grid-template-columns:minmax(0,1fr)}
-  .pet-poses{grid-template-columns:repeat(3,minmax(0,1fr))}
-  .pet-name{font-size:52px}
-  .pet-hero{min-height:280px}
   .pet-stats{margin-left:0;width:100%}
 }
-@media (max-width:420px){ .pet-feats,.pet-shop{grid-template-columns:minmax(0,1fr)} }
+@media (max-width:420px){ .pet-shop{grid-template-columns:minmax(0,1fr)} }
 /* the desk pet in the map's corner, and what it says */
 .pet-dock{position:fixed;z-index:5;right:calc(max(16px,env(safe-area-inset-right,0px)) + 56px);bottom:calc(14px + env(safe-area-inset-bottom,0px));width:78px;height:78px;border:0;padding:0;background:transparent;cursor:pointer;display:grid;place-items:end center}
 .pet-dock img{width:72px;height:auto;display:block;filter:drop-shadow(0 6px 8px rgba(29,78,216,.22));animation:petBob 2.6s ease-in-out infinite;transform-origin:50% 100%}
@@ -1237,7 +1219,7 @@ body.pure .pet-dock,body.pure .pet-bubble,body.pure .pet-chat{display:none!impor
 @keyframes petPeek{0%,100%{transform:translateY(0) rotate(0)}30%{transform:translateY(-4px) rotate(-4deg)}60%{transform:translateY(0) rotate(4deg)}}
 @keyframes petHop{0%{transform:translateY(0) scale(1,1)}40%{transform:translateY(-22px) scale(.95,1.05)}100%{transform:translateY(0) scale(1,1)}}
 @keyframes petHeart{0%{opacity:0;transform:translate(-50%,0) scale(.6)}20%{opacity:1}100%{opacity:0;transform:translate(-50%,-60px) scale(1.1)}}
-@media (prefers-reduced-motion:reduce){.pet-hero img,.pet-room .who .body,.pet-dock img,.pet-dock .lost,.pet-mark img{animation:none}}
+@media (prefers-reduced-motion:reduce){.pet-catchfig img,.pet-room .who .body,.pet-dock img,.pet-dock .lost,.pet-mark img{animation:none}}
 @media (max-width:1023px){
   /* phone: sit in the row above the bottom tab bar, to the left of the zoom buttons */
   .pet-dock{right:calc(max(8px,env(safe-area-inset-right,0px)) + 50px);bottom:calc(84px + env(safe-area-inset-bottom,0px));width:60px;height:60px}
@@ -1404,7 +1386,7 @@ body.pure .pet-dock,body.pure .pet-bubble,body.pure .pet-chat{display:none!impor
     <div class="pet-stats"><span class="pet-chip coins" id="petCoins"></span><span class="pet-chip" id="petLove"></span></div>
   </header>
   <div class="pet-tabs" role="tablist" aria-label="榕忆页面">
-    <button type="button" role="tab" data-tab="about" aria-selected="true">认识榕忆</button>
+    <button type="button" role="tab" data-tab="about" aria-selected="true">怎么玩</button>
     <button type="button" role="tab" data-tab="home" aria-selected="false">榕树小院</button>
     <button type="button" role="tab" data-tab="quest" aria-selected="false">线索与任务<span class="dot" aria-hidden="true"></span></button>
   </div>
@@ -2010,15 +1992,9 @@ const SITE = {
       intro: '西江北岸的崇禧塔，明万历十年至十三年（1582—1585）由肇庆知府王泮主持修建，是一座八角九层的楼阁式砖塔，高 57.5 米，每层出檐，塔里有阶梯可以登到顶层眺望西江。利玛窦初到中国时，就在塔旁建了住所“仙花寺”。' },
   ],
 
-  // 成长轨迹：按时间顺序排列；地图上每个阶段一种颜色（颜色在 STAGE_COL 里改），坐标取自 OpenStreetMap（WGS-84）
+  // 出生地点（粉色图钉），坐标取自 OpenStreetMap（WGS-84）
   life: [
     { id: 'b1', stage: '出生', place: '广州市第二人民医院', short: '第二人民医院', area: '荔湾 · 昌华街 · 多宝路', note: '今广州医科大学附属第三医院（广医三院）。1953 年起称广州市第二人民医院，2006 年改为现名。', lnglat: [113.22884, 23.12052] },
-    { id: 'b2', stage: '幼儿园', place: '民航广州幼儿园', short: '民航幼儿园', area: '白云 · 机场路航云南街', note: '标在南园区（航云南街 6 号）。', lnglat: [113.25593, 23.17428] },
-    { id: 'b3', stage: '小学', place: '东风东路小学（东风广场校区）', short: '东风东路小学 · 东风广场', area: '越秀 · 东风东路', lnglat: [113.30603, 23.13609] },
-    { id: 'b4', stage: '小学', place: '东风东路小学（天伦校区）', short: '东风东路小学 · 天伦', area: '越秀 · 东风东路', lnglat: [113.30647, 23.13753] },
-    { id: 'b5', stage: '初中', place: '广州市越秀区育才实验学校', short: '育才实验学校', area: '越秀 · 二沙岛 · 烟雨南街', lnglat: [113.29736, 23.11156] },
-    { id: 'b6', stage: '高中', place: '广州市育才中学（西校区）', short: '育才中学 · 西校区', area: '越秀 · 东山', lnglat: [113.29795, 23.12913] },
-    { id: 'b7', stage: '本科', place: '广东工业大学（龙洞校区）', short: '广工 · 龙洞校区', area: '天河 · 龙洞', years: '2023 — 2027', lnglat: [113.35491, 23.19820] },
   ],
   // 非常驻办公地点
   spots: [
@@ -2098,6 +2074,73 @@ const SITE = {
     { title: '少女心事', artist: '张国荣', src: 'music/shaonvxinshi.mp3', added: '2026-11-15' },
     { title: '芳华绝代', artist: '梅艳芳 & 张国荣', by: '张国荣', src: 'music/fanghuajuedai.mp3', added: '2026-11-15' },
     { title: '春夏秋冬', artist: '张国荣', src: 'music/chunxiaqiudong.mp3', added: '2026-11-15' },
+    { title: 'Plastic Love', artist: '竹内玛莉亚', by: 'City Pop', src: 'music/plasticlove.mp3', added: '2026-11-16' },
+    { title: 'OH NO, OH YES!', artist: '中森明菜', by: 'City Pop', src: 'music/ohnoohyes.mp3', added: '2026-11-16' },
+    { title: '春の森の回転木馬', artist: 'City Pop', src: 'music/harunomori.mp3', added: '2026-11-16' },
+    { title: 'JODY', artist: '山下达郎', by: 'City Pop', src: 'music/jody.mp3', added: '2026-11-16' },
+    { title: 'CATHY', artist: '当山瞳', by: 'City Pop', src: 'music/cathy.mp3', added: '2026-11-16' },
+    { title: '真夜中のドア / Stay With Me', artist: '松原美纪', by: 'City Pop', src: 'music/mayonakanodoa.mp3', added: '2026-11-16' },
+    { title: 'Last Summer Whisper', artist: '杏里', by: 'City Pop', src: 'music/lastsummerwhisper.mp3', added: '2026-11-16' },
+    { title: '特别的人', artist: '方大同', src: 'music/tebiederen.mp3', added: '2026-11-16' },
+    { title: '讨厌红楼梦', artist: '陶喆', src: 'music/taoyanhongloumeng.mp3', added: '2026-11-16' },
+    { title: '动物世界', artist: '薛之谦', src: 'music/dongwushijie.mp3', added: '2026-11-16' },
+    { title: '租购', artist: '薛之谦', src: 'music/zugou.mp3', added: '2026-11-16' },
+    { title: '陪你去流浪', artist: '薛之谦', src: 'music/peiniqueliulang.mp3', added: '2026-11-16' },
+    { title: 'First Love', artist: '宇多田光', src: 'music/firstlove.mp3', added: '2026-11-16' },
+    { title: 'One Last Kiss', artist: '宇多田光', src: 'music/onelastkiss.mp3', added: '2026-11-16' },
+    { title: '赤と青', artist: 'ROTH BART BARON', src: 'music/akatoao.mp3', added: '2026-11-16' },
+    { title: 'Come Back To Me', artist: '宇多田光', src: 'music/comebacktome.mp3', added: '2026-11-16' },
+    { title: '呼吸有害', artist: '莫文蔚', src: 'music/huxiyouhai.mp3', added: '2026-11-16' },
+    { title: '广岛之恋', artist: '莫文蔚 & 张洪量', by: '莫文蔚', src: 'music/guangdaozhilian.mp3', added: '2026-11-16' },
+    { title: '盛夏的果实', artist: '莫文蔚', src: 'music/shengxiadeguoshi.mp3', added: '2026-11-16' },
+    { title: '想自由', artist: '林宥嘉', src: 'music/xiangziyou.mp3', added: '2026-11-16' },
+    { title: '愿你决定', artist: '张国荣', src: 'music/yuannijueding.mp3', added: '2026-11-16' },
+    { title: '侯斯顿之恋', artist: '张国荣', src: 'music/housidunzhilian.mp3', added: '2026-11-16' },
+    { title: '没有烟总有花', artist: '张国荣', src: 'music/meiyouyanzongyouhua.mp3', added: '2026-11-16' },
+    { title: '似水流年', artist: '张国荣', src: 'music/sishuiliunian.mp3', added: '2026-11-16' },
+    { title: '三人游', artist: '方大同', src: 'music/sanrenyou.mp3', added: '2026-11-16' },
+    { title: '苏丽珍', artist: '方大同', src: 'music/sulizhen.mp3', added: '2026-11-16' },
+    { title: '南音', artist: '方大同', src: 'music/nanyin.mp3', added: '2026-11-16' },
+    { title: 'Starboy', artist: 'The Weeknd & Daft Punk', by: 'The Weeknd', src: 'music/starboy.mp3', added: '2026-11-16' },
+    { title: 'Die For You', artist: 'The Weeknd', src: 'music/dieforyou.mp3', added: '2026-11-16' },
+    { title: '私奔到月球', artist: '五月天 & 陈绮贞', by: '五月天', src: 'music/sibendaoyueqiu.mp3', added: '2026-11-16' },
+    { title: '干杯', artist: '五月天', src: 'music/ganbei.mp3', added: '2026-11-16' },
+    { title: '玫瑰少年', artist: '五月天', src: 'music/meiguishaonian.mp3', added: '2026-11-16' },
+    { title: '后来的我们', artist: '五月天', src: 'music/houlaidewomen.mp3', added: '2026-11-16' },
+    { title: '人间', artist: '王菲', src: 'music/renjian.mp3', added: '2026-11-16' },
+    { title: '邮差', artist: '王菲', src: 'music/youchai.mp3', added: '2026-11-16' },
+    { title: '伤痕', artist: '林忆莲', src: 'music/shanghen.mp3', added: '2026-11-16' },
+    { title: '为你我受冷风吹', artist: '林忆莲', src: 'music/weiniwoshoulengfengchui.mp3', added: '2026-11-16' },
+    { title: '绝对占有 相对自由', artist: '陈粒', src: 'music/jueduizhanyou.mp3', added: '2026-11-16' },
+    { title: '是非题', artist: '莫文蔚', src: 'music/shifeiti.mp3', added: '2026-11-16' },
+    { title: '阴天', artist: '莫文蔚', src: 'music/yintian.mp3', added: '2026-11-16' },
+    { title: 'Honey Honey', artist: '孙燕姿', src: 'music/honeyhoney.mp3', added: '2026-11-16' },
+    { title: '第一天', artist: '孙燕姿', src: 'music/diyitian.mp3', added: '2026-11-16' },
+    { title: '天黑黑', artist: '孙燕姿', src: 'music/tianheihei.mp3', added: '2026-11-16' },
+    { title: 'Cruel Summer', artist: 'Taylor Swift', src: 'music/cruelsummer.mp3', added: '2026-11-16' },
+    { title: 'Blank Space', artist: 'Taylor Swift', src: 'music/blankspace.mp3', added: '2026-11-16' },
+    { title: 'Look What You Made Me Do', artist: 'Taylor Swift', src: 'music/lookwhatyoumademedo.mp3', added: '2026-11-16' },
+    { title: 'Out of Time', artist: 'The Weeknd', src: 'music/outoftime.mp3', added: '2026-11-16' },
+    { title: '农民', artist: 'Beyond', src: 'music/nongmin.mp3', added: '2026-11-16' },
+    { title: '真的爱你', artist: 'Beyond', src: 'music/zhendeaini.mp3', added: '2026-11-16' },
+    { title: '大地', artist: 'Beyond', src: 'music/dadi.mp3', added: '2026-11-16' },
+    { title: '冷雨夜', artist: 'Beyond', src: 'music/lengyuye.mp3', added: '2026-11-16' },
+    { title: '情人', artist: 'Beyond', src: 'music/qingren.mp3', added: '2026-11-16' },
+    { title: '一', artist: 'AGA', src: 'music/yi_aga.mp3', added: '2026-11-16' },
+    { title: '粤语残片', artist: '陈奕迅', src: 'music/yueyucanpian.mp3', added: '2026-11-16' },
+    { title: '小问题', artist: 'AGA', src: 'music/xiaowenti.mp3', added: '2026-11-16' },
+    { title: 'After Hours', artist: 'The Weeknd', src: 'music/afterhours.mp3', added: '2026-11-16' },
+    { title: 'One Of The Girls', artist: 'The Weeknd, JENNIE & Lily-Rose Depp', by: 'The Weeknd', src: 'music/oneofthegirls.mp3', added: '2026-11-16' },
+    { title: 'Never See Me Again', artist: 'Kanye West', src: 'music/neverseemeagain.mp3', added: '2026-11-16' },
+    { title: '画（重生版）', artist: '邓紫棋', src: 'music/hua.mp3', added: '2026-11-16' },
+    { title: '句号', artist: '邓紫棋', src: 'music/juhao.mp3', added: '2026-11-16' },
+    { title: '倒数', artist: '邓紫棋', src: 'music/daoshu.mp3', added: '2026-11-16' },
+    { title: '我的秘密', artist: '邓紫棋', src: 'music/wodemimi.mp3', added: '2026-11-16' },
+    { title: '我不难过', artist: '孙燕姿', src: 'music/wobunanguo.mp3', added: '2026-11-16' },
+    { title: 'Where Did U Go', artist: '邓紫棋', src: 'music/wheredidugo.mp3', added: '2026-11-16' },
+    { title: '诗歌舞街', artist: 'MLA', src: 'music/shigewujie.mp3', added: '2026-11-16' },
+    { title: '遥望', artist: 'Beyond', src: 'music/yaowang.mp3', added: '2026-11-16' },
+    { title: '为了你为了我', artist: 'Beyond', src: 'music/weileniweilewo.mp3', added: '2026-11-16' },
   ],
 };
 </script>
@@ -2415,7 +2458,7 @@ const GuestForm = {
       <h2 class="d-title">在地图上留一句话</h2>
       <p class="g-tip">选一个地方，留下你的昵称和想说的话。审核通过后，它就会出现在你选的位置上，所有人都能看到。</p>
       <label class="g-f"><span>昵称</span><input name="name" maxlength="20" required placeholder="怎么称呼你" value="${esc(g.name)}" autocomplete="nickname"></label>
-      <label class="g-f"><span>想说的话 <small class="mono" data-count>${g.text.length}/300</small></span><textarea name="text" maxlength="300" rows="4" required placeholder="比如：路过广州，这里的早茶真好吃！">${esc(g.text)}</textarea></label>
+      <label class="g-f"><span>想说的话 <small class="mono" data-count>${g.text.length}/300</small></span><textarea name="text" maxlength="300" rows="4" required>${esc(g.text)}</textarea></label>
       <div class="g-f"><span>位置</span><div class="g-loc"><b data-coord>${g.lnglat ? `已选：${g.lnglat[1].toFixed(4)}, ${g.lnglat[0].toFixed(4)}` : '还没选'}</b>
         <button type="button" class="g-btn" data-pick>${g.lnglat ? '重新选' : '在地图上点一下'}</button><button type="button" class="g-btn ghost" data-here>用我现在的位置</button></div></div>
       <label class="g-f"><span>地点名 <small>可不填</small></span><input name="place" maxlength="30" placeholder="比如：新加坡 · 滨海湾" value="${esc(g.place)}"></label>
@@ -5664,8 +5707,8 @@ function cantonTower() {
 
 /* ===================================================================== markers */
 // 街巷日记 colour key — each life stage (and the work spots / diary tags) gets a colour instead of a character
-const STAGE_COL = { 出生: '#EC4899', 幼儿园: '#2563EB', 小学: '#2563EB', 初中: '#2563EB', 高中: '#2563EB', 本科: '#2563EB' };   // 学校一律蓝色
-// 写的日记（后台发布的）一律浅绿色，和成长轨迹、办公地点的蓝色分开；分类（日常 / 技术 / 随想）写在标签上。浅绿上的字用深绿（DIARY_INK）
+const STAGE_COL = { 出生: '#EC4899' };
+// 写的日记（后台发布的）一律浅绿色，和出生地点的粉色、办公地点的蓝色分开；分类（日常 / 技术 / 随想）写在标签上。浅绿上的字用深绿（DIARY_INK）
 const DIARY_COL = '#52C98B', DIARY_INK = '#15803D';
 function diaryKind(it) {
   if (it.stage) return { kind: 'life', col: STAGE_COL[it.stage] || '#1E3A8A', name: it.stage };
@@ -5703,7 +5746,7 @@ function pinEl(type, item, loc) {
     el.className = 'pin pin-diary ' + k.kind; el.style.setProperty('--c', k.col);
     const lbl = life || spot ? (item.short || item.place) : item.title;
     el.innerHTML = `<span class="pin-in"><span class="pb"><i></i><span class="lbl">${esc(lbl)}</span></span><span class="pin-tail"></span></span>`;
-    el.setAttribute('aria-label', life ? `成长轨迹：${item.stage} · ${item.place}` : spot ? `办公地点：${item.place}` : `日记：${item.title}`);
+    el.setAttribute('aria-label', life ? `出生地点：${item.place}` : spot ? `办公地点：${item.place}` : `日记：${item.title}`);
   }
   el.addEventListener('click', (e) => { e.stopPropagation(); openDetail(type, item.id); });
   return el;
@@ -5725,7 +5768,7 @@ function ensureMarkers(type) {
   return markers[type];
 }
 // 街巷日记：在同一个地方（相距 60 米以内，或地点名字一样且在 400 米以内）写的几篇日记，地图上只放一个图钉，
-// 上面写地点和篇数，点开是按日期排的小列表；成长轨迹和办公地点不合并
+// 上面写地点和篇数，点开是按日期排的小列表；出生地点和办公地点不合并
 function diaryPlaces(list) {
   const notes = list.filter((i) => i.date && !i.stage && i.lnglat), groups = [];
   const dist = (a, b) => Math.hypot((a[0] - b[0]) * 102000, (a[1] - b[1]) * 111000);
@@ -5952,7 +5995,7 @@ function renderCities() {
     if (open) {
       html += '<ul class="items">';
       if (mod.id === 'diary' && !c.far && SITE.life.length) {
-        html += '<li class="group-label">成长轨迹</li>';
+        html += '<li class="group-label">出生地点</li>';
         for (const l of SITE.life) html += `<li><button class="item-btn" data-item="${l.id}" data-type="diary" aria-current="${state.active === l.id}" ${l.lnglat ? '' : 'data-nolocation="1"'}><span class="kname">${kdot(l)}<em>${esc(l.short || l.place)}</em></span><span class="meta">${esc(l.stage)}</span></button></li>`;
       }
       if (mod.id === 'diary' && !c.far && SITE.spots.length) {
@@ -6361,13 +6404,12 @@ function detailHTML(type, it) {
       ${navRow(SITE.landmarks, it)}</div>`;
   }
   if (it.stage) {
-    const n = SITE.life.indexOf(it) + 1;
     return `<div class="d-body" style="padding-top:22px">
-      <div class="d-kicker">${ktag(it)}<span>成长轨迹 · 第 ${n} 站</span>${it.years ? `<span class="mono">${esc(it.years)}</span>` : ''}</div>
+      <div class="d-kicker">${ktag(it)}<span>出生地点</span></div>
       <h2 class="d-title">${esc(it.place)}</h2>
       <p class="d-sub">${esc(it.area || '')}</p>
       ${it.note ? `<p class="d-quote"><b>备注</b>${esc(it.note)}</p>` : ''}
-      ${navRow(SITE.life, it)}</div>`;
+      ${SITE.life.length > 1 ? navRow(SITE.life, it) : `<div class="d-nav"><button class="btn ghost" data-fly>${ICONS.target}定位</button></div>`}</div>`;
   }
   if (!it.date) {
     return `<div class="d-body" style="padding-top:22px">
@@ -10365,40 +10407,22 @@ const Pet = {
     if (keep) { ph.replaceWith(keep); Room.sync(); } else Room.mount(ph);
   },
   aboutHTML() {
-    const poses = [['front', '正面'], ['side', '侧面'], ['back', '背面'], ['happy', '开心'], ['curious', '好奇'], ['sleepy', '困困']];
     return `<div class="pet-grid">
-      <div class="pet-card shadow pet-hero"><span class="tag">榕树小精灵</span><img src="${this.img('main')}" alt="榕忆：奶油色的小精灵，天蓝色云朵耳朵，额前一撮卷毛，胸口一颗水滴纹，卷尾巴末端是蓝色水滴形绒团，正举着小爪打招呼"></div>
-      <div>
-        <h3 class="pet-name">榕忆</h3>
-        <div class="pet-pills"><span>榕树小精灵</span><span>活泼 · 亲人 · 带点小调皮</span><span>大头小身体 · 短手短脚</span></div>
-        <p class="pet-lead">住在广州老榕树里的小精灵。榕树头是老广州人喝茶、下棋、讲故事的地方，街坊说过的话、走过的路，它都悄悄记在心里——所以叫“榕忆”，榕树的记忆。它胸口那颗水滴纹，是给小榕树浇水用的。</p>
-        <div class="pet-card" style="margin-top:14px"><h3>外形识别</h3><div class="pet-feats">
-          <div><b>云朵耳</b><span>天蓝色，带心形浅色斑；开心时扬起，好奇时一高一低</span></div>
-          <div><b>额前卷毛</b><span>一撮奶油色的卷毛，从背后看是一颗小圆球</span></div>
-          <div><b>胸口水滴纹</b><span>你靠近它藏身的地方时，水滴会亮起来</span></div>
-          <div><b>卷尾水滴绒团</b><span>尾巴卷卷的，尾尖是蓝色水滴形的绒团</span></div>
-        </div></div>
-      </div>
-    </div>
-    <div class="pet-card" style="margin-top:18px"><h3>三视图与表情</h3><div class="pet-poses">${poses.map(([n, c]) => `<figure><img src="${this.img(n)}" alt="${c}" loading="lazy"><figcaption>${c}</figcaption></figure>`).join('')}</div></div>
-    <div class="pet-grid" style="margin-top:18px">
-      <div class="pet-card"><h3>性格与动作</h3><table class="pet-acts"><tbody>
-        <tr><td>待机</td><td>身体轻轻起伏，耳朵偶尔抖动，尾尖来回晃</td></tr>
-        <tr><td>开心</td><td>原地蹦跳，举起小爪打招呼</td></tr>
-        <tr><td>好奇</td><td>歪头看向鼠标，耳朵一高一低</td></tr>
-        <tr><td>移动</td><td>短步蹦走，耳朵和尾巴稍有延迟</td></tr>
-        <tr><td>被摸</td><td>眯眼，脸颊泛红，主动靠近</td></tr>
-        <tr><td>聊天</td><td>说话短短的、亲亲热热，带点小调皮</td></tr>
-        <tr><td>困倦</td><td>趴下，抱着卷尾睡觉</td></tr>
-      </tbody></table></div>
-      <div class="pet-card"><h3>怎么玩</h3><ol class="pet-rules">
-        <li><b>找它：</b>榕忆会躲在地图上某个地标、餐厅或扫街点旁边，不定时给你发消息透露线索。</li>
-        <li><b>抓它：</b>地图放大到街道级别才看得见它，点一下它会蹦开，再点一下就抓住了。越快抓到奖励越多。</li>
-        <li><b>种榕树：</b>小院里埋着一颗榕果。用水滴浇水，它会从嫩芽一路长成独木成林的大榕树；有水的时候它自己也慢慢长，早上 6–9 点浇水有晨露，多长一半。每长一阶奖励水滴。</li>
-        <li><b>陪它：</b>抓到的榕忆住在树下。树越大、院子装饰越多，它越安心；土干透了它会难过。依恋度掉到 0 它就乘风溜走，你得重新按线索去找。</li>
-        <li><b>和它聊天：</b>抓到以后，点地图右下角的榕忆，就能打字和它聊天。</li>
-        <li><b>赚水滴：</b>每天逛地标、看餐厅、看扫街、看星空、和它聊两句都有任务奖励。进度存在你自己的浏览器里。</li>
-      </ol></div>
+      <div class="pet-card"><h3>怎么抓它</h3>
+        <div class="pet-catchfig"><img src="${this.img('curious')}" alt=""><span>它在地图上就长这样，看到就点它</span></div>
+        <ol class="pet-rules">
+          <li><b>等线索：</b>榕忆躲在地图上某个地标、餐厅或扫街点旁边，会不定时发消息透露它在哪一带。等不及的话，在「线索与任务」里做任务、花水滴换提示。</li>
+          <li><b>放大找：</b>照着线索去那一带，把地图放大到街道级别，它才会现身。</li>
+          <li><b>点两下：</b>点一下它会蹦开，再点一下就抓住了。越快抓到，奖励的水滴越多。</li>
+        </ol></div>
+      <div class="pet-card"><h3>抓到以后能做什么</h3><ul class="pet-rules">
+          <li><b>和它聊天：</b>点地图右下角的榕忆就能打字聊天。可以让它推荐吃饭地图里的店、放歌切歌、带你去各个板块、换城市。</li>
+          <li><b>种榕树：</b>小院里埋着一颗榕果，用水滴浇水，它会从嫩芽一路长成独木成林；早上 6–9 点浇水有晨露，多长一半，每长一阶奖励水滴。</li>
+          <li><b>逗它玩：</b>在小院里点地面它会蹦过去，点榕树、石凳、水缸它会过去玩，点它摸摸，按住还能把它拎起来。</li>
+          <li><b>布置小院：</b>用水滴买青石板路、岭南矮墙、石桌茶具、红灯笼、秋千……树越大能摆的越多。</li>
+          <li><b>赚水滴：</b>每天逛地标、看餐厅、看扫街、看星空、和它聊两句都有奖励。</li>
+          <li><b>别冷落它：</b>依恋度会慢慢往下掉，树越大、装饰越多掉得越慢，土干透了掉得快；掉到 0 它就乘风溜走，要重新按线索去找。</li>
+        </ul><p class="pet-note">进度存在你自己的浏览器里，换设备或清缓存会从头开始。</p></div>
     </div>`;
   },
   homeHTML() {
