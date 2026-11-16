@@ -837,8 +837,14 @@ body.guest-picking .maplibregl-marker:not(.guest-mk),body.guest-picking .maplibr
 .pf-sec h3{margin:0 0 8px;font-size:11px;font-weight:500;letter-spacing:.16em;color:var(--ink-3)}
 .pf-bio{margin:0;font-size:16px}
 .pf-mail{display:flex;flex-direction:column;gap:8px;margin-top:-6px}
-.pf-mail a{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:12px;background:var(--ice-2);text-decoration:none;color:var(--ink);font-size:14px;font-family:var(--f-mono);word-break:break-all}
-.pf-mail a:hover{background:var(--ice);color:var(--blue)}
+.pf-m{border-radius:12px;background:var(--ice-2);overflow:hidden}
+.pf-m-main{width:100%;display:flex;align-items:center;gap:10px;padding:9px 12px;border:0;background:transparent;text-align:left;cursor:pointer;color:var(--ink);font-size:14px;font-family:var(--f-mono);word-break:break-all}
+.pf-m-main:hover,.pf-m-main[aria-expanded="true"]{background:var(--ice);color:var(--blue)}
+.pf-m-main i{margin-left:auto;flex:none;font-style:normal;font-family:var(--f-body);font-size:11px;color:var(--ink-3);white-space:nowrap}
+.pf-m-menu{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:8px 10px 10px}
+.pf-m-menu[hidden]{display:none}
+.pf-m-menu a,.pf-m-menu button{display:flex;align-items:center;justify-content:center;padding:8px 6px;border-radius:9px;border:1px solid var(--line);background:var(--white);color:var(--ink);font:inherit;font-size:12.5px;text-decoration:none;cursor:pointer;text-align:center}
+.pf-m-menu a:hover,.pf-m-menu button:hover{border-color:var(--blue);color:var(--blue)}
 .pf-mail svg{width:18px;height:18px;flex:none;color:var(--blue)}
 .pf-mail span{display:flex;flex-direction:column;min-width:0}
 .pf-mail small{font-family:var(--f-body);font-size:11px;color:var(--ink-3);letter-spacing:.04em}
@@ -2596,13 +2602,37 @@ function renderProfile() {
       <div style="display:flex;justify-content:flex-end"><button class="icon-btn" data-close-drawer aria-label="关闭">${ICONS.close}</button></div>
       <div class="pf-head"><img src="${AVATAR}" alt="Howard Leong 的头像"><div><h2>${esc(o.name)}</h2><p>${esc(o.site.toUpperCase())}</p></div></div>
       <p class="d-text pf-bio">${esc(o.bio)}</p>
-      ${(o.emails || []).length ? `<div class="pf-mail">${o.emails.map((e) => `<a href="mailto:${esc(e.addr)}">${ICONS.mail}<span><small>${esc(e.label)}</small>${esc(e.addr)}</span></a>`).join('')}</div>` : ''}
+      ${(o.emails || []).length ? `<div class="pf-mail">${o.emails.map((e, i) => `<div class="pf-m" data-mail="${i}">
+        <button type="button" class="pf-m-main" aria-expanded="false">${ICONS.mail}<span><small>${esc(e.label)}</small>${esc(e.addr)}</span><i>写信 / 复制</i></button>
+        <div class="pf-m-menu" hidden>
+          <button type="button" data-copy>复制地址</button>
+          <a href="https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(e.addr)}" target="_blank" rel="noopener">用 Gmail 写信</a>
+          <a href="https://mail.qq.com/" target="_blank" rel="noopener" data-qq>用 QQ 邮箱写信</a>
+          <a href="mailto:${esc(e.addr)}">用邮件应用写信</a>
+        </div></div>`).join('')}</div>` : ''}
       <div class="pf-dm" id="pfDm"></div>
       <div class="pf-sec"><h3>喜欢</h3><div class="chips">${o.interests.map((i) => `<span class="chip">${esc(i)}</span>`).join('')}</div></div>
       <div class="pf-sec"><h3>在别处找到我</h3><div class="pf-links">${SITE.socials.map((s) => `<a href="${esc(s.url)}" target="_blank" rel="noopener">${sIcon(s)}${esc(s.label)}</a>`).join('')}</div></div>
       <div class="pf-sec"><h3>友情链接</h3>${friendRows}</div>
     </div>`;
+  // 邮箱：直接点 mailto 在没设默认邮件程序的电脑上没反应，所以点一下先复制地址，再给几种写信方式
+  $('#profileDrawer').querySelectorAll('.pf-m').forEach((box) => {
+    const addr = o.emails[+box.dataset.mail].addr, main = box.querySelector('.pf-m-main'), menu = box.querySelector('.pf-m-menu');
+    main.addEventListener('click', () => {
+      const open = menu.hidden;
+      $('#profileDrawer').querySelectorAll('.pf-m-menu').forEach((m) => { m.hidden = true; m.previousElementSibling.setAttribute('aria-expanded', 'false'); });
+      menu.hidden = !open; main.setAttribute('aria-expanded', String(open));
+      if (open) copyText(addr, `已复制 ${addr}`);
+    });
+    menu.querySelector('[data-copy]').addEventListener('click', () => copyText(addr, `已复制 ${addr}`));
+    menu.querySelector('[data-qq]').addEventListener('click', () => copyText(addr, '地址已复制：QQ 邮箱打开后点「写信」，在收件人里粘贴就行', 6000));
+  });
   DMForm.render();
+}
+function copyText(t, msg, ms) {
+  const done = () => toast(msg, ms);
+  const old = () => { const a = document.createElement('textarea'); a.value = t; a.setAttribute('readonly', ''); a.style.cssText = 'position:fixed;left:-9999px;top:0'; document.body.appendChild(a); a.select(); let ok = false; try { ok = document.execCommand('copy'); } catch (e) { ok = false; } a.remove(); ok ? done() : toast(t); };
+  if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(t).then(done, old); else old();
 }
 // 私信：访客写昵称、联系方式（可不填）和想说的话，发到后台（POST /api/diary/dm），只有 Howard 在后台看得到
 const DMForm = {
