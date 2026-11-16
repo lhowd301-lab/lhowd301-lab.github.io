@@ -58,7 +58,7 @@ p = sys.argv[1]
 s = open(p, encoding='utf-8').read()
 block = ('    # 网站后台（deploy/bh_admin.py）：访问统计、日记、照片\n'
          '    location ~ ^/api/(stat|diary|admin|u)(/|$) { proxy_pass http://127.0.0.1:8788; proxy_http_version 1.1; proxy_set_header Host $host; '
-         'proxy_set_header X-Real-IP $remote_addr; proxy_read_timeout 30s; client_max_body_size 10m; }')
+         'proxy_set_header X-Real-IP $remote_addr; proxy_read_timeout 120s; client_max_body_size 64m; }')
 out = []
 for line in s.split('\n'):
     if line.strip().startswith('location / {') and 'try_files' in line:   # 每个网站的 server { } 里都加一份

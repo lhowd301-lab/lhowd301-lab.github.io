@@ -122,6 +122,13 @@ textarea.input.short{min-height:110px}
 .sph .fs .input{padding:6px 9px;font-size:13px}
 .add-sph{min-height:160px;border-radius:12px;border:1.5px dashed var(--ice-2);display:grid;place-items:center;color:var(--blue);background:none;font-size:13px}
 .hint{font-size:12px;color:var(--ink-3);font-weight:400}
+.mfile{display:flex;flex-direction:column;gap:8px;border:1.5px dashed var(--ice-2);border-radius:12px;padding:12px}
+.mfile .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.mfile .fn{font-size:13px;color:var(--ink-2);word-break:break-all}
+.mfile audio{width:100%;height:36px}
+.bar{height:6px;border-radius:999px;background:var(--ice);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--blue);transition:width .2s}
+.d-item .dt.mus{width:42px;height:42px;border-radius:10px;display:grid;place-items:center;background:color-mix(in srgb,#7C3AED 10%,transparent);color:#7C3AED;font-size:18px;grid-row:span 2}
 .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:13.5px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:50;max-width:calc(100% - 32px)}
 .toast.on{opacity:1}
 [hidden]{display:none!important}
@@ -131,7 +138,7 @@ textarea.input.short{min-height:110px}
 <div class="wrap">
   <section class="login" id="login" hidden>
     <h1>Beyond Horizons 后台</h1>
-    <p>访问统计 · 日记 · 吃饭地图 · 扫街照片</p>
+    <p>访问统计 · 日记 · 吃饭地图 · 扫街照片 · 背景音乐</p>
     <form id="loginForm" class="card" autocomplete="on">
       <div class="field"><label for="pw">密码</label><input class="input" id="pw" type="password" autocomplete="current-password" required></div>
       <div class="err" id="loginErr"></div>
@@ -141,12 +148,13 @@ textarea.input.short{min-height:110px}
 
   <section id="app" hidden>
     <header>
-      <h1>Beyond Horizons 后台<small>访问统计 · 日记 · 吃饭地图 · 扫街照片</small></h1>
+      <h1>Beyond Horizons 后台<small>访问统计 · 日记 · 吃饭地图 · 扫街照片 · 背景音乐</small></h1>
       <div class="tabs" role="tablist">
         <button role="tab" data-tab="stats" aria-selected="true">访问统计</button>
         <button role="tab" data-tab="diary" aria-selected="false">写日记</button>
         <button role="tab" data-tab="food" aria-selected="false">吃饭地图</button>
         <button role="tab" data-tab="street" aria-selected="false">扫街照片</button>
+        <button role="tab" data-tab="music" aria-selected="false">背景音乐</button>
       </div>
       <a class="ghost" href="/" target="_blank" rel="noopener" style="text-decoration:none">打开网站</a>
       <button class="ghost" id="logout">退出</button>
@@ -297,6 +305,41 @@ textarea.input.short{min-height:110px}
         </form>
       </div>
     </div>
+
+    <div id="tab-music" hidden>
+      <div class="split">
+        <div class="card">
+          <h3>背景音乐 <span class="sub" id="muCount"></span></h3>
+          <button class="btn" id="muNew" style="width:100%;margin-bottom:10px">＋ 上传一首歌</button>
+          <div class="list-tools"><input class="input" id="muQ" type="search" placeholder="搜歌名 / 歌手"></div>
+          <div class="list-tools seg sm" id="muF"><button data-f="all" aria-pressed="true">全部</button><button data-f="own" aria-pressed="false">后台加的</button><button data-f="edit" aria-pressed="false">改过的</button><button data-f="hid" aria-pressed="false">藏起来的</button></div>
+          <div class="d-list" id="muList"></div>
+        </div>
+        <form class="card" id="muForm" autocomplete="off">
+          <h3 id="muHead">上传一首歌</h3>
+          <div class="field"><label>歌曲文件 <span class="hint">MP3，或 M4A / 只有声音的 MP4，最大 60 MB；建议先压成 MP3（一首 3–6 MB 就够了）</span></label>
+            <div class="mfile">
+              <div class="row"><button type="button" class="btn light" id="muPick">选择文件</button><span class="fn" id="muName">还没选</span></div>
+              <div class="bar" id="muBar" hidden><i></i></div>
+              <audio id="muAudio" controls preload="none" hidden></audio>
+            </div>
+            <input type="file" id="muFile" accept=".mp3,.m4a,.mp4,audio/mpeg,audio/mp4,audio/x-m4a,video/mp4" hidden>
+          </div>
+          <div class="row2">
+            <div class="field"><label for="muTitle">歌名</label><input class="input" id="muTitle" maxlength="60" required placeholder="比如：皇后大道东"></div>
+            <div class="field"><label for="muArtist">歌手</label><input class="input" id="muArtist" maxlength="60" required list="artistList" placeholder="比如：罗大佑"><datalist id="artistList"></datalist></div>
+          </div>
+          <div class="field"><label for="muBy">归到哪位歌手名下 <span class="hint">可不填；合唱、feat. 的歌填主唱，播放器里就和他的歌排在一起</span></label><input class="input" id="muBy" maxlength="40" list="artistList" placeholder="比如：张国荣"></div>
+          <div class="err" id="muErr"></div>
+          <div class="actions">
+            <button class="btn" type="submit">保存并发布</button>
+            <button class="btn light" type="button" id="muHide">藏起来（网站上先不放）</button>
+            <button class="btn danger" type="button" id="muDel" hidden style="margin-left:auto">删除</button>
+          </div>
+          <p class="hint" style="margin:10px 0 0">发布后网站的背景音乐里马上就有；月历上会在上传那天标一个 ♪，写这天加了哪几首。</p>
+        </form>
+      </div>
+    </div>
   </section>
 </div>
 <div class="toast" id="toast" role="status"></div>
@@ -332,7 +375,7 @@ $('#loginForm').addEventListener('submit', async (e) => {
 $('#logout').addEventListener('click', showLogin);
 
 /* ---------------- tabs */
-const TABS = { stats: () => loadStats(), diary: () => loadDiary(), food: () => Items.food.load(), street: () => Items.street.load() };
+const TABS = { stats: () => loadStats(), diary: () => loadDiary(), food: () => Items.food.load(), street: () => Items.street.load(), music: () => Items.music.load() };
 document.querySelectorAll('[data-tab]').forEach((b) => b.addEventListener('click', () => {
   document.querySelectorAll('[data-tab]').forEach((x) => x.setAttribute('aria-selected', String(x === b)));
   for (const k of Object.keys(TABS)) $('#tab-' + k).hidden = b.dataset.tab !== k;
@@ -510,7 +553,8 @@ let META = null;
 async function meta() {
   if (META) return META;
   try { const r = await fetch('meta.json', { cache: 'no-cache' }); META = r.ok ? await r.json() : null; } catch (e) { META = null; }
-  if (!META) { META = { cities: [{ id: 'gz', name: '广州', center: [113.29, 23.118] }], cats: [], areas: [], food: [], street: [] }; toast('没读到网站自带的数据（admin/meta.json），只能管后台加的'); }
+  if (!META) { META = { cities: [{ id: 'gz', name: '广州', center: [113.29, 23.118] }], cats: [], areas: [], food: [], street: [], music: [] }; toast('没读到网站自带的数据（admin/meta.json），只能管后台加的'); }
+  META.music = META.music || [];
   return META;
 }
 const clone = (o) => JSON.parse(JSON.stringify(o));
@@ -691,6 +735,71 @@ Items.street = makeItems('street', {
 });
 
 /* ---------------- start */
+/* 背景音乐：上传歌曲文件（带进度条），填歌名、歌手 */
+let muSrc = '', muBusy = false;
+const fmtMB = (n) => (n / 1048576).toFixed(1) + ' MB';
+function muSet(src, label) {
+  muSrc = src || ''; $('#muName').textContent = label || (src ? src.split('/').pop() : '还没选');
+  const a = $('#muAudio'); a.hidden = !src; if (src) a.src = imgUrl(src); else a.removeAttribute('src');
+}
+function uploadAudio(file, onProgress) {
+  return new Promise((res, rej) => {
+    const x = new XMLHttpRequest(); x.open('POST', '/api/admin/upload-audio');
+    if (token) x.setRequestHeader('Authorization', 'Bearer ' + token);
+    x.setRequestHeader('Content-Type', 'application/octet-stream');
+    x.upload.onprogress = (e) => { if (e.lengthComputable) onProgress(e.loaded / e.total); };
+    x.onload = () => {
+      let j = {}; try { j = JSON.parse(x.responseText); } catch (e) { /* nginx error page */ }
+      if (x.status === 200 && j.src) res(j);
+      else if (x.status === 401) { showLogin(); rej(new Error('请先登录')); }
+      else rej(new Error(j.error || (x.status === 413 ? '文件太大了：服务器只收 60 MB 以内（运行一次 services.sh 才会放开到 60 MB）' : '上传失败（' + x.status + '）')));
+    };
+    x.onerror = () => rej(new Error('上传失败，检查一下网络'));
+    x.send(file);
+  });
+}
+$('#muPick').addEventListener('click', () => !muBusy && $('#muFile').click());
+$('#muFile').addEventListener('change', async (e) => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  if (f.size > 60 * 1048576) return toast('文件太大了（' + fmtMB(f.size) + '），最大 60 MB，先压成 MP3 再传');
+  // 文件名像「罗大佑 - 皇后大道东.mp3」时，顺手帮忙填好歌名和歌手
+  const base = f.name.replace(/\.[^.]+$/, '').replace(/[【\[(（].*?[】\])）]/g, '').trim(), parts = base.split(/\s+-\s+|\s*-\s*/);
+  if (!$('#muTitle').value.trim() && parts.length === 2) { const [a, b] = parts.map((x) => x.trim()); $('#muArtist').value ||= a; $('#muTitle').value = b; }
+  else if (!$('#muTitle').value.trim()) $('#muTitle').value = base.slice(0, 60);
+  muBusy = true; $('#muBar').hidden = false; $('#muBar i').style.width = '0';
+  $('#muName').textContent = `${f.name} · ${fmtMB(f.size)} · 上传中…`;
+  try {
+    const j = await uploadAudio(f, (r) => { $('#muBar i').style.width = Math.round(r * 100) + '%'; });
+    muSet(j.src, `${f.name} · ${fmtMB(f.size)} · 已上传`); toast('歌曲已上传，填好歌名、歌手后点「保存并发布」');
+  } catch (err) { muSet('', '还没选'); toast(err.message); }
+  muBusy = false; setTimeout(() => { $('#muBar').hidden = true; }, 600);
+});
+Items.music = makeItems('music', {
+  form: '#muForm', list: '#muList', count: '#muCount', head: '#muHead', err: '#muErr', del: '#muDel', hide: '#muHide', newBtn: '#muNew', first: '#muTitle', q: '#muQ', filters: '#muF', newTitle: '上传一首歌',
+  text: (d) => [d.title, d.artist, d.by].join(' '),
+  row: (r, st) => `<span class="dt mus">♪</span><b>${esc(r.data.title || '')}</b><small>${st}${esc(r.data.artist || '')}${r.data.by && r.data.by !== r.data.artist ? ' · 归到 ' + esc(r.data.by) : ''}${r.rec && r.own ? ' · ' + new Date(r.rec.updated * 1000).toLocaleDateString('zh-CN', { month: 'numeric', day: 'numeric' }) + ' 上传' : ''}</small>`,
+  fillSelects() {
+    const names = new Set(); Items.music.rows.forEach((r) => { if (r.data.artist) names.add(r.data.by || r.data.artist); });
+    META.music.forEach((m) => names.add(m.by || m.artist));
+    $('#artistList').innerHTML = [...names].map((n) => `<option value="${esc(n)}">`).join('');
+  },
+  fill(d) {
+    d = d || {};
+    $('#muTitle').value = d.title || ''; $('#muArtist').value = d.artist || ''; $('#muBy').value = d.by || '';
+    muSet(d.src || '', d.src ? d.src.split('/').pop() : '还没选');
+  },
+  read(d) {
+    if (muBusy) throw new Error('歌曲还在上传，等一下');
+    Object.assign(d, { title: $('#muTitle').value.trim(), artist: $('#muArtist').value.trim(), by: $('#muBy').value.trim(), src: muSrc });
+    if (!d.src) throw new Error('还没上传歌曲文件');
+    if (!d.title) throw new Error('歌名还没写');
+    if (!d.artist) throw new Error('歌手还没写');
+    if (!d.by || d.by === d.artist) delete d.by;
+    delete d.id; delete d.added;
+    return d;
+  },
+});
+
 if (token) api('/api/admin/ping').then(showApp, (e) => { if (e.message !== '请先登录') { showLogin(); $('#loginErr').textContent = '连不上后台，稍后再试'; } }); else showLogin();
 </script>
 </body>

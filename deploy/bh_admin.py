@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Beyond Horizons 后台：访问统计 + 日记 + 吃饭地图的店 + 扫街照片。
+"""Beyond Horizons 后台：访问统计 + 日记 + 吃饭地图的店 + 扫街照片 + 背景音乐。
 
 - 只听 127.0.0.1（默认 8788 端口），由 nginx 把 /api/stat、/api/diary、/api/admin、/api/u/ 转过来。
 - 访问统计：网页匿名发来「打开了网站 / 换了板块 / 点开了哪张照片、哪家店 / 还在看」这些事件。
@@ -7,6 +7,7 @@
 - 日记：后台写好、点发布，网页打开时从 /api/diary 读，马上就能看到；照片存在服务器上，由 /api/u/ 发出去。
 - 吃饭地图的店、扫街照片：后台新加的、或改过的网站自带条目（同一个 id 替换），也从 /api/diary?all=1 一起读；
   藏起来的条目（hidden）网站上就不显示。删掉后台记录 = 恢复成网站自带的样子。
+- 背景音乐：后台上传 mp3 / m4a 和歌名、歌手，同样从 /api/diary?all=1 读；歌曲文件由 /api/u/ 发出去（支持断点 Range，iPhone 才能播）。
 - 后台密码只以 PBKDF2 哈希存在 /etc/beyond-horizons/admin.env（deploy/admin-setup.sh 在服务器上输入），
   登录后发一张 30 天有效的凭证；连续输错 8 次要等 15 分钟。
 - 只用 Python 标准库；省市用 ip2region 离线库（deploy/ip2region/，Apache-2.0）。
@@ -184,6 +185,7 @@ def diary_rows(published_only):
 
 
 PHOTO = re.compile(r'^/api/u/[0-9a-f]{20}(-s)?\.jpg$')
+AUDIO = re.compile(r'^/api/u/[0-9a-f]{20}\.(mp3|m4a)$')
 
 
 def save_diary(o):
@@ -210,13 +212,20 @@ def save_diary(o):
     return did
 
 
+def files_of(data):
+    """一条记录用到的上传文件：照片列表，加上歌曲本身的 src"""
+    out = list(data.get('photos') or [])
+    if data.get('src'): out.append({'src': data['src']})
+    return out
+
+
 def drop_unused(c, photos):
-    """删掉不再被任何日记 / 条目用到的上传照片"""
+    """删掉不再被任何日记 / 条目用到的上传照片和歌曲"""
     used = ' '.join(r['photos'] or '' for r in c.execute('SELECT photos FROM diary')) + ' '.join(r['data'] or '' for r in c.execute('SELECT data FROM items'))
     for p in photos:
         for k in ('src', 'thumb'):
             name = os.path.basename(str(p.get(k) or ''))
-            if PHOTO.match('/api/u/' + name) and name not in used:
+            if (PHOTO.match('/api/u/' + name) or AUDIO.match('/api/u/' + name)) and name not in used:
                 try: os.remove(os.path.join(UPLOADS, name))
                 except OSError: pass
 
@@ -231,7 +240,9 @@ def delete_diary(did):
 # ------------------------------------------------------------------ 吃饭地图的店、扫街照片
 SITE_PHOTO = re.compile(r'^photos/[A-Za-z0-9_\-/]+\.(jpg|jpeg|png|webp)$')
 CITY = re.compile(r'^[a-z]{2,12}$')
-ITEM_ID = {'food': re.compile(r'^f[0-9a-z]{1,15}$'), 'street': re.compile(r'^s[0-9a-z]{1,15}$')}
+ITEM_ID = {'food': re.compile(r'^f[0-9a-z]{1,15}$'), 'street': re.compile(r'^s[0-9a-z]{1,15}$'),
+           'music': re.compile(r'^m[0-9a-z]{1,40}$')}   # 网站自带的歌：m + 文件名（music/yuzai.mp3 → myuzai）
+SITE_AUDIO = re.compile(r'^music/[a-z0-9_\-]+\.(mp3|m4a)$')
 
 
 def photo_ok(s):
@@ -301,13 +312,33 @@ def clean_street(o):
     return d
 
 
+def clean_music(o):
+    d = {'title': text(o, 'title', 60), 'artist': text(o, 'artist', 60)}
+    if not d['title']: raise ValueError('歌名不能空着')
+    if not d['artist']: raise ValueError('歌手不能空着')
+    by = text(o, 'by', 40)
+    if by and by != d['artist']: d['by'] = by
+    src = str(o.get('src') or '')
+    if not (AUDIO.match(src) or SITE_AUDIO.match(src)): raise ValueError('还没上传歌曲文件')
+    d['src'] = src
+    return d
+
+
+CLEAN = {'food': clean_food, 'street': clean_street, 'music': clean_music}
+
+
 def items_rows(public):
     with db() as c: rows = c.execute('SELECT * FROM items ORDER BY updated DESC').fetchall()
-    out = {'food': [], 'street': []}
+    out = {'food': [], 'street': [], 'music': []}
     for r in rows:
         if r['kind'] not in out: continue
         data = json.loads(r['data'] or '{}')
-        if public: out[r['kind']].append({'id': r['id'], 'hidden': True} if r['hidden'] or not data else {**data, 'id': r['id']})
+        if public:
+            if r['hidden'] or not data: out[r['kind']].append({'id': r['id'], 'hidden': True}); continue
+            rec = {**data, 'id': r['id']}
+            if r['kind'] == 'music' and not r['builtin']:   # 新上传的歌：上传那天（北京时间），网站月历上按天标出来
+                rec['added'] = time.strftime('%Y-%m-%d', time.gmtime((r['created'] or 0) + 8 * 3600))
+            out[r['kind']].append(rec)
         else: out[r['kind']].append({'id': r['id'], 'data': data, 'hidden': bool(r['hidden']), 'builtin': bool(r['builtin']), 'updated': r['updated']})
     return out
 
@@ -315,18 +346,18 @@ def items_rows(public):
 def save_item(o):
     kind = o.get('kind')
     if kind not in ITEM_ID: raise ValueError('不知道是哪一类')
-    builtin = bool(o.get('builtin')); iid = clip(o.get('id'), 16)
+    builtin = bool(o.get('builtin')); iid = clip(o.get('id'), 41)
     if builtin and not ITEM_ID[kind].match(iid): raise ValueError('编号不对')
     if not ITEM_ID[kind].match(iid): iid = kind[0] + 'x' + secrets.token_hex(4)
     hidden = bool(o.get('hidden'))
-    data = {} if hidden and builtin and not o.get('data') else (clean_food if kind == 'food' else clean_street)(o.get('data') or {})
+    data = {} if hidden and builtin and not o.get('data') else CLEAN[kind](o.get('data') or {})
     now = int(time.time())
     with LOCK, db() as c:
         old = c.execute('SELECT created, data, builtin FROM items WHERE kind=? AND id=?', (kind, iid)).fetchone()
         c.execute('REPLACE INTO items (kind,id,data,hidden,builtin,created,updated) VALUES (?,?,?,?,?,?,?)',
                   (kind, iid, json.dumps(data, ensure_ascii=False), 1 if hidden else 0, 1 if (builtin or (old and old['builtin'])) else 0,
                    old['created'] if old else now, now))
-        if old: drop_unused(c, json.loads(old['data'] or '{}').get('photos') or [])
+        if old: drop_unused(c, files_of(json.loads(old['data'] or '{}')))
     return iid
 
 
@@ -334,7 +365,7 @@ def delete_item(kind, iid):
     with LOCK, db() as c:
         row = c.execute('SELECT data FROM items WHERE kind=? AND id=?', (kind, iid)).fetchone()
         c.execute('DELETE FROM items WHERE kind=? AND id=?', (kind, iid))
-        drop_unused(c, json.loads(row['data'] or '{}').get('photos') or [] if row else [])
+        drop_unused(c, files_of(json.loads(row['data'] or '{}')) if row else [])
 
 
 # ------------------------------------------------------------------ 登录凭证
@@ -383,9 +414,35 @@ class H(BaseHTTPRequestHandler):
         self.send_header('X-Content-Type-Options', 'nosniff'); self.end_headers()
         if body and self.command != 'HEAD': self.wfile.write(body)
 
+    def send_file(self, f, ctype):
+        """发上传的文件；支持 Range（音频拖进度条、iPhone 播放都要用）"""
+        if not os.path.isfile(f): return self.send(404, {'error': 'not found'})
+        size = os.path.getsize(f); start, end, code = 0, size - 1, 200
+        m = re.match(r'^bytes=(\d*)-(\d*)$', (self.headers.get('Range') or '').strip())
+        if m and (m.group(1) or m.group(2)):
+            if m.group(1): start = int(m.group(1)); end = min(int(m.group(2)), size - 1) if m.group(2) else size - 1
+            else: start = max(0, size - int(m.group(2)))
+            if start > end or start >= size:
+                self.send_response(416); self.send_header('Content-Range', f'bytes */{size}'); self.send_header('Content-Length', '0'); self.end_headers(); return
+            code = 206
+        self.send_response(code)
+        self.send_header('Content-Type', ctype); self.send_header('Accept-Ranges', 'bytes')
+        self.send_header('Content-Length', str(end - start + 1)); self.send_header('Cache-Control', 'public, max-age=2592000, immutable')
+        if code == 206: self.send_header('Content-Range', f'bytes {start}-{end}/{size}')
+        self.end_headers()
+        if self.command == 'HEAD': return
+        try:
+            with open(f, 'rb') as fh:
+                fh.seek(start); left = end - start + 1
+                while left > 0:
+                    chunk = fh.read(min(262144, left))
+                    if not chunk: break
+                    self.wfile.write(chunk); left -= len(chunk)
+        except (BrokenPipeError, ConnectionResetError): pass
+
     def body(self, limit):
         n = int(self.headers.get('Content-Length') or 0)
-        if n > limit: raise ValueError('太大了')
+        if n > limit: raise ValueError(f'太大了（最大 {limit // 1048576} MB）')
         return self.rfile.read(n) if n else b''
 
     def authed(self):
@@ -397,11 +454,8 @@ class H(BaseHTTPRequestHandler):
         if p == '/api/diary':   # ?all=1：日记 + 后台加的店和扫街照片一起回（旧版网页不带参数，只要日记数组）
             if 'all=1' in u.query: return self.send(200, {'diary': diary_rows(True), **items_rows(True)}, cache='no-cache')
             return self.send(200, diary_rows(True), cache='no-cache')
-        m = re.match(r'^/api/u/([0-9a-f]{20}(?:-s)?\.jpg)$', p)
-        if m:
-            f = os.path.join(UPLOADS, m.group(1))
-            if not os.path.isfile(f): return self.send(404, {'error': 'not found'})
-            return self.send(200, body=open(f, 'rb').read(), ctype='image/jpeg', cache='public, max-age=2592000, immutable')
+        m = re.match(r'^/api/u/([0-9a-f]{20}(?:-s)?\.(jpg|mp3|m4a))$', p)
+        if m: return self.send_file(os.path.join(UPLOADS, m.group(1)), {'jpg': 'image/jpeg', 'mp3': 'audio/mpeg', 'm4a': 'audio/mp4'}[m.group(2)])
         if not p.startswith('/api/admin/'): return self.send(404, {'error': 'not found'})
         if not self.authed(): return self.send(401, {'error': '请先登录'})
         if p == '/api/admin/stats':
@@ -410,6 +464,11 @@ class H(BaseHTTPRequestHandler):
         if p == '/api/admin/items': return self.send(200, items_rows(False))
         if p == '/api/admin/ping': return self.send(200, {'ok': True})
         return self.send(404, {'error': 'not found'})
+
+    def do_HEAD(self):
+        m = re.match(r'^/api/u/([0-9a-f]{20}(?:-s)?\.(jpg|mp3|m4a))$', urlparse(self.path).path)
+        if m: return self.send_file(os.path.join(UPLOADS, m.group(1)), {'jpg': 'image/jpeg', 'mp3': 'audio/mpeg', 'm4a': 'audio/mp4'}[m.group(2)])
+        return self.send(404)
 
     def do_POST(self):
         p = urlparse(self.path).path; ip = self.ip()
@@ -440,6 +499,14 @@ class H(BaseHTTPRequestHandler):
                 name = hashlib.sha256(data).hexdigest()[:20] + ('-s' if 'thumb=1' in self.path else '') + '.jpg'
                 with open(os.path.join(UPLOADS, name), 'wb') as f: f.write(data)
                 return self.send(200, {'src': '/api/u/' + name})
+            if p == '/api/admin/upload-audio':   # 背景音乐：mp3，或 m4a / 只有声音的 mp4（AAC），最大 60 MB
+                data = self.body(60 * 1024 * 1024)
+                if data[:3] == b'ID3' or (len(data) > 1 and data[0] == 0xFF and data[1] & 0xE0 == 0xE0): ext = 'mp3'
+                elif data[4:8] == b'ftyp': ext = 'm4a'
+                else: return self.send(400, {'error': '只收 MP3 或 M4A / MP4 音频'})
+                name = hashlib.sha256(data).hexdigest()[:20] + '.' + ext
+                with open(os.path.join(UPLOADS, name), 'wb') as f: f.write(data)
+                return self.send(200, {'src': '/api/u/' + name, 'size': len(data)})
             return self.send(404, {'error': 'not found'})
         except (ValueError, TypeError) as e:
             return self.send(400, {'error': str(e) if isinstance(e, ValueError) and str(e) else '格式不对'})
@@ -449,7 +516,7 @@ class H(BaseHTTPRequestHandler):
         if not self.authed(): return self.send(401, {'error': '请先登录'})
         m = re.match(r'^/api/admin/diary/(d[0-9a-z]{4,22})$', p)
         if m: delete_diary(m.group(1)); return self.send(200, {'ok': True})
-        m = re.match(r'^/api/admin/items/(food|street)/([fs][0-9a-z]{1,15})$', p)
+        m = re.match(r'^/api/admin/items/(food|street|music)/([fsm][0-9a-z]{1,40})$', p)
         if m: delete_item(m.group(1), m.group(2)); return self.send(200, {'ok': True})
         return self.send(404, {'error': 'not found'})
 

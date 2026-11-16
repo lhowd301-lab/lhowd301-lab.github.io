@@ -327,6 +327,17 @@ button.seg:hover,button.seg[aria-expanded="true"]{background:var(--ice-2)}
 .cal-day.today.has{background:var(--blue);color:var(--white);box-shadow:inset 0 0 0 2px #52C98B}
 .cal-day.today.has::after{background:#7BE0A8}
 .cal-day em{position:absolute;top:1px;right:3px;font-style:normal;font-size:9px;line-height:13px;min-width:13px;padding:0 3px;border-radius:999px;background:#52C98B;color:#0B3B22;font-family:var(--f-mono)}
+.cal-song{position:absolute;top:0;left:3px;font-style:normal;font-size:10px;line-height:13px;color:#7C3AED}
+.cal-day.today .cal-song{color:#E9D5FF}
+.cal-day.song:not(.has){border:0;cursor:pointer;background:color-mix(in srgb,#7C3AED 9%,transparent)}
+.cal-day.song:not(.has):hover{background:color-mix(in srgb,#7C3AED 18%,transparent)}
+.cal-day.today.song:not(.has){background:var(--blue)}
+.cal-key.song{background:color-mix(in srgb,#7C3AED 12%,transparent);box-shadow:inset 0 0 0 1.5px #A78BFA;font-style:normal;font-size:8px;line-height:10px;text-align:center;color:#7C3AED}
+.cal-songs{margin-top:8px;padding:10px 10px 6px;border-radius:12px;background:color-mix(in srgb,#7C3AED 7%,transparent)}
+.cal-songs h4{margin:0 0 4px;font-size:12px;font-weight:500;color:#6D28D9;display:flex;align-items:center;gap:6px}
+.cal-songs h4 i{font-style:normal}
+.cal-songs .cal-d:hover{background:color-mix(in srgb,#7C3AED 14%,transparent)}
+.cal-songs .cal-d .mono{color:#7C3AED}
 .cal-key{display:inline-block;width:10px;height:10px;border-radius:3px;background:color-mix(in srgb,#52C98B 45%,transparent);box-shadow:inset 0 0 0 1.5px #52C98B;margin-right:6px;vertical-align:-1px}
 .cal-diary{margin-top:10px;padding:10px 10px 6px;border-radius:12px;background:color-mix(in srgb,#52C98B 10%,transparent)}
 .cal-diary h4{margin:0 0 4px;font-size:12px;font-weight:500;color:#166534;display:flex;align-items:center;gap:6px}
@@ -387,6 +398,7 @@ button.seg:hover,button.seg[aria-expanded="true"]{background:var(--ice-2)}
 .m-artists button[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:var(--white)}
 .m-artists button[aria-pressed="true"] i{color:rgba(255,255,255,.8)}
 .m-artists button:last-child{margin-right:24px}
+.trk-new{font-style:normal;font-size:10px;font-weight:600;color:#7C3AED;background:color-mix(in srgb,#7C3AED 12%,transparent);border-radius:4px;padding:0 4px;margin-left:2px;vertical-align:1px}
 .trk-h{display:flex;align-items:center;justify-content:space-between;padding:8px 8px 2px;font-size:11px;letter-spacing:.08em;color:var(--ink-3);position:sticky;top:0;background:var(--white);z-index:1}
 .trk-h button{border:0;background:none;color:var(--blue);font-size:11px;padding:0 2px;letter-spacing:0}
 .trk{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:8px;align-items:center;width:100%;padding:7px 8px;border:0;border-radius:10px;background:transparent;text-align:left}
@@ -1945,7 +1957,8 @@ const SITE = {
   diary: [],
 
   // BGM —— src：歌曲文件（mp3）的地址，填了就能在页面里直接播放；link：没有文件时点击跳转收听的页面
-  // 背景音乐：播放器里按歌手排（by 是归到哪位歌手名下，不写就用 artist），可以按歌手筛选
+  // 背景音乐：播放器里按歌手排（by 是归到哪位歌手名下，不写就用 artist），可以按歌手筛选；added 是加进来的日子（月历上标出来）。
+  // 后台（/admin）也能上传新歌、改歌名、藏起来，见 Live.merge('music')
   music: [
     { title: '任我行', artist: '陈奕迅', src: 'music/renwoxing.mp3' },
     { title: '神奇的糊涂魔药', artist: '林家谦', src: 'music/shenqi.mp3' },
@@ -1964,50 +1977,50 @@ const SITE = {
     { title: '夜阑人静', artist: 'Moon Tang', src: 'music/yelanrenjing.mp3' },
     { title: '老派约会之必要', artist: 'MC 张天赋', src: 'music/laopaiyuehui.mp3' },
     { title: '月亮代表我', artist: 'Moon Tang', src: 'music/yueliangdaibiaowo.mp3' },
-    { title: '皇后大道东', artist: '罗大佑', src: 'music/huanghoudadaodong.mp3' },
-    { title: '首都', artist: '罗大佑', src: 'music/shoudu.mp3' },
-    { title: '飞车', artist: '罗大佑', src: 'music/feiche.mp3' },
-    { title: '一个眼神', artist: 'MLA', src: 'music/yigeyanshen.mp3' },
-    { title: 'Honest', artist: 'Gareth.T feat. Moon Tang', by: 'Gareth.T', src: 'music/honest.mp3' },
-    { title: '土瓜湾情歌', artist: 'MLA', src: 'music/tuguawanqingge.mp3' },
-    { title: '词不达意', artist: '林忆莲', src: 'music/cibudayi.mp3' },
-    { title: '梦中人', artist: '王菲', src: 'music/mengzhongren.mp3' },
-    { title: '百年孤寂', artist: '王菲', src: 'music/bainianguji.mp3' },
-    { title: '泥菩萨', artist: 'Gareth.T', src: 'music/nipusa.mp3' },
-    { title: '劲浪漫 超温馨', artist: 'Gareth.T', src: 'music/jinglangman.mp3' },
-    { title: '用背脊唱情歌', artist: 'Gareth.T', src: 'music/yongbeijichangqingge.mp3' },
-    { title: '程艾影', artist: '赵雷', src: 'music/chengaiying.mp3' },
-    { title: '踊り子', artist: 'Vaundy', src: 'music/odoriko.mp3' },
-    { title: '3 AM', artist: 'AGA', src: 'music/3am.mp3' },
-    { title: '电台情歌', artist: '莫文蔚', src: 'music/diantaiqingge.mp3' },
-    { title: '爱爱爱', artist: '方大同', src: 'music/aiaiai.mp3' },
-    { title: '长城', artist: 'Beyond', src: 'music/changcheng.mp3' },
-    { title: '早班火车', artist: 'Beyond', src: 'music/zaobanhuoche.mp3' },
-    { title: '小小虫', artist: '方大同', src: 'music/xiaoxiaochong.mp3' },
-    { title: '芳草地', artist: '陈粒', src: 'music/fangcaodi.mp3' },
-    { title: '冬天一个游', artist: 'Gordon Flanders', src: 'music/dongtianyigeyou.mp3' },
-    { title: '东方之珠', artist: '罗大佑', src: 'music/dongfangzhizhu.mp3' },
-    { title: 'Dear Moon', artist: 'Moon Tang', src: 'music/dearmoon.mp3' },
-    { title: '小步舞曲', artist: '陈绮贞', src: 'music/xiaobuwuqu.mp3' },
-    { title: '走马', artist: '陈粒', src: 'music/zouma.mp3' },
-    { title: '历历万乡', artist: '陈粒', src: 'music/liliwanxiang.mp3' },
-    { title: '太聪明', artist: '陈绮贞', src: 'music/taicongming.mp3' },
-    { title: '100种生活', artist: '卢广仲', src: 'music/100zhongshenghuo.mp3' },
-    { title: '同花顺', artist: '林倛玉', src: 'music/tonghuashun.mp3' },
-    { title: '鱼仔', artist: '卢广仲', src: 'music/yuzai.mp3' },
-    { title: '几分之几', artist: '卢广仲', src: 'music/jifenzhiji.mp3' },
-    { title: '午后红茶', artist: '张国荣', src: 'music/wuhouhongcha.mp3' },
-    { title: '塞勒斯的爱', artist: '张敬轩', src: 'music/sailesideai.mp3' },
-    { title: '酷爱', artist: '张敬轩', src: 'music/kuai.mp3' },
-    { title: '春秋', artist: '张敬轩', src: 'music/chunqiu.mp3' },
-    { title: '一场游戏一场梦', artist: '王杰', src: 'music/yichangyouxiyichangmeng.mp3' },
-    { title: '是否我真的一无所有', artist: '王杰', src: 'music/shifouwozhendeyiwusuoyou.mp3' },
-    { title: '不浪漫罪名', artist: '王杰', src: 'music/bulangmanzuiming.mp3' },
-    { title: '安妮', artist: '王杰', src: 'music/anni.mp3' },
-    { title: '我是真的爱上你', artist: '王杰', src: 'music/woshizhendeaishangni.mp3' },
-    { title: '少女心事', artist: '张国荣', src: 'music/shaonvxinshi.mp3' },
-    { title: '芳华绝代', artist: '梅艳芳 & 张国荣', by: '张国荣', src: 'music/fanghuajuedai.mp3' },
-    { title: '春夏秋冬', artist: '张国荣', src: 'music/chunxiaqiudong.mp3' },
+    { title: '皇后大道东', artist: '罗大佑', src: 'music/huanghoudadaodong.mp3', added: '2026-11-15' },
+    { title: '首都', artist: '罗大佑', src: 'music/shoudu.mp3', added: '2026-11-15' },
+    { title: '飞车', artist: '罗大佑', src: 'music/feiche.mp3', added: '2026-11-15' },
+    { title: '一个眼神', artist: 'MLA', src: 'music/yigeyanshen.mp3', added: '2026-11-15' },
+    { title: 'Honest', artist: 'Gareth.T feat. Moon Tang', by: 'Gareth.T', src: 'music/honest.mp3', added: '2026-11-15' },
+    { title: '土瓜湾情歌', artist: 'MLA', src: 'music/tuguawanqingge.mp3', added: '2026-11-15' },
+    { title: '词不达意', artist: '林忆莲', src: 'music/cibudayi.mp3', added: '2026-11-15' },
+    { title: '梦中人', artist: '王菲', src: 'music/mengzhongren.mp3', added: '2026-11-15' },
+    { title: '百年孤寂', artist: '王菲', src: 'music/bainianguji.mp3', added: '2026-11-15' },
+    { title: '泥菩萨', artist: 'Gareth.T', src: 'music/nipusa.mp3', added: '2026-11-15' },
+    { title: '劲浪漫 超温馨', artist: 'Gareth.T', src: 'music/jinglangman.mp3', added: '2026-11-15' },
+    { title: '用背脊唱情歌', artist: 'Gareth.T', src: 'music/yongbeijichangqingge.mp3', added: '2026-11-15' },
+    { title: '程艾影', artist: '赵雷', src: 'music/chengaiying.mp3', added: '2026-11-15' },
+    { title: '踊り子', artist: 'Vaundy', src: 'music/odoriko.mp3', added: '2026-11-15' },
+    { title: '3 AM', artist: 'AGA', src: 'music/3am.mp3', added: '2026-11-15' },
+    { title: '电台情歌', artist: '莫文蔚', src: 'music/diantaiqingge.mp3', added: '2026-11-15' },
+    { title: '爱爱爱', artist: '方大同', src: 'music/aiaiai.mp3', added: '2026-11-15' },
+    { title: '长城', artist: 'Beyond', src: 'music/changcheng.mp3', added: '2026-11-15' },
+    { title: '早班火车', artist: 'Beyond', src: 'music/zaobanhuoche.mp3', added: '2026-11-15' },
+    { title: '小小虫', artist: '方大同', src: 'music/xiaoxiaochong.mp3', added: '2026-11-15' },
+    { title: '芳草地', artist: '陈粒', src: 'music/fangcaodi.mp3', added: '2026-11-15' },
+    { title: '冬天一个游', artist: 'Gordon Flanders', src: 'music/dongtianyigeyou.mp3', added: '2026-11-15' },
+    { title: '东方之珠', artist: '罗大佑', src: 'music/dongfangzhizhu.mp3', added: '2026-11-15' },
+    { title: 'Dear Moon', artist: 'Moon Tang', src: 'music/dearmoon.mp3', added: '2026-11-15' },
+    { title: '小步舞曲', artist: '陈绮贞', src: 'music/xiaobuwuqu.mp3', added: '2026-11-15' },
+    { title: '走马', artist: '陈粒', src: 'music/zouma.mp3', added: '2026-11-15' },
+    { title: '历历万乡', artist: '陈粒', src: 'music/liliwanxiang.mp3', added: '2026-11-15' },
+    { title: '太聪明', artist: '陈绮贞', src: 'music/taicongming.mp3', added: '2026-11-15' },
+    { title: '100种生活', artist: '卢广仲', src: 'music/100zhongshenghuo.mp3', added: '2026-11-15' },
+    { title: '同花顺', artist: '林倛玉', src: 'music/tonghuashun.mp3', added: '2026-11-15' },
+    { title: '鱼仔', artist: '卢广仲', src: 'music/yuzai.mp3', added: '2026-11-15' },
+    { title: '几分之几', artist: '卢广仲', src: 'music/jifenzhiji.mp3', added: '2026-11-15' },
+    { title: '午后红茶', artist: '张国荣', src: 'music/wuhouhongcha.mp3', added: '2026-11-15' },
+    { title: '塞勒斯的爱', artist: '张敬轩', src: 'music/sailesideai.mp3', added: '2026-11-15' },
+    { title: '酷爱', artist: '张敬轩', src: 'music/kuai.mp3', added: '2026-11-15' },
+    { title: '春秋', artist: '张敬轩', src: 'music/chunqiu.mp3', added: '2026-11-15' },
+    { title: '一场游戏一场梦', artist: '王杰', src: 'music/yichangyouxiyichangmeng.mp3', added: '2026-11-15' },
+    { title: '是否我真的一无所有', artist: '王杰', src: 'music/shifouwozhendeyiwusuoyou.mp3', added: '2026-11-15' },
+    { title: '不浪漫罪名', artist: '王杰', src: 'music/bulangmanzuiming.mp3', added: '2026-11-15' },
+    { title: '安妮', artist: '王杰', src: 'music/anni.mp3', added: '2026-11-15' },
+    { title: '我是真的爱上你', artist: '王杰', src: 'music/woshizhendeaishangni.mp3', added: '2026-11-15' },
+    { title: '少女心事', artist: '张国荣', src: 'music/shaonvxinshi.mp3', added: '2026-11-15' },
+    { title: '芳华绝代', artist: '梅艳芳 & 张国荣', by: '张国荣', src: 'music/fanghuajuedai.mp3', added: '2026-11-15' },
+    { title: '春夏秋冬', artist: '张国荣', src: 'music/chunxiaqiudong.mp3', added: '2026-11-15' },
   ],
 };
 </script>
@@ -2152,8 +2165,14 @@ function pyInitial(str) {
   let k = -1; for (let i = 0; i < B.length && PY_COLL.compare(c, B[i]) >= 0; i++) k = i;
   return k >= 0 ? L[k] : '~';
 }
-{ const ord = new Map(SITE.music.map((m, i) => [m, i])), cmp = PY_COLL ? PY_COLL.compare : (a, b) => a.localeCompare(b);
-  SITE.music.sort((a, b) => { const A = songBy(a), B = songBy(b); return A === B ? ord.get(a) - ord.get(b) : pyInitial(A).localeCompare(pyInitial(B)) || cmp(A, B); }); }
+// 每首歌的编号：m + 文件名（music/yuzai.mp3 → myuzai），后台改网站自带的歌时用它对上
+const musicId = (src) => 'm' + String(src || '').split('/').pop().replace(/\.[^.]+$/, '').toLowerCase().replace(/[^0-9a-z]/g, '').slice(0, 40);
+SITE.music.forEach((m) => { if (!m.id) m.id = musicId(m.src); });
+function sortMusic() {
+  const ord = new Map(SITE.music.map((m, i) => [m, i])), cmp = PY_COLL ? PY_COLL.compare : (a, b) => a.localeCompare(b);
+  SITE.music.sort((a, b) => { const A = songBy(a), B = songBy(b); return A === B ? ord.get(a) - ord.get(b) : pyInitial(A).localeCompare(pyInitial(B)) || cmp(A, B); });
+}
+sortMusic();
 SITE.street.forEach((s) => s.photos.forEach((p, i) => { if (!p.src) { p.src = photoArt(hashStr(s.id + i), p.cap); p.placeholder = true; } }));
 // 大湾区以外的扫街只标到城市：没写坐标的放在城市中心附近，同一座城市的几组照片绕着中心排开
 { const n = {}; SITE.street.forEach((s) => { const c = SITE.cities.find((x) => x.id === s.city); if (s.lnglat || !c || !c.far) return; const k = (n[c.id] = (n[c.id] || 0) + 1) - 1, a = k * 2.4, r = k ? 0.014 * Math.sqrt(k) : 0; s.lnglat = [+(c.center[0] + r * Math.cos(a)).toFixed(5), +(c.center[1] + r * Math.sin(a) * 0.92).toFixed(5)]; s.approx = true; }); }
@@ -2215,6 +2234,7 @@ const Live = {
         touched.push('diary'); CalBadge.update();
       }
       if (!Array.isArray(d)) for (const k of ['food', 'street']) if (this.merge(k, d[k] || [])) touched.push(k);
+      if (!Array.isArray(d) && (d.music || []).length) this.music(d.music);
       if (!touched.length) return;
       for (const k of touched) { markers[k].forEach((x) => x.m.remove()); markers[k] = []; }
       if (stackPop) { stackPop.remove(); stackPop = null; }
@@ -2222,6 +2242,22 @@ const Live = {
       renderCities();
       if (!$('#calPop').hidden) renderCal();
     }).catch(() => {});
+  },
+  // 背景音乐：后台加的歌、改过 / 藏起来的网站自带的歌；合进来以后重新按歌手排，正在放的那首接着放
+  music(recs) {
+    const cur = Player.idx >= 0 ? SITE.music[Player.idx].id : null, L = SITE.music;
+    for (const r of recs) {
+      const i = L.findIndex((x) => x.id === r.id);
+      if (r.hidden) { if (i >= 0) L.splice(i, 1); continue; }
+      const it = { ...r, live: true };
+      if (!it.added && i >= 0 && L[i].added) it.added = L[i].added;
+      if (i >= 0) L[i] = it; else L.push(it);
+    }
+    sortMusic();
+    Player.idx = cur ? L.findIndex((x) => x.id === cur) : -1;
+    if (Player.by && !L.some((m) => songBy(m) === Player.by)) Player.by = '';
+    if (!$('#musicPop').hidden) renderMusic();
+    if (!$('#calPop').hidden) renderCal();
   },
   merge(kind, recs) {
     if (!recs.length) return false;
@@ -6279,8 +6315,9 @@ function moonSVG(phase, size = 26) {
 }
 function renderCal() {
   const { y, m } = cal; const first = new Date(y, m, 1); const start = (first.getDay() + 6) % 7; const days = new Date(y, m + 1, 0).getDate();
-  const today = new Date(); const byDay = {};
+  const today = new Date(); const byDay = {}, songDay = {};
   SITE.diary.forEach((d) => { if (d.date) (byDay[d.date] = byDay[d.date] || []).push(d); });
+  SITE.music.forEach((s) => { if (s.added) (songDay[s.added] = songDay[s.added] || []).push(s); });   // 哪天加了哪些歌（按天算，不是每首一个记号）
   let cells = ['一', '二', '三', '四', '五', '六', '日'].map((d) => `<span class="dow">${d}</span>`).join('');
   const prevDays = new Date(y, m, 0).getDate();
   for (let i = 0; i < start; i++) cells += `<span class="cal-day muted">${prevDays - start + 1 + i}</span>`;
@@ -6288,23 +6325,30 @@ function renderCal() {
     const dt = new Date(y, m, d); const l = lunar(dt);
     const iso = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
     const isT = dt.toDateString() === today.toDateString();
-    const dd = byDay[iso], inner = `${d}<small>${l ? (l.first ? l.month : l.day) : ''}</small>`, cls = `cal-day${isT ? ' today' : ''}${dd ? ' has' : ''}${l && l.first ? ' term' : ''}`;
-    cells += dd ? `<button type="button" class="${cls}" data-day="${iso}" title="${esc(dd.map((x) => x.title).join('、'))}" aria-label="${m + 1}月${d}日写了 ${dd.length} 篇日记：${esc(dd.map((x) => x.title).join('、'))}">${inner}${dd.length > 1 ? `<em>${dd.length}</em>` : ''}</button>`
+    const dd = byDay[iso], sd = songDay[iso], note = sd ? '<i class="cal-song" aria-hidden="true">♪</i>' : '';
+    const inner = `${d}<small>${l ? (l.first ? l.month : l.day) : ''}</small>`, cls = `cal-day${isT ? ' today' : ''}${dd ? ' has' : ''}${sd ? ' song' : ''}${l && l.first ? ' term' : ''}`;
+    const songTxt = sd ? `加了 ${sd.length} 首歌：${sd.map((x) => x.title).join('、')}` : '';
+    cells += dd ? `<button type="button" class="${cls}" data-day="${iso}" title="${esc(dd.map((x) => x.title).join('、') + (sd ? '\n♪ ' + songTxt : ''))}" aria-label="${m + 1}月${d}日写了 ${dd.length} 篇日记：${esc(dd.map((x) => x.title).join('、'))}${sd ? '；' + esc(songTxt) : ''}">${inner}${dd.length > 1 ? `<em>${dd.length}</em>` : ''}${note}</button>`
+      : sd ? `<button type="button" class="${cls}" data-songs="${iso}" title="${esc(songTxt)}" aria-label="${m + 1}月${d}日${esc(songTxt)}">${inner}${note}</button>`
       : `<span class="${cls}">${inner}</span>`;
   }
   // 这个月写的日记：月历下面列出来，点一下飞到写下它的地方
   const mon = `${y}-${String(m + 1).padStart(2, '0')}`;
   const inMonth = SITE.diary.filter((d) => d.date && d.date.startsWith(mon)).sort((a, b) => b.date.localeCompare(a.date));
   const monList = inMonth.length ? `<div class="cal-diary"><h4><i></i>这个月写了 <b class="mono">${inMonth.length}</b> 篇日记</h4>${inMonth.slice(0, 6).map((d) => `<button type="button" class="cal-d" data-id="${d.id}"><span class="mono">${d.date.slice(8)}日</span><span>${esc(d.title)}</span>${d.place ? `<small>${esc(d.place)}</small>` : ''}</button>`).join('')}${inMonth.length > 6 ? `<button type="button" class="cal-more" data-more>还有 ${inMonth.length - 6} 篇 · 打开日记</button>` : ''}</div>` : '';
+  // 这个月加的新歌：一天一行，写这天加了几首、是哪几首；点一下打开背景音乐
+  const songDays = Object.keys(songDay).filter((k) => k.startsWith(mon)).sort().reverse();
+  const songList = songDays.length ? `<div class="cal-songs"><h4><i aria-hidden="true">♪</i>这个月加了 <b class="mono">${songDays.reduce((n, k) => n + songDay[k].length, 0)}</b> 首新歌</h4>${songDays.slice(0, 5).map((k) => `<button type="button" class="cal-d" data-songs="${k}"><span class="mono">${k.slice(8)}日</span><span>加了 ${songDay[k].length} 首</span><small>${esc(songDay[k].map((x) => x.title).join('、'))}</small></button>`).join('')}</div>` : '';
   const mi = moonInfo(new Date());
   const tl = lunar(today);
   $('#calPop').innerHTML = `<div class="pop-head"><button class="icon-btn" id="calPrev" aria-label="上个月">${ICONS.prev}</button><h3><span class="mono">${y}</span> 年 <span class="mono">${m + 1}</span> 月</h3><button class="icon-btn" id="calNext" aria-label="下个月">${ICONS.next}</button></div>
-    <div class="cal-grid">${cells}</div>${monList}
-    <div class="cal-foot">${moonSVG(mi.phase)}<div>今天${tl ? ` 农历${tl.month}${tl.day}` : ''} · ${mi.name}，月面照亮 <span class="mono">${Math.round(mi.illum * 100)}%</span><br><span style="color:var(--ink-3)"><i class="cal-key"></i>浅绿色的日子写了日记，点一下就能看</span></div></div>`;
+    <div class="cal-grid">${cells}</div>${monList}${songList}
+    <div class="cal-foot">${moonSVG(mi.phase)}<div>今天${tl ? ` 农历${tl.month}${tl.day}` : ''} · ${mi.name}，月面照亮 <span class="mono">${Math.round(mi.illum * 100)}%</span><br><span style="color:var(--ink-3)"><i class="cal-key"></i>浅绿色的日子写了日记，点一下就能看${Object.keys(songDay).length ? '<br><i class="cal-key song">♪</i>这天加了新歌' : ''}</span></div></div>`;
   const openD = (id) => { closePops(); openDetail('diary', id); };
   $('#calPop').querySelectorAll('[data-day]').forEach((b) => b.addEventListener('click', () => openD(byDay[b.dataset.day][0].id)));
   $('#calPop').querySelectorAll('.cal-d').forEach((b) => b.addEventListener('click', () => openD(b.dataset.id)));
   $('#calPop').querySelector('[data-more]')?.addEventListener('click', () => { closePops(); setTimeout(() => $('#diaryBtn').click(), 0); });
+  $('#calPop').querySelectorAll('[data-songs]').forEach((b) => b.addEventListener('click', () => { closePops(); setTimeout(() => $('#musicBtn').click(), 0); }));
   CalBadge.seen();
   $('#calPrev').onclick = () => { cal.m--; if (cal.m < 0) { cal.m = 11; cal.y--; } renderCal(); };
   $('#calNext').onclick = () => { cal.m++; if (cal.m > 11) { cal.m = 0; cal.y++; } renderCal(); };
@@ -6416,7 +6460,8 @@ function renderMusic() {
       SITE.music.forEach((m, i) => {
         const by = songBy(m); if (Player.by && by !== Player.by) return;
         if (!Player.by && by !== last) { html += `<li class="trk-h"><span>${esc(by)}</span><button type="button" data-by="${esc(by)}">只听 TA</button></li>`; last = by; }
-        const inner = `<span class="n">${String(++n).padStart(2, '0')}</span><span style="min-width:0;display:flex;flex-direction:column"><b>${esc(m.title)}</b>${m.artist !== by ? `<small>${esc(m.artist)}</small>` : ''}</span>`;   // 歌手名在小标题 / 标签上已经有了，只有合唱等不一样时才另写
+        const fresh = m.added && (Date.now() - new Date(m.added + 'T00:00:00+08:00')) < 7 * 864e5;   // 最近 7 天加的歌标个「新」
+        const inner = `<span class="n">${String(++n).padStart(2, '0')}</span><span style="min-width:0;display:flex;flex-direction:column"><b>${esc(m.title)}${fresh ? ' <i class="trk-new">新</i>' : ''}</b>${m.artist !== by ? `<small>${esc(m.artist)}</small>` : ''}</span>`;   // 歌手名在小标题 / 标签上已经有了，只有合唱等不一样时才另写
         html += playable(m)
           ? `<li><button class="trk" data-i="${i}" aria-current="${i === Player.idx}">${inner}<span class="mono" style="font-size:10.5px;color:var(--ink-3)">${i === Player.idx && Player.playing ? '播放中' : ((/\.(\w{2,4})$/.exec(m.src) || [])[1] || '').toUpperCase()}</span></button></li>`
           : `<li><a class="trk" href="${esc(m.link || '#')}" target="_blank" rel="noopener">${inner}<span class="ext">去收听 ↗</span></a></li>`;

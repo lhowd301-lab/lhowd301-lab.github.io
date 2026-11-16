@@ -25,6 +25,25 @@ if [ -f /etc/systemd/system/bh-admin.service ]; then
 else
   echo "    （网站后台还没装：要用的话运行 sudo bash $D/admin-setup.sh）"
 fi
+# 后台转发允许传大一点的文件（背景音乐最大 60 MB）：把旧配置里的 client_max_body_size 10m 改成 64m（nginx 检查不通过就还原）
+NGX=$( [ -x /www/server/nginx/sbin/nginx ] && echo /www/server/nginx/sbin/nginx || command -v nginx || true )
+nchanged=()
+for f in /etc/nginx/sites-available/beyond-horizons* /etc/nginx/conf.d/beyond-horizons*.conf /www/server/panel/vhost/nginx/beyond-horizons*.conf; do
+  [ -f "$f" ] || continue
+  case "$f" in *.bak*) continue ;; esac
+  grep -q '127.0.0.1:8788.*client_max_body_size 10m' "$f" || continue
+  cp "$f" "$f.bak-size"
+  sed -i '/127.0.0.1:8788/ s/proxy_read_timeout 30s; client_max_body_size 10m;/proxy_read_timeout 120s; client_max_body_size 64m;/' "$f"
+  nchanged+=("$f")
+done
+if [ ${#nchanged[@]} -gt 0 ]; then
+  if [ -n "$NGX" ] && "$NGX" -t 2>/dev/null; then
+    systemctl reload nginx 2>/dev/null || "$NGX" -s reload
+    for f in "${nchanged[@]}"; do rm -f "$f.bak-size"; done; echo "    后台上传上限已改成 64 MB（可以传歌了）"
+  else
+    for f in "${nchanged[@]}"; do mv -f "$f.bak-size" "$f"; done; echo "    nginx 配置检查没通过，上传上限没改（截图发给我）"
+  fi
+fi
 # bh-apply 自己也换成最新版
 [ -f "$ROOT/server/apply.sh" ] && ! cmp -s "$ROOT/server/apply.sh" /usr/local/bin/bh-apply && install -m 755 "$ROOT/server/apply.sh" /usr/local/bin/bh-apply && echo "    bh-apply 已更新"
 exit 0
