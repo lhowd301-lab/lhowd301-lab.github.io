@@ -2277,6 +2277,9 @@ function blueprintArt(item, w = 640, h = 360) {
 }
 // BGM 按歌手排：中文名按拼音首字母和英文名混在一起排（Beyond、陈奕迅、Gareth.T、林家谦……），同一位歌手的歌挨在一起、保持原来的顺序
 const songBy = (m) => m.by || m.artist;
+// 合唱的歌：artist 里用 & / feat. / 、/ , 隔开的每一位歌手都算（歌单里有这位歌手的分组，这首歌就在那一组里也出现一次）
+const songArtists = (m) => [...new Set([songBy(m), ...String(m.artist || '').split(/\s*(?:&|＆|、|,|，|\/|\bfeat\.?|\bft\.?)\s*/i).map((x) => x.trim()).filter(Boolean)])];
+const songHas = (m, by) => songArtists(m).includes(by);
 const PY_COLL = (() => { try { return new Intl.Collator('zh-Hans-CN-u-co-pinyin'); } catch (e) { return null; } })();
 function pyInitial(str) {
   const c = String(str || '').trim().charAt(0);
@@ -6644,7 +6647,7 @@ const Player = {
   idx: -1, playing: false, ctx: null, master: null, nodes: [], timer: null, audio: null, vol: 0.6,
   by: (() => { try { const v = localStorage.getItem('bh-music-by') || ''; return SITE.music.some((m) => songBy(m) === v) ? v : ''; } catch (e) { return ''; } })(),   // 只听这位歌手（'' = 全部）
   setBy(v) { this.by = v; try { localStorage.setItem('bh-music-by', v); } catch (e) { /* storage blocked */ } renderMusic(); },
-  pool() { return SITE.music.map((m, i) => i).filter((i) => (SITE.music[i].src || SITE.music[i].synth) && (!this.by || songBy(SITE.music[i]) === this.by)); },
+  pool() { return SITE.music.map((m, i) => i).filter((i) => (SITE.music[i].src || SITE.music[i].synth) && (!this.by || songHas(SITE.music[i], this.by))); },
   ensureCtx() {
     if (this.ctx) return;
     const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
@@ -6720,7 +6723,8 @@ function renderMusic() {
   const playable = (m) => !!(m.synth || m.src); const anyPlayable = SITE.music.some(playable);
   const pop = $('#musicPop');
   pop.classList.toggle('playing', Player.playing);
-  const groups = []; SITE.music.forEach((m) => { const by = songBy(m), g = groups.find((x) => x[0] === by); if (g) g[1]++; else groups.push([by, 1]); });
+  const groups = []; SITE.music.forEach((m) => { const by = songBy(m); if (!groups.some((x) => x[0] === by)) groups.push([by, 0]); });
+  for (const g of groups) g[1] = SITE.music.filter((m) => songHas(m, g[0])).length;   // 合唱的歌两位歌手都算一首
   const artistChips = `<div class="m-artists" role="group" aria-label="按歌手选歌"><button type="button" data-by="" aria-pressed="${!Player.by}">全部 <i>${SITE.music.length}</i></button>${groups.map(([by, c]) => `<button type="button" data-by="${esc(by)}" aria-pressed="${Player.by === by}">${esc(by)} <i>${c}</i></button>`).join('')}</div>`;
   const keepX = pop.querySelector('.m-artists')?.scrollLeft || 0;
   pop.innerHTML = `<div class="pop-head"><h3>背景音乐</h3><span class="mono" style="font-size:12px;color:var(--ink-3)">${SITE.music.length} 首</span></div>
@@ -6729,16 +6733,19 @@ function renderMusic() {
     <div class="prog"><span class="mono" id="mCur">${fmtT(Player.audio ? Player.audio.currentTime : 0)}</span><input type="range" id="mProg" min="0" max="1000" step="1" value="${Player.audio && Player.audio.duration ? Math.round(Player.audio.currentTime / Player.audio.duration * 1000) : 0}" aria-label="播放进度"><span class="mono" id="mDur">${fmtT(Player.audio && Player.audio.duration ? Player.audio.duration : 0)}</span></div>
     ${artistChips}
     <ol class="tracks">${(() => {
-      let n = 0, last = null, html = '';
-      SITE.music.forEach((m, i) => {
-        const by = songBy(m); if (Player.by && by !== Player.by) return;
-        if (!Player.by && by !== last) { html += `<li class="trk-h"><span>${esc(by)}</span><button type="button" data-by="${esc(by)}">只听 TA</button></li>`; last = by; }
+      let html = '';
+      const row = (m, i, n, by) => {
         const fresh = m.added && (Date.now() - new Date(m.added + 'T00:00:00+08:00')) < 7 * 864e5;   // 最近 7 天加的歌标个「新」
-        const inner = `<span class="n">${String(++n).padStart(2, '0')}</span><span style="min-width:0;display:flex;flex-direction:column"><b>${esc(m.title)}${fresh ? ' <i class="trk-new">新</i>' : ''}</b>${m.artist !== by ? `<small>${esc(m.artist)}</small>` : ''}</span>`;   // 歌手名在小标题 / 标签上已经有了，只有合唱等不一样时才另写
+        const inner = `<span class="n">${String(n).padStart(2, '0')}</span><span style="min-width:0;display:flex;flex-direction:column"><b>${esc(m.title)}${fresh ? ' <i class="trk-new">新</i>' : ''}</b>${m.artist !== by ? `<small>${esc(m.artist)}</small>` : ''}</span>`;   // 歌手名在小标题 / 标签上已经有了，只有合唱等不一样时才另写
         html += playable(m)
           ? `<li><button class="trk" data-i="${i}" aria-current="${i === Player.idx}">${inner}<span class="mono" style="font-size:10.5px;color:var(--ink-3)">${i === Player.idx && Player.playing ? '播放中' : ((/\.(\w{2,4})$/.exec(m.src) || [])[1] || '').toUpperCase()}</span></button></li>`
           : `<li><a class="trk" href="${esc(m.link || '#')}" target="_blank" rel="noopener">${inner}<span class="ext">去收听 ↗</span></a></li>`;
-      });
+      };
+      // 选了歌手：只列 TA 的歌（合唱的也算）；全部：按歌手分组，合唱的歌在每位歌手的组里各出现一次
+      for (const [by] of Player.by ? [[Player.by]] : groups) {
+        if (!Player.by) html += `<li class="trk-h"><span>${esc(by)}</span><button type="button" data-by="${esc(by)}">只听 TA</button></li>`;
+        let n = 0; SITE.music.forEach((m, i) => { if (songHas(m, by)) row(m, i, ++n, by); });
+      }
       return html;
     })()}</ol>
     <p class="note">${anyPlayable ? '点一首歌开始播放。' : '点歌名会在新窗口打开 Spotify 收听。把歌曲的 mp3 文件放进网站后，就能在这里直接播放。'}</p>`;
