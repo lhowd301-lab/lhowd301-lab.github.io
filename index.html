@@ -875,6 +875,8 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
 .sky-news .ev-t b{display:block;font-size:13px;font-weight:600;color:#fff}
 .sky-news .ev-t b i{font-style:normal;font-size:10px;font-weight:500;color:#FDE68A;border:1px solid rgba(253,230,138,.5);border-radius:4px;padding:0 4px;margin-left:4px;vertical-align:1px}
 .sky-news .ev-t small{display:block;font-size:11.5px;line-height:1.5;color:#A9BEE6;margin-top:1px}
+.sky-news .ev-more{border:0;background:none;color:#8FB0EA;font-size:12px;padding:6px;text-align:left;cursor:pointer}
+.sky-news .ev-more:hover{color:#fff}
 .sky-news .nw{display:block;padding:7px 6px;border-radius:10px;color:inherit;text-decoration:none}
 .sky-news .nw:hover{background:rgba(147,197,253,.12)}
 .sky-news .nw b{display:block;font-size:13px;color:#fff;font-weight:600;line-height:1.45}
@@ -947,7 +949,7 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
   .sky-info{top:calc(118px + env(safe-area-inset-top,0px))}
   .sky-hint{top:calc(118px + env(safe-area-inset-top,0px));white-space:normal;width:max-content;max-width:calc(100% - 32px);text-align:center}
   .sky-tonight{left:max(16px,env(safe-area-inset-left,0px));width:auto;top:auto;bottom:calc(164px + env(safe-area-inset-bottom,0px));max-height:calc(100% - 300px)}
-  .sky-news{right:max(16px,env(safe-area-inset-right,0px));width:auto;bottom:calc(164px + env(safe-area-inset-bottom,0px));max-height:calc(100% - 300px)}
+  .sky-news{right:max(16px,env(safe-area-inset-right,0px));width:auto;bottom:calc(164px + env(safe-area-inset-bottom,0px));max-height:min(46%,calc(100% - 300px))}
   .sky-clock span{font-size:14px}
   .sky-toggles{margin-left:0;flex-basis:100%}
 }
@@ -6762,7 +6764,7 @@ function astroEvents(A, from, days = 60, lat = 23.13, lon = 113.3) {
 
 const Sky = {
   D: null, L: null, vi: 0, az: 93, alt: 22, fov: 100, t: new Date(), si: 3, paused: false,
-  opt: { lines: true, names: true, stars: true, mw: true, land: true, atm: true, lp: true, grid: false, tonight: false, news: !mq.matches },
+  opt: { lines: true, names: true, stars: true, mw: true, land: true, atm: true, lp: true, grid: false, tonight: false, news: true },   // 天象速报：一进「地球之外」就打开（手机上也是），访客关掉后这次就不再自动开
   sel: null, hits: [], raf: 0, last: 0, W: 0, H: 0, dpr: 1, bodies: [], bodyT: 0, moonPhase: 0, uiT: 0, built: false,
   fromMap: false, leaving: false, anim: null, os: 0,
   async open(opts = {}) {
@@ -6886,6 +6888,7 @@ const Sky = {
     });
     $('#skyNewsPanel').addEventListener('click', (e) => {
       const b = e.target.closest('[data-ev]'); if (b) this.jumpEvent(this._ev[+b.dataset.ev]);
+      if (e.target.closest('[data-ev-all]')) { this._evAll = true; this.renderNews(); }
       if (e.target.closest('[data-news-close]')) { this.opt.news = false; $('#skyToggles [data-opt="news"]').setAttribute('aria-pressed', 'false'); this.renderNews(); }
     });
     const cv = $('#skyCanvas'); this.cv = cv; this.ctx = cv.getContext('2d');
@@ -7271,10 +7274,12 @@ const Sky = {
     const now = new Date(), day = now.toDateString();
     if (!this._ev || this._evDay !== day) { this._evDay = day; this._ev = window.Astronomy ? astroEvents(Astronomy, new Date(now.getTime() - 6 * 3600e3), 60) : []; }
     const WD = '日一二三四五六', fmt = (d) => `${d.getMonth() + 1}月${d.getDate()}日 周${WD[d.getDay()]}`;
+    const lim = mq.matches ? 3 : 5;   // 先放最近几个（手机 3 个、电脑 5 个），下面紧接着就是天文新闻；点「展开」看全部
     const evs = this._ev.map((e, i) => {
+      if (i >= lim && !this._evAll) return '';
       const soon = e.t - now < 7 * 864e5, time = e.k === 'eclipse' || e.k === 'season' ? ' ' + hhmm(e.t) : '';
       return `<button class="ev${e.big ? ' big' : ''}${soon ? ' soon' : ''}" data-ev="${i}" title="跳到那时的星空"><span class="ev-d"><b class="mono">${e.t.getDate()}</b>${e.t.getMonth() + 1}月</span><span class="ev-t"><b>${esc(e.title)}${e.big ? ' <i>值得一看</i>' : ''}</b><small>${fmt(e.t)}${time} · ${esc(e.desc)}</small></span></button>`;
-    }).join('') || '<p>天象数据没算出来（天文计算库没加载）。</p>';
+    }).join('') + (this._ev.length > lim && !this._evAll ? `<button class="ev-more" data-ev-all>再看 ${this._ev.length - lim} 个天象 ▾</button>` : '') || '<p>天象数据没算出来（天文计算库没加载）。</p>';
     const N = Live.news && Live.news.items && Live.news.items.length ? Live.news : null;
     const news = N ? `<h3>天文新闻 <small>${N.updated ? new Date(N.updated * 1000).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long' }) + '更新' : ''}</small></h3>
       ${N.items.slice(0, 8).map((n) => `<a class="nw" href="${esc(n.link)}" target="_blank" rel="noopener"><b>${esc(n.title)}</b>${n.summary ? `<span>${esc(n.summary)}</span>` : ''}<small>${esc(n.source || '')}${n.date ? ' · ' + esc(n.date.slice(5).replace('-', '/')) : ''} ↗</small></a>`).join('')}` : '';
