@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Beyond Horizons 后台：访问统计 + 日记 + 吃饭地图的店 + 扫街照片 + 背景音乐。
+"""Beyond Horizons 后台：访问统计 + 地图日志 + 吃饭地图的店 + 扫街照片 + 背景音乐。
 
 - 只听 127.0.0.1（默认 8788 端口），由 nginx 把 /api/stat、/api/diary、/api/admin、/api/u/ 转过来。
 - 访问统计：网页匿名发来「打开了网站 / 换了板块 / 点开了哪张照片、哪家店 / 还在看」这些事件。
   不存 IP（只用它当场查出省市，查完就丢），访客编号也只存加盐后的哈希；后台登录的人自己的访问不计。
-- 日记：后台写好、点发布，网页打开时从 /api/diary 读，马上就能看到；照片存在服务器上，由 /api/u/ 发出去。
+- 地图日志：后台写好、点发布，网页打开时从 /api/diary 读，马上就能看到；可以置顶（排在最前面）；照片存在服务器上，由 /api/u/ 发出去。
 - 吃饭地图的店、扫街照片：后台新加的、或改过的网站自带条目（同一个 id 替换），也从 /api/diary?all=1 一起读；
   藏起来的条目（hidden）网站上就不显示。删掉后台记录 = 恢复成网站自带的样子。
 - 背景音乐：后台上传 mp3 / m4a 和歌名、歌手，同样从 /api/diary?all=1 读；歌曲文件由 /api/u/ 发出去（支持断点 Range，iPhone 才能播）。
@@ -13,6 +13,7 @@
   也跟着 /api/diary?all=1 发给网页（「地球之外」的天象速报）。后台可以手动「现在更新」。
 - 访客留言：访客在网页上选位置、写昵称和留言，POST /api/diary/guest（借用已经转发的 /api/diary/ 路径），
   先存成「待审核」；在后台改好、通过以后，才跟着 /api/diary?all=1 出现在地图上。不存访客 IP。
+- 私信：访客在网页的个人介绍里点「给我发私信」，POST /api/diary/dm（同样借用 /api/diary/ 路径）；只有后台看得到，不公开。不存访客 IP。
 - 后台密码只以 PBKDF2 哈希存在 /etc/beyond-horizons/admin.env（deploy/admin-setup.sh 在服务器上输入），
   登录后发一张 30 天有效的凭证；连续输错 8 次要等 15 分钟。
 - 只用 Python 标准库；省市用 ip2region 离线库（deploy/ip2region/，Apache-2.0）。
@@ -122,7 +123,10 @@ with db() as c:
     CREATE TABLE IF NOT EXISTS kv (k TEXT PRIMARY KEY, v TEXT);
     CREATE TABLE IF NOT EXISTS guest (id TEXT PRIMARY KEY, name TEXT, text TEXT, place TEXT, lng REAL, lat REAL,
         status TEXT, created INTEGER, updated INTEGER, edited INTEGER DEFAULT 0);
+    CREATE TABLE IF NOT EXISTS dm (id TEXT PRIMARY KEY, name TEXT, contact TEXT, text TEXT, created INTEGER, seen INTEGER DEFAULT 0);
     ''')
+    if 'pinned' not in [r['name'] for r in c.execute('PRAGMA table_info(diary)')]:   # 旧数据库补上「置顶」这一列
+        c.execute('ALTER TABLE diary ADD COLUMN pinned INTEGER DEFAULT 0')
 
 EVENTS = {'view', 'mod', 'city', 'open', 'ping', 'leave'}
 RATE, FAILS = {}, {}
@@ -186,11 +190,12 @@ def stats(days):
 
 def diary_rows(published_only):
     with db() as c:
-        rows = c.execute('SELECT * FROM diary' + (' WHERE published=1' if published_only else '') + ' ORDER BY date DESC, created DESC').fetchall()
+        rows = c.execute('SELECT * FROM diary' + (' WHERE published=1' if published_only else '') + ' ORDER BY pinned DESC, date DESC, created DESC').fetchall()
     out = []
     for r in rows:
         d = {'id': r['id'], 'date': r['date'], 'tag': r['tag'], 'title': r['title'], 'place': r['place'], 'text': r['text'],
              'lnglat': [r['lng'], r['lat']] if r['lng'] is not None and r['lat'] is not None else None, 'photos': json.loads(r['photos'] or '[]')}
+        if r['pinned']: d['pinned'] = True   # 置顶：网页上排在最前面
         if not published_only: d.update(published=bool(r['published']), updated=r['updated'])
         out.append(d)
     return out
@@ -218,9 +223,10 @@ def save_diary(o):
     if not re.match(r'^d[0-9a-z]{4,22}$', did): did = 'd' + format(int(time.time() * 1000), 'x')
     with LOCK, db() as c:
         old = c.execute('SELECT created FROM diary WHERE id=?', (did,)).fetchone()
-        c.execute('REPLACE INTO diary (id,date,tag,title,place,lng,lat,text,photos,published,created,updated) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
+        c.execute('REPLACE INTO diary (id,date,tag,title,place,lng,lat,text,photos,published,created,updated,pinned) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)',
                   (did, date, clip(o.get('tag'), 8) or '日常', title, clip(o.get('place'), 60), lng, lat, clip(o.get('text'), 20000),
-                   json.dumps(photos, ensure_ascii=False), 1 if o.get('published', True) else 0, old['created'] if old else now, now))
+                   json.dumps(photos, ensure_ascii=False), 1 if o.get('published', True) else 0, old['created'] if old else now, now,
+                   1 if o.get('pinned') else 0))
     return did
 
 
@@ -587,6 +593,35 @@ def guest_save(o):
     return gid
 
 
+# ------------------------------------------------------------------ 私信（只给后台看）
+DM_RATE = {}
+
+
+def dm_submit(o, ip):
+    if str(o.get('website') or '').strip(): return 'mx'   # 机器人填了隐藏的栏：假装收下
+    now = time.time()
+    hits = [t for t in DM_RATE.get(ip, []) if now - t < 86400]
+    if len([t for t in hits if now - t < 600]) >= 4 or len(hits) >= 20: raise PermissionError('发得太快了，过一会儿再来吧')
+    name = re.sub(r'\s+', ' ', clip(o.get('name'), 20)).strip()
+    contact = re.sub(r'\s+', ' ', clip(o.get('contact'), 60)).strip()
+    text = re.sub(r'\n{3,}', '\n\n', clip(o.get('text'), 1000).replace('\r', '')).strip()
+    if not name: raise ValueError('写一个昵称吧')
+    if not text: raise ValueError('还没写想说的话')
+    with LOCK, db() as c:
+        if c.execute('SELECT COUNT(*) n FROM dm WHERE seen=0').fetchone()['n'] >= 1000: raise PermissionError('私信太多了，晚点再来吧')
+        mid = 'm' + secrets.token_hex(5)
+        c.execute('INSERT INTO dm (id,name,contact,text,created,seen) VALUES (?,?,?,?,?,0)', (mid, name, contact, text, int(now)))
+    DM_RATE[ip] = hits + [now]
+    return mid
+
+
+def dm_rows():
+    with db() as c:
+        rows = c.execute('SELECT * FROM dm ORDER BY created DESC LIMIT 2000').fetchall()
+    when = lambda t: datetime.fromtimestamp(t or 0, CST).strftime('%Y-%m-%d %H:%M')
+    return [{'id': r['id'], 'name': r['name'], 'contact': r['contact'], 'text': r['text'], 'time': when(r['created']), 'created': r['created'], 'seen': bool(r['seen'])} for r in rows]
+
+
 # ------------------------------------------------------------------ 登录凭证
 def check_pass(pw):
     try:
@@ -684,6 +719,9 @@ class H(BaseHTTPRequestHandler):
         if p == '/api/admin/guest':
             rows = guest_rows(False)
             return self.send(200, {'items': rows, 'pending': sum(1 for r in rows if r['status'] == 'pending')})
+        if p == '/api/admin/dm':
+            rows = dm_rows()
+            return self.send(200, {'items': rows, 'unseen': sum(1 for r in rows if not r['seen'])})
         if p == '/api/admin/news':
             st = kv_get('news', {}) or {}
             return self.send(200, {**st, 'feeds': [n for n, _ in NEWS_FEEDS], 'ai': bool(AI_KEY), 'model': AI_MODEL if AI_KEY else ''})
@@ -717,13 +755,30 @@ class H(BaseHTTPRequestHandler):
                 if not isinstance(o, dict): return self.send(400, {'error': '格式不对'})
                 try: return self.send(200, {'ok': True, 'id': guest_submit(o, ip)})
                 except PermissionError as e: return self.send(429, {'error': str(e)})
+            if p == '/api/diary/dm':   # 私信（不用登录；只有后台看得到）
+                try: o = json.loads(self.body(8192) or b'{}')
+                except ValueError: return self.send(400, {'error': '格式不对'})
+                if not isinstance(o, dict): return self.send(400, {'error': '格式不对'})
+                try: return self.send(200, {'ok': True, 'id': dm_submit(o, ip)})
+                except PermissionError as e: return self.send(429, {'error': str(e)})
             if not self.authed(): return self.send(401, {'error': '请先登录'})
+            if p == '/api/admin/dm/seen':   # 标成已读 / 未读：{ids: [...], seen: true}，ids 不给就是全部
+                o = json.loads(self.body(65536) or b'{}'); ids = [str(x) for x in (o.get('ids') or []) if re.match(r'^m[0-9a-f]{10}$', str(x))]
+                with LOCK, db() as c:
+                    if o.get('ids') is None: c.execute('UPDATE dm SET seen=?', (1 if o.get('seen', True) else 0,))
+                    else: c.executemany('UPDATE dm SET seen=? WHERE id=?', [(1 if o.get('seen', True) else 0, i) for i in ids])
+                return self.send(200, {'ok': True})
             if p == '/api/admin/guest':
                 o = json.loads(self.body(16384) or b'{}')
                 if not isinstance(o, dict): raise ValueError('格式不对')
                 return self.send(200, {'id': guest_save(o)})
             if p == '/api/admin/diary':
                 return self.send(200, {'id': save_diary(json.loads(self.body(200000) or b'{}'))})
+            if p == '/api/admin/diary/pin':   # 只切换置顶，别的不动
+                o = json.loads(self.body(2000) or b'{}'); did = clip(o.get('id'), 24)
+                with LOCK, db() as c:
+                    n = c.execute('UPDATE diary SET pinned=? WHERE id=?', (1 if o.get('pinned') else 0, did)).rowcount
+                return self.send(200 if n else 404, {'ok': bool(n)} if n else {'error': '找不到这篇日志'})
             if p == '/api/admin/items':
                 o = json.loads(self.body(400000) or b'{}')
                 if not isinstance(o, dict): raise ValueError('格式不对')
@@ -758,6 +813,10 @@ class H(BaseHTTPRequestHandler):
         m = re.match(r'^/api/admin/guest/(g[0-9a-f]{10})$', p)
         if m:
             with LOCK, db() as c: c.execute('DELETE FROM guest WHERE id=?', (m.group(1),))
+            return self.send(200, {'ok': True})
+        m = re.match(r'^/api/admin/dm/(m[0-9a-f]{10})$', p)
+        if m:
+            with LOCK, db() as c: c.execute('DELETE FROM dm WHERE id=?', (m.group(1),))
             return self.send(200, {'ok': True})
         m = re.match(r'^/api/admin/items/(food|street|music)/([fsm][0-9a-z]{1,40})$', p)
         if m: delete_item(m.group(1), m.group(2)); return self.send(200, {'ok': True})

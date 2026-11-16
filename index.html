@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="vendor/fonts/noto-serif-sc-700.css">
 <link rel="stylesheet" href="vendor/fonts/zcool-kuaile-400.css">
 <title>Beyond Horizons</title>
-<meta name="description" content="Beyond Horizons：Howard Leong 的个人主页，把吃过的餐厅、扫街照片、地标、日记和星空放在广州的街道地图上。">
+<meta name="description" content="Beyond Horizons：Howard Leong 的个人主页，把吃过的餐厅、扫街照片、地标、地图日志和星空放在广州的街道地图上。">
 <style>@font-face{font-family:"JetBrains Mono";font-style:normal;font-weight:400;font-display:swap;src:url(vendor/fonts/jetbrains-mono-latin-400-normal.woff2) format("woff2")}@font-face{font-family:"JetBrains Mono";font-style:normal;font-weight:500;font-display:swap;src:url(vendor/fonts/jetbrains-mono-latin-500-normal.woff2) format("woff2")}@font-face{font-family:"JetBrains Mono";font-style:normal;font-weight:600;font-display:swap;src:url(vendor/fonts/jetbrains-mono-latin-600-normal.woff2) format("woff2")}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <style>
 /* 元素带 hidden 就一定藏起来：很多面板自己写了 display，单靠浏览器默认的 hidden 盖不住（以前靠宿主页面补这一条，现在自己写上） */
@@ -750,6 +750,14 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
 .pin-diary.is-active .pb i{background:var(--white);box-shadow:none}
 .pin-diary.work.is-active .pb i{background:transparent;box-shadow:inset 0 0 0 3px var(--white)}
 .pin-diary .pin-tail{height:4px;background:var(--c)}
+/* 置顶的日志：琥珀色圆点，标题一直显示，压在别的图钉上面 */
+.pin-diary.d-pinned{z-index:3}
+.pin-diary.d-pinned .pb i{background:#F59E0B}
+.pin-diary.d-pinned .pb,#map.far .pin-dstack.d-pinned .pb{gap:5px;padding-right:9px}
+.pin-diary.d-pinned .lbl,#map.far .pin-dstack.d-pinned .lbl{max-width:200px}
+.pin-diary.d-pinned.is-active .pb i{background:var(--white)}
+.d-top{font-style:normal;font-size:10px;font-weight:600;color:#B45309;background:color-mix(in srgb,#F59E0B 18%,transparent);border-radius:4px;padding:0 4px;margin-left:5px;vertical-align:1px;flex:none;white-space:nowrap}
+.ktop{display:inline-flex;align-items:center;padding:2px 9px;border-radius:999px;font-size:11.5px;font-weight:600;color:#B45309;background:color-mix(in srgb,#F59E0B 16%,#fff)}
 /* 访客留言的图钉：橙色对话气泡 + 昵称和前几个字 */
 .pin-guest{--c:#F59E0B}
 .pin-guest .pb{display:flex;align-items:center;gap:6px;padding:3px 10px 3px 3px;border-radius:999px;background:var(--white);box-shadow:var(--shadow);max-width:220px}
@@ -827,6 +835,25 @@ body.guest-picking .maplibregl-marker:not(.guest-mk),body.guest-picking .maplibr
 .pf-head h2{margin:0;font-family:var(--f-display);font-weight:900;font-size:26px;letter-spacing:.02em;line-height:1.2}
 .pf-head p{margin:2px 0 0;font-family:var(--f-mono);font-size:12px;color:var(--ink-3);letter-spacing:.06em}
 .pf-sec h3{margin:0 0 8px;font-size:11px;font-weight:500;letter-spacing:.16em;color:var(--ink-3)}
+.pf-bio{margin:0;font-size:16px}
+.pf-mail{display:flex;flex-direction:column;gap:8px;margin-top:-6px}
+.pf-mail a{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:12px;background:var(--ice-2);text-decoration:none;color:var(--ink);font-size:14px;font-family:var(--f-mono);word-break:break-all}
+.pf-mail a:hover{background:var(--ice);color:var(--blue)}
+.pf-mail svg{width:18px;height:18px;flex:none;color:var(--blue)}
+.pf-mail span{display:flex;flex-direction:column;min-width:0}
+.pf-mail small{font-family:var(--f-body);font-size:11px;color:var(--ink-3);letter-spacing:.04em}
+.btn-dm{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:0;border-radius:12px;background:var(--blue);color:#fff;font-weight:600;font-size:14px;padding:10px 16px;cursor:pointer;box-shadow:0 4px 14px rgba(37,99,235,.25)}
+.btn-dm:hover{background:#1D4ED8}.btn-dm:disabled{opacity:.5;cursor:not-allowed}
+.btn-dm svg{width:17px;height:17px}
+.pf-dm > .btn-dm{width:100%}
+.dm-form{padding:14px;border-radius:16px;background:var(--ice-2)}
+.dm-form h3{display:flex;align-items:center;gap:7px;margin:0;font-size:15px;color:var(--ink)}
+.dm-form h3 svg{width:17px;height:17px;color:var(--blue)}
+.dm-form .g-f input:focus,.dm-form .g-f textarea:focus{outline-color:#93C5FD}
+.dm-act{display:flex;align-items:center;gap:10px}
+.dm-done{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;padding:16px;border-radius:16px;background:var(--ice-2);font-size:13.5px;color:var(--ink-2)}
+.dm-done svg{width:26px;height:26px;color:var(--blue)}
+.dm-done b{font-size:15px;color:var(--ink)}
 .pf-links{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .pf-links a{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:12px;background:var(--ice-2);text-decoration:none;color:var(--ink);font-size:13px}
 .pf-links a:hover{background:var(--ice);color:var(--blue)}
@@ -1268,7 +1295,7 @@ body.pure .pet-dock,body.pure .pet-bubble,body.pure .pet-chat{display:none!impor
     <section class="friends glass" id="friends" aria-label="友情链接"></section>
   </div>
 
-  <div class="top glass" id="topbar" role="toolbar" aria-label="日期、天气、月历、日记与音乐">
+  <div class="top glass" id="topbar" role="toolbar" aria-label="日期、天气、月历、日志与音乐">
     <div class="seg date">
       <time class="clock" id="clock" aria-label="现在时间"><span id="clockH">00</span><i aria-hidden="true">:</i><span id="clockM">00</span></time>
       <div class="stack"><span class="big" id="dateBig"></span><span class="small" id="dateSmall"></span></div>
@@ -1281,9 +1308,9 @@ body.pure .pet-dock,body.pure .pet-bubble,body.pure .pet-chat{display:none!impor
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/><circle cx="8.5" cy="14" r=".9" fill="currentColor"/><circle cx="12" cy="14" r=".9" fill="currentColor"/><circle cx="15.5" cy="14" r=".9" fill="currentColor"/></svg>
       <span class="big">月历</span>
     </button>
-    <button class="seg" id="diaryBtn" aria-expanded="false" aria-controls="diaryPop" title="日记">
+    <button class="seg" id="diaryBtn" aria-expanded="false" aria-controls="diaryPop" title="地图日志">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5h11a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H6z"/><path d="M6 3.5v17M9.5 8.5h6M9.5 12h6M9.5 15.5h3.5"/></svg>
-      <span class="big">日记</span>
+      <span class="big">日志</span>
     </button>
     <button class="seg" id="musicBtn" aria-expanded="false" aria-controls="musicPop" title="背景音乐">
       <span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
@@ -1292,10 +1319,10 @@ body.pure .pet-dock,body.pure .pet-bubble,body.pure .pet-chat{display:none!impor
 
   </div>
   <div class="pop" id="calPop" hidden role="dialog" aria-label="月历"></div>
-  <div class="pop" id="diaryPop" hidden role="dialog" aria-label="日记"></div>
+  <div class="pop" id="diaryPop" hidden role="dialog" aria-label="地图日志"></div>
   <div class="pop" id="musicPop" hidden role="dialog" aria-label="背景音乐"></div>
 
-  <button class="top-handle glass" id="topHandle" aria-label="显示日期、天气、月历、日记和音乐"><span id="handleTxt"></span><span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10l5 5 5-5"/></svg></button>
+  <button class="top-handle glass" id="topHandle" aria-label="显示日期、天气、月历、日志和音乐"><span id="handleTxt"></span><span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10l5 5 5-5"/></svg></button>
 
   <div class="col-right">
     <button class="compass glass" id="compass" aria-label="指北针：点击回正北">
@@ -1411,8 +1438,8 @@ const SITE = {
     name: 'Howard Leong',
     site: 'Beyond Horizons',
     interests: ['天文', '摄影', '羽毛球', '跑步', '旅行'],
-    bio: '喜欢在城市里走路、拍照、看星星。这张地图记着我吃过的店、拍过的街、去过的地方，还有一些写给自己的日记。',
-    bioSample: true,
+    bio: 'Howard 的个人网页！！欢迎联系我🙂',
+    emails: [{ label: 'QQ 邮箱', addr: 'guixiann@qq.com' }, { label: 'Gmail', addr: 'lhowd301@gmail.com' }],
   },
   // 和榕忆聊天的服务地址：网站开在哪个域名 → 去哪里问。服务器上自己那份（map.howardleong.work 或 IP）用同站的 /api/pet，
   // 不用写；GitHub Pages 那份要跨站去服务器问（服务器得先开好 HTTPS，见 deploy/domain.sh）。找不到就用离线的简单回答
@@ -2218,6 +2245,8 @@ function hashStr(s) { let h = 2166136261; for (const c of s) { h ^= c.codePointA
 const AVATAR = 'data:image/jpeg;base64,' + document.getElementById('avatar-data').textContent.trim();
 
 const ICONS = {
+  mail: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="M3.5 7l8.5 6 8.5-6"/></svg>',
+  send: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3L10 14"/><path d="M21 3l-6.5 18-4.5-7-7-4.5z"/></svg>',
   metro: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2.8" width="14" height="14.4" rx="3.6"/><path d="M5 10h14"/><path d="M8.6 13.6h.01M15.4 13.6h.01"/><path d="M8.4 21l1.8-3.8M15.6 21l-1.8-3.8"/></svg>',
   pet: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7.6 10.2C4.6 10.6 2.4 8.6 3 6.3c1-1.8 3.9-1.6 5.6.6"/><path d="M16.4 10.2c3 .4 5.2-1.6 4.6-3.9-1-1.8-3.9-1.6-5.6.6"/><path d="M12 6.5a6.6 6.6 0 0 1 6.6 6.6c0 3.9-3 6.4-6.6 6.4s-6.6-2.5-6.6-6.4A6.6 6.6 0 0 1 12 6.5z"/><path d="M10.9 6.6c-.6-1.7.4-3 1.9-2.9"/><circle cx="9.6" cy="12.6" r=".9" fill="currentColor"/><circle cx="14.4" cy="12.6" r=".9" fill="currentColor"/><path d="M11 15.2q1 .8 2 0"/></svg>',
   food: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 11.5h17a8.5 8.5 0 0 1-17 0Z"/><path d="M9 3.5l2.6 6M15.8 2.8l-1.5 6.8"/><path d="M8 20.5h8"/></svg>',
@@ -2308,7 +2337,7 @@ const MODULES = [
   { id: 'food', short: '吃饭', name: '吃饭地图', en: 'EAT', items: () => SITE.food },
   { id: 'street', short: '扫街', name: '扫街地图', en: 'STREET', items: () => SITE.street },
   { id: 'landmark', short: '地标', name: '地标名胜', en: 'SIGHTS', items: () => SITE.landmarks },
-  { id: 'diary', short: '日记', name: '街巷日记', en: 'DIARY', items: () => [...SITE.diary, ...SITE.life.filter((l) => l.lnglat), ...SITE.spots.filter((l) => l.lnglat)] },
+  { id: 'diary', short: '日志', name: '地图日志', en: 'LOG', items: () => [...SITE.diary, ...SITE.life.filter((l) => l.lnglat), ...SITE.spots.filter((l) => l.lnglat)] },
   { id: 'guest', short: '留言', name: '留言板', en: 'GUESTS', items: () => SITE.guest },
   { id: 'metro', short: '地铁', name: '城市之下', en: 'BENEATH', items: () => [] },
   { id: 'sky', short: '星空', name: '地球之外', en: 'BEYOND', items: () => [] },
@@ -2424,7 +2453,7 @@ const CalBadge = {
     let dot = b.querySelector('.cal-new');
     if (fresh && !dot) { dot = document.createElement('i'); dot.className = 'cal-new'; dot.setAttribute('aria-hidden', 'true'); b.appendChild(dot); }
     if (dot) dot.hidden = !fresh;
-    b.title = fresh ? `月历 · ${n.slice(5).replace('-', '月')}日写了新日记` : '月历';
+    b.title = fresh ? `月历 · ${n.slice(5).replace('-', '月')}日写了新日志` : '月历';
     $('#topHandle')?.classList.toggle('has-new', !!fresh);
   },
   seen() { try { localStorage.setItem(this.key, this.newest()); } catch (e) { /* storage blocked */ } this.update(); },
@@ -2533,7 +2562,7 @@ const PickMode = {
   home() { const m = this.m; return m && m[2] ? { center: [+m[2], +m[3]], zoom: +(m[4] || 15), pitch: 0, bearing: 0 } : null; },
   init() {
     if (!this.on || !map) return;
-    const what = { diary: ['选日记的位置', '写日记的地方'], food: ['选这家店的位置', '这家店（分店）在的地方'], street: ['选照片的位置', '拍照的地方'], guest: ['改留言的位置', '这条留言该在的地方'] }[this.m[1]];
+    const what = { diary: ['选日志的位置', '写日志的地方'], food: ['选这家店的位置', '这家店（分店）在的地方'], street: ['选照片的位置', '拍照的地方'], guest: ['改留言的位置', '这条留言该在的地方'] }[this.m[1]];
     const bar = document.createElement('div'); bar.className = 'pick-bar glass'; bar.setAttribute('role', 'status');
     bar.innerHTML = `<b>${what[0]}</b><span>在地图上点一下${what[1]}</span>`;
     document.body.appendChild(bar); map.getCanvas().style.cursor = 'crosshair';
@@ -2566,12 +2595,55 @@ function renderProfile() {
   $('#profileDrawer').innerHTML = `<div class="drawer-in">
       <div style="display:flex;justify-content:flex-end"><button class="icon-btn" data-close-drawer aria-label="关闭">${ICONS.close}</button></div>
       <div class="pf-head"><img src="${AVATAR}" alt="Howard Leong 的头像"><div><h2>${esc(o.name)}</h2><p>${esc(o.site.toUpperCase())}</p></div></div>
-      <p class="d-text">${esc(o.bio)} ${o.bioSample ? SAMPLE : ''}</p>
+      <p class="d-text pf-bio">${esc(o.bio)}</p>
+      ${(o.emails || []).length ? `<div class="pf-mail">${o.emails.map((e) => `<a href="mailto:${esc(e.addr)}">${ICONS.mail}<span><small>${esc(e.label)}</small>${esc(e.addr)}</span></a>`).join('')}</div>` : ''}
+      <div class="pf-dm" id="pfDm"></div>
       <div class="pf-sec"><h3>喜欢</h3><div class="chips">${o.interests.map((i) => `<span class="chip">${esc(i)}</span>`).join('')}</div></div>
       <div class="pf-sec"><h3>在别处找到我</h3><div class="pf-links">${SITE.socials.map((s) => `<a href="${esc(s.url)}" target="_blank" rel="noopener">${sIcon(s)}${esc(s.label)}</a>`).join('')}</div></div>
       <div class="pf-sec"><h3>友情链接</h3>${friendRows}</div>
     </div>`;
+  DMForm.render();
 }
+// 私信：访客写昵称、联系方式（可不填）和想说的话，发到后台（POST /api/diary/dm），只有 Howard 在后台看得到
+const DMForm = {
+  data: { name: '', contact: '', text: '' }, open: false,
+  render() {
+    const box = $('#pfDm'); if (!box) return;
+    if (!this.open) { box.innerHTML = `<button class="btn-dm" type="button" data-dm-open>${ICONS.send}给我发私信</button>`; box.querySelector('[data-dm-open]').onclick = () => { this.open = true; this.render(); box.querySelector('input[name="name"]')?.focus(); }; return; }
+    try { const n = localStorage.getItem('bh-guest-name'); if (n && !this.data.name) this.data.name = n; } catch (e) { /* storage blocked */ }
+    const g = this.data;
+    box.innerHTML = `<form class="g-form dm-form" novalidate>
+      <h3>${ICONS.send}给 Howard 发私信</h3>
+      <label class="g-f"><span>昵称</span><input name="name" maxlength="20" required placeholder="怎么称呼你" value="${esc(g.name)}" autocomplete="nickname"></label>
+      <label class="g-f"><span>联系方式 <small>可不填，想让我回复就留个邮箱或微信</small></span><input name="contact" maxlength="60" value="${esc(g.contact)}" autocomplete="email"></label>
+      <label class="g-f"><span>想说的话 <small class="mono" data-count>${g.text.length}/1000</small></span><textarea name="text" maxlength="1000" rows="5" required>${esc(g.text)}</textarea></label>
+      <input class="g-hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <p class="g-err" data-err role="alert"></p>
+      <div class="dm-act"><button class="btn-dm" type="submit" ${BACKEND ? '' : 'disabled'}>${ICONS.send}发送</button><button class="g-btn ghost" type="button" data-dm-cancel>收起</button></div>
+      <p class="g-tip small">${BACKEND ? '只有 Howard 能看到，不会公开，也不会记录你的 IP。' : '这个版本的网站发不了私信，请到 <a href="https://www.howardleong.work/" target="_blank" rel="noopener">www.howardleong.work</a> 发，或者直接发邮件。'}</p>
+    </form>`;
+    const f = box.querySelector('form');
+    f.addEventListener('input', (e) => { const k = e.target.name; if (k in g) g[k] = e.target.value; f.querySelector('[data-err]').textContent = ''; if (k === 'text') f.querySelector('[data-count]').textContent = `${g.text.length}/1000`; });
+    f.querySelector('[data-dm-cancel]').onclick = () => { this.open = false; this.render(); };
+    f.addEventListener('submit', (e) => { e.preventDefault(); this.submit(f); });
+  },
+  async submit(f) {
+    const g = this.data, err = (t) => { f.querySelector('[data-err]').textContent = t; };
+    if (!BACKEND) return;
+    if (!g.name.trim()) return err('写一个昵称吧');
+    if (!g.text.trim()) return err('还没写想说的话');
+    const btn = f.querySelector('button[type="submit"]'); btn.disabled = true; err('');
+    try {
+      const r = await fetch('/api/diary/dm', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: g.name.trim(), contact: g.contact.trim(), text: g.text.trim(), website: f.website.value }) });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error || '没发出去，等一下再试试');
+      try { localStorage.setItem('bh-guest-name', g.name.trim()); } catch (e) { /* storage blocked */ }
+      this.data = { name: g.name, contact: g.contact, text: '' };
+      $('#pfDm').innerHTML = `<div class="dm-done">${ICONS.send}<b>发出去啦</b><span>Howard 会在后台看到${g.contact.trim() ? '，想回复的话会联系你' : ''}。</span><button class="g-btn ghost" type="button" data-dm-again>再写一条</button></div>`;
+      $('#pfDm [data-dm-again]').onclick = () => { this.open = true; this.render(); };
+    } catch (e) { err(e.message === 'Failed to fetch' ? '连不上服务器，等一下再试试' : e.message); btn.disabled = false; }
+  },
+};
 function openDrawer() {
   const d = $('#profileDrawer'); d.classList.add('open'); d.setAttribute('aria-hidden', 'false'); $('#scrim').hidden = false;
   setTimeout(() => d.querySelector('[data-close-drawer]')?.focus(), 50);
@@ -5713,10 +5785,13 @@ function cantonTower() {
 const STAGE_COL = { 出生: '#EC4899' };
 // 写的日记（后台发布的）一律浅绿色，和出生地点的粉色、办公地点的蓝色分开；分类（日常 / 技术 / 随想）写在标签上。浅绿上的字用深绿（DIARY_INK）
 const DIARY_COL = '#52C98B', DIARY_INK = '#15803D';
+// 置顶的日志（后台勾「置顶」）排在最前面，其余按日期从新到旧；列表里标一个「置顶」，地图上的图钉一直显示标题
+const diarySort = (list) => [...list].sort((a, b) => (+!!b.pinned - +!!a.pinned) || (b.date || '').localeCompare(a.date || ''));
+const TOPTAG = '<i class="d-top">置顶</i>';
 function diaryKind(it) {
   if (it.stage) return { kind: 'life', col: STAGE_COL[it.stage] || '#1E3A8A', name: it.stage };
   if (!it.date) return { kind: 'work', col: '#2563EB', name: '非常驻办公地点' };
-  return { kind: 'note', col: DIARY_COL, ink: DIARY_INK, name: it.tag || '日记' };
+  return { kind: 'note', col: DIARY_COL, ink: DIARY_INK, name: it.tag || '日志' };
 }
 const kdot = (it) => { const k = diaryKind(it); return `<span class="kdot${k.kind === 'work' ? ' work' : ''}" style="--c:${k.col}" aria-hidden="true"></span>`; };
 const ktag = (it, text) => { const k = diaryKind(it); return `<span class="ktag${k.kind === 'work' ? ' work' : ''}" style="--c:${k.col}${k.ink ? `;--ci:${k.ink}` : ''}">${esc(text || k.name)}</span>`; };
@@ -5746,10 +5821,10 @@ function pinEl(type, item, loc) {
     el.setAttribute('aria-label', `地标：${item.name}`);
   } else {
     const life = !!item.stage, spot = !life && !item.date; const k = diaryKind(item);
-    el.className = 'pin pin-diary ' + k.kind; el.style.setProperty('--c', k.col);
+    el.className = 'pin pin-diary ' + k.kind + (item.pinned ? ' d-pinned' : ''); el.style.setProperty('--c', k.col);
     const lbl = life || spot ? (item.short || item.place) : item.title;
     el.innerHTML = `<span class="pin-in"><span class="pb"><i></i><span class="lbl">${esc(lbl)}</span></span><span class="pin-tail"></span></span>`;
-    el.setAttribute('aria-label', life ? `出生地点：${item.place}` : spot ? `办公地点：${item.place}` : `日记：${item.title}`);
+    el.setAttribute('aria-label', life ? `出生地点：${item.place}` : spot ? `办公地点：${item.place}` : `日志：${item.title}`);
   }
   el.addEventListener('click', (e) => { e.stopPropagation(); openDetail(type, item.id); });
   return el;
@@ -5782,7 +5857,7 @@ function diaryPlaces(list) {
   const out = new Map();
   for (const g of groups) {
     if (g.mem.length < 2) continue;
-    g.mem.sort((a, b) => b.date.localeCompare(a.date));
+    g.mem.sort((a, b) => (+!!b.pinned - +!!a.pinned) || b.date.localeCompare(a.date));
     const names = {}; g.mem.forEach((i) => { if (i.place) names[i.place] = (names[i.place] || 0) + 1; });
     g.name = Object.keys(names).sort((a, b) => names[b] - names[a])[0] || '同一个地方';
     g.c = [g.mem.reduce((s, i) => s + i.lnglat[0], 0) / g.mem.length, g.mem.reduce((s, i) => s + i.lnglat[1], 0) / g.mem.length];
@@ -5820,10 +5895,10 @@ function guestStackMarker(g) {
   return entry;
 }
 function diaryStackMarker(g) {
-  const el = document.createElement('button'); el.type = 'button'; el.className = 'pin pin-diary note pin-dstack'; el.style.setProperty('--c', DIARY_COL);
+  const el = document.createElement('button'); el.type = 'button'; el.className = 'pin pin-diary note pin-dstack' + (g.mem.some((i) => i.pinned) ? ' d-pinned' : ''); el.style.setProperty('--c', DIARY_COL);
   el.innerHTML = `<span class="pin-in"><span class="pk"></span><span class="pb"><i></i><span class="lbl">${esc(g.name)}</span><em class="sc">${g.mem.length}</em></span><span class="pin-tail"></span></span>`;
   const m = new maplibregl.Marker({ element: el, anchor: 'bottom' }).setLngLat(g.c);
-  el.setAttribute('aria-label', `${g.name}：${g.mem.length} 篇日记`);
+  el.setAttribute('aria-label', `${g.name}：${g.mem.length} 篇日志`);
   const entry = { ids: g.mem.map((i) => i.id), m, name: g.name, mem: g.mem };
   el.addEventListener('click', (e) => { e.stopPropagation(); openDiaryStack(entry); });
   return entry;
@@ -5831,7 +5906,7 @@ function diaryStackMarker(g) {
 function openDiaryStack(entry) {
   if (stackPop) stackPop.remove();
   const box = document.createElement('div'); box.className = 'stack-list dstack-list';
-  box.innerHTML = `<div class="sl-h">${esc(entry.name)} · ${entry.mem.length} 篇日记</div>` + entry.mem.map((i) => `<button class="sl-i" data-id="${i.id}"><span class="kname">${kdot(i)}<em>${esc(i.title)}</em></span><b>${esc(i.date.slice(2).replace(/-/g, '.'))}</b></button>`).join('');
+  box.innerHTML = `<div class="sl-h">${esc(entry.name)} · ${entry.mem.length} 篇日志</div>` + entry.mem.map((i) => `<button class="sl-i" data-id="${i.id}"><span class="kname">${kdot(i)}<em>${esc(i.title)}</em>${i.pinned ? TOPTAG : ''}</span><b>${esc(i.date.slice(2).replace(/-/g, '.'))}</b></button>`).join('');
   box.addEventListener('click', (e) => { const b = e.target.closest('[data-id]'); if (!b) return; stackPop.remove(); stackPop = null; openDetail('diary', b.dataset.id, { fly: false }); });
   stackPop = new maplibregl.Popup({ closeButton: false, focusAfterOpen: false, anchor: 'bottom', offset: [0, -34], maxWidth: '320px', className: 'stack-pop' }).setLngLat(entry.m.getLngLat()).setDOMContent(box).addTo(map);
 }
@@ -5990,7 +6065,7 @@ function renderCities() {
   if (mod.id === 'guest') html += `<li class="guest-cta"><button class="btn-guest" type="button" data-guest-new>${ICONS.guest}在地图上留一句话</button><small>${SITE.guest.length ? '选一个地方，写下你想说的话；审核通过后，它就会出现在那里' : '还没有留言。选一个地方，写下你想说的话，做第一个留言的人吧'}</small></li>`;
   let farHead = false;
   for (const c of SITE.cities) {
-    const list = c.ready ? (mod.id === 'diary' && !c.far ? [...SITE.diary].sort((a, b) => b.date.localeCompare(a.date)) : itemsFor(mod.id, c.id)) : [];
+    const list = c.ready ? (mod.id === 'diary' && !c.far ? diarySort(SITE.diary) : itemsFor(mod.id, c.id)) : [];
     if (c.far && !c.overview && !list.length) continue;   // 湾区以外：这个栏目在这座城市没有内容就不列出来
     if (c.far && !farHead) { html += '<li class="city-group">其他地方</li>'; farHead = true; }
     const open = c.ready && state.city === c.id && state.cityOpen;
@@ -6005,7 +6080,7 @@ function renderCities() {
         html += '<li class="group-label">非常驻办公地点</li>';
         for (const l of SITE.spots) html += `<li><button class="item-btn" data-item="${l.id}" data-type="diary" aria-current="${state.active === l.id}"><span class="kname">${kdot(l)}<em>${esc(l.short || l.place)}</em></span><span class="meta"></span></button></li>`;
       }
-      if (mod.id === 'diary' && !c.far && SITE.diary.length) html += '<li class="group-label">日记</li>';
+      if (mod.id === 'diary' && !c.far && SITE.diary.length) html += '<li class="group-label">日志</li>';
       if (mod.id === 'food') {
         html += `<li class="fcats" role="group" aria-label="按菜式筛选">${['all', ...FOOD_CATS].map((c) => `<button class="fcat" data-fcat="${esc(c)}" aria-pressed="${state.foodCat === c}">${c === 'all' ? '全部' : esc(catShort(c))}</button>`).join('')}</li>`;
         for (const c of FOOD_CATS) {
@@ -6019,7 +6094,7 @@ function renderCities() {
       const lmGroups = mod.id === 'landmark' ? [['名胜古迹', list.filter((i) => i.kind !== 'new')], ['城市新地标', list.filter((i) => i.kind === 'new')]].filter((g) => g[1].length) : null;
       if (mod.id !== 'food') for (const [gname, g] of lmGroups || [[null, list]]) {
         if (gname) html += `<li class="group-label">${gname} · ${g.length}</li>`;
-        for (const i of g) { const [a, b] = itemLabel(mod.id, i); html += `<li><button class="item-btn" data-item="${i.id}" data-type="${mod.id}" aria-current="${state.active === i.id}">${mod.id === 'diary' ? `<span class="kname">${kdot(i)}<em>${esc(a)}</em></span>` : `<span>${esc(a)}</span>`}<span class="meta">${esc(b)}</span></button></li>`; }
+        for (const i of g) { const [a, b] = itemLabel(mod.id, i); html += `<li><button class="item-btn" data-item="${i.id}" data-type="${mod.id}" aria-current="${state.active === i.id}">${mod.id === 'diary' ? `<span class="kname">${kdot(i)}<em>${esc(a)}</em>${i.pinned ? TOPTAG : ''}</span>` : `<span>${esc(a)}</span>`}<span class="meta">${esc(b)}</span></button></li>`; }
       }
       html += '</ul>';
     }
@@ -6421,9 +6496,9 @@ function detailHTML(type, it) {
       <p class="d-sub">${esc(it.area || '')}</p>
       ${navRow(SITE.spots, it)}</div>`;
   }
-  const list = [...SITE.diary].sort((a, b) => b.date.localeCompare(a.date));
+  const list = diarySort(SITE.diary);
   return `<div class="d-body" style="padding-top:22px">
-    <div class="d-kicker">${it.sample ? SAMPLE : ''}${ktag(it)}<span class="mono">${esc(it.date)}</span><span>${esc(it.place)}</span></div>
+    <div class="d-kicker">${it.sample ? SAMPLE : ''}${it.pinned ? '<span class="ktop">置顶</span>' : ''}${ktag(it)}<span class="mono">${esc(it.date)}</span><span>${esc(it.place)}</span></div>
     <h2 class="d-title">${esc(it.title)}</h2>
     <p class="d-text d-diary">${esc(it.text)}</p>
     ${(it.photos || []).length ? `<div class="d-photos">${it.photos.map((p) => `<a href="${esc(p.src)}" target="_blank" rel="noopener" style="aspect-ratio:${+p.ar || 1.333}"><img src="${esc(p.src)}" alt="" loading="lazy"></a>`).join('')}</div>` : ''}
@@ -6604,14 +6679,14 @@ function renderCal() {
     const dd = byDay[iso], sd = songDay[iso], note = sd ? '<i class="cal-song" aria-hidden="true">♪</i>' : '';
     const inner = `${d}<small>${l ? (l.first ? l.month : l.day) : ''}</small>`, cls = `cal-day${isT ? ' today' : ''}${dd ? ' has' : ''}${sd ? ' song' : ''}${l && l.first ? ' term' : ''}`;
     const songTxt = sd ? `加了 ${sd.length} 首歌：${sd.map((x) => x.title).join('、')}` : '';
-    cells += dd ? `<button type="button" class="${cls}" data-day="${iso}" title="${esc(dd.map((x) => x.title).join('、') + (sd ? '\n♪ ' + songTxt : ''))}" aria-label="${m + 1}月${d}日写了 ${dd.length} 篇日记：${esc(dd.map((x) => x.title).join('、'))}${sd ? '；' + esc(songTxt) : ''}">${inner}${dd.length > 1 ? `<em>${dd.length}</em>` : ''}${note}</button>`
+    cells += dd ? `<button type="button" class="${cls}" data-day="${iso}" title="${esc(dd.map((x) => x.title).join('、') + (sd ? '\n♪ ' + songTxt : ''))}" aria-label="${m + 1}月${d}日写了 ${dd.length} 篇日志：${esc(dd.map((x) => x.title).join('、'))}${sd ? '；' + esc(songTxt) : ''}">${inner}${dd.length > 1 ? `<em>${dd.length}</em>` : ''}${note}</button>`
       : sd ? `<button type="button" class="${cls}" data-songs="${iso}" title="${esc(songTxt)}" aria-label="${m + 1}月${d}日${esc(songTxt)}">${inner}${note}</button>`
       : `<span class="${cls}">${inner}</span>`;
   }
   // 这个月写的日记：月历下面列出来，点一下飞到写下它的地方
   const mon = `${y}-${String(m + 1).padStart(2, '0')}`;
   const inMonth = SITE.diary.filter((d) => d.date && d.date.startsWith(mon)).sort((a, b) => b.date.localeCompare(a.date));
-  const monList = inMonth.length ? `<div class="cal-diary"><h4><i></i>这个月写了 <b class="mono">${inMonth.length}</b> 篇日记</h4>${inMonth.slice(0, 6).map((d) => `<button type="button" class="cal-d" data-id="${d.id}"><span class="mono">${d.date.slice(8)}日</span><span>${esc(d.title)}</span>${d.place ? `<small>${esc(d.place)}</small>` : ''}</button>`).join('')}${inMonth.length > 6 ? `<button type="button" class="cal-more" data-more>还有 ${inMonth.length - 6} 篇 · 打开日记</button>` : ''}</div>` : '';
+  const monList = inMonth.length ? `<div class="cal-diary"><h4><i></i>这个月写了 <b class="mono">${inMonth.length}</b> 篇日志</h4>${inMonth.slice(0, 6).map((d) => `<button type="button" class="cal-d" data-id="${d.id}"><span class="mono">${d.date.slice(8)}日</span><span>${esc(d.title)}</span>${d.place ? `<small>${esc(d.place)}</small>` : ''}</button>`).join('')}${inMonth.length > 6 ? `<button type="button" class="cal-more" data-more>还有 ${inMonth.length - 6} 篇 · 打开日记</button>` : ''}</div>` : '';
   // 这个月加的新歌：一天一行，写这天加了几首、是哪几首；点一下打开背景音乐
   const songDays = Object.keys(songDay).filter((k) => k.startsWith(mon)).sort().reverse();
   const songList = songDays.length ? `<div class="cal-songs"><h4><i aria-hidden="true">♪</i>这个月加了 <b class="mono">${songDays.reduce((n, k) => n + songDay[k].length, 0)}</b> 首新歌</h4>${songDays.slice(0, 5).map((k) => `<button type="button" class="cal-d" data-songs="${k}"><span class="mono">${k.slice(8)}日</span><span>加了 ${songDay[k].length} 首</span><small>${esc(songDay[k].map((x) => x.title).join('、'))}</small></button>`).join('')}</div>` : '';
@@ -6619,7 +6694,7 @@ function renderCal() {
   const tl = lunar(today);
   $('#calPop').innerHTML = `<div class="pop-head"><button class="icon-btn" id="calPrev" aria-label="上个月">${ICONS.prev}</button><h3><span class="mono">${y}</span> 年 <span class="mono">${m + 1}</span> 月</h3><button class="icon-btn" id="calNext" aria-label="下个月">${ICONS.next}</button></div>
     <div class="cal-grid">${cells}</div>${monList}${songList}
-    <div class="cal-foot">${moonSVG(mi.phase)}<div>今天${tl ? ` 农历${tl.month}${tl.day}` : ''} · ${mi.name}，月面照亮 <span class="mono">${Math.round(mi.illum * 100)}%</span><br><span style="color:var(--ink-3)"><i class="cal-key"></i>浅绿色的日子写了日记，点一下就能看${Object.keys(songDay).length ? '<br><i class="cal-key song">♪</i>这天加了新歌' : ''}</span></div></div>`;
+    <div class="cal-foot">${moonSVG(mi.phase)}<div>今天${tl ? ` 农历${tl.month}${tl.day}` : ''} · ${mi.name}，月面照亮 <span class="mono">${Math.round(mi.illum * 100)}%</span><br><span style="color:var(--ink-3)"><i class="cal-key"></i>浅绿色的日子写了日志，点一下就能看${Object.keys(songDay).length ? '<br><i class="cal-key song">♪</i>这天加了新歌' : ''}</span></div></div>`;
   const openD = (id) => { closePops(); openDetail('diary', id); };
   $('#calPop').querySelectorAll('[data-day]').forEach((b) => b.addEventListener('click', () => openD(byDay[b.dataset.day][0].id)));
   $('#calPop').querySelectorAll('.cal-d').forEach((b) => b.addEventListener('click', () => openD(b.dataset.id)));
@@ -6633,11 +6708,11 @@ function renderCal() {
 let diaryFilter = '全部';
 function renderDiaryPop() {
   const tags = ['全部', ...new Set(SITE.diary.map((d) => d.tag))];
-  const list = [...SITE.diary].filter((d) => diaryFilter === '全部' || d.tag === diaryFilter).sort((a, b) => b.date.localeCompare(a.date));
-  $('#diaryPop').innerHTML = `<div class="pop-head"><h3>街巷日记</h3><span class="mono" style="font-size:12px;color:var(--ink-3)">${SITE.diary.length} 篇</span></div>
+  const list = diarySort(SITE.diary.filter((d) => diaryFilter === '全部' || d.tag === diaryFilter));
+  $('#diaryPop').innerHTML = `<div class="pop-head"><h3>地图日志</h3><span class="mono" style="font-size:12px;color:var(--ink-3)">${SITE.diary.length} 篇</span></div>
     <div class="chips" style="margin-bottom:8px">${tags.map((t) => `<button class="chip${t === diaryFilter ? '' : ' off'}" data-tag="${esc(t)}">${esc(t)}</button>`).join('')}</div>
-    <div class="d-list">${list.map((d) => `<button class="d-row" data-id="${d.id}"><span class="d-date"><b>${d.date.slice(8)}</b>${d.date.slice(0, 7).replace('-', '.')}</span><span><h4>${esc(d.title)} ${d.sample ? SAMPLE : ''}</h4><p>${esc(d.place)} · ${esc(d.text)}</p></span></button>`).join('') || `<p class="note">${SITE.diary.length ? '这个分类还没有日记。' : '还没有日记。写下第一篇后，它会出现在这里，也会标在写下它的地方。'}</p>`}</div>
-    ${SITE.diary.length ? '<p class="note">点一篇日记，地图会飞到写下它的地方。</p>' : ''}`;
+    <div class="d-list">${list.map((d) => `<button class="d-row" data-id="${d.id}"><span class="d-date"><b>${d.date.slice(8)}</b>${d.date.slice(0, 7).replace('-', '.')}</span><span><h4>${esc(d.title)}${d.pinned ? TOPTAG : ''} ${d.sample ? SAMPLE : ''}</h4><p>${esc(d.place)} · ${esc(d.text)}</p></span></button>`).join('') || `<p class="note">${SITE.diary.length ? '这个分类还没有日志。' : '还没有日志。写下第一篇后，它会出现在这里，也会标在写下它的地方。'}</p>`}</div>
+    ${SITE.diary.length ? '<p class="note">点一篇日志，地图会飞到写下它的地方。</p>' : ''}`;
   $('#diaryPop').querySelectorAll('[data-tag]').forEach((b) => b.addEventListener('click', () => { diaryFilter = b.dataset.tag; renderDiaryPop(); }));
   $('#diaryPop').querySelectorAll('.d-row').forEach((b) => b.addEventListener('click', () => { closePops(); openDetail('diary', b.dataset.id); }));
 }
@@ -10656,7 +10731,7 @@ const PetChat = {
     if (/暂停|别放了|关掉音乐|停一下|不要放/.test(t)) return '好，先安静一下～[[pause]]';
     if (/下一首|切歌|换一首/.test(t)) return '换一首！[[next]]';
     if (this.KW.music.test(t) && /放|播|来一首|听|唱/.test(t)) { const i = this.findSong(t.replace(/放|播放|来一首|听|唱|歌|一下|首|给我|我想|吧|呀|嘛/g, '')); const m = SITE.music.at(i); return i >= 0 ? `来～《${m.title}》！[[play:${m.title}]]` : '给你随便挑一首～[[play]]'; }
-    const mods = [[/吃饭地图|美食地图/, 'food'], [/扫街/, 'street'], [/地标/, 'landmark'], [/日记/, 'diary'], [/地铁|城市之下/, 'metro'], [/星空|地球之外/, 'sky'], [/留言/, 'guest']];
+    const mods = [[/吃饭地图|美食地图/, 'food'], [/扫街/, 'street'], [/地标/, 'landmark'], [/日记|日志/, 'diary'], [/地铁|城市之下/, 'metro'], [/星空|地球之外/, 'sky'], [/留言/, 'guest']];
     if (/打开|去|看看|带我/.test(t)) for (const [re, id] of mods) if (re.test(t)) return `走，带你去～[[open:${id}]]`;
     if (/树|浇|水|榕|长|种/.test(t)) return T.m < 20 ? `小榕树口好渴…它现在是「${S.n}」，帮它浇点水嘛～` : `小榕树现在是「${S.n}」${st.next ? `，再长 ${Math.ceil(st.next - T.g)} 就到下一阶啦` : '，已经独木成林啦'}！`;
     if (/吃|饿|饭|餐|茶|宵夜|好味|推荐/.test(t)) return pick(['肚子咕咕叫了！「吃饭地图」里都是 Howard 自己吃过、打过分的店，去翻翻看～', '我最想去喝早茶，虾饺烧卖一笼一笼的！你去「吃饭地图」找找嘛～']);
