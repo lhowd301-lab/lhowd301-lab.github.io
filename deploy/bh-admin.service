@@ -1,11 +1,13 @@
 # 网站后台：访问统计 + 日记（deploy/bh_admin.py）。由 deploy/admin-setup.sh 装到 /etc/systemd/system/bh-admin.service
 [Unit]
-Description=Beyond Horizons admin (stats + diary)
+Description=Beyond Horizons admin (stats, diary, food, street, music, astronomy news)
 After=network-online.target
 Wants=network-online.target
 
 [Service]
 EnvironmentFile=/etc/beyond-horizons/admin.env
+# 天文新闻用榕忆的 AI 写成中文（没装榕忆也没关系，前面的 - 表示文件不存在就跳过）
+EnvironmentFile=-/etc/beyond-horizons/pet.env
 ExecStart=/usr/bin/python3 /opt/beyond-horizons/bh_admin.py
 Restart=on-failure
 RestartSec=3

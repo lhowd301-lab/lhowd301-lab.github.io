@@ -19,6 +19,7 @@ header{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:18p
 header h1{margin:0;font-size:19px;letter-spacing:.01em}
 header h1 small{display:block;font-size:12px;font-weight:500;color:var(--ink-3);letter-spacing:.04em}
 .tabs{display:flex;gap:4px;background:var(--card);padding:4px;border-radius:12px;box-shadow:var(--shadow);margin-left:auto}
+@media (max-width:900px){.tabs{margin-left:0;max-width:100%;overflow-x:auto;scrollbar-width:none}.tabs button{flex:none;white-space:nowrap}}
 .tabs button{border:0;background:none;padding:7px 14px;border-radius:9px;color:var(--ink-2);font-weight:600}
 .tabs button[aria-selected="true"]{background:var(--blue);color:#fff}
 .ghost{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:7px 12px;color:var(--ink-2)}
@@ -122,6 +123,14 @@ textarea.input.short{min-height:110px}
 .sph .fs .input{padding:6px 9px;font-size:13px}
 .add-sph{min-height:160px;border-radius:12px;border:1.5px dashed var(--ice-2);display:grid;place-items:center;color:var(--blue);background:none;font-size:13px}
 .hint{font-size:12px;color:var(--ink-3);font-weight:400}
+.pdate{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-2)}
+.pdate .input{flex:1;min-width:0}
+.news-st{font-size:13px;color:var(--ink-2);line-height:1.7}
+.news-st ul{margin:6px 0 0;padding-left:18px;color:var(--ink-3);font-size:12.5px}
+.nitem{display:block;padding:10px 0;border-bottom:1px solid var(--line);color:inherit;text-decoration:none}
+.nitem b{display:block;font-size:14px}
+.nitem span{display:block;font-size:13px;color:var(--ink-2);margin-top:2px}
+.nitem small{display:block;font-size:12px;color:var(--ink-3);margin-top:2px}
 .mfile{display:flex;flex-direction:column;gap:8px;border:1.5px dashed var(--ice-2);border-radius:12px;padding:12px}
 .mfile .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .mfile .fn{font-size:13px;color:var(--ink-2);word-break:break-all}
@@ -138,7 +147,7 @@ textarea.input.short{min-height:110px}
 <div class="wrap">
   <section class="login" id="login" hidden>
     <h1>Beyond Horizons 后台</h1>
-    <p>访问统计 · 日记 · 吃饭地图 · 扫街照片 · 背景音乐</p>
+    <p>访问统计 · 日记 · 吃饭地图 · 扫街照片 · 背景音乐 · 天文新闻</p>
     <form id="loginForm" class="card" autocomplete="on">
       <div class="field"><label for="pw">密码</label><input class="input" id="pw" type="password" autocomplete="current-password" required></div>
       <div class="err" id="loginErr"></div>
@@ -148,13 +157,14 @@ textarea.input.short{min-height:110px}
 
   <section id="app" hidden>
     <header>
-      <h1>Beyond Horizons 后台<small>访问统计 · 日记 · 吃饭地图 · 扫街照片 · 背景音乐</small></h1>
+      <h1>Beyond Horizons 后台<small>访问统计 · 日记 · 吃饭地图 · 扫街照片 · 背景音乐 · 天文新闻</small></h1>
       <div class="tabs" role="tablist">
         <button role="tab" data-tab="stats" aria-selected="true">访问统计</button>
         <button role="tab" data-tab="diary" aria-selected="false">写日记</button>
         <button role="tab" data-tab="food" aria-selected="false">吃饭地图</button>
         <button role="tab" data-tab="street" aria-selected="false">扫街照片</button>
         <button role="tab" data-tab="music" aria-selected="false">背景音乐</button>
+        <button role="tab" data-tab="news" aria-selected="false">天文新闻</button>
       </div>
       <a class="ghost" href="/" target="_blank" rel="noopener" style="text-decoration:none">打开网站</a>
       <button class="ghost" id="logout">退出</button>
@@ -283,7 +293,7 @@ textarea.input.short{min-height:110px}
           </div>
           <div class="row2">
             <div class="field"><label for="stPlace">地点</label><input class="input" id="stPlace" maxlength="80" placeholder="越秀 · 西湖路"></div>
-            <div class="field"><label for="stDate">什么时候拍的 <span class="hint">随便写，比如 2024-02 · 春节</span></label><input class="input" id="stDate" maxlength="40"></div>
+            <div class="field"><label for="stDate">这组照片的日期 <span class="hint">可不填，随便写，比如 2024-02 · 春节；每张照片也可以单独填拍摄日期</span></label><input class="input" id="stDate" maxlength="40"></div>
           </div>
           <div class="field"><label for="stNote">说明</label><textarea class="input short" id="stNote" maxlength="3000" placeholder="这组照片的故事"></textarea></div>
           <div class="field"><label>地图上的位置 <span class="hint" id="stLocHint">图钉放在这里</span></label>
@@ -340,6 +350,18 @@ textarea.input.short{min-height:110px}
         </form>
       </div>
     </div>
+
+    <div id="tab-news" hidden>
+      <div class="split">
+        <div class="card">
+          <h3>天文新闻</h3>
+          <div class="news-st" id="nwStatus">读取中…</div>
+          <button class="btn" id="nwRefresh" style="width:100%;margin-top:12px">现在更新一次</button>
+          <p class="hint" style="margin:10px 0 0">每月 1 日自动更新（或者这个月后台第一次启动时）。新闻出现在网站「地球之外」的「天象速报」里；同一张卡片上的近期天象（日月食、流星雨、行星冲日等）是网页自己算的，不用抓。</p>
+        </div>
+        <div class="card"><h3>网站上现在显示的新闻 <span class="sub" id="nwCount"></span></h3><div id="nwList"></div></div>
+      </div>
+    </div>
   </section>
 </div>
 <div class="toast" id="toast" role="status"></div>
@@ -375,7 +397,7 @@ $('#loginForm').addEventListener('submit', async (e) => {
 $('#logout').addEventListener('click', showLogin);
 
 /* ---------------- tabs */
-const TABS = { stats: () => loadStats(), diary: () => loadDiary(), food: () => Items.food.load(), street: () => Items.street.load(), music: () => Items.music.load() };
+const TABS = { stats: () => loadStats(), diary: () => loadDiary(), food: () => Items.food.load(), street: () => Items.street.load(), music: () => Items.music.load(), news: () => News.load() };
 document.querySelectorAll('[data-tab]').forEach((b) => b.addEventListener('click', () => {
   document.querySelectorAll('[data-tab]').forEach((x) => x.setAttribute('aria-selected', String(x === b)));
   for (const k of Object.keys(TABS)) $('#tab-' + k).hidden = b.dataset.tab !== k;
@@ -400,6 +422,29 @@ function locate(cb) {
     (err) => toast(err.code === 1 ? '没有定位权限（要在浏览器里允许，而且网址要是 https）' : '定位失败，可以改用「在地图上选」'), { enableHighAccuracy: true, timeout: 15000 });
 }
 const fmtLL = (p) => (p ? `${(+p[1]).toFixed(5)}, ${(+p[0]).toFixed(5)}` : '还没选');
+// 从照片的 EXIF 里读拍摄日期（DateTimeOriginal），读不到就空着；只在加照片时帮忙填，可以改、可以清掉
+async function exifDate(file) {
+  try {
+    const b = new DataView(await file.slice(0, 131072).arrayBuffer());
+    if (b.getUint16(0) !== 0xFFD8) return '';
+    let o = 2;
+    while (o + 4 < b.byteLength) {
+      const m = b.getUint16(o), len = b.getUint16(o + 2);
+      if (m === 0xFFE1 && b.getUint32(o + 4) === 0x45786966) {   // "Exif"
+        const t = o + 10, le = b.getUint16(t) === 0x4949, u16 = (x) => b.getUint16(x, le), u32 = (x) => b.getUint32(x, le);
+        const scan = (ifd, want) => { const n = u16(ifd); for (let i = 0; i < n; i++) { const e = ifd + 2 + i * 12; if (u16(e) === want) return e; } return 0; };
+        const ifd0 = t + u32(t + 4), sub = scan(ifd0, 0x8769);
+        const e = (sub && scan(t + u32(sub + 8), 0x9003)) || scan(ifd0, 0x0132);
+        if (!e) return '';
+        let str = ''; const at = t + u32(e + 8); for (let i = 0; i < 10; i++) str += String.fromCharCode(b.getUint8(at + i));
+        const m2 = str.match(/^(\d{4}):(\d{2}):(\d{2})/); return m2 && m2[1] > '1990' ? `${m2[1]}-${m2[2]}-${m2[3]}` : '';
+      }
+      if ((m & 0xFF00) !== 0xFF00) break;
+      o += 2 + len;
+    }
+  } catch (e) { /* no EXIF */ }
+  return '';
+}
 // 照片：在浏览器里缩小（长边 1600 像素）再上传，另做一张小图
 async function uploadPhoto(f) {
   const big = await shrink(f, 1600, 0.85), small = await shrink(f, 480, 0.8);
@@ -691,7 +736,7 @@ $('#stHere').addEventListener('click', () => locate(stSetLoc));
 $('#stClear').addEventListener('click', () => stSetLoc(null));
 function renderSt() {
   $('#stPhotos').innerHTML = stPhotos.map((p, i) => `<div class="sph" data-i="${i}"><div class="im"><img src="${esc(p.preview || imgUrl(p.thumb || p.src))}" alt="" loading="lazy">${p.busy ? '<span class="up">上传中…</span>' : ''}<span class="tb">${i ? '<button type="button" data-left title="往前挪">←</button>' : ''}<button type="button" data-rm title="去掉这张">×</button></span></div>
-      <div class="fs"><input class="input" data-k="cap" maxlength="80" placeholder="照片说明" value="${esc(p.cap)}"><input class="input" data-k="loc" maxlength="80" placeholder="拍摄地点（可不填）" value="${esc(p.loc)}"><input class="input" data-k="area" maxlength="100" placeholder="所在区域，比如 中国 · 广州 · 越秀区（可不填）" value="${esc(p.area)}"></div></div>`).join('')
+      <div class="fs"><input class="input" data-k="cap" maxlength="80" placeholder="照片说明" value="${esc(p.cap)}"><input class="input" data-k="loc" maxlength="80" placeholder="拍摄地点（可不填）" value="${esc(p.loc)}"><input class="input" data-k="area" maxlength="100" placeholder="所在区域，比如 中国 · 广州 · 越秀区（可不填）" value="${esc(p.area)}"><label class="pdate"><span>拍摄日期</span><input class="input" type="date" data-k="date" value="${esc(p.date || '')}" max="${new Date().toISOString().slice(0, 10)}"><span class="hint">可不填</span></label></div></div>`).join('')
     + (stPhotos.length < 60 ? '<button type="button" class="add-sph" id="stAdd">＋ 加照片</button>' : '');
   $('#stPhotos').querySelectorAll('.sph').forEach((el) => {
     const i = +el.dataset.i, p = stPhotos[i];
@@ -704,7 +749,7 @@ function renderSt() {
 $('#stFile').addEventListener('change', async (e) => {
   const files = [...e.target.files].slice(0, 60 - stPhotos.length); e.target.value = '';
   for (const f of files) {
-    const p = { busy: true, preview: URL.createObjectURL(f), cap: '', loc: '', area: '' }; stPhotos.push(p); renderSt();
+    const p = { busy: true, preview: URL.createObjectURL(f), cap: '', loc: '', area: '', date: await exifDate(f) }; stPhotos.push(p); renderSt();
     try { Object.assign(p, await uploadPhoto(f), { busy: false }); } catch (err) { stPhotos.splice(stPhotos.indexOf(p), 1); toast(err.message); }
     renderSt();
   }
@@ -719,7 +764,7 @@ Items.street = makeItems('street', {
     $('#stTitle').value = d.title || ''; $('#stCity').value = d.city || 'gz'; if (!$('#stCity').value) $('#stCity').value = 'gz';
     $('#stPlace').value = d.place || ''; $('#stDate').value = d.date || ''; $('#stNote').value = d.note || '';
     stSetLoc(d.lnglat || null); stHint();
-    stPhotos = (d.photos || []).map((p) => ({ ...p, cap: p.cap || '', loc: p.loc || '', area: p.area || '' })); renderSt();
+    stPhotos = (d.photos || []).map((p) => ({ ...p, cap: p.cap || '', loc: p.loc || '', area: p.area || '', date: p.date || '' })); renderSt();
   },
   read(d) {
     if (stPhotos.some((p) => p.busy)) throw new Error('照片还在上传，等一下');
@@ -728,7 +773,7 @@ Items.street = makeItems('street', {
     if (!stLL && !cityOf(d.city).far) throw new Error('还没选地图上的位置');
     if (stLL) d.lnglat = stLL; else delete d.lnglat;
     delete d.approx;
-    d.photos = stPhotos.filter((p) => p.src).map((p) => { const x = { src: p.src, cap: (p.cap || '').trim(), ar: p.ar || 1.5 }; if (p.thumb) x.thumb = p.thumb; if ((p.loc || '').trim()) x.loc = p.loc.trim(); if ((p.area || '').trim()) x.area = p.area.trim(); return x; });
+    d.photos = stPhotos.filter((p) => p.src).map((p) => { const x = { src: p.src, cap: (p.cap || '').trim(), ar: p.ar || 1.5 }; if (p.thumb) x.thumb = p.thumb; if ((p.loc || '').trim()) x.loc = p.loc.trim(); if ((p.area || '').trim()) x.area = p.area.trim(); if (/^\d{4}-\d{2}-\d{2}$/.test(p.date || '')) x.date = p.date; return x; });
     if (!d.photos.length) throw new Error('至少要加一张照片');
     return d;
   },
@@ -798,6 +843,26 @@ Items.music = makeItems('music', {
     delete d.id; delete d.added;
     return d;
   },
+});
+
+/* 天文新闻：看抓取状态、手动更新 */
+const News = {
+  async load() {
+    let j; try { j = await api('/api/admin/news'); } catch (e) { if (e.message !== '请先登录') $('#nwStatus').textContent = e.message; return; }
+    const when = (t) => (t ? new Date(t * 1000).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '还没有');
+    $('#nwStatus').innerHTML = `上次更新：<b>${when(j.updated)}</b>${j.running ? ' · <b>正在抓…</b>' : ''}<br>上次尝试：${when(j.tried)}${j.reason === 'manual' ? '（手动）' : j.reason ? '（自动）' : ''}<br>
+      来源：${esc((j.feeds || []).join('、'))}<br>中文整理：${j.ai ? `用榕忆的 AI（${esc(j.model)}）挑 8 条、写成中文` : '没配 AI，显示英文原标题（装好榕忆的 AI 后自动变中文）'}
+      ${(j.log || []).length ? `<ul>${j.log.map((l) => `<li>${esc(l)}</li>`).join('')}</ul>` : ''}`;
+    const items = j.items || [];
+    $('#nwCount').textContent = items.length ? `${items.length} 条` : '';
+    $('#nwList').innerHTML = items.map((n) => `<a class="nitem" href="${esc(n.link)}" target="_blank" rel="noopener"><b>${esc(n.title)}</b>${n.summary ? `<span>${esc(n.summary)}</span>` : ''}<small>${esc(n.source)} · ${esc(n.date || '')} ↗</small></a>`).join('') || '<div class="empty">还没有抓到新闻。点左边「现在更新一次」试试。</div>';
+    $('#nwRefresh').disabled = !!j.running; $('#nwRefresh').textContent = j.running ? '正在抓…（要一两分钟）' : '现在更新一次';
+    clearTimeout(this._t); if (j.running && !$('#tab-news').hidden) this._t = setTimeout(() => this.load(), 3000);
+    return j;
+  },
+};
+$('#nwRefresh').addEventListener('click', async () => {
+  try { await api('/api/admin/news/refresh', { method: 'POST' }); toast('开始抓新闻了，要一两分钟'); setTimeout(() => News.load(), 800); } catch (e) { toast(e.message); }
 });
 
 if (token) api('/api/admin/ping').then(showApp, (e) => { if (e.message !== '请先登录') { showLogin(); $('#loginErr').textContent = '连不上后台，稍后再试'; } }); else showLogin();

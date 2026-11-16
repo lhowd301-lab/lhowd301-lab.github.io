@@ -8,6 +8,9 @@
 - 吃饭地图的店、扫街照片：后台新加的、或改过的网站自带条目（同一个 id 替换），也从 /api/diary?all=1 一起读；
   藏起来的条目（hidden）网站上就不显示。删掉后台记录 = 恢复成网站自带的样子。
 - 背景音乐：后台上传 mp3 / m4a 和歌名、歌手，同样从 /api/diary?all=1 读；歌曲文件由 /api/u/ 发出去（支持断点 Range，iPhone 才能播）。
+- 天文新闻：每月 1 日（或这个月第一次启动时）从 NASA、ESA、Sky & Telescope 等的 RSS 抓最近的天文新闻；
+  如果服务器上配了榕忆用的 AI（/etc/beyond-horizons/pet.env 里的 PET_API_KEY），就让它挑出最值得看的几条、写成中文。
+  也跟着 /api/diary?all=1 发给网页（「地球之外」的天象速报）。后台可以手动「现在更新」。
 - 后台密码只以 PBKDF2 哈希存在 /etc/beyond-horizons/admin.env（deploy/admin-setup.sh 在服务器上输入），
   登录后发一张 30 天有效的凭证；连续输错 8 次要等 15 分钟。
 - 只用 Python 标准库；省市用 ip2region 离线库（deploy/ip2region/，Apache-2.0）。
@@ -15,6 +18,10 @@
 环境变量（admin.env）：ADMIN_PASS、ADMIN_SECRET 必填；ADMIN_PORT（8788）、ADMIN_DATA（/var/lib/bh-admin）、ADMIN_XDB
 """
 import base64
+import email.utils
+import html as htmllib
+import urllib.request
+import xml.etree.ElementTree as ET
 import contextlib
 import hashlib
 import hmac
@@ -110,6 +117,7 @@ with db() as c:
         text TEXT, photos TEXT, published INTEGER, created INTEGER, updated INTEGER);
     CREATE TABLE IF NOT EXISTS items (kind TEXT, id TEXT, data TEXT, hidden INTEGER DEFAULT 0, builtin INTEGER DEFAULT 0,
         created INTEGER, updated INTEGER, PRIMARY KEY (kind, id));
+    CREATE TABLE IF NOT EXISTS kv (k TEXT PRIMARY KEY, v TEXT);
     ''')
 
 EVENTS = {'view', 'mod', 'city', 'open', 'ping', 'leave'}
@@ -306,6 +314,7 @@ def clean_street(o):
         if photo_ok(p.get('thumb')): x['thumb'] = p['thumb']
         if text(p, 'loc', 80): x['loc'] = text(p, 'loc', 80)
         if text(p, 'area', 100): x['area'] = text(p, 'area', 100)
+        if re.match(r'^\d{4}-\d{2}(-\d{2})?$', str(p.get('date') or '')): x['date'] = p['date']   # 拍摄日期（可不填）
         photos.append(x)
     if not photos: raise ValueError('至少要有一张照片')
     d['photos'] = photos
@@ -366,6 +375,159 @@ def delete_item(kind, iid):
         row = c.execute('SELECT data FROM items WHERE kind=? AND id=?', (kind, iid)).fetchone()
         c.execute('DELETE FROM items WHERE kind=? AND id=?', (kind, iid))
         drop_unused(c, files_of(json.loads(row['data'] or '{}')) if row else [])
+
+
+# ------------------------------------------------------------------ 天文新闻（每月自动抓）
+NEWS_FEEDS = [
+    ('NASA', 'https://science.nasa.gov/feed/'),
+    ('Sky & Telescope', 'https://skyandtelescope.org/astronomy-news/feed/'),
+    ('EarthSky', 'https://earthsky.org/feed/'),
+    ('ESA', 'https://www.esa.int/rssfeed/Our_Activities/Space_Science'),
+    ('Universe Today', 'https://www.universetoday.com/feed/'),
+]
+if os.environ.get('NEWS_FEEDS'):   # 想换来源：NEWS_FEEDS="名字|网址;名字|网址"
+    NEWS_FEEDS = [tuple(x.split('|', 1)) for x in os.environ['NEWS_FEEDS'].split(';') if '|' in x]
+AI_KEY = os.environ.get('PET_API_KEY', '').strip()
+AI_PROVIDER = os.environ.get('PET_PROVIDER', 'openai').strip().lower()
+AI_BASE = os.environ.get('PET_API_BASE', 'https://api.anthropic.com' if AI_PROVIDER == 'anthropic' else 'https://api.deepseek.com').strip().rstrip('/')
+AI_MODEL = os.environ.get('PET_MODEL', 'claude-haiku-5-5' if AI_PROVIDER == 'anthropic' else 'deepseek-flash').strip()
+NEWS_RUN = threading.Lock()
+CST = timezone(timedelta(hours=8))
+
+
+def kv_get(k, default=None):
+    with db() as c:
+        r = c.execute('SELECT v FROM kv WHERE k=?', (k,)).fetchone()
+    return json.loads(r['v']) if r else default
+
+
+def kv_set(k, v):
+    with LOCK, db() as c: c.execute('REPLACE INTO kv (k, v) VALUES (?, ?)', (k, json.dumps(v, ensure_ascii=False)))
+
+
+def strip_html(t, n=400):
+    t = re.sub(r'<[^>]+>', ' ', t or ''); t = htmllib.unescape(t)
+    t = re.sub(r'\s+', ' ', t).strip()
+    t = re.sub(r'The post .* appeared first on .*$', '', t).strip()
+    return t[:n]
+
+
+def parse_date(s):
+    s = (s or '').strip()
+    if not s: return None
+    try: return email.utils.parsedate_to_datetime(s).astimezone(timezone.utc)
+    except (TypeError, ValueError, IndexError): pass
+    try: return datetime.fromisoformat(s.replace('Z', '+00:00')).astimezone(timezone.utc)
+    except ValueError: return None
+
+
+def fetch_feed(name, url):
+    req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (BeyondHorizons astronomy news; +https://www.howardleong.work)', 'Accept': 'application/rss+xml, application/xml, text/xml, */*'})
+    with urllib.request.urlopen(req, timeout=30) as r: raw = r.read(4 * 1024 * 1024)
+    root = ET.fromstring(raw)
+    out = []
+    for it in root.iter():
+        tag = it.tag.split('}')[-1]
+        if tag not in ('item', 'entry'): continue
+        f = {}
+        for ch in it:
+            k = ch.tag.split('}')[-1]
+            if k == 'link' and ch.get('href'): f.setdefault('link', ch.get('href'))
+            elif k in ('title', 'link', 'pubDate', 'published', 'updated', 'date', 'description', 'summary', 'encoded', 'content') and (ch.text or '').strip():
+                f.setdefault(k, ch.text.strip())
+        d = parse_date(f.get('pubDate') or f.get('published') or f.get('date') or f.get('updated'))
+        title = strip_html(f.get('title'), 200)
+        link = f.get('link', '')
+        if not title or not link.startswith('http') or not d: continue
+        out.append({'title': title, 'link': link[:500], 'summary': strip_html(f.get('description') or f.get('summary') or f.get('encoded') or f.get('content'), 500),
+                    'source': name, 'ts': int(d.timestamp())})
+    return out
+
+
+def ai_pick(cands):
+    """让 AI 从候选里挑 8 条写成中文；没配 AI 或失败就返回 None"""
+    if not AI_KEY or not cands: return None
+    lines = '\n'.join(f'[{i}] ({c["source"]}) {c["title"]} —— {c["summary"][:260]}' for i, c in enumerate(cands))
+    prompt = ('下面是最近一个月的英文天文、航天新闻（方括号里是编号）。请挑出最值得普通中文读者关注的 8 条：'
+              '优先近期能看到的天象（流星雨、日月食、彗星、行星）、重大天文发现、重要航天任务；同一件事只留一条，去掉广告、商品评测和招聘。'
+              '每条写中文标题（不超过 24 个字）和一句中文摘要（不超过 60 个字，讲清楚是什么、为什么值得关注）。'
+              '只回 JSON，不要别的文字：{"items":[{"i":编号,"t":"中文标题","s":"中文摘要"}]}\n\n' + lines)
+    if AI_PROVIDER == 'anthropic':
+        url = AI_BASE + ('/messages' if AI_BASE.endswith('/v1') else '/v1/messages')
+        body = {'model': AI_MODEL, 'max_tokens': 2000, 'temperature': 0.3, 'messages': [{'role': 'user', 'content': prompt}]}
+        headers = {'x-api-key': AI_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json'}
+    else:
+        url = AI_BASE + '/chat/completions'
+        body = {'model': AI_MODEL, 'max_tokens': 2000, 'temperature': 0.3, 'messages': [{'role': 'system', 'content': '你是天文科普编辑，只输出 JSON。'}, {'role': 'user', 'content': prompt}]}
+        if 'deepseek.com' in AI_BASE: body['thinking'] = {'type': 'disabled'}
+        headers = {'Authorization': 'Bearer ' + AI_KEY, 'Content-Type': 'application/json'}
+    req = urllib.request.Request(url, data=json.dumps(body, ensure_ascii=False).encode(), headers=headers, method='POST')
+    with urllib.request.urlopen(req, timeout=90) as r: j = json.loads(r.read().decode('utf-8', 'replace'))
+    text = ''.join(b.get('text', '') for b in j.get('content', []) if b.get('type') == 'text') if AI_PROVIDER == 'anthropic' else j['choices'][0]['message']['content']
+    m = re.search(r'\{.*\}', text, re.S)
+    picks = json.loads(m.group(0))['items'] if m else []
+    out = []
+    for p in picks:
+        try: c = cands[int(p['i'])]
+        except (KeyError, ValueError, IndexError, TypeError): continue
+        if any(o['link'] == c['link'] for o in out): continue
+        out.append({**c, 'title': clip(p.get('t'), 40).strip() or c['title'], 'summary': clip(p.get('s'), 90).strip(), 'zh': True})
+    return out[:8] or None
+
+
+def news_refresh(reason='auto'):
+    """抓一次新闻。抓不到就保留上次的，记下哪里出错"""
+    if not NEWS_RUN.acquire(blocking=False): return False
+    try:
+        st = kv_get('news', {}) or {}
+        st.update({'running': True, 'tried': int(time.time())}); kv_set('news', st)
+        log, cands = [], []
+        cutoff = time.time() - 40 * 86400
+        for name, url in NEWS_FEEDS:
+            t0 = time.time()
+            try:
+                got = [x for x in fetch_feed(name, url) if x['ts'] >= cutoff]
+                cands += got[:12]; log.append(f'{name}：{len(got)} 条（{time.time() - t0:.0f} 秒）')
+            except Exception as e:
+                log.append(f'{name}：没抓到（{type(e).__name__}: {str(e)[:80]}）')
+        cands.sort(key=lambda x: -x['ts'])
+        items = None
+        if cands:
+            try:
+                items = ai_pick(cands[:40])
+                if items: log.append(f'AI（{AI_MODEL}）挑了 {len(items)} 条，写成中文')
+                elif not AI_KEY: log.append('没配 AI（榕忆的 PET_API_KEY），新闻用英文原标题')
+            except Exception as e:
+                log.append(f'AI 整理失败，用英文原标题（{type(e).__name__}: {str(e)[:80]}）')
+            if not items: items = [{**c, 'summary': c['summary'][:160], 'zh': False} for c in cands[:8]]
+        now = int(time.time())
+        for x in items or []: x['date'] = datetime.fromtimestamp(x['ts'], CST).strftime('%Y-%m-%d')
+        if items: st.update({'items': items, 'updated': now, 'month': datetime.now(CST).strftime('%Y-%m')})
+        st.update({'running': False, 'log': log, 'reason': reason, 'ok': bool(items)})
+        kv_set('news', st)
+        print('news', reason, '; '.join(log), flush=True)
+        return True
+    finally:
+        NEWS_RUN.release()
+
+
+def news_loop():
+    time.sleep(20)
+    while True:
+        try:
+            st = kv_get('news', {}) or {}
+            month = datetime.now(CST).strftime('%Y-%m')
+            if st.get('running') and time.time() - (st.get('tried') or 0) > 900: st['running'] = False; kv_set('news', st)
+            if st.get('month') != month and time.time() - (st.get('tried') or 0) > 6 * 3600:   # 每月抓一次；失败了 6 小时后再试
+                news_refresh('auto')
+        except Exception as e: print('news loop', e, flush=True)
+        time.sleep(1800)
+
+
+def news_public():
+    st = kv_get('news', {}) or {}
+    if not st.get('items'): return None
+    return {'updated': st.get('updated'), 'items': [{k: x.get(k) for k in ('title', 'summary', 'link', 'source', 'date', 'zh')} for x in st['items']]}
 
 
 # ------------------------------------------------------------------ 登录凭证
@@ -452,7 +614,7 @@ class H(BaseHTTPRequestHandler):
     def do_GET(self):
         u = urlparse(self.path); p = u.path
         if p == '/api/diary':   # ?all=1：日记 + 后台加的店和扫街照片一起回（旧版网页不带参数，只要日记数组）
-            if 'all=1' in u.query: return self.send(200, {'diary': diary_rows(True), **items_rows(True)}, cache='no-cache')
+            if 'all=1' in u.query: return self.send(200, {'diary': diary_rows(True), **items_rows(True), 'news': news_public()}, cache='no-cache')
             return self.send(200, diary_rows(True), cache='no-cache')
         m = re.match(r'^/api/u/([0-9a-f]{20}(?:-s)?\.(jpg|mp3|m4a))$', p)
         if m: return self.send_file(os.path.join(UPLOADS, m.group(1)), {'jpg': 'image/jpeg', 'mp3': 'audio/mpeg', 'm4a': 'audio/mp4'}[m.group(2)])
@@ -462,6 +624,9 @@ class H(BaseHTTPRequestHandler):
             days = int((parse_qs(u.query).get('days') or ['7'])[0]); return self.send(200, stats(days))
         if p == '/api/admin/diary': return self.send(200, diary_rows(False))
         if p == '/api/admin/items': return self.send(200, items_rows(False))
+        if p == '/api/admin/news':
+            st = kv_get('news', {}) or {}
+            return self.send(200, {**st, 'feeds': [n for n, _ in NEWS_FEEDS], 'ai': bool(AI_KEY), 'model': AI_MODEL if AI_KEY else ''})
         if p == '/api/admin/ping': return self.send(200, {'ok': True})
         return self.send(404, {'error': 'not found'})
 
@@ -499,6 +664,10 @@ class H(BaseHTTPRequestHandler):
                 name = hashlib.sha256(data).hexdigest()[:20] + ('-s' if 'thumb=1' in self.path else '') + '.jpg'
                 with open(os.path.join(UPLOADS, name), 'wb') as f: f.write(data)
                 return self.send(200, {'src': '/api/u/' + name})
+            if p == '/api/admin/news/refresh':   # 现在抓一次（后台跑，网页每隔几秒问一下进度）
+                if NEWS_RUN.locked(): return self.send(200, {'running': True})
+                threading.Thread(target=news_refresh, args=('manual',), daemon=True).start()
+                return self.send(200, {'started': True})
             if p == '/api/admin/upload-audio':   # 背景音乐：mp3，或 m4a / 只有声音的 mp4（AAC），最大 60 MB
                 data = self.body(60 * 1024 * 1024)
                 if data[:3] == b'ID3' or (len(data) > 1 and data[0] == 0xFF and data[1] & 0xE0 == 0xE0): ext = 'mp3'
@@ -531,5 +700,6 @@ def cleanup():
 
 if __name__ == '__main__':
     threading.Thread(target=cleanup, daemon=True).start()
+    threading.Thread(target=news_loop, daemon=True).start()
     print(f'bh-admin on 127.0.0.1:{PORT}, data in {DATA}, ip2region {"ok" if REGION else "off"}', flush=True)
     ThreadingHTTPServer(('127.0.0.1', PORT), H).serve_forever()

@@ -673,7 +673,7 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
 .stc-th.on{opacity:1;box-shadow:0 0 0 2px var(--white),0 6px 14px -4px rgba(8,18,40,.35)}
 .stc-geo{padding:12px 16px 2px;transition:opacity .16s ease}.stc-geo.swap{opacity:0}
 .stc-geo .g-top{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 8px}.stc-geo .g-top svg{width:13px;height:13px;align-self:center;color:var(--blue,#2563EB);flex:none}
-.stc-geo b{font-size:15px;font-weight:600;color:var(--ink)}.stc-geo .mono{font-size:11px;letter-spacing:.06em;color:var(--ink-3)}
+.stc-geo b{font-size:15px;font-weight:600;color:var(--ink)}.stc-geo .g-date{margin-left:auto}.stc-geo .mono{font-size:11px;letter-spacing:.06em;color:var(--ink-3)}
 .stc-bar .st-nav{margin-left:auto}
 .st-nav{display:flex;gap:6px}
 .st-nav .icon-btn{width:32px;height:32px;border-radius:50%;cursor:pointer;background:rgba(255,255,255,.6);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:var(--ink-2);transition:transform .25s,background .25s,color .25s}
@@ -857,6 +857,30 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
 .sky-info td:last-child{text-align:right;font-family:var(--f-mono);font-size:12px;color:#fff}
 .sky-info .x{position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:9px}
 .sky-tonight{position:absolute;right:max(16px,env(safe-area-inset-right,0px));top:calc(124px + env(safe-area-inset-top,0px));width:280px;max-height:calc(100% - 220px);overflow:auto;padding:14px 16px;border-radius:16px;background:rgba(8,18,40,.72);border:1px solid rgba(147,197,253,.22);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);display:flex;flex-direction:column;gap:12px}
+.sky-news{position:absolute;left:max(16px,env(safe-area-inset-left,0px));bottom:calc(76px + env(safe-area-inset-bottom,0px));width:300px;max-height:min(520px,calc(100% - 300px));overflow:auto;padding:12px 14px 12px;border-radius:16px;background:rgba(8,18,40,.74);border:1px solid rgba(147,197,253,.22);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);color:#C9DAF8;scrollbar-width:thin}
+.sky-news[hidden]{display:none}
+.sky-news .sn-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.sky-news h2{margin:0;font-size:14px;font-weight:600;color:#fff;letter-spacing:.06em}
+.sky-news .sky-btn.sm{width:26px;height:26px;font-size:16px;line-height:1}
+.sky-news h3{margin:10px 0 4px;font-size:11px;font-weight:500;letter-spacing:.12em;color:#8FB0EA}
+.sky-news h3 small{letter-spacing:0;color:#6F8DC4;font-weight:400;margin-left:4px}
+.sky-news .evs{display:flex;flex-direction:column;gap:2px}
+.sky-news .ev{display:grid;grid-template-columns:38px minmax(0,1fr);gap:10px;align-items:start;width:100%;border:0;background:none;color:inherit;text-align:left;padding:6px 6px;border-radius:10px;cursor:pointer}
+.sky-news .ev:hover{background:rgba(147,197,253,.12)}
+.sky-news .ev-d{display:flex;flex-direction:column;align-items:center;padding:3px 0;border-radius:8px;background:rgba(147,197,253,.1);font-size:10px;color:#8FB0EA;line-height:1.2}
+.sky-news .ev-d b{font-size:16px;color:#E6EEFC;font-weight:600}
+.sky-news .ev.soon .ev-d{background:rgba(96,165,250,.26)}
+.sky-news .ev.big .ev-d{background:rgba(250,204,21,.18)}
+.sky-news .ev.big .ev-d b{color:#FDE68A}
+.sky-news .ev-t b{display:block;font-size:13px;font-weight:600;color:#fff}
+.sky-news .ev-t b i{font-style:normal;font-size:10px;font-weight:500;color:#FDE68A;border:1px solid rgba(253,230,138,.5);border-radius:4px;padding:0 4px;margin-left:4px;vertical-align:1px}
+.sky-news .ev-t small{display:block;font-size:11.5px;line-height:1.5;color:#A9BEE6;margin-top:1px}
+.sky-news .nw{display:block;padding:7px 6px;border-radius:10px;color:inherit;text-decoration:none}
+.sky-news .nw:hover{background:rgba(147,197,253,.12)}
+.sky-news .nw b{display:block;font-size:13px;color:#fff;font-weight:600;line-height:1.45}
+.sky-news .nw span{display:block;font-size:11.5px;color:#A9BEE6;line-height:1.5;margin-top:2px}
+.sky-news .nw small{display:block;font-size:10.5px;color:#6F8DC4;margin-top:2px}
+.sky-news .sn-foot{margin:10px 0 0;font-size:10.5px;color:#6F8DC4;line-height:1.5}
 .sky-tonight h3{margin:0 0 4px;font-size:11px;font-weight:500;letter-spacing:.16em;color:#8FB0EA}
 .sky-tonight table{width:100%;border-collapse:collapse;font-size:12.5px}
 .sky-tonight td{padding:4px 0;border-bottom:1px solid rgba(147,197,253,.1);color:#C9DAF8}
@@ -922,7 +946,8 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
   .sky-views{position:absolute;top:46px;right:0}
   .sky-info{top:calc(118px + env(safe-area-inset-top,0px))}
   .sky-hint{top:calc(118px + env(safe-area-inset-top,0px));white-space:normal;width:max-content;max-width:calc(100% - 32px);text-align:center}
-  .sky-tonight{left:max(16px,env(safe-area-inset-left,0px));width:auto;top:auto;bottom:calc(128px + env(safe-area-inset-bottom,0px));max-height:46%}
+  .sky-tonight{left:max(16px,env(safe-area-inset-left,0px));width:auto;top:auto;bottom:calc(164px + env(safe-area-inset-bottom,0px));max-height:calc(100% - 300px)}
+  .sky-news{right:max(16px,env(safe-area-inset-right,0px));width:auto;bottom:calc(164px + env(safe-area-inset-bottom,0px));max-height:calc(100% - 300px)}
   .sky-clock span{font-size:14px}
   .sky-toggles{margin-left:0;flex-basis:100%}
 }
@@ -1307,6 +1332,7 @@ body.pure .pet-dock,body.pure .pet-bubble,body.pure .pet-chat{display:none!impor
   </div>
   <div class="sky-info" id="skyInfo" hidden></div>
   <aside class="sky-tonight" id="skyTonightPanel" hidden aria-label="今夜概况"></aside>
+  <aside class="sky-news" id="skyNewsPanel" hidden aria-label="天象速报：近期天象和天文新闻"></aside>
   <button class="pull-hint sky-back" id="skyBack" type="button" tabindex="-1"><span class="ring" aria-hidden="true"><svg viewBox="0 0 30 30"><circle class="trk" cx="15" cy="15" r="12"/><circle class="prog" cx="15" cy="15" r="12"/></svg><i>↑</i></span><b>回到地图</b><span>继续往上拖</span></button>
   <div class="sky-hint" id="skyHint">拖动环顾四周 · 滚轮或双指缩放 · 点击星星或行星查看</div>
   <div class="sky-bar">
@@ -2223,6 +2249,7 @@ const Stats = {
 // 后台（/admin）实时发布的内容：日记、吃饭地图的店、扫街照片，从 /api/diary?all=1 一次读回来，发布后别人一打开网站就能看到。
 // 网站里写死的内容照样保留；后台改过的同 id 条目替换它，hidden 的从网站上拿掉。旧版后台只回日记数组，也照样能用
 const Live = {
+  news: null,
   load() {
     if (!BACKEND) return;
     fetch('/api/diary?all=1', { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : null)).then((d) => {
@@ -2235,6 +2262,7 @@ const Live = {
       }
       if (!Array.isArray(d)) for (const k of ['food', 'street']) if (this.merge(k, d[k] || [])) touched.push(k);
       if (!Array.isArray(d) && (d.music || []).length) this.music(d.music);
+      if (!Array.isArray(d) && d.news && (d.news.items || []).length) { this.news = d.news; if (!$('#sky').hidden) Sky.renderNews(); }   // 天文新闻（后台每月抓一次）
       if (!touched.length) return;
       for (const k of touched) { markers[k].forEach((x) => x.m.remove()); markers[k] = []; }
       if (stackPop) { stackPop.remove(); stackPop = null; }
@@ -5942,7 +5970,9 @@ function flyToItem(item, force) {
 }
 // 扫街小图：图片加载完再淡入；鼠标移动时轻微倾斜 + 高光；点开全屏
 // 外地照片的地理位置：地点和所在地区（不写介绍）
-const geoLine = (p) => `<div class="g-top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg><b>${esc(p.loc)}</b><span class="mono">${esc(p.area || '')}</span></div>`;
+// 扫街照片下面那行：拍摄地点、区域；有拍摄日期就写在最后（照片自己的日期优先，没有就用这组照片的日期）
+const shotDate = (d) => (/^\d{4}-\d{2}(-\d{2})?$/.test(d || '') ? d.replace(/-/g, '.') : d || '');
+const geoLine = (p, it = {}) => `<div class="g-top">${p.loc ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg>` : ''}${p.loc ? `<b>${esc(p.loc)}</b>` : ''}<span class="mono">${esc(p.area || '')}</span>${p.date || it.date ? `<span class="mono g-date">${esc(shotDate(p.date || it.date))}</span>` : ''}</div>`;
 function bindShots(d, item) {
   const ph = item.photos, hero = d.querySelector('.stc-hero'), amb = d.querySelector('.stc-amb'), ths = [...d.querySelectorAll('.stc-th')];
   if (!hero) return;
@@ -5954,7 +5984,7 @@ function bindShots(d, item) {
   const select = (k) => {
     if (k === cur) return; cur = k; const p = ph[k];
     ths.forEach((t, n) => t.classList.toggle('on', n === k));
-    const geo = d.querySelector('.stc-geo'); if (geo && p.loc) { geo.classList.add('swap'); setTimeout(() => { geo.innerHTML = geoLine(p); geo.classList.remove('swap'); }, 160); }
+    const geo = d.querySelector('.stc-geo'); if (geo) { geo.classList.add('swap'); setTimeout(() => { geo.innerHTML = geoLine(p, item); geo.classList.remove('swap'); }, 160); }
     const t = ths[k], st = t && t.parentElement;   // keep the current one in view in the strip (a city abroad can have many)
     if (st) { const sr = st.getBoundingClientRect(), tr = t.getBoundingClientRect(); if (tr.left < sr.left) st.scrollBy({ left: tr.left - sr.left - 8, behavior: 'smooth' }); else if (tr.right > sr.right) st.scrollBy({ left: tr.right - sr.right + 8, behavior: 'smooth' }); }
     for (const [box, cls] of [[hero, ''], [amb, '']]) {
@@ -6117,7 +6147,7 @@ function detailHTML(type, it) {
       <div class="stc-amb" aria-hidden="true"><img src="${ph[0].thumb || ph[0].src}" alt=""></div>
       <h2 class="sr">${esc(it.title)}</h2>
       <button class="stc-hero" aria-label="查看大图"><img src="${ph[0].thumb || ph[0].src}" alt="${esc(ph[0].cap || '')}" draggable="false"></button>
-      ${ph[0].loc ? `<div class="stc-geo" aria-live="polite">${geoLine(ph[0])}</div>` : ''}
+      ${ph.some((p) => p.loc || p.date) || it.date ? `<div class="stc-geo" aria-live="polite">${geoLine(ph[0], it)}</div>` : ''}
       <div class="stc-bar">${ph.length > 1 ? `<div class="stc-strip">${ph.map((p, i) => `<button class="stc-th${i ? '' : ' on'}" data-k="${i}" style="--ar:${p.ar || 1.333}" aria-label="第 ${i + 1} 张：${esc(p.cap || '')}"><img src="${p.thumb || p.src}" alt="" draggable="false" loading="lazy" decoding="async"></button>`).join('')}</div>` : ''}<span class="st-nav"><button class="icon-btn" ${flip ? 'data-ph="-1" aria-label="上一张"' : `data-go="${prev.id}" aria-label="上一个"`}>${ICONS.prev}</button>${it.lnglat ? `<button class="icon-btn" data-fly aria-label="在地图上定位">${ICONS.target}</button>` : ''}<button class="icon-btn" ${flip ? 'data-ph="1" aria-label="下一张"' : `data-go="${next.id}" aria-label="下一个"`}>${ICONS.next}</button></span></div></div>`;
   }
   if (type === 'landmark') {
@@ -6629,11 +6659,110 @@ const STAR_COL = [[169, 200, 255], [211, 226, 255], [245, 248, 255], [255, 241, 
 const DIRS = [['北', 0, 1], ['东北', 45, 0], ['东', 90, 1], ['东南', 135, 0], ['南', 180, 1], ['西南', 225, 0], ['西', 270, 1], ['西北', 315, 0]];
 const dirName = (az) => ['北', '东北', '东', '东南', '南', '西南', '西', '西北'][Math.round((((az % 360) + 360) % 360) / 45) % 8];
 const hhmm = (d) => d ? `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}` : '—';
-const TOGGLES = [['lines', '星座连线'], ['names', '星座名'], ['stars', '星名'], ['mw', '银河'], ['land', '地景'], ['atm', '大气'], ['lp', '光害'], ['grid', '网格'], ['tonight', '今夜概况']];
+const TOGGLES = [['lines', '星座连线'], ['names', '星座名'], ['stars', '星名'], ['mw', '银河'], ['land', '地景'], ['atm', '大气'], ['lp', '光害'], ['grid', '网格'], ['tonight', '今夜概况'], ['news', '天象速报']];
+// 近期天象：用 astronomy-engine 现算，不用联网。返回 from 起 days 天内的事件（按时间排）：
+// 朔望（超级月亮）、日月食（广州能不能看到）、二分二至、外行星冲日、水星金星大距、亮行星相合、流星雨极大
+function astroEvents(A, from, days = 60, lat = 23.13, lon = 113.3) {
+  const end = new Date(from.getTime() + days * 864e5), out = [], obs = new A.Observer(lat, lon, 10);
+  const inR = (d) => d >= from && d < end;
+  const ZH = { Mercury: '水星', Venus: '金星', Mars: '火星', Jupiter: '木星', Saturn: '土星', Uranus: '天王星', Neptune: '海王星', Moon: '月亮', Sun: '太阳' };
+  const altOf = (body, d) => { try { const eq = A.Equator(body, d, obs, true, true); return A.Horizon(d, obs, eq.ra, eq.dec, 'normal'); } catch (e) { return null; } };
+  const at = (d, h, m = 0) => { const x = new Date(d); x.setHours(h, m, 0, 0); return x; };   // 当天（本地时间）几点
+  const illum = (d) => { try { return A.Illumination('Moon', d).phase_fraction; } catch (e) { return 0.5; } };
+  const push = (e) => { if (inR(e.t)) out.push(e); };
+  // 朔、望；望在近地点前后一天内、距离小于 36.2 万公里算「超级月亮」
+  try {
+    let q = A.SearchMoonQuarter(from);
+    const aps = []; let ap = A.SearchLunarApsis(new Date(from.getTime() - 15 * 864e5));
+    while (ap.time.date < end) { aps.push(ap); ap = A.NextLunarApsis(ap); }
+    while (q.time.date < end) {
+      const d = q.time.date;
+      if (q.quarter === 2) {
+        const near = aps.find((a) => a.kind === 0 && Math.abs(a.time.date - d) < 1.6 * 864e5 && a.dist_km < 362000);
+        const far = aps.find((a) => a.kind === 1 && Math.abs(a.time.date - d) < 1.6 * 864e5 && a.dist_km > 404500);
+        push({ t: d, k: 'moon', body: 'Moon', title: near ? '超级月亮' : far ? '满月（微型满月）' : '满月', desc: near ? `满月时离地球只有 ${(near.dist_km / 1e4).toFixed(1)} 万公里，比平时更大更亮` : far ? '满月时月亮在远地点附近，看起来比平时小一点' : '整夜可见的圆月', jump: at(d, 21), big: !!near });
+      } else if (q.quarter === 0) push({ t: d, k: 'new', body: 'Moon', title: '新月', desc: '前后几天没有月光干扰，最适合看银河和暗天体', jump: at(d, 22) });
+      q = A.NextMoonQuarter(q);
+    }
+  } catch (e) { /* ignore */ }
+  // 月食：广州看不看得到（食甚时月亮在不在地平线上）
+  try {
+    let le = A.SearchLunarEclipse(from);
+    while (le.peak.date < end) {
+      const d = le.peak.date, h = altOf('Moon', d), up = h && h.altitude > 0;
+      const kind = { total: '月全食', partial: '月偏食', penumbral: '半影月食' }[le.kind] || '月食';
+      push({ t: d, k: 'eclipse', body: 'Moon', title: kind, desc: up ? '广州可见' + (le.kind === 'penumbral' ? '（半影月食，月面只是略微变暗）' : '') : '这次在广州看不到（月亮在地平线下）', jump: d, big: up && le.kind !== 'penumbral' });
+      le = A.NextLunarEclipse(le.peak);
+    }
+  } catch (e) { /* ignore */ }
+  // 日食：全球哪里能看到，广州能不能看到偏食
+  try {
+    let ge = A.SearchGlobalSolarEclipse(from);
+    while (ge.peak.date < end) {
+      const d = ge.peak.date, kind = { total: '日全食', annular: '日环食', partial: '日偏食', hybrid: '全环食' }[ge.kind] || '日食';
+      let local = '';
+      try { const ls = A.SearchLocalSolarEclipse(new Date(d.getTime() - 864e5), obs); if (Math.abs(ls.peak.time.date - d) < 864e5 && ls.peak.altitude > 0) local = `广州可见偏食，最多遮住太阳的 ${Math.round(ls.obscuration * 100)}%`; } catch (e) { /* not visible */ }
+      const where = Number.isFinite(ge.latitude) ? `；${kind === '日偏食' ? '食分最大' : '最佳观测点'}在${ge.latitude >= 0 ? '北' : '南'}纬 ${Math.abs(ge.latitude).toFixed(0)}°、${ge.longitude >= 0 ? '东' : '西'}经 ${Math.abs(ge.longitude).toFixed(0)}° 附近` : '';
+      push({ t: d, k: 'eclipse', body: 'Sun', title: kind, desc: (local || '这次在广州看不到') + (local ? '' : where), jump: d, big: !!local });
+      ge = A.NextGlobalSolarEclipse(ge.peak);
+    }
+  } catch (e) { /* ignore */ }
+  // 二分二至
+  try {
+    for (const y of [from.getFullYear(), from.getFullYear() + 1]) {
+      const s = A.Seasons(y);
+      for (const [k, n, tip] of [['mar_equinox', '春分', '昼夜几乎等长，之后白天越来越长'], ['jun_solstice', '夏至', '一年中白天最长的一天'], ['sep_equinox', '秋分', '昼夜几乎等长，之后黑夜越来越长'], ['dec_solstice', '冬至', '一年中白天最短、黑夜最长的一天']]) push({ t: s[k].date, k: 'season', body: 'Sun', title: n, desc: tip, jump: s[k].date });
+    }
+  } catch (e) { /* ignore */ }
+  // 外行星冲日：整夜可见、一年里最亮最大的时候
+  for (const b of ['Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune']) {
+    try {
+      const d = A.SearchRelativeLongitude(b, 0, from).date;
+      const mag = A.Illumination(b, d).mag;
+      push({ t: d, k: 'planet', body: b, title: `${ZH[b]}冲日`, desc: `${ZH[b]}整夜可见，亮度 ${mag.toFixed(1)} 等${b === 'Uranus' || b === 'Neptune' ? '（要用望远镜）' : '，是一年里看它最好的时候'}`, jump: at(d, 23), big: b === 'Mars' || b === 'Jupiter' || b === 'Saturn' });
+    } catch (e) { /* ignore */ }
+  }
+  // 水星、金星大距
+  for (const b of ['Mercury', 'Venus']) {
+    try {
+      const e = A.SearchMaxElongation(b, from), d = e.time.date, eve = e.visibility === 'evening';
+      push({ t: d, k: 'planet', body: b, title: `${ZH[b]}${eve ? '东' : '西'}大距`, desc: `${ZH[b]}离太阳最远（${e.elongation.toFixed(0)}°），${eve ? '日落后在西方低空' : '日出前在东方低空'}最容易看到`, jump: eve ? at(d, 19) : at(d, 5, 40), big: b === 'Venus' });
+    } catch (e) { /* ignore */ }
+  }
+  // 亮行星相合（两颗行星看起来靠得很近，小于 2.5°），每天傍晚算一次，取最近的那天
+  try {
+    const P = ['Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'], prev = {};
+    for (let i = -1; i <= days + 1; i++) {
+      const d = at(new Date(from.getTime() + i * 864e5), 19, 30), v = {};
+      for (const b of P) v[b] = A.GeoVector(b, d, true);
+      for (let x = 0; x < P.length; x++) for (let y = x + 1; y < P.length; y++) {
+        const key = P[x] + P[y], sep = A.AngleBetween(v[P[x]], v[P[y]]), p = prev[key];
+        if (p && p.sep < sep && p.sep < 2.5 && p.prevSep > p.sep) {   // 昨天是最近的一天
+          const elo = A.AngleFromSun(P[x], p.d);
+          if (elo > 15) {
+            const eve = A.Elongation(P[x], p.d).visibility === 'evening';
+            push({ t: p.d, k: 'conj', body: P[x], title: `${ZH[P[x]]}合${ZH[P[y]]}`, desc: `两颗行星相距只有 ${p.sep.toFixed(1)}°，${eve ? '傍晚在西方' : '黎明前在东方'}天空并排出现`, jump: eve ? at(p.d, 19, 30) : at(p.d, 5, 40), big: p.sep < 1 });
+          }
+        }
+        prev[key] = { d, sep, prevSep: p ? p.sep : Infinity };
+      }
+    }
+  } catch (e) { /* ignore */ }
+  // 流星雨极大（每年大致固定的日子；看极大那晚的月光）
+  const SHOWERS = [[0, 4, '象限仪座流星雨', 110, 230, 49], [3, 22, '天琴座流星雨', 18, 271, 34], [4, 6, '宝瓶座η流星雨', 50, 338, -1], [6, 30, '宝瓶座δ南支流星雨', 25, 340, -16],
+    [7, 12, '英仙座流星雨', 100, 48, 58], [9, 21, '猎户座流星雨', 20, 95, 16], [10, 17, '狮子座流星雨', 15, 152, 22], [11, 14, '双子座流星雨', 150, 112, 33], [11, 22, '小熊座流星雨', 10, 217, 76]];
+  for (const y of [from.getFullYear(), from.getFullYear() + 1]) for (const [mo, da, name, zhr, ra, dec] of SHOWERS) {
+    const night = new Date(y, mo, da, 2, 0, 0), f = illum(night);
+    const moonTxt = f < 0.3 ? '月光干扰小，条件很好' : f < 0.7 ? '有些月光干扰' : '月光很亮，只能看到亮流星';
+    push({ t: new Date(y, mo, da - 1, 22, 0, 0), k: 'meteor', title: name, desc: `极大时每小时约 ${zhr} 颗（理想条件），后半夜最多；${moonTxt}`, jump: night, radiant: [ra, dec], big: zhr >= 100 && f < 0.7 });
+  }
+  return out.sort((a, b) => a.t - b.t);
+}
+
 
 const Sky = {
   D: null, L: null, vi: 0, az: 93, alt: 22, fov: 100, t: new Date(), si: 3, paused: false,
-  opt: { lines: true, names: true, stars: true, mw: true, land: true, atm: true, lp: true, grid: false, tonight: false },
+  opt: { lines: true, names: true, stars: true, mw: true, land: true, atm: true, lp: true, grid: false, tonight: false, news: !mq.matches },
   sel: null, hits: [], raf: 0, last: 0, W: 0, H: 0, dpr: 1, bodies: [], bodyT: 0, moonPhase: 0, uiT: 0, built: false,
   fromMap: false, leaving: false, anim: null, os: 0,
   async open(opts = {}) {
@@ -6641,7 +6770,7 @@ const Sky = {
     const sec = $('#sky');
     this.fromMap = !!opts.fromMap; this.leaving = false; this.anim = null; this.os = 0;
     sec.classList.remove('leaving'); sec.classList.toggle('from-map', this.fromMap);
-    sec.hidden = false; closePops(); closeDetail();
+    sec.hidden = false; closePops(); closeDetail(); HowTo.hide();
     document.querySelectorAll('.nav-btn').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mod === 'sky')));
     if (!this.D) {
       try {
@@ -6671,7 +6800,7 @@ const Sky = {
       this.anim = { t0: performance.now(), dur: 2100, a0: 1.5, a1: this.alt + 6, f0: 46, f1: this.fov };
       this.alt = 1.5; this.fov = 46;
     }
-    this.backHint();
+    this.backHint(); this.renderNews();
     cancelAnimationFrame(this.raf); this.last = 0; this.raf = requestAnimationFrame(this.frame);
     $('#skyCanvas').focus({ preventScroll: true });
   },
@@ -6748,7 +6877,17 @@ const Sky = {
     $('#skyViews').innerHTML = this.L.views.map((v, i) => `<button class="sky-pill" data-view="${i}" aria-pressed="${i === this.vi}">${esc(v.name)}</button>`).join('');
     $('#skyViews').addEventListener('click', (e) => { const b = e.target.closest('[data-view]'); if (!b) return; this.vi = +b.dataset.view; this.prepView(); this.bodies = []; const v = this.L.views[this.vi]; this.az = v.taz; this.syncUI(); });
     $('#skyToggles').innerHTML = TOGGLES.map(([k, l]) => `<button class="sky-pill" data-opt="${k}" aria-pressed="${this.opt[k]}">${l}</button>`).join('');
-    $('#skyToggles').addEventListener('click', (e) => { const b = e.target.closest('[data-opt]'); if (!b) return; const k = b.dataset.opt; this.opt[k] = !this.opt[k]; b.setAttribute('aria-pressed', String(this.opt[k])); if (k === 'tonight') this.renderTonight(); });
+    $('#skyToggles').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-opt]'); if (!b) return; const k = b.dataset.opt; this.opt[k] = !this.opt[k]; b.setAttribute('aria-pressed', String(this.opt[k]));
+      if ((k === 'tonight' || k === 'news') && this.opt[k] && mq.matches) {   // 手机上两张卡片都在底部，只开一张
+        const o = k === 'tonight' ? 'news' : 'tonight'; this.opt[o] = false; $(`#skyToggles [data-opt="${o}"]`).setAttribute('aria-pressed', 'false');
+      }
+      if (k === 'tonight' || k === 'news') { this.renderTonight(); this.renderNews(); }
+    });
+    $('#skyNewsPanel').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-ev]'); if (b) this.jumpEvent(this._ev[+b.dataset.ev]);
+      if (e.target.closest('[data-news-close]')) { this.opt.news = false; $('#skyToggles [data-opt="news"]').setAttribute('aria-pressed', 'false'); this.renderNews(); }
+    });
     const cv = $('#skyCanvas'); this.cv = cv; this.ctx = cv.getContext('2d');
     const pts = new Map(); let down = null; let pinch = 0;
     cv.addEventListener('pointerdown', (e) => {
@@ -7125,6 +7264,42 @@ const Sky = {
     $('#skyWhere').textContent = `${view.name} · 望向${dirName(this.az)} ${Math.round(this.az)}° · 仰角 ${Math.round(this.alt)}° · 视野 ${Math.round(this.fov)}°`;
     if (this.sel && !$('#skyInfo').hidden) this.renderInfo();
     if (this.opt.tonight && (!this._tn || Math.abs(t - this._tn) > 60000)) this.renderTonight();
+  },
+  // 天象速报：未来 60 天的天象（astronomy-engine 现算，按真实日期，不跟着星空的时间走），加上后台每月抓的天文新闻
+  renderNews() {
+    const p = $('#skyNewsPanel'); p.hidden = !this.opt.news; if (!this.opt.news) return;
+    const now = new Date(), day = now.toDateString();
+    if (!this._ev || this._evDay !== day) { this._evDay = day; this._ev = window.Astronomy ? astroEvents(Astronomy, new Date(now.getTime() - 6 * 3600e3), 60) : []; }
+    const WD = '日一二三四五六', fmt = (d) => `${d.getMonth() + 1}月${d.getDate()}日 周${WD[d.getDay()]}`;
+    const evs = this._ev.map((e, i) => {
+      const soon = e.t - now < 7 * 864e5, time = e.k === 'eclipse' || e.k === 'season' ? ' ' + hhmm(e.t) : '';
+      return `<button class="ev${e.big ? ' big' : ''}${soon ? ' soon' : ''}" data-ev="${i}" title="跳到那时的星空"><span class="ev-d"><b class="mono">${e.t.getDate()}</b>${e.t.getMonth() + 1}月</span><span class="ev-t"><b>${esc(e.title)}${e.big ? ' <i>值得一看</i>' : ''}</b><small>${fmt(e.t)}${time} · ${esc(e.desc)}</small></span></button>`;
+    }).join('') || '<p>天象数据没算出来（天文计算库没加载）。</p>';
+    const N = Live.news && Live.news.items && Live.news.items.length ? Live.news : null;
+    const news = N ? `<h3>天文新闻 <small>${N.updated ? new Date(N.updated * 1000).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long' }) + '更新' : ''}</small></h3>
+      ${N.items.slice(0, 8).map((n) => `<a class="nw" href="${esc(n.link)}" target="_blank" rel="noopener"><b>${esc(n.title)}</b>${n.summary ? `<span>${esc(n.summary)}</span>` : ''}<small>${esc(n.source || '')}${n.date ? ' · ' + esc(n.date.slice(5).replace('-', '/')) : ''} ↗</small></a>`).join('')}` : '';
+    p.innerHTML = `<div class="sn-h"><h2>天象速报</h2><button class="sky-btn sm" data-news-close aria-label="收起天象速报">×</button></div>
+      <h3>近期天象 <small>未来 60 天 · 点一下跳到那时的星空</small></h3><div class="evs">${evs}</div>${news}
+      <p class="sn-foot">天象按广州的位置和日期现算（astronomy-engine）${N ? '；新闻每月 1 日自动更新，来自 ' + esc([...new Set(N.items.map((n) => n.source).filter(Boolean))].slice(0, 4).join('、')) : ''}。</p>`;
+  },
+  jumpEvent(e) {
+    if (!e) return;
+    this.t = new Date(e.jump); this.bodies = []; this.paused = false; this.si = 3;
+    const view = this.L.views[this.vi]; let alt = null, az = null;
+    try {
+      const obs = new Astronomy.Observer(view.lat, view.lon, view.eye);
+      if (e.radiant) { const hz = Astronomy.Horizon(this.t, obs, e.radiant[0] / 15, e.radiant[1], 'normal'); alt = hz.altitude; az = hz.azimuth; }
+      else if (e.body) { const eq = Astronomy.Equator(e.body, this.t, obs, true, true); const hz = Astronomy.Horizon(this.t, obs, eq.ra, eq.dec, 'normal'); alt = hz.altitude; az = hz.azimuth; }
+    } catch (err) { /* keep the view */ }
+    if (alt != null && alt > -2) {
+      const a0 = this.az, h0 = this.alt, da = ((az - a0 + 540) % 360) - 180, ta = Math.max(8, Math.min(70, alt + 6)), t0 = performance.now();
+      const step = (now) => { const k = Math.min(1, (now - t0) / 700), q = k * k * (3 - 2 * k); this.az = (a0 + da * q + 360) % 360; this.alt = h0 + (ta - h0) * q; if (k < 1) requestAnimationFrame(step); };
+      requestAnimationFrame(step);
+    }
+    const d = this.t, hint = $('#skyHint');
+    hint.textContent = `已跳到 ${d.getMonth() + 1}月${d.getDate()}日 ${hhmm(d)}：${e.title}${alt != null && alt <= -2 ? '（此时在地平线下）' : e.radiant ? '（看向辐射点）' : ''} · 点“现在”回到此刻`;
+    hint.classList.remove('fade'); clearTimeout(this._hintT); this._hintT = setTimeout(() => hint.classList.add('fade'), 6000);
+    this.syncUI(); if (this.opt.tonight) this.renderTonight();
   },
   renderTonight() {
     const p = $('#skyTonightPanel'); p.hidden = !this.opt.tonight; if (!this.opt.tonight) return;
