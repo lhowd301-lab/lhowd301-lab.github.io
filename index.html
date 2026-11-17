@@ -690,7 +690,7 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
 .stc-th.on{opacity:1;box-shadow:0 0 0 2px var(--white),0 6px 14px -4px rgba(8,18,40,.35)}
 .stc-geo{padding:12px 16px 2px;transition:opacity .16s ease}.stc-geo.swap{opacity:0}
 .stc-geo .g-top{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 8px}.stc-geo .g-top svg{width:13px;height:13px;align-self:center;color:var(--blue,#2563EB);flex:none}
-.stc-geo b{font-size:15px;font-weight:600;color:var(--ink)}.stc-geo .g-date{margin-left:auto}.stc-geo .mono{font-size:11px;letter-spacing:.06em;color:var(--ink-3)}
+.stc-geo b{font-size:15px;font-weight:600;color:var(--ink)}.stc-geo .g-date,.stc-geo .g-by{margin-left:auto}.stc-geo .g-date~.g-by{margin-left:0}.stc-geo .mono{font-size:11px;letter-spacing:.06em;color:var(--ink-3)}
 .stc-bar .st-nav{margin-left:auto}
 .st-nav{display:flex;gap:6px}
 .st-nav .icon-btn{width:32px;height:32px;border-radius:50%;cursor:pointer;background:rgba(255,255,255,.6);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:var(--ink-2);transition:transform .25s,background .25s,color .25s}
@@ -708,6 +708,7 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
 .viewer .vcap{position:absolute;left:0;right:0;bottom:24px;display:flex;justify-content:center;gap:6px;pointer-events:none}
 .viewer .vcap i{width:6px;height:6px;border-radius:3px;background:rgba(219,234,254,.35);transition:width .35s cubic-bezier(.2,.8,.2,1),background .35s}
 .viewer .vcap i.on{width:20px;background:#fff}
+.viewer .vby{position:absolute;right:20px;bottom:20px;font:500 11px/1 var(--f-mono);letter-spacing:.08em;color:rgba(219,234,254,.72);pointer-events:none}
 .viewer button{position:absolute;width:42px;height:42px;border-radius:50%;border:1px solid rgba(219,234,254,.25);background:rgba(15,30,60,.6);color:#fff;display:grid;place-items:center;cursor:pointer}
 .viewer button svg{width:18px;height:18px}
 .viewer .vclose{top:14px;right:14px}
@@ -1524,6 +1525,8 @@ const SITE = {
     { id: 'tpe', name: '台北', en: 'TAIPEI', center: [121.52, 25.04], zoom: 9.8, ready: true, far: true },
     { id: 'hangzhou', name: '杭州', en: 'HANGZHOU', center: [120.155, 30.274], zoom: 9.6, ready: true, far: true },
     { id: 'shantou', name: '汕头', en: 'SHANTOU', center: [116.68, 23.355], zoom: 9.6, ready: true, far: true },
+    { id: 'luoyang', name: '洛阳', en: 'LUOYANG', center: [112.454, 34.619], zoom: 9.6, ready: true, far: true },
+    { id: 'kaifeng', name: '开封', en: 'KAIFENG', center: [114.307, 34.797], zoom: 9.6, ready: true, far: true },
     { id: 'world', name: '全国 · 世界', en: 'CHINA & WORLD', center: [105, 32], zoom: 3.3, ready: true, far: true, overview: true },
   ],
 
@@ -1639,6 +1642,8 @@ const SITE = {
       note: '过年逛越秀西湖花市时拍的。', photos: [{ src: 'photos/xihu-02.jpg', thumb: 'photos/xihu-02-s.jpg', cap: '花街入口', ar: 1.603 }, { src: 'photos/xihu-01.jpg', thumb: 'photos/xihu-01-s.jpg', cap: '灯笼下的花档', ar: 1.5 }, { src: 'photos/xihu-04.jpg', thumb: 'photos/xihu-04-s.jpg', cap: '骑在肩上看花灯', ar: 1.603 }, { src: 'photos/xihu-05.jpg', thumb: 'photos/xihu-05-s.jpg', cap: '写挥春', ar: 1.5 }] },
     { id: 's2', city: 'gz', title: '教育路 75 号 · 风车', place: '越秀 · 教育路 75 号', lnglat: [113.26032, 23.12538], date: '2024-02 · 春节',
       note: '过年逛越秀西湖花市时拍的。', photos: [{ src: 'photos/xihu-03.jpg', thumb: 'photos/xihu-03-s.jpg', cap: '门口挂满风车', ar: 1.294 }] },
+    { id: 's80', city: 'gz', title: '粤海关旧址', place: '越秀 · 沿江西路 29 号', lnglat: [113.2591, 23.11565], date: '',
+      note: '沿江西路上的粤海关大楼（大钟楼），1916 年落成，红砖墙、一排石柱，楼顶正中是钟楼。这两张是 Vinson 拍的：一张正面，一张无人机从正上方往下看。', photos: [{ src: 'photos/gz-yuehaiguan-01.jpg', thumb: 'photos/gz-yuehaiguan-01-s.jpg', cap: '粤海关大楼的正面', ar: 1.778, by: 'Vinson' }, { src: 'photos/gz-yuehaiguan-02.jpg', thumb: 'photos/gz-yuehaiguan-02-s.jpg', cap: '从正上方往下看粤海关', ar: 1.778, by: 'Vinson' }] },
     { id: 's73', city: 'gz', title: '宝岗大道 · 南北广场 · 烟花', place: '海珠 · 宝岗大道 160 号', lnglat: [113.26525, 23.0896], date: '',
       note: '在海珠区宝岗大道南北广场的高处，隔着一片楼看江上放烟花。', photos: [{ src: 'photos/gz-baogang-fw-01.jpg', thumb: 'photos/gz-baogang-fw-01-s.jpg', cap: '三朵金色的烟花', ar: 1.5 }, { src: 'photos/gz-baogang-fw-02.jpg', thumb: 'photos/gz-baogang-fw-02-s.jpg', cap: '一大朵垂下来的金色烟花', ar: 1.333 }, { src: 'photos/gz-baogang-fw-03.jpg', thumb: 'photos/gz-baogang-fw-03-s.jpg', cap: '漫天的烟花和楼顶的灯', ar: 1.5 }, { src: 'photos/gz-baogang-fw-04.jpg', thumb: 'photos/gz-baogang-fw-04-s.jpg', cap: '红绿交织的烟花', ar: 1.5 }] },
     { id: 's3', city: 'gz', title: '仁济路 56 号 · 挥春与香烛', place: '越秀 · 仁济路 56 号', lnglat: [113.25032, 23.11292], date: '2024-02 · 春节',
@@ -1736,6 +1741,12 @@ const SITE = {
     { id: 's43', city: 'sz', title: '莲花山 · 福田中心区', place: '福田 · 莲花山附近', lnglat: [114.0565, 22.5560], approx: true, date: '',
       note: '从高处望福田中心区：傍晚的阳光照在平安金融中心和一排写字楼上，前面是一片树林和市民中心波浪形的屋顶，远处的山腰缠着云；下雨天隔着窗再看，平安金融中心在雨雾里只剩一个影子。', photos: [{ src: 'photos/sz-futian-01.jpg', thumb: 'photos/sz-futian-01-s.jpg', cap: '傍晚的平安金融中心和市民中心', ar: 1.455 }, { src: 'photos/sz-futian-02.jpg', thumb: 'photos/sz-futian-02-s.jpg', cap: '雨天窗外的平安金融中心', ar: 0.75 }] },
     // 大湾区以外：一座城市一组照片，地图上只有一个点（在城市中心），卡片里左右翻
+    { id: 's75', city: 'dg', title: '逆水流龟村堡', place: '虎门 · 白沙', lnglat: [113.6720, 22.8545], date: '',
+      note: '虎门白沙的逆水流龟村堡：明代留下来的方形村堡，四周一圈护城河，只有一座桥通到门楼，里面七十多间老屋，巷子正中是一条排水沟。', photos: [{ src: 'photos/dg-nishuiliugui-01.jpg', thumb: 'photos/dg-nishuiliugui-01-s.jpg', cap: '护城河、小桥和村堡的门楼', ar: 1.333 }, { src: 'photos/dg-nishuiliugui-02.jpg', thumb: 'photos/dg-nishuiliugui-02-s.jpg', cap: '村里的主巷，正中一条排水沟', ar: 1.333 }, { src: 'photos/dg-nishuiliugui-03.jpg', thumb: 'photos/dg-nishuiliugui-03-s.jpg', cap: '搭着脚手架在修的老屋', ar: 1.333 }] },
+    { id: 's76', city: 'dg', title: '虎门火车站 · 东莞地铁 2 号线', place: '虎门 · 虎门火车站', lnglat: [113.6668, 22.8622], date: '',
+      note: '东莞地铁 2 号线的终点虎门火车站，在高架站台的尽头看一列 2 号线列车开进站，后面是一片小山。', photos: [{ src: 'photos/dg-humen-metro-01.jpg', thumb: 'photos/dg-humen-metro-01-s.jpg', cap: '开进虎门火车站的 2 号线列车', ar: 1.333 }] },
+    { id: 's77', city: 'dg', title: '虎门大桥', place: '虎门 · 珠江口', lnglat: [113.6185, 22.7905], date: '',
+      note: '开车过虎门大桥：白色的桥塔、一根根吊索，桥下就是珠江口。', photos: [{ src: 'photos/dg-humen-bridge-01.jpg', thumb: 'photos/dg-humen-bridge-01-s.jpg', cap: '虎门大桥的桥塔和吊索', ar: 1.333 }] },
     { id: 's46', city: 'tokyo', title: '东京', place: '日本 · 东京', date: '',
       note: '东京：入夜的涩谷十字路口、六本木高处望出去的东京塔（阴天和亮灯后各一张）、新宿东口的霓虹、秋叶原的松本清、银座站的出入口、JR 站台。',
       photos: [{ src: 'photos/jp-tokyo-02.jpg', thumb: 'photos/jp-tokyo-02-s.jpg', cap: '涩谷十字路口', ar: 1.5, loc: '涩谷十字路口', area: '日本 · 东京都 · 涩谷区' }, { src: 'photos/jp-tokyo-07.jpg', cap: '入夜亮灯的东京塔', ar: 1.5, loc: '东京塔', area: '日本 · 东京都 · 港区' }, { src: 'photos/jp-tokyo-03.jpg', cap: '窗边的两个人和东京塔', ar: 0.667, loc: '东京塔', area: '日本 · 东京都 · 港区' }, { src: 'photos/jp-tokyo-05.jpg', cap: '新宿东口的霓虹和车流', ar: 1.5, loc: '新宿东口', area: '日本 · 东京都 · 新宿区' }, { src: 'photos/jp-tokyo-04.jpg', cap: '秋叶原的松本清', ar: 1.5, loc: '秋叶原', area: '日本 · 东京都 · 千代田区' }, { src: 'photos/jp-tokyo-06.jpg', cap: '银座站 A8 出口', ar: 0.667, loc: '银座站', area: '日本 · 东京都 · 中央区' }, { src: 'photos/jp-tokyo-01.jpg', cap: '京浜东北线和山手线的站台', ar: 1.5, loc: '东京', area: '日本 · 东京都' }] },
@@ -1770,8 +1781,8 @@ const SITE = {
       note: '武汉：蓝调时分的黄鹤楼，山下是亮着信号灯的铁路。',
       photos: [{ src: 'photos/cn-wuhan-01.jpg', thumb: 'photos/cn-wuhan-01-s.jpg', cap: '蓝调时分的黄鹤楼和山下的铁路', ar: 1.392, loc: '黄鹤楼', area: '中国 · 湖北 · 武汉 · 武昌区' }] },
     { id: 's68', city: 'nj', title: '南京', place: '中国 · 江苏 · 南京', date: '',
-      note: '南京：暮色里的玄武湖和紫峰大厦，高处看下去的城市夜景，古鸡鸣寺的黄墙，总统府里的蜡像，钟山脚下的梧桐大道。',
-      photos: [{ src: 'photos/cn-nanjing-05.jpg', thumb: 'photos/cn-nanjing-05-s.jpg', cap: '暮色里的玄武湖和紫峰大厦', ar: 0.75, loc: '玄武湖', area: '中国 · 江苏 · 南京 · 玄武区' }, { src: 'photos/cn-nanjing-01.jpg', cap: '高处看南京夜景', ar: 0.75, loc: '新街口一带', area: '中国 · 江苏 · 南京' }, { src: 'photos/cn-nanjing-03.jpg', cap: '古鸡鸣寺', ar: 0.736, loc: '鸡鸣寺', area: '中国 · 江苏 · 南京 · 玄武区' }, { src: 'photos/cn-nanjing-02.jpg', cap: '总统府里的蜡像', ar: 1.333, loc: '总统府', area: '中国 · 江苏 · 南京 · 玄武区' }, { src: 'photos/cn-nanjing-04.jpg', cap: '梧桐大道', ar: 0.705, loc: '陵园路', area: '中国 · 江苏 · 南京 · 玄武区' }] },
+      note: '南京：暮色里的玄武湖和紫峰大厦，高处看下去的城市夜景，古鸡鸣寺的黄墙，总统府里的蜡像，钟山脚下的梧桐大道，紫金山上望过去的天际线，太平门的明城墙，还有紫金山天文台圆顶里的老望远镜。',
+      photos: [{ src: 'photos/cn-nanjing-05.jpg', thumb: 'photos/cn-nanjing-05-s.jpg', cap: '暮色里的玄武湖和紫峰大厦', ar: 0.75, loc: '玄武湖', area: '中国 · 江苏 · 南京 · 玄武区' }, { src: 'photos/cn-nanjing-01.jpg', cap: '高处看南京夜景', ar: 0.75, loc: '新街口一带', area: '中国 · 江苏 · 南京' }, { src: 'photos/cn-nanjing-03.jpg', cap: '古鸡鸣寺', ar: 0.736, loc: '鸡鸣寺', area: '中国 · 江苏 · 南京 · 玄武区' }, { src: 'photos/cn-nanjing-02.jpg', cap: '总统府里的蜡像', ar: 1.333, loc: '总统府', area: '中国 · 江苏 · 南京 · 玄武区' }, { src: 'photos/cn-nanjing-04.jpg', cap: '梧桐大道', ar: 0.705, loc: '陵园路', area: '中国 · 江苏 · 南京 · 玄武区' }, { src: 'photos/cn-nanjing-06.jpg', thumb: 'photos/cn-nanjing-06-s.jpg', cap: '紫金山上远眺玄武湖和紫峰大厦', ar: 1.333, loc: '紫金山', area: '中国 · 江苏 · 南京 · 玄武区' }, { src: 'photos/cn-nanjing-07.jpg', thumb: 'photos/cn-nanjing-07-s.jpg', cap: '太平门的明城墙', ar: 1.333, loc: '太平门', area: '中国 · 江苏 · 南京 · 玄武区' }, { src: 'photos/cn-nanjing-08.jpg', thumb: 'photos/cn-nanjing-08-s.jpg', cap: '紫金山天文台圆顶里的蔡司望远镜', ar: 1.333, loc: '紫金山天文台', area: '中国 · 江苏 · 南京 · 玄武区' }] },
     { id: 's69', city: 'cs', title: '长沙', place: '中国 · 湖南 · 长沙', date: '',
       note: '长沙岳麓山下：枫林里的爱晚亭，岳麓书院的大门和“惟楚有材，于斯为盛”的对联，湖南大学的红砖老楼。',
       photos: [{ src: 'photos/cn-changsha-02.jpg', thumb: 'photos/cn-changsha-02-s.jpg', cap: '枫林里的爱晚亭', ar: 1.5, loc: '岳麓山 · 爱晚亭', area: '中国 · 湖南 · 长沙 · 岳麓区' }, { src: 'photos/cn-changsha-01.jpg', cap: '岳麓书院大门', ar: 1.5, loc: '岳麓书院', area: '中国 · 湖南 · 长沙 · 岳麓区' }, { src: 'photos/cn-changsha-03.jpg', cap: '湖南大学的老楼', ar: 1.538, loc: '湖南大学', area: '中国 · 湖南 · 长沙 · 岳麓区' }] },
@@ -1787,6 +1798,12 @@ const SITE = {
     { id: 's74', city: 'shantou', title: '汕头', place: '中国 · 广东 · 汕头', date: '',
       note: '汕头：小公园开埠区骑楼上一块块老字号招牌，还有晴天里江边的绿道。',
       photos: [{ src: 'photos/cn-shantou-01.jpg', thumb: 'photos/cn-shantou-01-s.jpg', cap: '小公园开埠区的老招牌', ar: 1.333, loc: '小公园开埠区', area: '中国 · 广东 · 汕头 · 金平区' }, { src: 'photos/cn-shantou-02.jpg', thumb: 'photos/cn-shantou-02-s.jpg', cap: '骑楼上的老字号', ar: 1.333, loc: '小公园开埠区 · 骑楼', area: '中国 · 广东 · 汕头 · 金平区' }, { src: 'photos/cn-shantou-03.jpg', thumb: 'photos/cn-shantou-03-s.jpg', cap: '江边的绿道', ar: 1.333, loc: '江边绿道', area: '中国 · 广东 · 汕头' }] },
+    { id: 's78', city: 'luoyang', title: '洛阳', place: '中国 · 河南 · 洛阳', date: '',
+      note: '洛阳：龙门石窟奉先寺的卢舍那大佛，还有洛阳博物馆里那只曹魏的白玉杯。',
+      photos: [{ src: 'photos/cn-luoyang-01.jpg', thumb: 'photos/cn-luoyang-01-s.jpg', cap: '龙门石窟 · 卢舍那大佛', ar: 1.333, loc: '龙门石窟 · 奉先寺', area: '中国 · 河南 · 洛阳 · 洛龙区' }, { src: 'photos/cn-luoyang-02.jpg', thumb: 'photos/cn-luoyang-02-s.jpg', cap: '洛阳博物馆里的曹魏白玉杯', ar: 1.333, loc: '洛阳博物馆', area: '中国 · 河南 · 洛阳 · 洛龙区' }] },
+    { id: 's79', city: 'kaifeng', title: '开封', place: '中国 · 河南 · 开封', date: '',
+      note: '开封：清明上河园的大门，还有夜里亮灯的开封鼓楼。',
+      photos: [{ src: 'photos/cn-kaifeng-01.jpg', thumb: 'photos/cn-kaifeng-01-s.jpg', cap: '清明上河园的大门', ar: 1.333, loc: '清明上河园', area: '中国 · 河南 · 开封 · 龙亭区' }, { src: 'photos/cn-kaifeng-02.jpg', thumb: 'photos/cn-kaifeng-02-s.jpg', cap: '夜里的开封鼓楼', ar: 1.333, loc: '开封鼓楼', area: '中国 · 河南 · 开封 · 鼓楼区' }] },
     { id: 's58', city: 'sg', title: '新加坡', place: '新加坡', date: '',
       note: '新加坡：植物园的白色音乐台，福康宁公园的树洞，旧禧街警察局一扇扇彩色的窗，牛车水的店屋和后面的高楼，丹戎巴葛的店屋和组屋，陈旭年宅第旁的路口，树荫下的 ERP 闸门。',
       photos: [{ src: 'photos/sg-05.jpg', thumb: 'photos/sg-05-s.jpg', cap: '植物园的音乐台', ar: 1.5, loc: '新加坡植物园 · 音乐台', area: '新加坡 · 东陵' }, { src: 'photos/sg-01.jpg', thumb: 'photos/sg-01-s.jpg', cap: '福康宁公园的树洞', ar: 1.5, loc: '福康宁公园', area: '新加坡 · 中区' }, { src: 'photos/sg-07.jpg', cap: '旧禧街警察局的彩色窗', ar: 0.667, loc: '旧禧街警察局', area: '新加坡 · 中区' }, { src: 'photos/sg-06.jpg', cap: '牛车水的老街和后面的高楼', ar: 0.667, loc: '牛车水', area: '新加坡 · 中区' }, { src: 'photos/sg-04.jpg', cap: '店屋和组屋', ar: 0.667, loc: '丹戎巴葛', area: '新加坡 · 中区' }, { src: 'photos/sg-03.jpg', cap: '陈旭年宅第旁的路口', ar: 1.5, loc: '克里门梭道', area: '新加坡 · 乌节一带' }, { src: 'photos/sg-02.jpg', cap: 'ERP 闸门下的公路', ar: 0.667, loc: '新加坡', area: '' }] },
@@ -6431,7 +6448,7 @@ function flyToItem(item, force) {
 // 外地照片的地理位置：地点和所在地区（不写介绍）
 // 扫街照片下面那行：拍摄地点、区域；有拍摄日期就写在最后（照片自己的日期优先，没有就用这组照片的日期）
 const shotDate = (d) => (/^\d{4}-\d{2}(-\d{2})?$/.test(d || '') ? d.replace(/-/g, '.') : d || '');
-const geoLine = (p, it = {}) => `<div class="g-top">${p.loc ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg>` : ''}${p.loc ? `<b>${esc(p.loc)}</b>` : ''}<span class="mono">${esc(p.area || '')}</span>${p.date || it.date ? `<span class="mono g-date">${esc(shotDate(p.date || it.date))}</span>` : ''}</div>`;
+const geoLine = (p, it = {}) => `<div class="g-top">${p.loc ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg>` : ''}${p.loc ? `<b>${esc(p.loc)}</b>` : ''}<span class="mono">${esc(p.area || '')}</span>${p.date || it.date ? `<span class="mono g-date">${esc(shotDate(p.date || it.date))}</span>` : ''}${p.by ? `<span class="mono g-by">摄影 · ${esc(p.by)}</span>` : ''}</div>`;
 function bindShots(d, item) {
   const ph = item.photos, hero = d.querySelector('.stc-hero'), amb = d.querySelector('.stc-amb'), ths = [...d.querySelectorAll('.stc-th')];
   if (!hero) return;
@@ -6486,7 +6503,7 @@ function openViewer(photos, i = 0, tiles = null, onStep = null) {
   const fit = (img) => { const ar = arOf(i); const W = window.innerWidth - 32, H = window.innerHeight - 120; const w = Math.min(W, H * ar); img.style.width = `${w}px`; img.style.height = `${w / ar}px`; };
   const show = (dir = 0) => {
     const p = photos[i];
-    v.innerHTML = `<img class="vimg" src="${p.thumb || p.src}" alt="${esc(p.cap)}" draggable="false"><div class="vcap" aria-label="${i + 1} / ${photos.length}">${many ? photos.map((_, k) => `<i class="${k === i ? 'on' : ''}"></i>`).join('') : ''}</div>${many ? `<button class="vnav prev" aria-label="上一张">${ICONS.prev}</button><button class="vnav next" aria-label="下一张">${ICONS.next}</button>` : ''}<button class="vclose" aria-label="关闭">${ICONS.close}</button>`;
+    v.innerHTML = `<img class="vimg" src="${p.thumb || p.src}" alt="${esc(p.cap)}" draggable="false"><div class="vcap" aria-label="${i + 1} / ${photos.length}">${many ? photos.map((_, k) => `<i class="${k === i ? 'on' : ''}"></i>`).join('') : ''}</div>${many ? `<button class="vnav prev" aria-label="上一张">${ICONS.prev}</button><button class="vnav next" aria-label="下一张">${ICONS.next}</button>` : ''}<button class="vclose" aria-label="关闭">${ICONS.close}</button>${p.by ? `<div class="vby">摄影 · ${esc(p.by)}</div>` : ''}`;
     const img = v.querySelector('.vimg'); fit(img);
     if (p.thumb && p.thumb !== p.src) { const full = new Image(); full.onload = () => { if (img.isConnected) img.src = p.src; }; full.src = p.src; }
     if (dir && anim) img.animate([{ opacity: 0, transform: `translateX(${dir * 40}px) scale(.97)` }, { opacity: 1, transform: 'none' }], { duration: 360, easing: 'cubic-bezier(.2,.8,.2,1)' });
@@ -6510,7 +6527,7 @@ function openViewer(photos, i = 0, tiles = null, onStep = null) {
     const done = () => { v.hidden = true; v.getAnimations({ subtree: true }).forEach((a) => a.cancel()); document.querySelectorAll('.st-lifted').forEach((x) => x.classList.remove('st-lifted')); (t || tileAt(0))?.focus?.({ preventScroll: true }); };
     if (!anim || !img) { done(); return; }
     v.animate([{ backgroundColor: 'rgba(4,10,24,.92)' }, { backgroundColor: 'rgba(4,10,24,0)' }], { duration: 320, fill: 'forwards' });
-    v.querySelectorAll('button,.vcap').forEach((e) => e.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 160, fill: 'forwards' }));
+    v.querySelectorAll('button,.vcap,.vby').forEach((e) => e.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 160, fill: 'forwards' }));
     if (t) { t.classList.add('st-lifted'); flip(img, t, true).finished.then(done, done); }
     else img.animate([{ opacity: 1 }, { opacity: 0, transform: 'scale(.96)' }], { duration: 240, fill: 'forwards' }).finished.then(done, done);
   };
@@ -6533,7 +6550,7 @@ function openViewer(photos, i = 0, tiles = null, onStep = null) {
   v.querySelector('.vclose').focus({ preventScroll: true });
   if (!anim) return;
   v.animate([{ backgroundColor: 'rgba(4,10,24,0)' }, { backgroundColor: 'rgba(4,10,24,.92)' }], { duration: 320, easing: 'ease-out' });
-  v.querySelectorAll('button,.vcap').forEach((e) => e.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 260, delay: 200, fill: 'backwards' }));
+  v.querySelectorAll('button,.vcap,.vby').forEach((e) => e.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 260, delay: 200, fill: 'backwards' }));
   const t = tileOf(i);
   if (t) { t.classList.add('st-lifted'); flip(img, t).finished.then(() => t.classList.remove('st-lifted'), () => t.classList.remove('st-lifted')); }
   else img.animate([{ opacity: 0, transform: 'scale(.96)' }, { opacity: 1, transform: 'none' }], { duration: 300 });
@@ -6615,7 +6632,7 @@ function detailHTML(type, it) {
       <div class="stc-amb" aria-hidden="true"><img src="${ph[0].thumb || ph[0].src}" alt=""></div>
       <h2 class="sr">${esc(it.title)}</h2>
       <button class="stc-hero" aria-label="查看大图"><img src="${ph[0].thumb || ph[0].src}" alt="${esc(ph[0].cap || '')}" draggable="false"></button>
-      ${ph.some((p) => p.loc || p.date) || it.date ? `<div class="stc-geo" aria-live="polite">${geoLine(ph[0], it)}</div>` : ''}
+      ${ph.some((p) => p.loc || p.date || p.by) || it.date ? `<div class="stc-geo" aria-live="polite">${geoLine(ph[0], it)}</div>` : ''}
       <div class="stc-bar">${ph.length > 1 ? `<div class="stc-strip">${ph.map((p, i) => `<button class="stc-th${i ? '' : ' on'}" data-k="${i}" style="--ar:${p.ar || 1.333}" aria-label="第 ${i + 1} 张：${esc(p.cap || '')}"><img src="${p.thumb || p.src}" alt="" draggable="false" loading="lazy" decoding="async"></button>`).join('')}</div>` : ''}<span class="st-nav"><button class="icon-btn" ${flip ? 'data-ph="-1" aria-label="上一张"' : `data-go="${prev.id}" aria-label="上一个"`}>${ICONS.prev}</button>${it.lnglat ? `<button class="icon-btn" data-fly aria-label="在地图上定位">${ICONS.target}</button>` : ''}<button class="icon-btn" ${flip ? 'data-ph="1" aria-label="下一张"' : `data-go="${next.id}" aria-label="下一个"`}>${ICONS.next}</button></span></div></div>`;
   }
   if (type === 'landmark') {

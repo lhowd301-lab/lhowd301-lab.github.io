@@ -856,7 +856,7 @@ $('#stHere').addEventListener('click', () => locate(stSetLoc));
 $('#stClear').addEventListener('click', () => stSetLoc(null));
 function renderSt() {
   $('#stPhotos').innerHTML = stPhotos.map((p, i) => `<div class="sph" data-i="${i}"><div class="im"><img src="${esc(p.preview || imgUrl(p.thumb || p.src))}" alt="" loading="lazy">${p.busy ? '<span class="up">上传中…</span>' : ''}<span class="tb">${i ? '<button type="button" data-left title="往前挪">←</button>' : ''}<button type="button" data-rm title="去掉这张">×</button></span></div>
-      <div class="fs"><input class="input" data-k="cap" maxlength="80" placeholder="照片说明" value="${esc(p.cap)}"><input class="input" data-k="loc" maxlength="80" placeholder="拍摄地点（可不填）" value="${esc(p.loc)}"><input class="input" data-k="area" maxlength="100" placeholder="所在区域，比如 中国 · 广州 · 越秀区（可不填）" value="${esc(p.area)}"><label class="pdate"><span>拍摄日期</span><input class="input" type="date" data-k="date" value="${esc(p.date || '')}" max="${new Date().toISOString().slice(0, 10)}"><span class="hint">可不填</span></label></div></div>`).join('')
+      <div class="fs"><input class="input" data-k="cap" maxlength="80" placeholder="照片说明" value="${esc(p.cap)}"><input class="input" data-k="loc" maxlength="80" placeholder="拍摄地点（可不填）" value="${esc(p.loc)}"><input class="input" data-k="area" maxlength="100" placeholder="所在区域，比如 中国 · 广州 · 越秀区（可不填）" value="${esc(p.area)}"><input class="input" data-k="by" maxlength="40" placeholder="拍摄者，别人拍的才填（会显示「摄影 · 名字」）" value="${esc(p.by || '')}"><label class="pdate"><span>拍摄日期</span><input class="input" type="date" data-k="date" value="${esc(p.date || '')}" max="${new Date().toISOString().slice(0, 10)}"><span class="hint">可不填</span></label></div></div>`).join('')
     + (stPhotos.length < 60 ? '<button type="button" class="add-sph" id="stAdd">＋ 加照片</button>' : '');
   $('#stPhotos').querySelectorAll('.sph').forEach((el) => {
     const i = +el.dataset.i, p = stPhotos[i];
@@ -884,7 +884,7 @@ Items.street = makeItems('street', {
     $('#stTitle').value = d.title || ''; $('#stCity').value = d.city || 'gz'; if (!$('#stCity').value) $('#stCity').value = 'gz';
     $('#stPlace').value = d.place || ''; $('#stDate').value = d.date || ''; $('#stNote').value = d.note || '';
     stSetLoc(d.lnglat || null); stHint();
-    stPhotos = (d.photos || []).map((p) => ({ ...p, cap: p.cap || '', loc: p.loc || '', area: p.area || '', date: p.date || '' })); renderSt();
+    stPhotos = (d.photos || []).map((p) => ({ ...p, cap: p.cap || '', loc: p.loc || '', area: p.area || '', by: p.by || '', date: p.date || '' })); renderSt();
   },
   read(d) {
     if (stPhotos.some((p) => p.busy)) throw new Error('照片还在上传，等一下');
@@ -893,7 +893,7 @@ Items.street = makeItems('street', {
     if (!stLL && !cityOf(d.city).far) throw new Error('还没选地图上的位置');
     if (stLL) d.lnglat = stLL; else delete d.lnglat;
     delete d.approx;
-    d.photos = stPhotos.filter((p) => p.src).map((p) => { const x = { src: p.src, cap: (p.cap || '').trim(), ar: p.ar || 1.5 }; if (p.thumb) x.thumb = p.thumb; if ((p.loc || '').trim()) x.loc = p.loc.trim(); if ((p.area || '').trim()) x.area = p.area.trim(); if (/^\d{4}-\d{2}-\d{2}$/.test(p.date || '')) x.date = p.date; return x; });
+    d.photos = stPhotos.filter((p) => p.src).map((p) => { const x = { src: p.src, cap: (p.cap || '').trim(), ar: p.ar || 1.5 }; if (p.thumb) x.thumb = p.thumb; if ((p.loc || '').trim()) x.loc = p.loc.trim(); if ((p.area || '').trim()) x.area = p.area.trim(); if ((p.by || '').trim()) x.by = p.by.trim(); if (/^\d{4}-\d{2}-\d{2}$/.test(p.date || '')) x.date = p.date; return x; });
     if (!d.photos.length) throw new Error('至少要加一张照片');
     return d;
   },

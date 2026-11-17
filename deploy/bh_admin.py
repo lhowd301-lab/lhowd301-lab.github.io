@@ -358,6 +358,7 @@ def clean_street(o):
         if photo_ok(p.get('thumb')): x['thumb'] = p['thumb']
         if text(p, 'loc', 80): x['loc'] = text(p, 'loc', 80)
         if text(p, 'area', 100): x['area'] = text(p, 'area', 100)
+        if text(p, 'by', 40): x['by'] = text(p, 'by', 40)   # 别人拍的：显示「摄影 · 名字」
         if re.match(r'^\d{4}-\d{2}(-\d{2})?$', str(p.get('date') or '')): x['date'] = p['date']   # 拍摄日期（可不填）
         photos.append(x)
     if not photos: raise ValueError('至少要有一张照片')
