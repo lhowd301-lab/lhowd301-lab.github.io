@@ -653,6 +653,7 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
 .d-sub{margin:-8px 0 0;font-size:12.5px;color:var(--ink-2)}
 .d-text{margin:0;font-size:14px;line-height:1.8;color:var(--ink)}
 .d-diary{white-space:pre-line}
+.d-fig{margin:2px 0}.d-fig a{display:block;overflow:hidden;border-radius:12px;background:var(--ice)}.d-fig img{width:100%;height:100%;object-fit:cover;display:block}
 .d-photos{display:grid;gap:8px;margin:14px 0 2px}
 .d-photos a{display:block;overflow:hidden;border-radius:12px;background:var(--ice)}
 .d-photos img{width:100%;height:100%;object-fit:cover;display:block}
@@ -6949,9 +6950,27 @@ function detailHTML(type, it) {
   return `<div class="d-body" style="padding-top:22px">
     <div class="d-kicker">${it.sample ? SAMPLE : ''}${it.pinned ? '<span class="ktop">置顶</span>' : ''}${ktag(it)}<span class="mono">${esc(it.date)}</span><span>${esc(it.place)}</span></div>
     <h2 class="d-title">${esc(it.title)}</h2>
-    <p class="d-text d-diary">${esc(it.text)}</p>
-    ${(it.photos || []).length ? `<div class="d-photos">${it.photos.map((p) => `<a href="${esc(p.src)}" target="_blank" rel="noopener" style="aspect-ratio:${+p.ar || 1.333}"><img src="${esc(p.src)}" alt="" loading="lazy"></a>`).join('')}</div>` : ''}
+    ${diaryBody(it)}
     ${navRow(list, it)}</div>`;
+}
+
+// 日志正文：单独一行写 [图1]、[图2]……就把第几张照片放在那里；正文里没提到的照片照旧放在最后
+const PIC_LINE = /^\s*[\[［]\s*图\s*(\d{1,2})\s*[\]］]\s*$/;
+const diaryPlain = (t) => String(t || '').split('\n').filter((l) => !PIC_LINE.test(l)).join('\n').replace(/\n{3,}/g, '\n\n').trim();
+function diaryBody(it) {
+  const ph = it.photos || [], used = new Set(); let out = '', buf = [];
+  const pic = (p) => `<a href="${esc(p.src)}" target="_blank" rel="noopener" style="aspect-ratio:${+p.ar || 1.333}"><img src="${esc(p.src)}" alt="" loading="lazy"></a>`;
+  const flush = () => { const t = buf.join('\n').replace(/^\n+|\n+$/g, ''); if (t.trim()) out += `<p class="d-text d-diary">${esc(t)}</p>`; buf = []; };
+  for (const line of String(it.text || '').split('\n')) {
+    const m = line.match(PIC_LINE);
+    if (!m) { buf.push(line); continue; }
+    const k = +m[1] - 1;
+    if (!ph[k]) continue;   // 写了不存在的图号：这一行不显示
+    flush(); used.add(k); out += `<figure class="d-fig">${pic(ph[k])}</figure>`;
+  }
+  flush();
+  const rest = ph.filter((_, k) => !used.has(k));
+  return out + (rest.length ? `<div class="d-photos">${rest.map(pic).join('')}</div>` : '');
 }
 
 /* ===================================================================== date, lunar, clock */
@@ -7167,7 +7186,7 @@ function renderDiaryPop() {
   const list = diarySort(SITE.diary.filter((d) => diaryFilter === '全部' || d.tag === diaryFilter));
   $('#diaryPop').innerHTML = `<div class="pop-head"><h3>地图日志</h3><span class="mono" style="font-size:12px;color:var(--ink-3)">${SITE.diary.length} 篇</span></div>
     <div class="chips" style="margin-bottom:8px">${tags.map((t) => `<button class="chip${t === diaryFilter ? '' : ' off'}" data-tag="${esc(t)}">${esc(t)}</button>`).join('')}</div>
-    <div class="d-list">${list.map((d) => `<button class="d-row" data-id="${d.id}"><span class="d-date"><b>${d.date.slice(8)}</b>${d.date.slice(0, 7).replace('-', '.')}</span><span><h4>${esc(d.title)}${d.pinned ? TOPTAG : ''} ${d.sample ? SAMPLE : ''}</h4><p>${esc(d.place)} · ${esc(d.text)}</p></span></button>`).join('') || `<p class="note">${SITE.diary.length ? '这个分类还没有日志。' : '还没有日志。写下第一篇后，它会出现在这里，也会标在写下它的地方。'}</p>`}</div>
+    <div class="d-list">${list.map((d) => `<button class="d-row" data-id="${d.id}"><span class="d-date"><b>${d.date.slice(8)}</b>${d.date.slice(0, 7).replace('-', '.')}</span><span><h4>${esc(d.title)}${d.pinned ? TOPTAG : ''} ${d.sample ? SAMPLE : ''}</h4><p>${esc(d.place)} · ${esc(diaryPlain(d.text))}</p></span></button>`).join('') || `<p class="note">${SITE.diary.length ? '这个分类还没有日志。' : '还没有日志。写下第一篇后，它会出现在这里，也会标在写下它的地方。'}</p>`}</div>
     ${SITE.diary.length ? '<p class="note">点一篇日志，地图会飞到写下它的地方。</p>' : ''}`;
   $('#diaryPop').querySelectorAll('[data-tag]').forEach((b) => b.addEventListener('click', () => { diaryFilter = b.dataset.tag; renderDiaryPop(); }));
   $('#diaryPop').querySelectorAll('.d-row').forEach((b) => b.addEventListener('click', () => { closePops(); openDetail('diary', b.dataset.id); }));

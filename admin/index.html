@@ -95,6 +95,10 @@ textarea.input{min-height:220px;resize:vertical;line-height:1.75}
 .photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
 .ph{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;background:var(--ice)}
 .ph img{width:100%;height:100%;object-fit:cover;display:block}
+.ph .ph-n{position:absolute;left:5px;top:5px;padding:2px 7px;border-radius:999px;background:rgba(15,23,42,.6);color:#fff;font-size:11px;line-height:1.5}
+.ph .ph-n.on{background:#2563EB}
+.ph button.ph-ins{top:auto;right:auto;left:5px;bottom:5px;width:auto;height:auto;border-radius:8px;padding:3px 8px;font-size:11.5px;line-height:1.5;background:rgba(255,255,255,.92);color:#1D4ED8;box-shadow:0 1px 4px rgba(15,23,42,.2);cursor:pointer}
+.ph button.ph-ins:hover{background:#fff}
 .ph button{position:absolute;top:5px;right:5px;width:24px;height:24px;border-radius:50%;border:0;background:rgba(15,23,42,.6);color:#fff;font-size:14px;line-height:24px;padding:0}
 .ph .up{position:absolute;inset:0;display:grid;place-items:center;background:rgba(255,255,255,.7);font-size:12px;color:var(--ink-2)}
 .add-ph{aspect-ratio:1;border-radius:10px;border:1.5px dashed var(--ice-2);display:grid;place-items:center;color:var(--blue);background:none;font-size:13px}
@@ -245,7 +249,8 @@ textarea.input.short{min-height:110px}
               <button type="button" class="btn light" id="pickHere">用我现在的位置</button>
               <button type="button" class="ghost" id="pickClear">清除</button></div>
           </div>
-          <div class="field"><label for="fText">正文</label><textarea class="input" id="fText" maxlength="20000" placeholder="写点什么…（换行会保留）"></textarea></div>
+          <div class="field"><label for="fText">正文</label><textarea class="input" id="fText" maxlength="20000" placeholder="写点什么…（换行会保留）"></textarea>
+            <p class="hint" style="margin:6px 0 0;line-height:1.6">想把照片放在某一段下面：先在正文里点到那一段的末尾，再点照片上的「插到这里」，正文里会多一行 [图1]，网站上这张照片就显示在那个位置。没插进正文的照片还是放在最后。</p></div>
           <div class="field"><label>照片 <span class="muted" style="font-weight:400">（会自动缩小再上传；最多 12 张）</span></label>
             <div class="photos" id="fPhotos"></div>
             <input type="file" id="fFile" accept="image/*" multiple hidden>
@@ -661,10 +666,28 @@ $('#pickMap').addEventListener('click', () => pickOnMap('diary', lnglat, setLoc)
 $('#pickHere').addEventListener('click', () => locate(setLoc));
 $('#pickClear').addEventListener('click', () => setLoc(null));
 function renderPhotos() {
-  $('#fPhotos').innerHTML = photos.map((p, i) => `<div class="ph"><img src="${esc(p.preview || p.src)}" alt="">${p.busy ? '<span class="up">上传中…</span>' : ''}<button type="button" data-rm="${i}" aria-label="去掉这张">×</button></div>`).join('')
+  const inText = new Set([...$('#fText').value.matchAll(/^\s*[\[［]\s*图\s*(\d{1,2})\s*[\]］]\s*$/gm)].map((m) => +m[1] - 1));
+  $('#fPhotos').innerHTML = photos.map((p, i) => `<div class="ph"><img src="${esc(p.preview || p.src)}" alt="">${p.busy ? '<span class="up">上传中…</span>' : `<span class="ph-n${inText.has(i) ? ' on' : ''}">图${i + 1}${inText.has(i) ? ' · 在正文里' : ''}</span><button type="button" class="ph-ins" data-ins="${i}">插到这里</button>`}<button type="button" data-rm="${i}" aria-label="去掉这张">×</button></div>`).join('')
     + (photos.length < 12 ? '<button type="button" class="add-ph" id="addPh">＋ 加照片</button>' : '');
-  $('#fPhotos').querySelectorAll('[data-rm]').forEach((b) => b.addEventListener('click', () => { photos.splice(+b.dataset.rm, 1); renderPhotos(); }));
+  $('#fPhotos').querySelectorAll('[data-rm]').forEach((b) => b.addEventListener('click', () => { const k = +b.dataset.rm; photos.splice(k, 1); renumberPics(k); renderPhotos(); }));
+  $('#fPhotos').querySelectorAll('[data-ins]').forEach((b) => b.addEventListener('click', () => insertPic(+b.dataset.ins)));
   $('#addPh')?.addEventListener('click', () => $('#fFile').click());
+}
+// 正文里插照片：在光标所在的位置（没点过正文就放在最后）单独插一行 [图N]
+const PICRE = /^(\s*)[\[［]\s*图\s*(\d{1,2})\s*[\]］](\s*)$/gm;
+let caret = null;
+['keyup', 'click', 'select', 'blur', 'input'].forEach((ev) => $('#fText').addEventListener(ev, () => { const t = $('#fText'); caret = [t.selectionStart, t.selectionEnd]; if (ev === 'input') renderPhotos(); }));
+function insertPic(i) {
+  const t = $('#fText'), v = t.value, [a, b] = caret || [v.length, v.length];
+  let before = v.slice(0, a), after = v.slice(b);
+  const tag = `[图${i + 1}]`, pre = before && !before.endsWith('\n') ? '\n' : '', post = after.startsWith('\n') ? '' : '\n';
+  t.value = before + pre + tag + post + after;
+  const pos = (before + pre + tag + post).length; t.focus(); t.setSelectionRange(pos, pos); caret = [pos, pos];
+  renderPhotos(); toast(`已在正文里插入 ${tag}`);
+}
+function renumberPics(k) {   // 删掉第 k+1 张照片：正文里它那一行去掉，后面的图号往前挪
+  const t = $('#fText');
+  t.value = t.value.replace(PICRE, (all, s1, n, s2) => { n = +n; return n === k + 1 ? '\u0000' : n > k + 1 ? `${s1}[图${n - 1}]${s2}` : all; }).replace(/\n?\u0000\n?/g, '\n').replace(/^\n/, '');
 }
 async function shrink(file, max, q) {
   let img;
