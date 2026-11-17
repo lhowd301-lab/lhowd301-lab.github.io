@@ -212,7 +212,7 @@ def lists_text(ctx, talk):
     food = clean(ctx.get('food'), 6000)
     if food and FOOD_WORDS.search(talk):
         out.append('吃饭地图里的店（店名|Howard 的打分，满分 10|菜系|城市·区，按分数从高到低）：' + food)
-    songs = clean(ctx.get('music'), 1200)
+    songs = clean(ctx.get('music'), 4000)   # 歌单有一百多首，1200 字会截掉后面的歌
     if songs and SONG_WORDS.search(talk):
         out.append('网站歌单（歌名-歌手）：' + songs)
     wx = clean(ctx.get('weather'), 1500)
@@ -255,10 +255,47 @@ def tidy(text):
     return text[:500]
 
 
+# ---- 动手做的事（放歌、暂停、切歌、打开板块、换城市）：模型常常只说“好嘞，给你放《……》”却忘了写指令，网页就不会动。
+#      所以：① 聊到这些时，在系统提示最后再提醒一次；② 回答里还是没有指令的话，按访客的话和榕忆的回答补上
+ACT_TAG = re.compile(r'\[\[\s*\w+')
+ACT_WORDS = re.compile(r'歌|曲|音乐|放|播|听|唱|BGM|bgm|暂停|关掉|别放|停|切歌|下一首|换一首|打开|带我|切到|换到|进入|跳到|城市|板块|地图|日志|留言|地铁|星空|扫街|地标')
+ACT_HINT = ('提醒：你答应放歌、暂停、切歌、打开板块、换城市的时候，一定要在回答最后写上指令，例如'
+            '「好嘞，给你放《富士山下》～[[play:富士山下]]」「随便来一首～[[play]]」「好，先安静一下～[[pause]]」「换一首！[[next]]」'
+            '「走，带你去看扫街照片～[[open:street]]」「去深圳看看～[[city:深圳]]」。只说不写指令，网页是不会动的。')
+PLAY_ASK = re.compile(r'放|播|来一?首|听|唱|BGM|bgm')
+SONGISH = re.compile(r'歌|曲|音乐|首|BGM|bgm')
+PAUSE_ASK = re.compile(r'暂停|别放|不要放|关掉|关了|停一下|停下|别唱|安静')
+NEXT_ASK = re.compile(r'下一首|切歌|换一首|换首|换歌|下首')
+OPEN_ASK = re.compile(r'打开|带我去|带我看|去看看|切到|换到|进入|跳到|切换')
+YES = re.compile(r'好|嘞|来|给你|放|播|换|切|没问题|这就|马上|走|行|可以|带你')
+NO = re.compile(r'没有|找不到|放不了|不能|不会|没法|做不到')
+MODS = [('food', r'吃饭地图|美食地图'), ('street', r'扫街'), ('landmark', r'地标|名胜'), ('diary', r'日志|日记'), ('guest', r'留言'), ('metro', r'地铁|城市之下'), ('sky', r'星空|地球之外|天象|看星星')]
+CITIES = ['广州', '佛山', '东莞', '深圳', '香港', '中山', '珠海', '澳门', '江门', '肇庆', '惠州']
+
+
+def ensure_actions(reply, user):
+    if not reply or ACT_TAG.search(reply): return reply
+    yes = YES.search(reply) and not NO.search(reply)
+    if not yes: return reply
+    add = []
+    if NEXT_ASK.search(user): add.append('[[next]]')
+    elif PAUSE_ASK.search(user): add.append('[[pause]]')
+    elif PLAY_ASK.search(user) and SONGISH.search(user):
+        m = re.search(r'《([^》]{1,40})》', reply)
+        add.append(f'[[play:{m.group(1)}]]' if m else '[[play]]')
+    if OPEN_ASK.search(user):
+        mod = next((k for k, pat in MODS if re.search(pat, user)), None)
+        if mod: add.append(f'[[open:{mod}]]')
+        city = next((c for c in CITIES if c in user), None)
+        if city and not mod: add.append(f'[[city:{city}]]')
+    return reply + ''.join(add[:2])
+
+
 def ask(messages, ctx):
     talk = ' '.join(m['content'] for m in messages[-3:])
     extra = lists_text(ctx, talk)
     system = PERSONA + ('\n\n' + extra if extra else '') + '\n\n' + state_text(ctx)   # 不变的在前、常变的（时间、状态）在最后
+    if ACT_WORDS.search(messages[-1]['content']): system += '\n\n' + ACT_HINT
     MAX_TOKENS = CFG['max_tokens']
     if PROVIDER == 'anthropic':
         url = BASE + ('/messages' if BASE.endswith('/v1') else '/v1/messages')
@@ -387,7 +424,7 @@ class H(BaseHTTPRequestHandler):
         if why:
             return self.reply(429, {'error': 'limit', 'reply': LIMIT_REPLY[why]})
         try:
-            text = ask(msgs, data.get('ctx'))
+            text = ensure_actions(ask(msgs, data.get('ctx')), msgs[-1]['content'])
         except urllib.error.HTTPError as e:
             sys.stderr.write('upstream HTTP %s\n' % e.code)
             return self.reply(502, {'error': 'upstream', 'status': e.code})

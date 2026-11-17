@@ -11123,8 +11123,8 @@ const PetChat = {
     const g = h < 6 ? '这么晚还没睡呀？' : h < 11 ? '早上好～' : h < 14 ? '吃饭了吗？' : h < 18 ? '下午好～' : '晚上好呀～';
     return `${g}我是榕忆，小榕树现在是「${S}」${T.m < 25 ? '，它有点渴了' : ''}。想聊点什么？`;
   },
-  push(r, t) {
-    Pet.s.chat.push({ r, t, at: Pet.now() }); if (Pet.s.chat.length > 30) Pet.s.chat.splice(0, Pet.s.chat.length - 30);
+  push(r, t, cmd) {
+    Pet.s.chat.push({ r, t, at: Pet.now(), ...(cmd ? { cmd } : {}) }); if (Pet.s.chat.length > 30) Pet.s.chat.splice(0, Pet.s.chat.length - 30);
     Pet.save(); if (this.isOpen()) this.render(true);
   },
   render(scroll) {
@@ -11173,6 +11173,7 @@ const PetChat = {
   act(text) {
     const todo = [];
     const shown = String(text).replace(/\[\[\s*(\w+)\s*(?:[:：]\s*([^\]]*?))?\s*\]\]/g, (_, n, a) => { todo.push([n.toLowerCase(), (a || '').trim()]); return ''; }).replace(/[ \t]+\n/g, '\n').trim();
+    this.lastCmd = todo.map(([n, a]) => `[[${n}${a ? ':' + a : ''}]]`).join('');
     if (todo.length) setTimeout(() => todo.slice(0, 2).forEach(([n, a]) => this.run(n, a)), 350);
     return shown || (todo.length ? '好嘞～' : '');
   },
@@ -11212,7 +11213,7 @@ const PetChat = {
     if (url) {
       const ac = new AbortController(), to = setTimeout(() => ac.abort(), 30000);
       try {
-        const msgs = Pet.s.chat.slice(-12).map((m) => ({ role: m.r === 'u' ? 'user' : 'assistant', content: m.t }));
+        const msgs = Pet.s.chat.slice(-12).map((m) => ({ role: m.r === 'u' ? 'user' : 'assistant', content: m.t + (m.cmd || '') }));   // 发给模型时带上当时的指令，它才会记得要写
         const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: msgs, ctx: this.ctx() }), signal: ac.signal });
         const j = await r.json().catch(() => ({}));
         if (r.ok && j.reply) { reply = String(j.reply).slice(0, 500); this.offline = false; }
@@ -11221,7 +11222,7 @@ const PetChat = {
       clearTimeout(to);
     }
     if (!reply) { this.offline = true; reply = this.local(text); }
-    this.busy = false; this.push('p', this.act(reply));
+    this.busy = false; { const shown = this.act(reply); this.push('p', shown, this.lastCmd); }
     Pet.chatted(); if (this.isOpen()) { this.render(true); if (!matchMedia('(pointer: coarse)').matches) this.el.querySelector('input').focus({ preventScroll: true }); }
   },
   local(t) {   // a few canned answers in its voice, for when there's no chat service
