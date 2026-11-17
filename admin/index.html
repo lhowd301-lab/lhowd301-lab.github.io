@@ -1007,7 +1007,8 @@ const Guest = {
   },
   edit(r) {
     this.cur = r; $('#gBody').hidden = !r; $('#gErr').textContent = '';
-    $('#gHead').textContent = r ? `${r.name} 的留言 · ${r.date}` : '选左边的一条留言';
+    const WXN = { sun: '晴', cloud: '多云', overcast: '阴', rain: '雨', storm: '雷雨', fog: '雾', snow: '雪' }, w = r && r.weather;
+    $('#gHead').textContent = r ? `${r.name} 的留言 · ${r.date}${r.time ? ' ' + r.time : ''}${w ? ' · ' + [WXN[w.k] || '', w.t != null ? w.t + '°C' : ''].filter(Boolean).join(' ') : ''}` : '选左边的一条留言';
     if (!r) return;
     $('#gName').value = r.name; $('#gText').value = r.text; $('#gPlace').value = r.place || ''; this.setLL(r.lnglat);
     this.photos = (r.photos || []).slice(); this.drawPhotos();

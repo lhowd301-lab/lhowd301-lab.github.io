@@ -432,7 +432,29 @@ a.trk{text-decoration:none;color:inherit}
 .cities header{display:flex;justify-content:space-between;align-items:flex-end;gap:8px;padding:0 4px 10px;border-bottom:1px solid var(--line)}
 .eyebrow{font-family:var(--f-mono);font-size:10px;letter-spacing:.2em;color:var(--ink-3);text-transform:uppercase}
 .cities h2{margin:2px 0 0;font-family:var(--f-display);font-size:18px;letter-spacing:.08em}
-.cities .city-list{list-style:none;margin:8px 0 0;padding:0;overflow:auto;min-height:0;display:flex;flex-direction:column;gap:2px}
+.cities .city-list{list-style:none;margin:6px 0 0;padding:0 2px 0 0;overflow:auto;min-height:0;display:flex;flex-direction:column;gap:2px;scrollbar-width:thin;scrollbar-color:#C9D8F0 transparent}
+.cities .city-list::-webkit-scrollbar{width:6px}.cities .city-list::-webkit-scrollbar-track{background:transparent}.cities .city-list::-webkit-scrollbar-thumb{background:#C9D8F0;border-radius:3px}.cities .city-list::-webkit-scrollbar-thumb:hover{background:#9DB7E0}
+.cl-rows{display:flex;flex-direction:column;gap:6px;padding:8px 0;border-bottom:1px solid var(--line)}
+.cl-row{display:flex;align-items:center;gap:4px;min-width:0}
+.cl-row > small{flex:none;width:30px;padding-left:4px;font-size:11px;letter-spacing:.06em;color:var(--ink-3)}
+.cl-chips{position:relative;flex:1;min-width:0;display:flex;gap:5px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;padding:1px 4px 2px}
+.cl-chips::-webkit-scrollbar{display:none}
+.cl-chips.more-r{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent)}
+.cl-chips.more-l{-webkit-mask-image:linear-gradient(90deg,transparent,#000 28px);mask-image:linear-gradient(90deg,transparent,#000 28px)}
+.cl-chips.more-l.more-r{-webkit-mask-image:linear-gradient(90deg,transparent,#000 28px,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(90deg,transparent,#000 28px,#000 calc(100% - 28px),transparent)}
+.city-chip{flex:none;display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--white);color:var(--ink);font:inherit;font-size:13px;line-height:1.3;white-space:nowrap;cursor:pointer;transition:background .15s,border-color .15s,color .15s}
+.city-chip i{font-style:normal;font-family:var(--f-mono);font-size:11px;color:var(--blue)}
+.city-chip:hover{border-color:var(--blue);color:var(--blue)}
+.city-chip.empty{color:var(--ink-3)}.city-chip.empty i{color:var(--ink-3);opacity:.7}
+.city-chip[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.city-chip[aria-pressed="true"] i{color:rgba(255,255,255,.85);opacity:1}
+.city-chip:disabled{opacity:.45;cursor:default}
+.cl-cur{display:flex;align-items:baseline;gap:6px;padding:4px 8px 4px}
+.cl-cur b{font-weight:600;font-size:15px}
+.cl-cur small{font-family:var(--f-mono);font-size:10px;color:var(--ink-3);letter-spacing:.12em}
+.cl-cur .ct{margin-left:auto;font-family:var(--f-mono);font-size:12px;color:var(--blue);background:var(--ice);border-radius:999px;padding:1px 8px}
+.cl-empty{padding:6px 8px 10px;font-size:12.5px;color:var(--ink-3);line-height:1.6}
+.cl-body > .items{margin:0 0 4px 8px}
 .city-btn{display:grid;grid-template-columns:minmax(0,1fr) auto 14px;align-items:center;gap:8px;width:100%;padding:8px;border:0;border-radius:10px;background:transparent;text-align:left}
 .city-btn:hover{background:var(--ice-2)}
 .city-btn b{font-weight:500;font-size:15px}
@@ -831,6 +853,17 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
 .g-pic img{width:100%;height:100%;object-fit:cover;display:block}
 .pin-guest .lbl svg{width:12px;height:12px;vertical-align:-1px;margin-left:4px;opacity:.75}
 .g-err{margin:0;min-height:1em;color:#DC2626;font-size:12.5px}
+.g-wx{display:flex;flex-wrap:wrap;gap:6px;font-weight:400}
+.g-wx-k{display:inline-flex;align-items:center;gap:4px;padding:4px 10px 4px 6px;border-radius:999px;border:1px solid var(--line);background:var(--white);color:var(--ink-2);font:inherit;font-size:13px;cursor:pointer}
+.g-wx-k svg{width:20px;height:20px}
+.g-wx-k:hover{border-color:#F59E0B}
+.g-wx-k[aria-pressed="true"]{border-color:#F59E0B;background:#FFFBEB;color:#B45309;font-weight:600}
+.g-wx-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-weight:400;margin-top:2px}
+.g-wx-t{display:inline-flex;align-items:center;gap:4px;color:var(--ink-2)}
+.g-wx-t input{width:84px}
+.g-wx-tag{display:inline-flex;align-self:flex-start;width:max-content;max-width:100%;align-items:center;gap:5px;margin:12px 0 0;padding:3px 10px 3px 6px;border-radius:999px;background:var(--ice-2);font-size:13px;color:var(--ink-2)}
+.g-wx-tag svg{width:20px;height:20px}
+.g-wx-tag b{font-weight:600;color:var(--ink);font-family:var(--f-mono);font-size:12.5px}
 .g-done{text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px}
 #guestPick .g-btn{margin-left:6px}
 body.guest-picking .maplibregl-marker:not(.guest-mk),body.guest-picking .maplibregl-popup{pointer-events:none}   /* 选位置时点到别的图钉也算选位置 */
@@ -871,18 +904,11 @@ body.guest-picking .maplibregl-marker:not(.guest-mk),body.guest-picking .maplibr
 .pf-facts{display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px 14px;margin:0;font-size:13px;align-items:baseline}
 .pf-facts dt{color:var(--ink-2)}
 .pf-facts dd{margin:0;color:var(--ink);font-size:13px;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;word-break:break-all}
+.pf-facts .sep{color:var(--ink-3);margin:0 2px}
 .pf-facts small{font-family:var(--f-body);font-size:11.5px;color:var(--blue);background:var(--ice);padding:1px 7px;border-radius:999px}
 .pf-stack{display:flex;flex-wrap:wrap;gap:6px}
 .pf-stack span{display:inline-flex;align-items:baseline;gap:5px;padding:4px 9px;border-radius:9px;background:var(--white);border:1px solid var(--line);font-size:11.5px;color:var(--ink-3)}
 .pf-stack b{font-weight:600;color:var(--ink);font-size:12px}
-.pf-log{list-style:none;margin:0;padding:0 0 0 14px;border-left:2px solid var(--line);display:flex;flex-direction:column;gap:10px}
-.pf-log li{position:relative;display:flex;flex-direction:column;gap:2px;font-size:13px;line-height:1.55;color:var(--ink-2)}
-.pf-log li[hidden]{display:none}
-.pf-log li::before{content:"";position:absolute;left:-20px;top:5px;width:10px;height:10px;border-radius:50%;background:var(--white);box-shadow:inset 0 0 0 2px var(--blue)}
-.pf-log li:first-child::before{background:var(--blue)}
-.pf-log time{font-size:11.5px;color:var(--blue);letter-spacing:.04em}
-.pf-log-more{margin-top:10px;width:100%;padding:8px;border-radius:10px;border:1px solid var(--line);background:var(--white);color:var(--blue);font:inherit;font-size:13px;cursor:pointer}
-.pf-log-more:hover{border-color:var(--blue)}
 .pf-pv-lead{margin:0 0 10px;font-size:13.5px;line-height:1.6;color:var(--ink);font-weight:600}
 .pf-privacy ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
 .pf-privacy li{display:flex;flex-direction:column;gap:2px;font-size:13px;line-height:1.6;color:var(--ink-2)}
@@ -1515,33 +1541,12 @@ const SITE = {
     { name: "Vinson's Blog", url: 'https://vinsonblog.cn/', desc: 'Vinson 的个人博客 · 保持好奇，探索世界', avatar: 'photos/friends/vinson.webp' },
     { name: '城市与地铁', url: 'https://city-and-metro.pages.dev/', avatar: 'photos/friends/citymetro.webp', shape: 'app' },
   ],
-  // 地图说明（个人介绍最下面）：制作时间、版本、用到的工具和数据、更新记录（新的写在最上面）
-  //   版本号 = 第几次更新，构建时自动填（tools/build.py 按 GitHub 仓库的提交次数算）
+  // 地图说明（个人介绍最下面）：开始制作、第一次上线、最近两次更新的日期、网址、用到的工具和数据
   about: {
     start: '2026-10-19', live: '2026-10-22', url: 'www.howardleong.work',
     stack: [['MapLibre GL', '地图引擎'], ['three.js', '3D 建模'], ['OpenStreetMap', '街道和楼房'], ['Natural Earth', '全国和世界底图'], ['SRTM', '地形'], ['Open-Meteo', '天气'], ['astronomy-engine', '星空和天象'], ['DeepSeek', '榕忆聊天'], ['腾讯云 · nginx', '服务器']],
-    log: [
-      ['2026-11-17', '手机版优化：留言可以带照片、拿不到定位时按网络大致定位；榕忆更省 token；扫街加上大阪、汕头、洛阳、开封、东莞虎门、粤海关、白云山；加上这份地图说明'],
-      ['2026-11-16', '新增留言板；地球之外加「天象速报」；背景音乐增加到 128 首；日记改名「地图日志」，可以置顶；个人介绍加上邮箱和私信'],
-      ['2026-11-15', '网站后台上线：访问统计、写日志、管理吃饭地图和扫街照片；打开网站时弹出操作提示'],
-      ['2026-11-14', '接上域名 www.howardleong.work；服务器用更新包一键更新'],
-      ['2026-11-13', '港珠澳大桥、深中通道 3D 模型；打开网页默认显示扫街地图'],
-      ['2026-11-12', '飞行地图：大湾区机场的航班模拟；扫街加上北京、上海、苏州、福州、悉尼、墨尔本、武汉、南京、长沙、台北、杭州'],
-      ['2026-11-11', '地图可以缩小到全国、全世界；外地扫街一座城市一组照片；榕忆会看日期和天气、能放歌；大湾区更多地标建模'],
-      ['2026-11-05', '萌宠改为「榕忆」：在榕树小院浇水养成，抓到以后可以聊天'],
-      ['2026-11-04', '江海船只按真实航线模拟；火车、船只卡片显示经停和进度；扫街加珠海、新会'],
-      ['2026-11-03', '吃饭地图：知名店铺配上店标'],
-      ['2026-11-02', '部署到自己的服务器'],
-      ['2026-11-01', '「城市之下」扩展到大湾区六座城市的地铁；高铁城际在地图上跑；实时天气'],
-      ['2026-10-31', '海水变蓝；地图扩展到整个粤港澳大湾区；深圳超高层建模'],
-      ['2026-10-30', '扫街卡片改成画廊式；香港扫街 11 处'],
-      ['2026-10-28', '「城市之下」：广州地铁线网和模拟列车；地图扩展到佛山、东莞、深圳、香港'],
-      ['2026-10-27', '地图往北扩到白云机场，三座航站楼建模'],
-      ['2026-10-25', '更多地标 3D 建模；萌宠啵铃登场；加上背景音乐'],
-      ['2026-10-23', '广州塔、珠江新城、猎德大桥等 3D 建模；夜间模式、纯享模式、键盘漫游'],
-      ['2026-10-22', '第一次上线：吃饭地图、扫街地图、友情链接'],
-      ['2026-10-19', '开始制作：广州底图，标出出生地点和办公地点'],
-    ],
+    // 更新过的日子（新的在前）；「最近更新」只显示最近两次，当天构建的日期会自动排在最前面
+    updates: ['2026-11-17', '2026-11-16', '2026-11-15', '2026-11-14', '2026-11-13', '2026-11-12', '2026-11-11', '2026-11-05', '2026-11-04', '2026-11-03', '2026-11-02', '2026-11-01', '2026-10-31', '2026-10-30', '2026-10-28', '2026-10-27', '2026-10-26', '2026-10-25', '2026-10-23', '2026-10-22'],
   },
   // 隐私声明（个人介绍最下面，地图说明后面）：写的都要和网站实际做法一致，改了后台记录什么就要跟着改
   privacy: {
@@ -2605,7 +2610,7 @@ const GuestFab = {
   },
 };
 const GuestForm = {
-  picking: false, data: { name: '', text: '', place: '', lnglat: null, photos: [] }, mk: null,
+  picking: false, data: { name: '', text: '', place: '', lnglat: null, photos: [], weather: null }, mk: null,
   open() {
     if (state.module !== 'guest') setModule('guest', { fit: false });
     try { const n = localStorage.getItem('bh-guest-name'); if (n && !this.data.name) this.data.name = n; } catch (e) { /* storage blocked */ }
@@ -2622,6 +2627,9 @@ const GuestForm = {
       <div class="g-f"><span>位置</span><div class="g-loc"><b data-coord>${g.lnglat ? `已选：${g.lnglat[1].toFixed(4)}, ${g.lnglat[0].toFixed(4)}` : '还没选'}</b>
         <button type="button" class="g-btn" data-pick>${g.lnglat ? '重新选' : '在地图上点一下'}</button><button type="button" class="g-btn ghost" data-here>用我现在的位置</button></div></div>
       <label class="g-f"><span>地点名 <small>可不填</small></span><input name="place" maxlength="30" placeholder="比如：新加坡 · 滨海湾" value="${esc(g.place)}"></label>
+      <div class="g-f"><span>天气 <small>可不填</small></span>
+        <div class="g-wx" role="group" aria-label="天气">${GUEST_WX.map(([k, n]) => `<button type="button" class="g-wx-k" data-wk="${k}" aria-pressed="${!!g.weather && g.weather.k === k}">${WX_ICONS[k]}<span>${n}</span></button>`).join('')}</div>
+        <div class="g-wx-row"><label class="g-wx-t"><input name="wxt" type="number" inputmode="numeric" min="-60" max="60" step="1" placeholder="气温" value="${g.weather && g.weather.t != null ? g.weather.t : ''}"><span>°C</span></label><button type="button" class="g-btn ghost" data-wx-auto>按位置自动填</button></div></div>
       <input class="g-hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
       <p class="g-err" data-err role="alert"></p>
       <button class="btn-guest" type="submit" ${BACKEND ? '' : 'disabled'}>${ICONS.guest}提交留言</button>
@@ -2634,7 +2642,7 @@ const GuestForm = {
     f.addEventListener('input', (e) => { const k = e.target.name; if (k in g) g[k] = e.target.value; if (k === 'text') f.querySelector('[data-count]').textContent = `${g.text.length}/300`; });
     f.querySelector('[data-pick]').addEventListener('click', () => this.startPick());
     f.querySelector('[data-here]').addEventListener('click', () => this.locate((t) => this.err(t)));
-    this.wirePhotos(f);
+    this.wirePhotos(f); this.wireWeather(f);
     f.addEventListener('submit', (e) => { e.preventDefault(); this.submit(f); });
     if (g.lnglat) this.showMarker();
   },
@@ -2663,6 +2671,25 @@ const GuestForm = {
     say(`${lead}${why === 'denied' ? '（可以在浏览器设置里允许定位）' : ''}，请直接在地图上点一下`);
   },
   // 照片：最多 3 张，先在手机上压小（长边 1600 像素的 JPEG + 一张小图），再跟留言一起交
+  // 天气：点一个天气（再点一次取消），气温可填可不填；「按位置自动填」查选好的位置现在的天气（Open-Meteo）
+  wireWeather(f) {
+    const g = this.data, t = f.querySelector('[name=wxt]');
+    const sync = () => { f.querySelectorAll('[data-wk]').forEach((b) => b.setAttribute('aria-pressed', String(!!g.weather && g.weather.k === b.dataset.wk))); t.value = g.weather && g.weather.t != null ? g.weather.t : ''; };
+    const put = (k, tt) => { g.weather = k || tt != null ? { ...(k ? { k } : {}), ...(tt != null ? { t: tt } : {}) } : null; };
+    f.querySelectorAll('[data-wk]').forEach((b) => b.addEventListener('click', () => { const k = g.weather && g.weather.k === b.dataset.wk ? '' : b.dataset.wk; put(k, g.weather ? g.weather.t : null); sync(); }));
+    t.addEventListener('input', () => { const v = t.value.trim(), n = v === '' ? null : Math.round(+v); put(g.weather ? g.weather.k : '', Number.isFinite(n) && n >= -60 && n <= 60 ? n : null); });
+    f.querySelector('[data-wx-auto]').addEventListener('click', async (e) => {
+      if (!g.lnglat) return this.err('先选好位置，再按位置自动填天气');
+      const b = e.currentTarget; b.disabled = true; b.textContent = '查询中…';
+      try {
+        const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${g.lnglat[1].toFixed(3)}&longitude=${g.lnglat[0].toFixed(3)}&current=temperature_2m,weather_code,is_day&timezone=auto`);
+        const c = (await r.json()).current; if (!c) throw new Error();
+        const [ic] = wxFromCode(c.weather_code, 1);
+        put(GUEST_WX.some(([k]) => k === ic) ? ic : 'cloud', Math.round(c.temperature_2m)); sync(); this.err('');
+      } catch (err) { this.err('没查到那里的天气，可以自己选一个'); }
+      b.disabled = false; b.textContent = '按位置自动填';
+    });
+  },
   wirePhotos(f) {
     const box = f.querySelector('[data-photos]'); if (!box) return;
     const g = this.data; if (!g.photos) g.photos = [];
@@ -2712,12 +2739,12 @@ const GuestForm = {
     const btn = f.querySelector('[type=submit]'); btn.disabled = true; this.err('');
     try {
       if (g.photos.length) this.err('正在上传照片…');
-      const r = await fetch('/api/diary/guest', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...g, photos: g.photos.map((p) => ({ src: p.src, thumb: p.thumb, ar: p.ar })), website: f.website.value }) });
+      const r = await fetch('/api/diary/guest', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...g, photos: g.photos.map((p) => ({ src: p.src, thumb: p.thumb, ar: p.ar })), weather: g.weather, website: f.website.value }) });
       const j = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(j.error || '没提交成功，稍后再试');
       try { localStorage.setItem('bh-guest-name', g.name); } catch (e) { /* storage blocked */ }
       Stats.send('open', { m: 'guest', i: 'new', t: '提交留言' });
-      this.clearMarker(); this.data = { name: g.name, text: '', place: '', lnglat: null, photos: [] };
+      this.clearMarker(); this.data = { name: g.name, text: '', place: '', lnglat: null, photos: [], weather: null };
       $('#detail .detail-scroll').innerHTML = `<div class="d-body g-done" style="padding-top:28px"><div class="g-badge big">${ICONS.guest}</div><h2 class="d-title">收到啦，谢谢你！</h2><p class="g-tip">审核通过后，你的留言就会出现在地图上你选的位置。过几天回来看看吧。</p><button class="btn-guest" type="button" data-close-guest>好的</button></div>`;
       $('#detail [data-close-guest]').addEventListener('click', closeDetail);
     } catch (e) { this.err(e.message); btn.disabled = false; }
@@ -2821,30 +2848,23 @@ function renderProfile() {
     menu.querySelector('[data-copy]').addEventListener('click', () => copyText(addr, `已复制 ${addr}`));
     menu.querySelector('[data-qq]').addEventListener('click', () => copyText(addr, '地址已复制：QQ 邮箱打开后点「写信」，在收件人里粘贴就行', 6000));
   });
-  wireAbout($('#profileDrawer'));
   DMForm.render();
 }
-// 地图说明：制作时间、版本、上线天数（按今天算）、用到的工具和数据、更新记录（先显示最近 4 条）
-const BUILD = { no: +'155' || 0, date: '2026-11-17' };
+// 地图说明：开始制作、第一次上线、最近两次更新（构建当天的日期自动算一次）、网址、用到的工具和数据
+const BUILD = { date: '2026-11-17' };
 function aboutHTML() {
   const a = SITE.about; if (!a) return '';
   const dot = (d) => d.replace(/-/g, '.');
-  const day = (d) => Math.floor(new Date(d + 'T00:00:00+08:00').getTime() / 864e5);
-  const today = Math.floor((Date.now() + 8 * 3600e3) / 864e5);
-  const live = today - day(a.live) + 1, last = /^\d{4}-\d{2}-\d{2}$/.test(BUILD.date) ? BUILD.date : a.log[0][0];
-  const SHOW = 4, rows = a.log.map(([d, t], i) => `<li${i >= SHOW ? ' class="more" hidden' : ''}><time class="mono">${dot(d)}</time><span>${esc(t)}</span></li>`).join('');
+  const ups = [...new Set([/^\d{4}-\d{2}-\d{2}$/.test(BUILD.date) ? BUILD.date : '', ...a.updates].filter((d) => d && d > a.live))].sort().reverse().slice(0, 2);
   return `<div class="pf-sec pf-about"><h3>地图说明</h3>
       <dl class="pf-facts">
         <dt>开始制作</dt><dd class="mono">${dot(a.start)}</dd>
-        <dt>第一次上线</dt><dd class="mono">${dot(a.live)}<small>已上线 ${live} 天</small></dd>
-        <dt>最近更新</dt><dd class="mono">${dot(last)}${BUILD.no ? `<small>第 ${BUILD.no} 版</small>` : ''}</dd>
+        <dt>第一次上线</dt><dd class="mono">${dot(a.live)}</dd>
+        ${ups.length ? `<dt>最近更新</dt><dd class="mono">${ups.map(dot).join('<span class="sep">·</span>')}</dd>` : ''}
         <dt>网址</dt><dd class="mono">${esc(a.url)}</dd>
       </dl>
       <h4>用到的工具和数据</h4>
       <div class="pf-stack">${a.stack.map(([n, w]) => `<span><b>${esc(n)}</b>${esc(w)}</span>`).join('')}</div>
-      <h4>更新记录</h4>
-      <ol class="pf-log">${rows}</ol>
-      ${a.log.length > SHOW ? `<button type="button" class="pf-log-more" aria-expanded="false">查看全部 ${a.log.length} 条</button>` : ''}
     </div>`;
 }
 // 隐私声明
@@ -2855,15 +2875,6 @@ function privacyHTML() {
       <ul>${v.items.map(([k, t]) => `<li><b>${esc(k)}</b><span>${esc(t)}</span></li>`).join('')}</ul>
       <p class="pf-pv-date mono">更新于 ${v.updated.replace(/-/g, '.')}</p>
     </div>`;
-}
-function wireAbout(root) {
-  const b = root.querySelector('.pf-log-more'); if (!b) return;
-  const n = root.querySelectorAll('.pf-log li').length;
-  b.addEventListener('click', () => {
-    const open = b.getAttribute('aria-expanded') !== 'true';
-    root.querySelectorAll('.pf-log li.more').forEach((li) => { li.hidden = !open; });
-    b.setAttribute('aria-expanded', String(open)); b.textContent = open ? '收起' : `查看全部 ${n} 条`;
-  });
 }
 function copyText(t, msg, ms) {
   const done = () => toast(msg, ms);
@@ -6327,17 +6338,22 @@ function renderCities() {
   const mod = MODULES.find((m) => m.id === state.module);
   const panel = $('#cityPanel');
   const total = mod.items().length;
-  let html = `<header><div><div class="eyebrow">城市 · ${mod.en}</div><h2>${mod.name}</h2></div><span style="display:flex;align-items:center;gap:6px"><span class="mono" style="font-size:12px;color:var(--ink-3)">${String(total).padStart(2, '0')} 处</span><button class="mini-btn" id="cityMinBtn" aria-label="收起城市选择">${ICONS.up}</button></span></header><ul class="city-list">`;
+  // 选城市：上面两排横向滑动的城市标签（大湾区 / 其他地方），点一下就换城市、地图飞过去；下面只列当前城市的内容
+  const countOf = (c) => !c.ready ? 0 : mod.id === 'diary' && !c.far ? SITE.diary.length + SITE.life.length + SITE.spots.length : itemsFor(mod.id, c.id).length;
+  const chip = (c) => { const n = countOf(c); return `<button type="button" class="city-chip${n ? '' : ' empty'}" data-city="${c.id}" aria-pressed="${state.city === c.id}" ${c.ready ? '' : 'disabled'}>${esc(c.name)}<i>${c.ready ? n : '即将上线'}</i></button>`; };
+  const gbaC = SITE.cities.filter((c) => !c.far).sort((a, b) => (countOf(a) ? 0 : 1) - (countOf(b) ? 0 : 1)), farC = SITE.cities.filter((c) => c.far && (c.overview || c.id === state.city || countOf(c))).sort((a, b) => (b.overview ? 1 : 0) - (a.overview ? 1 : 0));   // 「全国 · 世界」放最前
+  const row = (label, full, cs) => `<div class="cl-row"><small title="${full}">${label}</small><div class="cl-chips" role="group" aria-label="${full}">${cs.map(chip).join('')}</div></div>`;
+  const keep = { x: [...panel.querySelectorAll('.cl-chips')].map((r) => r.scrollLeft), y: (panel.querySelector('.city-list') || {}).scrollTop || 0, city: panel.dataset.city, mod: panel.dataset.mod };
+  let html = `<header><div><div class="eyebrow">城市 · ${mod.en}</div><h2>${mod.name}</h2></div><span style="display:flex;align-items:center;gap:6px"><span class="mono" style="font-size:12px;color:var(--ink-3)">${String(total).padStart(2, '0')} 处</span><button class="mini-btn" id="cityMinBtn" aria-label="收起城市选择">${ICONS.up}</button></span></header><div class="cl-rows">${row('湾区', '大湾区', gbaC)}${farC.length ? row('其他', '其他地方', farC) : ''}</div><ul class="city-list">`;
   if (mod.id === 'guest') html += `<li class="guest-cta"><button class="btn-guest" type="button" data-guest-new>${ICONS.guest}在地图上留一句话</button><small>${SITE.guest.length ? '选一个地方，写下你想说的话；审核通过后，它就会出现在那里' : '还没有留言。选一个地方，写下你想说的话，做第一个留言的人吧'}</small></li>`;
-  let farHead = false;
-  for (const c of SITE.cities) {
+  {
+    const c = SITE.cities.find((x) => x.id === state.city) || SITE.cities[0];
     const list = c.ready ? (mod.id === 'diary' && !c.far ? diarySort(SITE.diary) : itemsFor(mod.id, c.id)) : [];
-    if (c.far && !c.overview && !list.length) continue;   // 湾区以外：这个栏目在这座城市没有内容就不列出来
-    if (c.far && !farHead) { html += '<li class="city-group">其他地方</li>'; farHead = true; }
-    const open = c.ready && state.city === c.id && state.cityOpen;
-    html += `<li><button class="city-btn" data-city="${c.id}" ${c.ready ? '' : 'disabled'} aria-expanded="${open}"><span><b>${c.name}</b><small>${c.en}</small></span>${c.ready ? `<span class="ct">${mod.id === 'diary' && !c.far ? SITE.diary.length + SITE.life.length + SITE.spots.length : list.length}</span>` : '<span class="mono" style="font-size:10.5px;color:var(--ink-3)">即将上线</span>'}${c.ready ? ICONS.chevron : '<span></span>'}</button>`;
+    html += `<li class="cl-cur"><b>${esc(c.name)}</b><small>${c.en}</small><span class="ct">${countOf(c)}</span></li>`;
+    if (!countOf(c)) html += `<li class="cl-empty">${esc(c.name)}这里还没有${esc(mod.name)}的内容，换一座城市看看</li>`;
+    const open = c.ready && countOf(c) > 0;
     if (open) {
-      html += '<ul class="items">';
+      html += '<li class="cl-body"><ul class="items">';
       if (mod.id === 'diary' && !c.far && SITE.life.length) {
         html += '<li class="group-label">出生地点</li>';
         for (const l of SITE.life) html += `<li><button class="item-btn" data-item="${l.id}" data-type="diary" aria-current="${state.active === l.id}" ${l.lnglat ? '' : 'data-nolocation="1"'}><span class="kname">${kdot(l)}<em>${esc(l.short || l.place)}</em></span><span class="meta">${esc(l.stage)}</span></button></li>`;
@@ -6362,12 +6378,17 @@ function renderCities() {
         if (gname) html += `<li class="group-label">${gname} · ${g.length}</li>`;
         for (const i of g) { const [a, b] = itemLabel(mod.id, i); html += `<li><button class="item-btn" data-item="${i.id}" data-type="${mod.id}" aria-current="${state.active === i.id}">${mod.id === 'diary' ? `<span class="kname">${kdot(i)}<em>${esc(a)}</em>${i.pinned ? TOPTAG : ''}</span>` : `<span>${esc(a)}</span>`}<span class="meta">${esc(b)}</span></button></li>`; }
       }
-      html += '</ul>';
+      html += '</ul></li>';
     }
-    html += '</li>';
   }
   html += '</ul>';
   panel.innerHTML = html;
+  // 重画后保持两排标签的滑动位置；换了城市 / 栏目时列表回到顶部，并把选中的城市滑到看得见的地方
+  const same = keep.city === state.city && keep.mod === mod.id;
+  panel.dataset.city = state.city; panel.dataset.mod = mod.id;
+  panel.querySelectorAll('.cl-chips').forEach((r, k) => { r.scrollLeft = keep.x[k] || 0; });
+  if (same) panel.querySelector('.city-list').scrollTop = keep.y;
+  panel.querySelectorAll('.cl-chips').forEach((r) => { chipShow(r); chipEdges(r); chipRO().observe(r); });   // 面板收着时宽度是 0，展开后再算一次
   const cityName = SITE.cities.find((c) => c.id === state.city).name;
   const here = mod.id === 'diary' ? total : itemsFor(mod.id, state.city).length;   // 胶囊上的数字只算当前城市
   $('#cityToggle').innerHTML = `<b>${cityName}</b><span>${mod.name}</span><span class="ct">${here}</span>`;
@@ -6377,14 +6398,12 @@ function renderCities() {
 $('#cityPanel').addEventListener('click', (e) => {
   if (e.target.closest('[data-guest-new]')) { GuestForm.open(); return; }
   if (e.target.closest('#cityMinBtn')) { if (mq.matches) toggleCitySheet(false); else if (Auto.on()) Auto.dismiss('city'); else { state.cityMin = true; applyHud('ease'); } return; }
-  const cb = e.target.closest('.city-btn');
-  if (cb && !cb.disabled) {
+  const cb = e.target.closest('[data-city]');
+  if (cb && !cb.disabled) {   // 换城市：面板不收起，下面直接换成这座城市的内容，地图飞过去
     const c = SITE.cities.find((x) => x.id === cb.dataset.city);
-    const wasOpen = state.city === c.id && state.cityOpen;
+    const wasOpen = false;
     if (state.city !== c.id) Stats.send('city', { c: c.name });
-    state.city = c.id;
-    if (mq.matches) state.cityOpen = !wasOpen;
-    else { state.cityOpen = true; if (Auto.on()) Auto.dismiss('city'); else { state.cityMin = true; applyHud('none'); } }
+    state.city = c.id; state.cityOpen = true;
     renderCities();
     if (c.overview && (!wasOpen || !mq.matches) && map) {   // 全国 · 世界：把湾区和去过的地方都框进来
       const pts = [[111.4, 21.5], [115.4, 24.4], ...itemsFor(state.module, 'world').filter((i) => i.lnglat).map((i) => i.lnglat)];
@@ -6408,6 +6427,18 @@ $('#cityPanel').addEventListener('click', (e) => {
     openDetail(ib.dataset.type, ib.dataset.item);
   }
 });
+// 城市标签那两排：鼠标滚轮也能左右滑；两头还有内容时显示渐隐
+function chipRO() { return chipRO.o || (chipRO.o = new ResizeObserver((es) => es.forEach((e) => { if (e.contentRect.width) { chipShow(e.target); chipEdges(e.target); } }))); }
+function chipShow(r) {   // 选中的城市不在视野里就滑过去
+  const on = r.querySelector('.city-chip[aria-pressed="true"]'); if (!on || !r.clientWidth) return;
+  if (on.offsetLeft < r.scrollLeft + 8 || on.offsetLeft + on.offsetWidth > r.scrollLeft + r.clientWidth - 24) r.scrollLeft = Math.max(0, on.offsetLeft - 36);
+}
+function chipEdges(r) { r.classList.toggle('more-l', r.scrollLeft > 4); r.classList.toggle('more-r', r.scrollLeft + r.clientWidth < r.scrollWidth - 4); }
+$('#cityPanel').addEventListener('wheel', (e) => {
+  const r = e.target.closest('.cl-chips'); if (!r || r.scrollWidth <= r.clientWidth || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+  r.scrollLeft += e.deltaY; e.preventDefault();
+}, { passive: false });
+$('#cityPanel').addEventListener('scroll', (e) => { if (e.target.classList && e.target.classList.contains('cl-chips')) chipEdges(e.target); }, true);
 function toggleCitySheet(force) {
   const p = $('#cityPanel'); const on = force ?? !p.classList.contains('sheet');
   p.classList.toggle('sheet', on); $('#cityToggle').setAttribute('aria-expanded', String(on));
@@ -6701,7 +6732,8 @@ const FOOD_LOGOS = {
 function detailHTML(type, it) {
   if (type === 'guest') {
     return `<div class="d-body g-detail" style="padding-top:22px">
-      <div class="d-kicker"><span class="g-badge">${ICONS.guest}访客留言</span>${it.date ? `<span class="mono">${esc(it.date)}</span>` : ''}${it.place ? `<span>${esc(it.place)}</span>` : ''}</div>
+      <div class="d-kicker"><span class="g-badge">${ICONS.guest}访客留言</span>${it.date ? `<span class="mono">${esc(it.date.replace(/-/g, '.'))}${it.time ? ' ' + esc(it.time) : ''}</span>` : ''}${it.place ? `<span>${esc(it.place)}</span>` : ''}</div>
+      ${guestWx(it.weather)}
       <p class="g-text">${esc(it.text)}</p>
       ${(it.photos || []).length ? `<div class="g-pics n${Math.min(it.photos.length, 3)}">${it.photos.map((ph, k) => `<button type="button" class="g-pic" data-gpic="${k}" style="--ar:${+ph.ar || 1.333}" aria-label="看第 ${k + 1} 张照片"><img src="${esc(ph.thumb || ph.src)}" alt="" loading="lazy"></button>`).join('')}</div>` : ''}
       <p class="g-from">—— ${esc(it.name)}</p>
@@ -6820,6 +6852,13 @@ const WX_ICONS = {
   fog: '<svg viewBox="0 0 32 32" fill="none" stroke="#3B82F6" stroke-width="1.6" stroke-linecap="round"><path d="M6 12h20M4 17h24M7 22h18"/></svg>',
   snow: '<svg viewBox="0 0 32 32" fill="none" stroke="#3B82F6" stroke-width="1.6" stroke-linecap="round"><path d="M16 5v22M6.5 10.5l19 11M6.5 21.5l19-11M13 6.5l3 2.5 3-2.5M13 25.5l3-2.5 3 2.5"/></svg>',
 };
+// 留言可以带的天气（图标用上面这套）
+const GUEST_WX = [['sun', '晴'], ['cloud', '多云'], ['overcast', '阴'], ['rain', '雨'], ['storm', '雷雨'], ['fog', '雾'], ['snow', '雪']];
+function guestWx(w) {
+  if (!w || (!w.k && w.t == null)) return '';
+  const n = (GUEST_WX.find(([k]) => k === w.k) || [])[1] || '';
+  return `<span class="g-wx-tag">${w.k ? WX_ICONS[w.k] || '' : ''}${esc(n)}${w.t != null ? `<b>${w.t}°C</b>` : ''}</span>`;
+}
 // WMO weather codes (Open-Meteo) → icon and words; clear skies get the moon at night
 function wxFromCode(c, day = 1) {
   if (c === 0) return [day ? 'sun' : 'moon', '晴'];
@@ -10994,7 +11033,7 @@ const PetChat = {
       setModule(id);
     } else if (n === 'city') {
       const c = SITE.cities.find((x) => x.ready && (x.name === a || a.includes(x.name) || x.en.toLowerCase() === a.toLowerCase()));
-      const b = c && document.querySelector(`#cityPanel .city-btn[data-city="${c.id}"]`);
+      const b = c && document.querySelector(`#cityPanel [data-city="${c.id}"]`);
       if (b && state.city !== c.id) b.click();
     }
   },

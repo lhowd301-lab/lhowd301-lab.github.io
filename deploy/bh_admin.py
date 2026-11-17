@@ -160,6 +160,8 @@ with db() as c:
         c.execute('ALTER TABLE diary ADD COLUMN pinned INTEGER DEFAULT 0')
     if 'photos' not in [r['name'] for r in c.execute('PRAGMA table_info(guest)')]:   # 留言可以带照片
         c.execute("ALTER TABLE guest ADD COLUMN photos TEXT DEFAULT '[]'")
+    if 'weather' not in [r['name'] for r in c.execute('PRAGMA table_info(guest)')]:   # 留言可以带天气
+        c.execute("ALTER TABLE guest ADD COLUMN weather TEXT DEFAULT ''")
 
 EVENTS = {'view', 'mod', 'city', 'open', 'ping', 'leave'}
 RATE, FAILS = {}, {}
@@ -620,6 +622,20 @@ def guest_photos_in(arr):
     return out
 
 
+GUEST_WX = {'sun', 'cloud', 'overcast', 'rain', 'storm', 'fog', 'snow'}   # 晴 多云 阴 雨 雷雨 雾 雪
+
+
+def guest_weather(w):
+    """留言的天气（可不填）：{'k': 天气, 't': 气温 °C}，两样都可以只填一样。存成 JSON 字符串，没有就是空字符串"""
+    if not isinstance(w, dict): return ''
+    k = w.get('k') if w.get('k') in GUEST_WX else ''
+    try: t = int(round(float(w.get('t')))) if w.get('t') not in (None, '') else None
+    except (TypeError, ValueError): t = None
+    if t is not None and not -60 <= t <= 60: t = None
+    if not k and t is None: return ''
+    return json.dumps({**({'k': k} if k else {}), **({'t': t} if t is not None else {})})
+
+
 def guest_submit(o, ip):
     if str(o.get('website') or '').strip(): return 'gx'   # 机器人填了隐藏的栏：假装收下
     now = time.time()
@@ -633,8 +649,8 @@ def guest_submit(o, ip):
     photos = guest_photos_in(o.get('photos'))
     with LOCK, db() as c:
         gid = 'g' + secrets.token_hex(5); ts = int(now)
-        c.execute('INSERT INTO guest (id,name,text,place,lng,lat,status,created,updated,photos) VALUES (?,?,?,?,?,?,?,?,?,?)',
-                  (gid, name, text, place, lng, lat, 'pending', ts, ts, json.dumps(photos)))
+        c.execute('INSERT INTO guest (id,name,text,place,lng,lat,status,created,updated,photos,weather) VALUES (?,?,?,?,?,?,?,?,?,?,?)',
+                  (gid, name, text, place, lng, lat, 'pending', ts, ts, json.dumps(photos), guest_weather(o.get('weather'))))
     GUEST_RATE[ip] = hits + [now]
     return gid
 
@@ -644,10 +660,13 @@ def guest_rows(public):
         rows = c.execute("SELECT * FROM guest WHERE status='approved' ORDER BY created DESC" if public else
                          "SELECT * FROM guest ORDER BY CASE status WHEN 'pending' THEN 0 ELSE 1 END, created DESC LIMIT 2000").fetchall()
     day = lambda t: datetime.fromtimestamp(t or 0, CST).strftime('%Y-%m-%d')
+    hm = lambda t: datetime.fromtimestamp(t or 0, CST).strftime('%H:%M')   # 留言的时间（北京时间）
     ph = lambda r: json.loads(r['photos'] or '[]')
-    if public: return [{'id': r['id'], 'name': r['name'], 'text': r['text'], 'place': r['place'], 'lnglat': [r['lng'], r['lat']], 'date': day(r['created']), **({'photos': ph(r)} if ph(r) else {})} for r in rows]
-    return [{'id': r['id'], 'name': r['name'], 'text': r['text'], 'place': r['place'], 'lnglat': [r['lng'], r['lat']], 'status': r['status'], 'photos': ph(r),
-             'date': day(r['created']), 'created': r['created'], 'updated': r['updated'], 'edited': bool(r['edited'])} for r in rows]
+    wx = lambda r: json.loads(r['weather']) if r['weather'] else None
+    if public: return [{'id': r['id'], 'name': r['name'], 'text': r['text'], 'place': r['place'], 'lnglat': [r['lng'], r['lat']], 'date': day(r['created']), 'time': hm(r['created']),
+                        **({'photos': ph(r)} if ph(r) else {}), **({'weather': wx(r)} if wx(r) else {})} for r in rows]
+    return [{'id': r['id'], 'name': r['name'], 'text': r['text'], 'place': r['place'], 'lnglat': [r['lng'], r['lat']], 'status': r['status'], 'photos': ph(r), 'weather': wx(r),
+             'date': day(r['created']), 'time': hm(r['created']), 'created': r['created'], 'updated': r['updated'], 'edited': bool(r['edited'])} for r in rows]
 
 
 def guest_save(o):
@@ -666,8 +685,9 @@ def guest_save(o):
             left = [str(x.get('src') if isinstance(x, dict) else x) for x in o['photos']]; keep = []
             for ph in was:
                 if ph['src'] in left: left.remove(ph['src']); keep.append(ph)
-        c.execute('UPDATE guest SET name=?, text=?, place=?, lng=?, lat=?, status=?, updated=?, edited=?, photos=? WHERE id=?',
-                  (name, text, place, lng, lat, status, int(time.time()), 1 if edited else 0, json.dumps(keep), gid))
+        weather = guest_weather(o['weather']) if 'weather' in o else old['weather']   # 后台没传天气就保持原样
+        c.execute('UPDATE guest SET name=?, text=?, place=?, lng=?, lat=?, status=?, updated=?, edited=?, photos=?, weather=? WHERE id=?',
+                  (name, text, place, lng, lat, status, int(time.time()), 1 if edited else 0, json.dumps(keep), weather, gid))
         if len(keep) < len(was): drop_unused(c, [p for p in was if p not in keep])
     return gid
 
