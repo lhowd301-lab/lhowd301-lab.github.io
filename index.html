@@ -904,7 +904,9 @@ body.guest-picking .maplibregl-marker:not(.guest-mk),body.guest-picking .maplibr
 .pf-facts{display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px 14px;margin:0;font-size:13px;align-items:baseline}
 .pf-facts dt{color:var(--ink-2)}
 .pf-facts dd{margin:0;color:var(--ink);font-size:13px;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;word-break:break-all}
-.pf-facts .sep{color:var(--ink-3);margin:0 2px}
+.pf-log{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.pf-log li{display:grid;grid-template-columns:82px minmax(0,1fr);gap:8px;font-size:12.5px;line-height:1.55;color:var(--ink-2)}
+.pf-log time{color:var(--blue);font-size:12px}
 .pf-facts small{font-family:var(--f-body);font-size:11.5px;color:var(--blue);background:var(--ice);padding:1px 7px;border-radius:999px}
 .pf-stack{display:flex;flex-wrap:wrap;gap:6px}
 .pf-stack span{display:inline-flex;align-items:baseline;gap:5px;padding:4px 9px;border-radius:9px;background:var(--white);border:1px solid var(--line);font-size:11.5px;color:var(--ink-3)}
@@ -954,6 +956,51 @@ body.guest-picking .maplibregl-marker:not(.guest-mk),body.guest-picking .maplibr
 .howto b{display:block;font-size:12px;font-weight:600;color:var(--ink);margin-bottom:5px;letter-spacing:.04em}
 .howto ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:auto auto;gap:4px 16px}
 .howto li{display:flex;align-items:center;gap:6px;white-space:nowrap}
+.howto small .howto-tour{border:0;background:none;padding:0;font:inherit;color:var(--blue);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.pf-tour{margin-top:14px;width:100%;padding:8px;border-radius:10px;border:1px solid var(--line);background:var(--white);color:var(--blue);font:inherit;font-size:13px;cursor:pointer}
+.pf-tour:hover{border-color:var(--blue)}
+.tour{position:fixed;left:50%;bottom:calc(26px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:31;width:min(460px,calc(100% - 24px));max-height:calc(100% - 140px);overflow:auto;padding:16px 18px 14px;border-radius:20px;background:var(--glass-strong,rgba(255,255,255,.92));-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);border:1px solid var(--line);box-shadow:0 18px 50px rgba(14,31,64,.22);color:var(--ink);animation:tourIn .32s cubic-bezier(.2,.8,.2,1)}
+.tour.out{opacity:0;transform:translate(-50%,12px);transition:opacity .25s,transform .25s}
+.tour.tour-attop{bottom:auto}
+@keyframes tourIn{from{opacity:0;transform:translate(-50%,14px)}to{opacity:1;transform:translate(-50%,0)}}
+.tour-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.tour-step{font-size:11px;letter-spacing:.08em;color:var(--ink-3)}
+.tour-skip{border:0;background:none;padding:4px 2px;font:inherit;font-size:12.5px;color:var(--ink-3);cursor:pointer}
+.tour-skip:hover{color:var(--blue)}
+.tour h2{margin:6px 0 12px;font-family:var(--f-display);font-size:21px;line-height:1.3;letter-spacing:.02em}
+.tour kbd{font-family:var(--f-mono);font-size:11px;line-height:18px;min-width:20px;text-align:center;padding:0 5px;border-radius:5px;background:var(--white);border:1px solid var(--line);border-bottom-width:2px;color:var(--ink);display:inline-block}
+.tour-hi{display:flex;gap:14px;align-items:flex-start}
+.tour-hi img{width:58px;height:58px;border-radius:16px;object-fit:cover;flex:none;box-shadow:0 0 0 3px var(--white),0 0 0 5px var(--ice)}
+.tour-hi p{margin:0;font-size:14px;line-height:1.7;color:var(--ink-2)}
+.tour-hi .big{width:52px;height:52px;flex:none;border-radius:16px;background:var(--ice);color:var(--blue);display:grid;place-items:center}.tour-hi .big svg{width:26px;height:26px}
+.tour-moves,.tour-mods{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.tour-moves li{display:grid;grid-template-columns:74px minmax(0,1fr) 22px;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;background:var(--ice-2);transition:background .2s}
+.tour-moves .ic{display:flex;align-items:center;justify-content:center;gap:3px;color:var(--blue)}.tour-moves .ic svg{width:26px;height:26px;flex:none}
+.tour-moves .tk{display:inline-flex;align-items:center;gap:2px;font-size:12px;color:var(--ink-3)}
+.tour-moves .tx{display:flex;flex-direction:column;gap:1px;min-width:0}.tour-moves b{font-size:13.5px;font-weight:600}.tour-moves small{font-size:12px;color:var(--ink-3)}
+.tour-moves .ok{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;color:transparent;transition:all .25s}.tour-moves .ok svg{width:14px;height:14px}
+.tour-moves li.done{background:#ECFDF5}.tour-moves li.done .ok{background:#10B981;border-color:#10B981;color:#fff;transform:scale(1.08)}
+.tour-mods{grid-template-columns:1fr 1fr;gap:8px 10px}
+.tour-mods li{display:flex;align-items:flex-start;gap:8px;min-width:0}
+.tour-mods .ic{flex:none;width:30px;height:30px;border-radius:9px;background:var(--ice);color:var(--blue);display:grid;place-items:center}.tour-mods .ic svg{width:17px;height:17px}
+.tour-mods b{display:block;font-size:13px;font-weight:600}.tour-mods small{display:block;font-size:11.5px;line-height:1.45;color:var(--ink-3)}
+.tour-pet{display:flex;gap:12px;align-items:flex-start}
+.tour-pet img{width:64px;height:64px;object-fit:contain;flex:none}
+.tour-pet ol{margin:0;padding:0;list-style:none;display:grid;gap:7px;counter-reset:t}
+.tour-pet li{counter-increment:t;position:relative;padding-left:26px;font-size:13px;line-height:1.6;color:var(--ink-2)}
+.tour-pet li::before{content:counter(t);position:absolute;left:0;top:1px;width:19px;height:19px;border-radius:50%;background:var(--blue);color:#fff;font-size:11px;font-weight:600;display:grid;place-items:center}
+.tour-pet li b{color:var(--ink);margin-right:6px}
+.tour-note{margin:12px 0 0;font-size:12.5px;line-height:1.6;color:var(--ink-3)}
+.tour-foot{display:flex;align-items:center;gap:8px;margin-top:14px}
+.tour-dots{display:flex;gap:5px;margin-right:auto}
+.tour-dots i{width:6px;height:6px;border-radius:3px;background:var(--line);transition:width .3s,background .3s}.tour-dots i.past{background:#93C5FD}.tour-dots i.on{width:18px;background:var(--blue)}
+.tour-btn{border:0;border-radius:11px;padding:9px 18px;background:var(--blue);color:#fff;font:inherit;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 4px 14px rgba(37,99,235,.25)}
+.tour-btn:hover{background:#1D4ED8}
+.tour-btn:focus{outline:none}.tour-btn:focus-visible{outline:2px solid #93C5FD;outline-offset:2px}
+.tour-btn.ghost{background:var(--white);color:var(--ink-2);border:1px solid var(--line);box-shadow:none;font-weight:500}.tour-btn.ghost:hover{border-color:var(--blue);color:var(--blue)}
+.tour-hl{box-shadow:0 0 0 3px #2563EB,0 0 0 10px rgba(37,99,235,.18)!important;animation:tourHl 1.6s ease-in-out infinite;z-index:30}
+@keyframes tourHl{50%{box-shadow:0 0 0 3px #2563EB,0 0 0 16px rgba(37,99,235,.06)}}
+@media (max-width:480px){.tour h2{font-size:19px}.tour-mods{grid-template-columns:1fr}.tour-moves li{grid-template-columns:62px minmax(0,1fr) 22px}}
 .howto kbd{font-family:var(--f-mono);font-size:10.5px;line-height:16px;min-width:18px;text-align:center;padding:0 5px;border-radius:5px;background:var(--white);border:1px solid var(--line);border-bottom-width:2px;color:var(--ink)}
 .howto .mi{width:15px;height:15px;color:var(--blue);flex:none}
 .howto small{display:block;margin-top:6px;font-size:11px;color:var(--ink-3)}
@@ -1541,12 +1588,17 @@ const SITE = {
     { name: "Vinson's Blog", url: 'https://vinsonblog.cn/', desc: 'Vinson 的个人博客 · 保持好奇，探索世界', avatar: 'photos/friends/vinson.webp' },
     { name: '城市与地铁', url: 'https://city-and-metro.pages.dev/', avatar: 'photos/friends/citymetro.webp', shape: 'app' },
   ],
-  // 地图说明（个人介绍最下面）：开始制作、第一次上线、最近两次更新的日期、网址、用到的工具和数据
+  // 地图说明（个人介绍最下面）：开始制作、第一次上线、最近更新、网址、用到的工具和数据、最近几次的更新记录
   about: {
     start: '2026-10-19', live: '2026-10-22', url: 'www.howardleong.work',
     stack: [['MapLibre GL', '地图引擎'], ['three.js', '3D 建模'], ['OpenStreetMap', '街道和楼房'], ['Natural Earth', '全国和世界底图'], ['SRTM', '地形'], ['Open-Meteo', '天气'], ['astronomy-engine', '星空和天象'], ['DeepSeek', '榕忆聊天'], ['腾讯云 · nginx', '服务器']],
-    // 更新过的日子（新的在前）；「最近更新」只显示最近两次，当天构建的日期会自动排在最前面
-    updates: ['2026-11-17', '2026-11-16', '2026-11-15', '2026-11-14', '2026-11-13', '2026-11-12', '2026-11-11', '2026-11-05', '2026-11-04', '2026-11-03', '2026-11-02', '2026-11-01', '2026-10-31', '2026-10-30', '2026-10-28', '2026-10-27', '2026-10-26', '2026-10-25', '2026-10-23', '2026-10-22'],
+    // 更新记录：只写最近三四次，一句话就好（新的在最上面）；「最近更新」的日期构建时自动填
+    log: [
+      ['2026-11-17', '新增新手教程和隐私声明；留言可以加天气；侧边栏换城市更方便'],
+      ['2026-11-16', '新增留言板和天象速报'],
+      ['2026-11-15', '网站后台上线'],
+      ['2026-10-22', '第一次上线'],
+    ],
   },
   // 隐私声明（个人介绍最下面，地图说明后面）：写的都要和网站实际做法一致，改了后台记录什么就要跟着改
   privacy: {
@@ -2339,7 +2391,7 @@ const HowTo = {
          ['<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>', '走动，<kbd>Q</kbd><kbd>E</kbd> 转身，<kbd>Shift</kbd> 加速'],
          [M('<path d="M12 21s-6-5.3-6-10a6 6 0 0 1 12 0c0 4.7-6 10-6 10z"/><circle cx="12" cy="11" r="2"/>'), '点图钉看详情'],
          ['<kbd>Esc</kbd>', '关掉卡片 / 弹窗']];
-    return `<div><b>怎么逛这张地图</b><ul>${rows.map(([ic, t]) => `<li>${ic}<span>${t}</span></li>`).join('')}</ul>${this.touch ? '' : '<small>按 <kbd>?</kbd> 再看一次</small>'}</div><button class="x" type="button" aria-label="关闭提示，以后不再自动弹出">×</button>`;
+    return `<div><b>怎么逛这张地图</b><ul>${rows.map(([ic, t]) => `<li>${ic}<span>${t}</span></li>`).join('')}</ul><small>${this.touch ? '' : '按 <kbd>?</kbd> 再看一次 · '}<button type="button" class="howto-tour">看新手教程</button></small></div><button class="x" type="button" aria-label="关闭提示，以后不再自动弹出">×</button>`;
   },
   auto() {   // 开场动画结束时调用
     let n = 0; try { n = +localStorage.getItem(this.key) || 0; } catch (e) { /* storage blocked */ }
@@ -2354,6 +2406,7 @@ const HowTo = {
     el.style.top = mq.matches && r && r.height ? Math.round(r.bottom + 12) + 'px' : '';
     void el.offsetWidth; el.classList.remove('off');   // 先量一次布局，淡入的过渡才会生效
     el.querySelector('.x').onclick = () => { try { localStorage.setItem(this.key, '99'); } catch (e) { /* storage blocked */ } this.hide(); };
+    el.querySelector('.howto-tour').onclick = () => { this.hide(); Tour.start(); };
     clearTimeout(this._t); this._t = setTimeout(() => this.hide(), ms);
     // 一动地图（拖、缩放、转）就收起；刚弹出的 1.5 秒内不算，免得开场的惯性把它马上收掉
     const since = performance.now();
@@ -2482,6 +2535,96 @@ if (/(^|\.)howardleong\.work$/.test(location.hostname) || location.hostname === 
   document.querySelectorAll('[data-icp]').forEach((a) => { a.hidden = false; });
 }
 // 自己服务器上的网站（备案过的域名 / 服务器 IP）才有后台（deploy/bh_admin.py）：访问统计、实时日记
+// 新手教程：第一次打开网站时出现（开场动画之后），可以跳过；看完或跳过以后就不再自动出现（存在浏览器里）
+//   1 欢迎  2 移动地图（电脑教左键 / 滚轮 / Ctrl + 拖动 / WASD，手机教手势；做到的会打勾）  3 主要功能  4 榕忆怎么抓、怎么聊  5 完成
+//   以后想重看：个人介绍最下面「重看新手教程」，或者按 ? 弹出的操作提示里点「新手教程」
+const Tour = {
+  key: 'bh-tour', i: 0, off: [],
+  touch: HowTo.touch,
+  done() { try { return localStorage.getItem(this.key) === 'done'; } catch (e) { return false; } },
+  auto() { if (!this.done() && !(typeof PickMode !== 'undefined' && PickMode.on)) this.start(); },
+  M: (d) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`,
+  steps() {
+    const M = this.M, mouse = '<rect x="6.5" y="3" width="11" height="18" rx="5.5"/><path d="M6.5 9.5h11M12 3v6.5"/>';
+    const moves = this.touch
+      ? [['pan', M('<path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V11"/><path d="M12 10.5V9a1.5 1.5 0 0 1 3 0v3"/><path d="M15 11a1.5 1.5 0 0 1 3 0v3.5a6 6 0 0 1-6 6h-.5a5.5 5.5 0 0 1-4.6-2.5L5 15.2a1.5 1.5 0 0 1 2.4-1.8L9 15"/>'), '单指拖动', '移动地图'],
+         ['zoom', M('<path d="M7 7l-3-3M17 7l3-3M7 17l-3 3M17 17l3 3"/><circle cx="12" cy="12" r="3"/>'), '双指张开 / 捏合', '放大、缩小'],
+         ['rotate', M('<path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v4h-4"/>'), '双指转动', '旋转地图'],
+         ['pitch', M('<path d="M8 16V8M16 16V8"/><path d="M5 11l3-3 3 3M13 11l3-3 3 3"/>'), '双指一起上下推', '倾斜，看 3D 楼房']]
+      : [['pan', M(mouse + '<path d="M12 3a5.5 5.5 0 0 0-5.5 5.5v1H12z" fill="currentColor"/>'), '按住左键拖动', '移动地图'],
+         ['zoom', M(mouse + '<rect x="10.6" y="4.6" width="2.8" height="4" rx="1.4" fill="currentColor"/>'), '滚动鼠标滚轮', '放大、缩小'],
+         ['rotate', '<span class="tk"><kbd>Ctrl</kbd>+</span>' + M(mouse + '<path d="M12 3a5.5 5.5 0 0 0-5.5 5.5v1H12z" fill="currentColor"/>'), '按住 Ctrl，再按住左键拖动', '左右拖旋转，上下拖倾斜看 3D 楼房'],
+         ['walk', '<span class="tk"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span>', '键盘 W A S D', '在地图上走动，Q / E 转身，Shift 加速']];
+    const mods = [['food', '吃过的店，带我的打分'], ['street', '在各个城市拍的街头照片'], ['landmark', '大湾区的建筑，很多做了 3D 模型'], ['diary', '我写的日志，标在发生的地方'],
+      ['guest', '在地图上任何地方给我留一句话'], ['metro', '大湾区地铁线网，列车按班次在跑'], ['sky', '今晚的星空和最近的天象'], ['pet', '一只可以抓、可以养、可以聊天的小精灵']];
+    return [
+      { id: 'hi', title: '欢迎来到 Beyond Horizons', body: `<div class="tour-hi"><img src="${AVATAR}" alt=""><p>这是 Howard 的个人网页，也是一张可以逛的地图：去过的地方、吃过的店、拍过的街，都标在上面。<br>花一分钟，看看怎么玩吧。</p></div>` },
+      { id: 'move', title: '先学会移动地图', body: `<ul class="tour-moves">${moves.map(([k, ic, a, b]) => `<li data-mv="${k}"><span class="ic">${ic}</span><span class="tx"><b>${a}</b><small>${b}</small></span><i class="ok" aria-hidden="true">${M('<path d="M5 12.5l4.5 4.5L19 7.5"/>')}</i></li>`).join('')}</ul>
+        <p class="tour-note">${this.touch ? '现在就在地图上试一试，做到的会打勾。' : '现在就在地图上试一试，做到的会打勾。右键拖动在网页上容易弹出菜单，用 <kbd>Ctrl</kbd> + 左键更顺手。'}</p>` },
+      { id: 'mods', hl: '#layerNav', title: this.touch ? '底部这一栏是网页的主要功能' : '左边这一栏是网页的主要功能',
+        body: `<ul class="tour-mods">${mods.map(([id, t]) => { const m = MODULES.find((x) => x.id === id); return `<li><span class="ic">${ICON_OF[id]}</span><span><b>${m.name}</b><small>${t}</small></span></li>`; }).join('')}</ul>
+        <p class="tour-note">点图钉就能看详情；右上角可以换城市。</p>` },
+      { id: 'pet', hl: '#petDock', title: '抓到榕忆，就能和它聊天',
+        body: `<div class="tour-pet"><img src="${Pet.img('curious')}" alt=""><ol>
+          <li><b>等线索</b>榕忆躲在地图上某个地点旁边，右下角会不定时发消息，透露它在哪一带。</li>
+          <li><b>放大找</b>照着线索去那一带，把地图放大到街道级别，它才会现身。</li>
+          <li><b>点两下</b>点一下它会蹦开，再点一下就抓住了。</li>
+          <li><b>聊天</b>抓到以后点右下角的榕忆，就能打字和它聊天：让它推荐吃的、放歌、带你去各个板块。</li>
+        </ol></div><p class="tour-note">在「榕忆」板块的小院里，还可以用水滴浇水种榕树、布置小院。</p>` },
+      { id: 'end', title: '准备好了！', body: `<div class="tour-hi end"><span class="big">${ICONS.street}</span><p>随便点点地图上的图钉看看吧。${this.touch ? '' : '<br>想再看操作提示，按 <kbd>?</kbd>。'}<br>想重看这个教程：点左上角的头像，在个人介绍最下面。</p></div>` },
+    ];
+  },
+  start(i = 0) {
+    let el = $('#tour');
+    if (!el) { el = document.createElement('section'); el.id = 'tour'; el.className = 'tour'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', '新手教程'); document.body.appendChild(el); }
+    if (typeof HowTo !== 'undefined') HowTo.hide();
+    if (!this._key) { this._key = (e) => { if (e.key === 'Escape' && $('#tour')) { e.stopPropagation(); this.end('skip'); } }; document.addEventListener('keydown', this._key, true); }
+    this.go(i);
+  },
+  go(i) {
+    const S = this.steps(), st = S[i], el = $('#tour'); if (!st || !el) return;
+    this.i = i; this.unhook();
+    document.querySelectorAll('.tour-hl').forEach((x) => x.classList.remove('tour-hl'));
+    const last = i === S.length - 1;
+    el.innerHTML = `<div class="tour-top"><span class="tour-step mono">新手教程 · ${i + 1} / ${S.length}</span>${last ? '' : '<button type="button" class="tour-skip" data-t="skip">跳过教程</button>'}</div>
+      <h2>${st.title}</h2>${st.body}
+      <div class="tour-foot"><span class="tour-dots" aria-hidden="true">${S.map((_, k) => `<i class="${k === i ? 'on' : k < i ? 'past' : ''}"></i>`).join('')}</span>
+        ${i ? '<button type="button" class="tour-btn ghost" data-t="prev">上一步</button>' : ''}<button type="button" class="tour-btn" data-t="${last ? 'done' : 'next'}">${i === 0 ? '开始' : last ? '开始逛' : '下一步'}</button></div>`;
+    el.querySelectorAll('[data-t]').forEach((b) => b.addEventListener('click', () => { const t = b.dataset.t; if (t === 'next') this.go(this.i + 1); else if (t === 'prev') this.go(this.i - 1); else this.end(t); }));
+    this.place();
+    if (st.hl) { const h = $(st.hl); if (h) { h.classList.add('tour-hl'); if (st.hl === '#layerNav' && typeof Auto !== 'undefined' && Auto.on()) Auto.reveal('nav'); } }
+    if (st.id === 'move') this.hookMoves();
+    el.querySelector('[data-t="next"],[data-t="done"]')?.focus({ preventScroll: true });
+  },
+  place() {   // 手机：放在顶栏下面（底部有导航栏和榕忆）；电脑：放在屏幕下方中间
+    const el = $('#tour'); if (!el) return;
+    const tb = $('#topbar'), r = tb && tb.getBoundingClientRect();
+    el.style.top = mq.matches && r && r.height ? Math.round(r.bottom + 10) + 'px' : '';
+    el.classList.toggle('tour-attop', !!el.style.top);   // 不能叫 .top：顶栏用了这个名字
+  },
+  hookMoves() {   // 在地图上真的做到了就打勾
+    const el = $('#tour'), tick = (k) => { const li = el && el.querySelector(`[data-mv="${k}"]`); if (li && !li.classList.contains('done')) { li.classList.add('done'); if ([...el.querySelectorAll('[data-mv]')].every((x) => x.classList.contains('done'))) el.querySelector('.tour-note').innerHTML = '都会了，真棒！点「下一步」继续。'; } };
+    if (map) {
+      const on = (ev, fn) => { map.on(ev, fn); this.off.push(() => map.off(ev, fn)); };
+      on('dragstart', (e) => { if (e.originalEvent) tick('pan'); });
+      on('zoomstart', (e) => { if (e.originalEvent) tick('zoom'); });
+      on('rotatestart', (e) => { if (e.originalEvent) tick('rotate'); });
+      on('pitchstart', (e) => { if (e.originalEvent) tick(this.touch ? 'pitch' : 'rotate'); });
+      const cv = map.getCanvasContainer(), wh = () => tick('zoom');   // 滚轮缩放不一定带 originalEvent，直接听滚轮
+      cv.addEventListener('wheel', wh, { passive: true }); this.off.push(() => cv.removeEventListener('wheel', wh));
+    }
+    const kd = (e) => { if (/^[wasdqe]$/i.test(e.key) && !e.target.closest('input,textarea,[contenteditable]')) tick('walk'); };
+    document.addEventListener('keydown', kd); this.off.push(() => document.removeEventListener('keydown', kd));
+  },
+  unhook() { this.off.forEach((f) => f()); this.off = []; },
+  end(how) {
+    try { localStorage.setItem(this.key, 'done'); } catch (e) { /* storage blocked */ }
+    this.unhook(); document.querySelectorAll('.tour-hl').forEach((x) => x.classList.remove('tour-hl'));
+    const el = $('#tour'); if (el) { el.classList.add('out'); setTimeout(() => el.remove(), 260); }
+    if (this._key) { document.removeEventListener('keydown', this._key, true); this._key = null; }
+    if (typeof Stats !== 'undefined') Stats.send('open', { m: 'tour', i: how, t: how === 'skip' ? `新手教程：跳过（第 ${this.i + 1} 步）` : '新手教程：看完' });
+  },
+};
 const BACKEND = /(^|\.)howardleong\.work$/.test(location.hostname) || location.hostname === '129.204.194.163' || (() => { try { return localStorage.getItem('bh-backend') === '1'; } catch (e) { return false; } })();
 const rid = () => Array.from(crypto.getRandomValues(new Uint8Array(9)), (b) => b.toString(36).padStart(2, '0')).join('');
 // 匿名访问统计：只发「打开了网站、换了板块和城市、点开了哪一项、还在看」，不用 cookie，不存 IP；
@@ -2850,21 +2993,24 @@ function renderProfile() {
   });
   DMForm.render();
 }
-// 地图说明：开始制作、第一次上线、最近两次更新（构建当天的日期自动算一次）、网址、用到的工具和数据
+// 地图说明：开始制作、第一次上线、最近更新（构建当天的日期）、网址、用到的工具和数据、最近几次的更新记录
 const BUILD = { date: '2026-11-17' };
 function aboutHTML() {
   const a = SITE.about; if (!a) return '';
   const dot = (d) => d.replace(/-/g, '.');
-  const ups = [...new Set([/^\d{4}-\d{2}-\d{2}$/.test(BUILD.date) ? BUILD.date : '', ...a.updates].filter((d) => d && d > a.live))].sort().reverse().slice(0, 2);
+  const last = /^\d{4}-\d{2}-\d{2}$/.test(BUILD.date) ? BUILD.date : a.log[0][0];
   return `<div class="pf-sec pf-about"><h3>地图说明</h3>
       <dl class="pf-facts">
         <dt>开始制作</dt><dd class="mono">${dot(a.start)}</dd>
         <dt>第一次上线</dt><dd class="mono">${dot(a.live)}</dd>
-        ${ups.length ? `<dt>最近更新</dt><dd class="mono">${ups.map(dot).join('<span class="sep">·</span>')}</dd>` : ''}
+        <dt>最近更新</dt><dd class="mono">${dot(last)}</dd>
         <dt>网址</dt><dd class="mono">${esc(a.url)}</dd>
       </dl>
       <h4>用到的工具和数据</h4>
       <div class="pf-stack">${a.stack.map(([n, w]) => `<span><b>${esc(n)}</b>${esc(w)}</span>`).join('')}</div>
+      <h4>更新记录</h4>
+      <ul class="pf-log">${a.log.map(([d, t]) => `<li><time class="mono">${dot(d)}</time><span>${esc(t)}</span></li>`).join('')}</ul>
+      <button type="button" class="pf-tour" data-tour>重看新手教程</button>
     </div>`;
 }
 // 隐私声明
@@ -5956,7 +6102,7 @@ function initMap() {
     PickMode.init();
     const home = PickMode.home() || HOME();
     if (reduceMotion) map.jumpTo(home); else map.flyTo({ ...home, duration: 3200, curve: 1.2, essential: true });
-    if (!PickMode.on) map.once('moveend', () => setTimeout(() => HowTo.auto(), reduceMotion ? 1200 : 500));   // 开场动画结束后弹操作提示
+    if (!PickMode.on) map.once('moveend', () => setTimeout(() => Tour.auto(), reduceMotion ? 1200 : 500));   // 开场动画结束后：第一次来的出新手教程（操作提示改成按 ? 才出）
   });
   map.on('rotate', syncCompass); map.on('pitch', syncCompass);
   map.on('pitch', () => map.getContainer().classList.toggle('tilted', map.getPitch() > 30));
@@ -10278,7 +10424,7 @@ $('#zSky').addEventListener('click', () => {
 $('#compass').addEventListener('click', () => map && map.easeTo({ bearing: 0, duration: 600 }));
 $('#avatarBtn').addEventListener('click', openDrawer);
 $('#scrim').addEventListener('click', closeDrawer);
-$('#profileDrawer').addEventListener('click', (e) => { if (e.target.closest('[data-close-drawer]')) closeDrawer(); });
+$('#profileDrawer').addEventListener('click', (e) => { if (e.target.closest('[data-close-drawer]')) closeDrawer(); if (e.target.closest('[data-tour]')) { closeDrawer(); Tour.start(); } });
 document.addEventListener('keydown', (e) => {
   if (e.key !== 'Escape') return;
   if (!$('#howto').hidden && !$('#howto').classList.contains('off')) HowTo.hide();
