@@ -25,6 +25,7 @@
 import base64
 import email.utils
 import html as htmllib
+import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
 import contextlib
@@ -670,6 +671,31 @@ def guest_save(o):
     return gid
 
 
+# ------------------------------------------------------------------ 榕忆用量（问同一台服务器上的榕忆聊天服务）
+PET_URL = 'http://127.0.0.1:%s/api/pet/admin/' % os.environ.get('PET_PORT', '8787')
+
+
+def pet_call(path, body=None):
+    key = os.environ.get('PET_API_KEY', '').strip()
+    if not key: raise ValueError('服务器上没装榕忆聊天（没有 PET_API_KEY）')
+    tok = hashlib.sha256(('bh-pet-admin:' + key).encode()).hexdigest()[:32]
+    req = urllib.request.Request(PET_URL + path, data=None if body is None else json.dumps(body).encode(), method='GET' if body is None else 'POST',
+                                 headers={'X-Pet-Admin': tok, 'Content-Type': 'application/json'})
+    try:
+        with urllib.request.urlopen(req, timeout=8) as r: return json.loads(r.read().decode())
+    except urllib.error.HTTPError as e:
+        raise ValueError('榕忆聊天服务没回应（%s）：可能还没更新到新版，先装最新的更新包' % e.code)
+    except OSError:
+        raise ValueError('连不上榕忆聊天服务（它没在运行？）')
+
+
+def pet_usage():
+    j = pet_call('usage')
+    mask = lambda ip: re.sub(r'^(\d+\.\d+)\.\d+\.\d+$', r'\1.*.*', ip) if ip else ''
+    j['top'] = [{'id': h, 'n': n, 'where': region_of(ip) if ip else '', 'ip': mask(ip)} for h, n, ip in j.get('top') or []]
+    return j
+
+
 # ------------------------------------------------------------------ 私信（只给后台看）
 DM_RATE = {}
 
@@ -798,6 +824,8 @@ class H(BaseHTTPRequestHandler):
         if p == '/api/admin/guest':
             rows = guest_rows(False)
             return self.send(200, {'items': rows, 'pending': sum(1 for r in rows if r['status'] == 'pending')})
+        if p == '/api/admin/pet':   # 榕忆今天聊了多少、用了多少 token、谁聊得最多，和设置
+            return self.send(200, pet_usage())
         if p == '/api/admin/dm':
             rows = dm_rows()
             return self.send(200, {'items': rows, 'unseen': sum(1 for r in rows if not r['seen'])})
@@ -841,6 +869,10 @@ class H(BaseHTTPRequestHandler):
                 try: return self.send(200, {'ok': True, 'id': dm_submit(o, ip)})
                 except PermissionError as e: return self.send(429, {'error': str(e)})
             if not self.authed(): return self.send(401, {'error': '请先登录'})
+            if p == '/api/admin/pet':   # 改榕忆的限额 / 暂停 / 拉黑
+                o = json.loads(self.body(20000) or b'{}')
+                if not isinstance(o, dict): raise ValueError('格式不对')
+                return self.send(200, pet_call('config', o))
             if p == '/api/admin/dm/seen':   # 标成已读 / 未读：{ids: [...], seen: true}，ids 不给就是全部
                 o = json.loads(self.body(65536) or b'{}'); ids = [str(x) for x in (o.get('ids') or []) if re.match(r'^m[0-9a-f]{10}$', str(x))]
                 with LOCK, db() as c:

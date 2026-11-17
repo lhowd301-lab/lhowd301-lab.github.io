@@ -10,6 +10,8 @@ ExecStart=/usr/bin/python3 /opt/beyond-horizons/pet_api.py
 Restart=on-failure
 RestartSec=3
 DynamicUser=yes
+# 用量和后台改的设置存在 /var/lib/bh-pet/state.json
+StateDirectory=bh-pet
 NoNewPrivileges=yes
 ProtectSystem=strict
 ProtectHome=yes

@@ -136,6 +136,8 @@ textarea.input.short{min-height:110px}
 .g-ph a{display:block;width:100%;height:100%}
 .g-ph img{width:100%;height:100%;object-fit:cover;display:block}
 .g-ph button{position:absolute;top:5px;right:5px;width:24px;height:24px;border-radius:50%;border:0;background:rgba(15,23,42,.68);color:#fff;font-size:15px;line-height:1;cursor:pointer}
+.p-top td:last-child{text-align:right;white-space:nowrap}
+.p-top .ghost{padding:3px 10px;font-size:12px}
 .tbadge{display:inline-block;min-width:18px;height:18px;line-height:18px;padding:0 5px;margin-left:5px;border-radius:999px;background:#F59E0B;color:#fff;font-size:11px;font-weight:700;text-align:center}
 .tag.pend{background:#FEF3C7;color:#B45309}.tag.ok{background:color-mix(in srgb,#52C98B 20%,transparent);color:#15803D}.tag.no{background:color-mix(in srgb,var(--ink-3) 18%,transparent);color:var(--ink-2)}
 .g-orig{font-size:12px;color:var(--ink-3);background:var(--ice);border-radius:10px;padding:8px 10px;white-space:pre-line}
@@ -163,7 +165,7 @@ textarea.input.short{min-height:110px}
 <div class="wrap">
   <section class="login" id="login" hidden>
     <h1>Beyond Horizons 后台</h1>
-    <p>访问统计 · 地图日志 · 吃饭地图 · 扫街照片 · 背景音乐 · 天文新闻 · 访客留言 · 私信</p>
+    <p>访问统计 · 地图日志 · 吃饭地图 · 扫街照片 · 背景音乐 · 天文新闻 · 访客留言 · 私信 · 榕忆用量</p>
     <form id="loginForm" class="card" autocomplete="on">
       <div class="field"><label for="pw">密码</label><input class="input" id="pw" type="password" autocomplete="current-password" required></div>
       <div class="err" id="loginErr"></div>
@@ -173,7 +175,7 @@ textarea.input.short{min-height:110px}
 
   <section id="app" hidden>
     <header>
-      <h1>Beyond Horizons 后台<small>访问统计 · 地图日志 · 吃饭地图 · 扫街照片 · 背景音乐 · 天文新闻 · 访客留言 · 私信</small></h1>
+      <h1>Beyond Horizons 后台<small>访问统计 · 地图日志 · 吃饭地图 · 扫街照片 · 背景音乐 · 天文新闻 · 访客留言 · 私信 · 榕忆用量</small></h1>
       <div class="tabs" role="tablist">
         <button role="tab" data-tab="stats" aria-selected="true">访问统计</button>
         <button role="tab" data-tab="diary" aria-selected="false">写日志</button>
@@ -183,6 +185,7 @@ textarea.input.short{min-height:110px}
         <button role="tab" data-tab="news" aria-selected="false">天文新闻</button>
         <button role="tab" data-tab="guest" aria-selected="false">访客留言<span class="tbadge" id="gBadge" hidden></span></button>
         <button role="tab" data-tab="dm" aria-selected="false">私信<span class="tbadge" id="mBadge" hidden></span></button>
+        <button role="tab" data-tab="pet" aria-selected="false">榕忆用量</button>
       </div>
       <a class="ghost" href="/" target="_blank" rel="noopener" style="text-decoration:none">打开网站</a>
       <button class="ghost" id="logout">退出</button>
@@ -416,6 +419,29 @@ textarea.input.short{min-height:110px}
         </form>
       </div>
     </div>
+    <div id="tab-pet" hidden>
+      <div class="toolbar"><span class="pill" id="pState"><i></i>—</span><span class="muted" id="pModel"></span><button class="ghost" id="pRefresh" style="margin-left:auto">刷新</button></div>
+      <div class="err" id="pErr"></div>
+      <div class="grid g4" id="pKpis"></div>
+      <div class="grid g2" style="margin-top:14px">
+        <div class="card"><h3>最近 14 天 <span class="sub">深色：输出　浅色：输入（含命中缓存的部分）</span></h3><div id="pChart"></div></div>
+        <div class="card"><h3>今天谁聊得最多 <span class="sub">按 IP 计（只给你看大概哪里来的，文件里不存 IP）</span></h3><div id="pTop"></div></div>
+      </div>
+      <form class="card" id="pForm" style="margin-top:14px" autocomplete="off">
+        <h3>限额 <span class="sub">改完点保存，马上生效；超过限额时榕忆会用固定的话回答，不再花 token</span></h3>
+        <label class="pin-opt" style="margin-bottom:14px"><input type="checkbox" id="pOn"> <b>开放聊天</b><span class="muted">取消勾选 = 暂停，访客找它聊天时它说在睡觉</span></label>
+        <div class="grid g3">
+          <div class="field"><label for="pIpDay">每人每天最多几句 <span class="hint">按 IP 算</span></label><input class="input" id="pIpDay" type="number" min="1" max="1000"></div>
+          <div class="field"><label for="pMin">每人每分钟最多几句</label><input class="input" id="pMin" type="number" min="1" max="60"></div>
+          <div class="field"><label for="pMax">每句回复最长 <span class="hint">token，越小越省</span></label><input class="input" id="pMax" type="number" min="80" max="1000" step="10"></div>
+          <div class="field"><label for="pMsgs">全站每天最多几句</label><input class="input" id="pMsgs" type="number" min="10" max="100000"></div>
+          <div class="field"><label for="pTok">全站每天最多用多少万 token <span class="hint">输入 + 输出</span></label><input class="input" id="pTok" type="number" min="1" max="10000" step="1"></div>
+          <div class="field"><label>拉黑的 IP</label><div class="muted" id="pBlock" style="padding-top:8px">—</div></div>
+        </div>
+        <div class="actions" style="margin-top:12px"><button class="btn" type="submit">保存</button></div>
+        <p class="hint" style="margin:10px 0 0">已经替你省 token 的地方：店单、歌单、天气只在访客问到吃的、听歌、天气时才发给大模型；每次只带最近 8 句对话；不变的设定放在最前面，DeepSeek 会自动命中缓存（这部分便宜很多）。花了多少钱以 DeepSeek 控制台的账单为准。</p>
+      </form>
+    </div>
     <div id="tab-dm" hidden>
       <div class="split">
         <div class="card">
@@ -482,7 +508,7 @@ $('#loginForm').addEventListener('submit', async (e) => {
 $('#logout').addEventListener('click', showLogin);
 
 /* ---------------- tabs */
-const TABS = { stats: () => loadStats(), diary: () => loadDiary(), food: () => Items.food.load(), street: () => Items.street.load(), music: () => Items.music.load(), news: () => News.load(), guest: () => Guest.load(), dm: () => DM.load() };
+const TABS = { stats: () => loadStats(), diary: () => loadDiary(), food: () => Items.food.load(), street: () => Items.street.load(), music: () => Items.music.load(), news: () => News.load(), guest: () => Guest.load(), dm: () => DM.load(), pet: () => Pet.load() };
 document.querySelectorAll('[data-tab]').forEach((b) => b.addEventListener('click', () => {
   document.querySelectorAll('[data-tab]').forEach((x) => x.setAttribute('aria-selected', String(x === b)));
   for (const k of Object.keys(TABS)) $('#tab-' + k).hidden = b.dataset.tab !== k;
@@ -1065,6 +1091,50 @@ $('#mToggle').addEventListener('click', () => { const r = DM.cur; if (r) DM.mark
 $('#mDel').addEventListener('click', async () => {
   const r = DM.cur; if (!r || !confirmDel($('#mDel'))) return;
   try { await api('/api/admin/dm/' + r.id, { method: 'DELETE' }); DM.cur = null; toast('已删除'); await DM.load(); } catch (e) { toast(e.message); }
+});
+
+/* 榕忆用量：今天聊了多少、用了多少 token，限额、暂停、拉黑 */
+const wan = (n) => n >= 1e4 ? (n / 1e4).toFixed(n >= 1e6 ? 0 : 1) + ' 万' : String(n || 0);
+const Pet = {
+  d: null,
+  async load() {
+    $('#pErr').textContent = '';
+    try { this.d = await api('/api/admin/pet'); } catch (e) { $('#pErr').textContent = e.message; $('#pState').innerHTML = '<i style="background:var(--danger,#dc2626)"></i>连不上'; return; }
+    const d = this.d, t = d.today, c = d.cfg, used = t.in + t.out;
+    $('#pState').innerHTML = c.on ? '<i></i>开放中' : '<i style="background:#94a3b8;box-shadow:none"></i>已暂停';
+    $('#pModel').textContent = `${d.model} · ${t.day}`;
+    const hit = t.in ? Math.round(t.cached / t.in * 100) : 0;
+    $('#pKpis').innerHTML = [
+      [t.msgs, `今天聊了几句（上限 ${c.global_msgs}）`],
+      [t.people, '今天来聊的人（按 IP）'],
+      [wan(used), `今天用的 token（上限 ${wan(c.global_tokens)}，用了 ${Math.min(100, Math.round(used / c.global_tokens * 100))}%）`],
+      [`${wan(t.in)} / ${wan(t.out)}`, `输入 / 输出（输入里 ${hit}% 命中缓存）${t.refused ? ` · 挡掉 ${t.refused} 句` : ''}`],
+    ].map(([v, l]) => `<div class="card kpi"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+    // 最近 14 天
+    const days = []; for (let i = 13; i >= 0; i--) { const x = new Date(Date.now() + 8 * 3600e3 - i * 864e5).toISOString().slice(0, 10); days.push(x); }
+    const row = (k) => k === t.day ? t : d.hist[k] || { in: 0, out: 0, msgs: 0 };
+    const max = Math.max(1, ...days.map((k) => row(k).in + row(k).out));
+    const W = 560, H = 170, bw = W / days.length;
+    $('#pChart').innerHTML = `<svg class="chart" viewBox="0 0 ${W} ${H + 18}">${days.map((k, i) => { const r = row(k), hi = (r.in + r.out) / max * H, ho = r.out / max * H;
+      return `<g><title>${k}：${r.msgs || 0} 句 · 输入 ${wan(r.in)} · 输出 ${wan(r.out)}</title><rect x="${i * bw + 4}" y="${H - hi}" width="${bw - 8}" height="${hi}" rx="3" fill="var(--ice-2)"/><rect x="${i * bw + 4}" y="${H - ho}" width="${bw - 8}" height="${ho}" rx="3" fill="var(--blue)"/>${(days.length - 1 - i) % 2 ? '' : `<text x="${i * bw + bw / 2}" y="${H + 14}" text-anchor="middle">${k.slice(5)}</text>`}</g>`; }).join('')}</svg>`;
+    // 谁聊得最多
+    $('#pTop').innerHTML = d.top.length ? `<table class="p-top"><tr><th>哪里来的</th><th>今天几句</th><th></th></tr>${d.top.map((r) => `<tr><td>${esc(r.where || '—')} <span class="muted">${esc(r.ip || '（重启前的记录）')}</span></td><td class="mono">${r.n}</td><td>${c.block.includes(r.id) ? `<button class="ghost" type="button" data-unblock="${r.id}">取消拉黑</button>` : `<button class="ghost" type="button" data-block="${r.id}">拉黑</button>`}</td></tr>`).join('')}</table>` : '<div class="empty">今天还没人来聊</div>';
+    $('#pTop').querySelectorAll('[data-block]').forEach((b) => b.addEventListener('click', () => this.save({ block: [...c.block, b.dataset.block] }, '已拉黑：这个 IP 今天起找榕忆聊天都会被挡掉')));
+    $('#pTop').querySelectorAll('[data-unblock]').forEach((b) => b.addEventListener('click', () => this.save({ block: c.block.filter((x) => x !== b.dataset.unblock) }, '已取消拉黑')));
+    // 设置
+    $('#pOn').checked = c.on; $('#pIpDay').value = c.per_ip_day; $('#pMin').value = c.per_min; $('#pMax').value = c.max_tokens; $('#pMsgs').value = c.global_msgs; $('#pTok').value = Math.round(c.global_tokens / 1e4);
+    $('#pBlock').innerHTML = c.block.length ? `${c.block.length} 个 <button class="ghost" type="button" id="pClear" style="padding:2px 9px;font-size:12px;margin-left:6px">全部取消</button>` : '没有';
+    $('#pClear')?.addEventListener('click', () => this.save({ block: [] }, '拉黑名单清空了'));
+  },
+  async save(o, msg) {
+    try { await api('/api/admin/pet', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(o) }); toast(msg || '已保存，马上生效'); await this.load(); }
+    catch (e) { $('#pErr').textContent = e.message; }
+  },
+};
+$('#pRefresh').addEventListener('click', () => Pet.load());
+$('#pForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  Pet.save({ on: $('#pOn').checked, per_ip_day: +$('#pIpDay').value, per_min: +$('#pMin').value, max_tokens: +$('#pMax').value, global_msgs: +$('#pMsgs').value, global_tokens: Math.round(+$('#pTok').value * 1e4) });
 });
 
 if (token) api('/api/admin/ping').then(showApp, (e) => { if (e.message !== '请先登录') { showLogin(); $('#loginErr').textContent = '连不上后台，稍后再试'; } }); else showLogin();
