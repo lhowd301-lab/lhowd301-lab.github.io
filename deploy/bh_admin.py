@@ -13,6 +13,8 @@
   也跟着 /api/diary?all=1 发给网页（「地球之外」的天象速报）。后台可以手动「现在更新」。
 - 访客留言：访客在网页上选位置、写昵称和留言，POST /api/diary/guest（借用已经转发的 /api/diary/ 路径），
   先存成「待审核」；在后台改好、通过以后，才跟着 /api/diary?all=1 出现在地图上。不存访客 IP。
+  留言可以带最多 3 张照片（网页先压成 JPEG）；后台审核时可以删掉其中几张。
+- 大致位置：GET /api/diary/where 按访客的网络猜国家 / 省 / 市（手机拿不到精确定位时用），只回给本人，不记下来。
 - 私信：访客在网页的个人介绍里点「给我发私信」，POST /api/diary/dm（同样借用 /api/diary/ 路径）；只有后台看得到，不公开。不存访客 IP。
 - 后台密码只以 PBKDF2 哈希存在 /etc/beyond-horizons/admin.env（deploy/admin-setup.sh 在服务器上输入），
   登录后发一张 30 天有效的凭证；连续输错 8 次要等 15 分钟。
@@ -62,20 +64,48 @@ except Exception as e:   # 没有离线库也能用，只是没有省市
     print('ip2region 没有加载：', e, flush=True)
 
 
+ISP = re.compile(r'电信|联通|移动|铁通|阿里|腾讯|华为|百度|教育网|鹏博士|长城|电讯|盈科|宽频|广电')
+SHORT = lambda x: re.sub(r'(省|市|壮族自治区|回族自治区|维吾尔自治区|自治区|特别行政区)$', '', x or '')
+
+
+def region_fields(ip):
+    """离线库查出来是「国家|省|市|运营商|国家代码」，没有的一栏是 0"""
+    if not REGION or not ip or ':' in ip: return None
+    try: f = (REGION.search(ip) or '').split('|') + ['0'] * 5
+    except Exception: return None
+    f = [x if x != '0' else '' for x in f[:5]]
+    if not f[0] or f[0] in ('Reserved', '内网IP') or '内网IP' in f: return 'lan'
+    return f
+
+
 def region_of(ip):
-    if not REGION or not ip or ':' in ip: return ''
-    try: r = REGION.search(ip).split('|')
-    except Exception: return ''
-    r = [x for x in r if x and x != '0']
-    if not r: return ''
-    if r[0] == '中国':
-        prov = r[1] if len(r) > 1 else ''
-        city = r[2] if len(r) > 2 and not re.search(r'电信|联通|移动|铁通|阿里|腾讯|华为|百度|教育网|鹏博士|长城', r[2]) else ''
-        if prov in ('内网IP',) or r[-1] == '内网IP': return '内网'
-        short = lambda x: re.sub(r'(省|市|壮族自治区|回族自治区|维吾尔自治区|自治区|特别行政区)$', '', x)
-        prov, city = short(prov), short(city)
+    f = region_fields(ip)
+    if not f: return ''
+    if f == 'lan': return '内网'
+    country, prov, city = f[0], f[1], f[2] if not ISP.search(f[2]) else ''
+    if country == '中国':
+        prov, city = SHORT(prov), SHORT(city)
         return (prov if not city or city == prov else prov + ' ' + city) or '中国'
-    return r[0] + (' ' + r[1] if len(r) > 1 and r[1] not in r[0] and not re.search(r'LLC|Inc|Ltd', r[1]) else '')
+    return country + (' ' + prov if prov and prov not in country and not re.search(r'LLC|Inc|Ltd', prov) else '')
+
+
+# 国家代码 → 网页地图上用的中文国名（「用我现在的位置」拿不到精确定位时，按网络大致放到那个国家）
+COUNTRY_ZH = {'SG': '新加坡', 'MY': '马来西亚', 'JP': '日本', 'KR': '大韩民国', 'US': '美国', 'GB': '英国', 'AU': '澳大利亚', 'NZ': '新西兰', 'CA': '加拿大',
+              'TH': '泰国', 'VN': '越南', 'ID': '印度尼西亚', 'PH': '菲律宾', 'IN': '印度', 'RU': '俄罗斯', 'DE': '德国', 'FR': '法国', 'IT': '意大利',
+              'ES': '西班牙', 'NL': '荷兰', 'BE': '比利时', 'CH': '瑞士', 'AT': '奥地利', 'SE': '瑞典', 'NO': '挪威', 'DK': '丹麦', 'FI': '芬兰', 'IE': '爱尔兰',
+              'PT': '葡萄牙', 'PL': '波兰', 'CZ': '捷克', 'HU': '匈牙利', 'GR': '希腊', 'TR': '土耳其', 'UA': '乌克兰', 'AE': '阿拉伯联合酋长国', 'SA': '沙特阿拉伯',
+              'QA': '卡塔尔', 'IL': '以色列', 'EG': '埃及', 'ZA': '南非', 'NG': '尼日利亚', 'KE': '肯尼亚', 'BR': '巴西', 'AR': '阿根廷', 'CL': '智利', 'MX': '墨西哥',
+              'PE': '秘鲁', 'CO': '哥伦比亚', 'KH': '柬埔寨', 'LA': '老挝', 'MM': '缅甸', 'BN': '文莱', 'MN': '蒙古国', 'KZ': '哈萨克斯坦', 'PK': '巴基斯坦',
+              'BD': '孟加拉国', 'LK': '斯里兰卡', 'NP': '尼泊尔', 'MV': '马尔代夫', 'IS': '冰岛', 'LU': '卢森堡', 'MO': '澳门', 'HK': '香港', 'TW': '台湾'}
+
+
+def region_parts(ip):
+    """访客点「用我现在的位置」但手机拿不到精确定位时，按网络大致猜在哪个国家 / 省 / 市（只回给访客本人，不记下来）"""
+    f = region_fields(ip)
+    if not f or f == 'lan': return {}
+    country, prov, city, iso = f[0], f[1], f[2] if not ISP.search(f[2]) else '', f[4]
+    if country == '中国': return {'country': '中国', 'prov': SHORT(prov), 'city': SHORT(city)}
+    return {'country': COUNTRY_ZH.get(iso.upper(), country), 'prov': '', 'city': ''}
 
 
 # ------------------------------------------------------------------ 设备 / 系统 / 浏览器
@@ -127,6 +157,8 @@ with db() as c:
     ''')
     if 'pinned' not in [r['name'] for r in c.execute('PRAGMA table_info(diary)')]:   # 旧数据库补上「置顶」这一列
         c.execute('ALTER TABLE diary ADD COLUMN pinned INTEGER DEFAULT 0')
+    if 'photos' not in [r['name'] for r in c.execute('PRAGMA table_info(guest)')]:   # 留言可以带照片
+        c.execute("ALTER TABLE guest ADD COLUMN photos TEXT DEFAULT '[]'")
 
 EVENTS = {'view', 'mod', 'city', 'open', 'ping', 'leave'}
 RATE, FAILS = {}, {}
@@ -239,7 +271,8 @@ def files_of(data):
 
 def drop_unused(c, photos):
     """删掉不再被任何日记 / 条目用到的上传照片和歌曲"""
-    used = ' '.join(r['photos'] or '' for r in c.execute('SELECT photos FROM diary')) + ' '.join(r['data'] or '' for r in c.execute('SELECT data FROM items'))
+    used = ' '.join(r['photos'] or '' for r in c.execute('SELECT photos FROM diary')) + ' '.join(r['data'] or '' for r in c.execute('SELECT data FROM items')) + \
+        ' '.join(r['photos'] or '' for r in c.execute('SELECT photos FROM guest'))
     for p in photos:
         for k in ('src', 'thumb'):
             name = os.path.basename(str(p.get(k) or ''))
@@ -555,16 +588,51 @@ def guest_clean(o):
     return name, text, place, lng, lat
 
 
+GUEST_PHOTOS = 3   # 一条留言最多几张照片
+
+
+def guest_photo_file(s, limit, thumb):
+    """网页压好的 JPEG（data:image/jpeg;base64,...）存成上传文件，回 /api/u/ 地址"""
+    s = str(s or '')
+    if not s.startswith('data:image/jpeg;base64,'): raise ValueError('照片格式不对，换一张试试')
+    try: data = base64.b64decode(s[23:], validate=True)
+    except (ValueError, TypeError): raise ValueError('照片格式不对，换一张试试')
+    if data[:3] != b'\xff\xd8\xff' or len(data) > limit: raise ValueError('照片太大或者格式不对，换一张试试')
+    name = hashlib.sha256(data).hexdigest()[:20] + ('-s' if thumb else '') + '.jpg'
+    with open(os.path.join(UPLOADS, name), 'wb') as f: f.write(data)
+    return '/api/u/' + name
+
+
+def guest_photos_in(arr):
+    if not isinstance(arr, list): return []
+    arr = [p for p in arr if isinstance(p, dict)][:GUEST_PHOTOS]
+    for p in arr:   # 先全部检查一遍，再存文件
+        for k, lim in (('src', 2 * 1024 * 1024), ('thumb', 300 * 1024)):
+            v = str(p.get(k) or '')
+            if not v.startswith('data:image/jpeg;base64,') or len(v) > lim * 4 // 3 + 64: raise ValueError('照片太大或者格式不对，换一张试试')
+    out = []
+    for p in arr:
+        try: ar = min(3.5, max(0.3, float(p.get('ar') or 1.333)))
+        except (TypeError, ValueError): ar = 1.333
+        out.append({'src': guest_photo_file(p['src'], 2 * 1024 * 1024, False), 'thumb': guest_photo_file(p['thumb'], 300 * 1024, True), 'ar': round(ar, 3)})
+    return out
+
+
 def guest_submit(o, ip):
     if str(o.get('website') or '').strip(): return 'gx'   # 机器人填了隐藏的栏：假装收下
     now = time.time()
     hits = [t for t in GUEST_RATE.get(ip, []) if now - t < 86400]
     if len([t for t in hits if now - t < 600]) >= 4 or len(hits) >= 20: raise PermissionError('留言太快了，过一会儿再来吧')
     name, text, place, lng, lat = guest_clean(o)
-    with LOCK, db() as c:
+    with db() as c:
         if c.execute("SELECT COUNT(*) n FROM guest WHERE status='pending'").fetchone()['n'] >= 500: raise PermissionError('待审核的留言太多了，晚点再来吧')
+        if o.get('photos') and c.execute("SELECT COUNT(*) n FROM guest WHERE status='pending' AND photos NOT IN ('', '[]')").fetchone()['n'] >= 100:
+            raise PermissionError('待审核的照片太多了，这次先只发文字吧')
+    photos = guest_photos_in(o.get('photos'))
+    with LOCK, db() as c:
         gid = 'g' + secrets.token_hex(5); ts = int(now)
-        c.execute('INSERT INTO guest (id,name,text,place,lng,lat,status,created,updated) VALUES (?,?,?,?,?,?,?,?,?)', (gid, name, text, place, lng, lat, 'pending', ts, ts))
+        c.execute('INSERT INTO guest (id,name,text,place,lng,lat,status,created,updated,photos) VALUES (?,?,?,?,?,?,?,?,?,?)',
+                  (gid, name, text, place, lng, lat, 'pending', ts, ts, json.dumps(photos)))
     GUEST_RATE[ip] = hits + [now]
     return gid
 
@@ -574,8 +642,9 @@ def guest_rows(public):
         rows = c.execute("SELECT * FROM guest WHERE status='approved' ORDER BY created DESC" if public else
                          "SELECT * FROM guest ORDER BY CASE status WHEN 'pending' THEN 0 ELSE 1 END, created DESC LIMIT 2000").fetchall()
     day = lambda t: datetime.fromtimestamp(t or 0, CST).strftime('%Y-%m-%d')
-    if public: return [{'id': r['id'], 'name': r['name'], 'text': r['text'], 'place': r['place'], 'lnglat': [r['lng'], r['lat']], 'date': day(r['created'])} for r in rows]
-    return [{'id': r['id'], 'name': r['name'], 'text': r['text'], 'place': r['place'], 'lnglat': [r['lng'], r['lat']], 'status': r['status'],
+    ph = lambda r: json.loads(r['photos'] or '[]')
+    if public: return [{'id': r['id'], 'name': r['name'], 'text': r['text'], 'place': r['place'], 'lnglat': [r['lng'], r['lat']], 'date': day(r['created']), **({'photos': ph(r)} if ph(r) else {})} for r in rows]
+    return [{'id': r['id'], 'name': r['name'], 'text': r['text'], 'place': r['place'], 'lnglat': [r['lng'], r['lat']], 'status': r['status'], 'photos': ph(r),
              'date': day(r['created']), 'created': r['created'], 'updated': r['updated'], 'edited': bool(r['edited'])} for r in rows]
 
 
@@ -589,7 +658,15 @@ def guest_save(o):
         old = c.execute('SELECT * FROM guest WHERE id=?', (gid,)).fetchone()
         if not old: raise ValueError('这条留言不在了')
         edited = old['edited'] or (name, text, place, round(lng, 6), round(lat, 6)) != (old['name'], old['text'], old['place'], round(old['lng'], 6), round(old['lat'], 6))
-        c.execute('UPDATE guest SET name=?, text=?, place=?, lng=?, lat=?, status=?, updated=?, edited=? WHERE id=?', (name, text, place, lng, lat, status, int(time.time()), 1 if edited else 0, gid))
+        was = json.loads(old['photos'] or '[]')
+        keep = was
+        if isinstance(o.get('photos'), list):   # 后台只能删照片，不能换（同一张传了两次也按张数算）
+            left = [str(x.get('src') if isinstance(x, dict) else x) for x in o['photos']]; keep = []
+            for ph in was:
+                if ph['src'] in left: left.remove(ph['src']); keep.append(ph)
+        c.execute('UPDATE guest SET name=?, text=?, place=?, lng=?, lat=?, status=?, updated=?, edited=?, photos=? WHERE id=?',
+                  (name, text, place, lng, lat, status, int(time.time()), 1 if edited else 0, json.dumps(keep), gid))
+        if len(keep) < len(was): drop_unused(c, [p for p in was if p not in keep])
     return gid
 
 
@@ -710,6 +787,8 @@ class H(BaseHTTPRequestHandler):
             return self.send(200, diary_rows(True), cache='no-cache')
         m = re.match(r'^/api/u/([0-9a-f]{20}(?:-s)?\.(jpg|mp3|m4a))$', p)
         if m: return self.send_file(os.path.join(UPLOADS, m.group(1)), {'jpg': 'image/jpeg', 'mp3': 'audio/mpeg', 'm4a': 'audio/mp4'}[m.group(2)])
+        if p == '/api/diary/where':   # 大致位置（按网络），只回给访客本人，不记下来
+            return self.send(200, region_parts(self.ip()), cache='no-store')
         if not p.startswith('/api/admin/'): return self.send(404, {'error': 'not found'})
         if not self.authed(): return self.send(401, {'error': '请先登录'})
         if p == '/api/admin/stats':
@@ -749,8 +828,8 @@ class H(BaseHTTPRequestHandler):
                 if check_pass(str(o.get('password', ''))): FAILS.pop(ip, None); return self.send(200, {'token': make_token()})
                 FAILS.setdefault(ip, []).append(time.time()); time.sleep(0.6)
                 return self.send(403, {'error': '密码不对'})
-            if p == '/api/diary/guest':   # 访客留言（不用登录）
-                try: o = json.loads(self.body(8192) or b'{}')
+            if p == '/api/diary/guest':   # 访客留言（不用登录；可以带最多 3 张网页压好的照片）
+                try: o = json.loads(self.body(8 * 1024 * 1024) or b'{}')
                 except ValueError: return self.send(400, {'error': '格式不对'})
                 if not isinstance(o, dict): return self.send(400, {'error': '格式不对'})
                 try: return self.send(200, {'ok': True, 'id': guest_submit(o, ip)})
@@ -812,7 +891,10 @@ class H(BaseHTTPRequestHandler):
         if m: delete_diary(m.group(1)); return self.send(200, {'ok': True})
         m = re.match(r'^/api/admin/guest/(g[0-9a-f]{10})$', p)
         if m:
-            with LOCK, db() as c: c.execute('DELETE FROM guest WHERE id=?', (m.group(1),))
+            with LOCK, db() as c:
+                row = c.execute('SELECT photos FROM guest WHERE id=?', (m.group(1),)).fetchone()
+                c.execute('DELETE FROM guest WHERE id=?', (m.group(1),))
+                drop_unused(c, json.loads(row['photos'] or '[]') if row else [])
             return self.send(200, {'ok': True})
         m = re.match(r'^/api/admin/dm/(m[0-9a-f]{10})$', p)
         if m:

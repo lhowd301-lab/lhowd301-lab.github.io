@@ -131,6 +131,11 @@ textarea.input.short{min-height:110px}
 .m-meta b{color:var(--ink-2);font-weight:600}
 .m-text{white-space:pre-wrap;word-break:break-word;line-height:1.75;font-size:14.5px;background:var(--ice);border-radius:12px;padding:12px 14px;margin-bottom:14px}
 .d-item.unseen b::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#F59E0B;margin-right:6px;vertical-align:2px}
+.g-phs{display:flex;flex-wrap:wrap;gap:8px}
+.g-ph{position:relative;width:110px;height:110px;border-radius:10px;overflow:hidden;background:var(--ice)}
+.g-ph a{display:block;width:100%;height:100%}
+.g-ph img{width:100%;height:100%;object-fit:cover;display:block}
+.g-ph button{position:absolute;top:5px;right:5px;width:24px;height:24px;border-radius:50%;border:0;background:rgba(15,23,42,.68);color:#fff;font-size:15px;line-height:1;cursor:pointer}
 .tbadge{display:inline-block;min-width:18px;height:18px;line-height:18px;padding:0 5px;margin-left:5px;border-radius:999px;background:#F59E0B;color:#fff;font-size:11px;font-weight:700;text-align:center}
 .tag.pend{background:#FEF3C7;color:#B45309}.tag.ok{background:color-mix(in srgb,#52C98B 20%,transparent);color:#15803D}.tag.no{background:color-mix(in srgb,var(--ink-3) 18%,transparent);color:var(--ink-2)}
 .g-orig{font-size:12px;color:var(--ink-3);background:var(--ice);border-radius:10px;padding:8px 10px;white-space:pre-line}
@@ -397,6 +402,7 @@ textarea.input.short{min-height:110px}
                 <button type="button" class="btn light" id="gPick">在地图上改位置</button>
                 <button type="button" class="btn light" id="gSee">在网站上看看这里</button></div>
             </div>
+            <div class="field" id="gPhWrap" hidden><label>访客的照片 <span class="hint">不合适的点 × 去掉（保存或通过后才生效），点照片看大图</span></label><div class="g-phs" id="gPhs"></div></div>
             <div class="field" id="gOrigWrap" hidden><label>访客原来写的</label><div class="g-orig" id="gOrig"></div></div>
             <div class="err" id="gErr"></div>
             <div class="actions">
@@ -969,7 +975,7 @@ const Guest = {
     const n = (st) => this.rows.filter((r) => r.status === st).length;
     $('#gCount').textContent = `待审核 ${n('pending')} · 已发布 ${n('approved')}`;
     const tag = { pending: '<span class="tag pend">待审核</span> ', approved: '<span class="tag ok">已发布</span> ', rejected: '<span class="tag no">没通过</span> ' };
-    $('#gList').innerHTML = L.map((r) => `<button class="d-item" data-id="${r.id}" aria-current="${!!this.cur && this.cur.id === r.id}"><span class="dt">${r.date.slice(5)}</span><b>${esc(r.name)}：${esc(r.text.slice(0, 40))}</b><small>${tag[r.status] || ''}${r.edited ? '改过 · ' : ''}${esc(r.place || `${r.lnglat[1].toFixed(2)}, ${r.lnglat[0].toFixed(2)}`)}</small></button>`).join('')
+    $('#gList').innerHTML = L.map((r) => `<button class="d-item" data-id="${r.id}" aria-current="${!!this.cur && this.cur.id === r.id}"><span class="dt">${r.date.slice(5)}</span><b>${esc(r.name)}：${esc(r.text.slice(0, 40))}</b><small>${tag[r.status] || ''}${(r.photos || []).length ? `📷 ${r.photos.length} · ` : ''}${r.edited ? '改过 · ' : ''}${esc(r.place || `${r.lnglat[1].toFixed(2)}, ${r.lnglat[0].toFixed(2)}`)}</small></button>`).join('')
       || `<div class="empty" style="padding:6px 8px">${f === 'pending' ? '没有待审核的留言 🎉' : '没有'}</div>`;
     $('#gList').querySelectorAll('.d-item').forEach((b) => b.addEventListener('click', () => this.edit(this.rows.find((r) => r.id === b.dataset.id))));
   },
@@ -978,14 +984,22 @@ const Guest = {
     $('#gHead').textContent = r ? `${r.name} 的留言 · ${r.date}` : '选左边的一条留言';
     if (!r) return;
     $('#gName').value = r.name; $('#gText').value = r.text; $('#gPlace').value = r.place || ''; this.setLL(r.lnglat);
+    this.photos = (r.photos || []).slice(); this.drawPhotos();
     const o = this.orig[r.id], changed = o && (o.name !== r.name || o.text !== r.text || (o.place || '') !== (r.place || ''));
     $('#gOrigWrap').hidden = !changed; if (changed) $('#gOrig').textContent = `${o.name}：${o.text}${o.place ? '（' + o.place + '）' : ''}`;
     $('#gList').querySelectorAll('.d-item').forEach((b) => b.setAttribute('aria-current', String(b.dataset.id === r.id)));
   },
   setLL(p) { this.ll = p; $('#gCoord').textContent = fmtLL(p); },
+  drawPhotos() {
+    const L = this.photos || [];
+    $('#gPhWrap').hidden = !L.length && !(this.cur && (this.cur.photos || []).length);
+    $('#gPhs').innerHTML = L.map((p, i) => `<div class="g-ph"><a href="${esc(p.src)}" target="_blank" rel="noopener"><img src="${esc(p.thumb || p.src)}" alt=""></a><button type="button" data-rm="${i}" aria-label="去掉这张">×</button></div>`).join('')
+      || '<span class="hint">照片都去掉了（保存后生效）</span>';
+    $('#gPhs').querySelectorAll('[data-rm]').forEach((b) => b.addEventListener('click', () => { this.photos.splice(+b.dataset.rm, 1); this.drawPhotos(); }));
+  },
   async save(status) {
     const r = this.cur; if (!r) return;
-    const body = { id: r.id, name: $('#gName').value.trim(), text: $('#gText').value.trim(), place: $('#gPlace').value.trim(), lnglat: this.ll, status: status === 'keep' ? r.status : status };
+    const body = { id: r.id, name: $('#gName').value.trim(), text: $('#gText').value.trim(), place: $('#gPlace').value.trim(), lnglat: this.ll, status: status === 'keep' ? r.status : status, photos: (this.photos || []).map((p) => p.src) };
     if (!body.name || !body.text) { $('#gErr').textContent = '昵称和留言都不能空着'; return; }
     try {
       await api('/api/admin/guest', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });

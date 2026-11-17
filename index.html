@@ -124,7 +124,8 @@ body.sunk .maplibregl-marker,body.sunk .look-hint{visibility:hidden}
 .sub-lines-h{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:2px 8px 6px;border:0;background:none;color:#8FB0EA;font-size:11px;letter-spacing:.14em;cursor:pointer;text-align:left}
 .sub-lines-h small{letter-spacing:.04em;color:#6F86AD;margin-left:4px}
 .sub-lines-h svg{width:15px;height:15px;transition:transform .2s}
-.sub-lines.min .sub-line{display:none}
+.sub-line-wrap{display:flex;flex-direction:column;gap:1px}
+.sub-lines.min .sub-line-wrap{display:none}
 .sub-lines.min .sub-lines-h{padding-bottom:2px}
 .sub-lines.min .sub-lines-h svg{transform:rotate(-90deg)}
 .sub-line b{font-weight:600;white-space:nowrap}
@@ -157,14 +158,19 @@ body.sunk .maplibregl-marker,body.sunk .look-hint{visibility:hidden}
   .sub-clock small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
   .sub-speed{order:4;flex:none;gap:4px}
   .sub-speed .sky-pill{height:30px;padding:0 9px}
-  .sub-lines{top:auto;bottom:calc(26px + env(safe-area-inset-bottom,0px));left:0;right:0;width:auto;max-height:none;flex-direction:row;gap:6px;overflow-x:auto;border-radius:0;padding:6px max(12px,env(safe-area-inset-left,0px));background:none;border:0;-webkit-backdrop-filter:none;backdrop-filter:none;scrollbar-width:none}
-  .sub-lines::-webkit-scrollbar{display:none}
-  .sub-line{grid-template-columns:auto auto;flex:none;background:rgba(8,18,40,.78);border:1px solid rgba(147,197,253,.18);padding:6px 10px}
+  /* 手机：底部一块面板，上面一排城市、下面一排线路，各自左右滑 */
+  .sub-lines{top:auto;bottom:calc(26px + env(safe-area-inset-bottom,0px));left:max(10px,env(safe-area-inset-left,0px));right:max(10px,env(safe-area-inset-right,0px));width:auto;max-height:none;overflow:visible;display:flex;flex-direction:column;gap:7px;padding:8px 0;border-radius:16px}
+  .sub-sys,.sub-line-wrap{display:flex;flex-direction:row;flex-wrap:nowrap;gap:6px;overflow-x:auto;padding:0 10px;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 10px,#000 calc(100% - 22px),transparent);mask-image:linear-gradient(90deg,transparent 0,#000 10px,#000 calc(100% - 22px),transparent)}
+  .sub-sys::-webkit-scrollbar,.sub-line-wrap::-webkit-scrollbar{display:none}
+  .sub-sys{margin:0;padding-bottom:7px;border-bottom:1px solid rgba(147,197,253,.12)}
+  .sub-sys button{flex:none;white-space:nowrap;font-size:13px;padding:5px 14px}
+  .sub-line{grid-template-columns:auto auto;flex:none;gap:7px;background:rgba(15,30,60,.55);border:1px solid rgba(147,197,253,.16);padding:6px 12px;border-radius:999px;font-size:12.5px}
+  .sub-line i{width:14px;height:5px}
   .sub-line small{display:none}
   .sub-lines-h{display:none}
-  .sub-lines.min .sub-line{display:grid}
-  .sub-info{top:auto;bottom:calc(76px + env(safe-area-inset-bottom,0px));left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));width:auto}
-  .sub-note{top:auto;bottom:calc(80px + env(safe-area-inset-bottom,0px));white-space:normal;width:max-content;max-width:calc(100% - 24px)}
+  .sub-lines.min .sub-line-wrap{display:flex}
+  .sub-info{top:auto;bottom:calc(122px + env(safe-area-inset-bottom,0px));left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));width:auto}
+  .sub-note{top:auto;bottom:calc(126px + env(safe-area-inset-bottom,0px));white-space:normal;width:max-content;max-width:calc(100% - 24px)}
   .sub-src{right:auto;left:max(12px,env(safe-area-inset-left,0px));bottom:calc(8px + env(safe-area-inset-bottom,0px));font-size:10px}
   .sink-hint{bottom:calc(150px + env(safe-area-inset-bottom,0px))}
 }
@@ -628,8 +634,18 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
 .d-photos{display:grid;gap:8px;margin:14px 0 2px}
 .d-photos a{display:block;overflow:hidden;border-radius:12px;background:var(--ice)}
 .d-photos img{width:100%;height:100%;object-fit:cover;display:block}
-.pick-bar{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:30;display:flex;gap:10px;align-items:baseline;padding:10px 16px;border-radius:14px;font-size:13px;color:var(--ink-2);max-width:calc(100% - 32px)}
+.pick-bar{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:30;display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;padding:10px 12px 10px 16px;border-radius:14px;font-size:13px;line-height:1.5;color:var(--ink-2);width:max-content;max-width:min(620px,calc(100vw - 32px))}
 .pick-bar b{color:var(--blue);white-space:nowrap}
+.pick-bar span{flex:1 1 220px;min-width:0}
+.pick-bar .pb-act{display:flex;gap:6px;flex:none;margin-left:auto}
+.pick-bar .pb-msg{flex-basis:100%;margin:0;font-size:12px;color:#B45309}
+.pick-bar .pb-msg:empty{display:none}
+@media (max-width:640px){
+  .pick-bar{left:10px;right:10px;transform:none;width:auto;max-width:none;top:calc(10px + env(safe-area-inset-top,0px));padding:10px 12px}
+  .pick-bar span{flex-basis:100%;order:2}
+  .pick-bar .pb-act{order:3;margin-left:0;width:100%}
+  .pick-bar .pb-act .g-btn{flex:1;padding:8px 10px}
+}
 .d-quote{margin:0;padding:12px 14px;border-radius:12px;background:var(--ice-2);font-size:13.5px;line-height:1.8;color:var(--ink-2)}
 .d-quote b{display:block;font-size:11px;letter-spacing:.14em;color:var(--blue);margin-bottom:4px;font-weight:500}
 .d-meta{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 14px;margin:0;font-size:12.5px}
@@ -799,6 +815,20 @@ body.pure .maplibregl-marker,body.pure .detail,body.pure .drawer,body.pure .scri
 .g-btn{border:1px solid #F59E0B;background:#FFFBEB;color:#B45309;border-radius:9px;padding:6px 10px;font-size:12.5px;cursor:pointer}
 .g-btn.ghost{border-color:var(--line);background:var(--white);color:var(--ink-2)}
 .g-hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+.g-photos{display:flex;flex-wrap:wrap;gap:8px;font-weight:400}
+.g-ph{position:relative;width:76px;height:76px;border-radius:10px;overflow:hidden;background:var(--ice)}
+.g-ph img{width:100%;height:100%;object-fit:cover;display:block}
+.g-ph button{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;border:0;background:rgba(15,23,42,.62);color:#fff;display:grid;place-items:center;cursor:pointer;padding:0}
+.g-ph button svg{width:12px;height:12px}
+.g-ph-add{width:76px;height:76px;border-radius:10px;border:1.5px dashed #FBBF24;background:#FFFBEB;color:#B45309;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:12px;cursor:pointer}
+.g-ph-add svg{width:22px;height:22px}
+.g-ph-add input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.g-pics{display:grid;gap:6px;margin:12px 0 4px;grid-template-columns:repeat(3,minmax(0,1fr))}
+.g-pics.n1{grid-template-columns:minmax(0,1fr)}.g-pics.n2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g-pic{display:block;padding:0;border:0;border-radius:12px;overflow:hidden;background:var(--ice);cursor:zoom-in;aspect-ratio:1}
+.g-pics.n1 .g-pic{aspect-ratio:var(--ar,1.333);max-height:360px}
+.g-pic img{width:100%;height:100%;object-fit:cover;display:block}
+.pin-guest .lbl svg{width:12px;height:12px;vertical-align:-1px;margin-left:4px;opacity:.75}
 .g-err{margin:0;min-height:1em;color:#DC2626;font-size:12.5px}
 .g-done{text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px}
 #guestPick .g-btn{margin-left:6px}
@@ -2484,7 +2514,7 @@ const GuestFab = {
   },
 };
 const GuestForm = {
-  picking: false, data: { name: '', text: '', place: '', lnglat: null }, mk: null,
+  picking: false, data: { name: '', text: '', place: '', lnglat: null, photos: [] }, mk: null,
   open() {
     if (state.module !== 'guest') setModule('guest', { fit: false });
     try { const n = localStorage.getItem('bh-guest-name'); if (n && !this.data.name) this.data.name = n; } catch (e) { /* storage blocked */ }
@@ -2497,6 +2527,7 @@ const GuestForm = {
       <p class="g-tip">选一个地方，留下你的昵称和想说的话。审核通过后，它就会出现在你选的位置上，所有人都能看到。</p>
       <label class="g-f"><span>昵称</span><input name="name" maxlength="20" required placeholder="怎么称呼你" value="${esc(g.name)}" autocomplete="nickname"></label>
       <label class="g-f"><span>想说的话 <small class="mono" data-count>${g.text.length}/300</small></span><textarea name="text" maxlength="300" rows="4" required>${esc(g.text)}</textarea></label>
+      <div class="g-f"><span>照片 <small>可不传，最多 3 张</small></span><div class="g-photos" data-photos></div></div>
       <div class="g-f"><span>位置</span><div class="g-loc"><b data-coord>${g.lnglat ? `已选：${g.lnglat[1].toFixed(4)}, ${g.lnglat[0].toFixed(4)}` : '还没选'}</b>
         <button type="button" class="g-btn" data-pick>${g.lnglat ? '重新选' : '在地图上点一下'}</button><button type="button" class="g-btn ghost" data-here>用我现在的位置</button></div></div>
       <label class="g-f"><span>地点名 <small>可不填</small></span><input name="place" maxlength="30" placeholder="比如：新加坡 · 滨海湾" value="${esc(g.place)}"></label>
@@ -2511,27 +2542,67 @@ const GuestForm = {
     const f = d.querySelector('form');
     f.addEventListener('input', (e) => { const k = e.target.name; if (k in g) g[k] = e.target.value; if (k === 'text') f.querySelector('[data-count]').textContent = `${g.text.length}/300`; });
     f.querySelector('[data-pick]').addEventListener('click', () => this.startPick());
-    f.querySelector('[data-here]').addEventListener('click', () => {
-      if (!navigator.geolocation) return this.err('这个浏览器不能定位，请在地图上点一下');
-      this.err('正在定位…');
-      navigator.geolocation.getCurrentPosition((pos) => { this.err(''); this.set([+pos.coords.longitude.toFixed(5), +pos.coords.latitude.toFixed(5)], true); this.open(); },
-        () => this.err('没能定位（可能没给权限），请在地图上点一下'), { enableHighAccuracy: false, timeout: 12000 });
-    });
+    f.querySelector('[data-here]').addEventListener('click', () => this.locate((t) => this.err(t)));
+    this.wirePhotos(f);
     f.addEventListener('submit', (e) => { e.preventDefault(); this.submit(f); });
     if (g.lnglat) this.showMarker();
   },
   err(t) { const e = $('#detail [data-err]'); if (e) e.textContent = t; },
+  // 用我现在的位置：先要精确定位；手机浏览器（尤其微信、QQ 里打开）经常拿不到，就按网络大致定位到城市，再让人拖图钉微调
+  async locate(say, fromPick) {
+    say('正在定位…');
+    let why = 'none';
+    if (navigator.geolocation && window.isSecureContext) {
+      try {
+        const pos = await new Promise((res, rej) => navigator.geolocation.getCurrentPosition(res, rej, { enableHighAccuracy: true, timeout: 9000, maximumAge: 600000 }));
+        say(''); this.set([+pos.coords.longitude.toFixed(5), +pos.coords.latitude.toFixed(5)], true, 15);
+        if (fromPick) this.endPick(); else this.open();
+        this.err('定位好了，图钉可以拖动微调');
+        return;
+      } catch (e) { why = e && e.code === 1 ? 'denied' : 'fail'; }
+    }
+    const lead = why === 'denied' ? '浏览器没给定位权限' : why === 'fail' ? '没拿到精确定位' : '这个浏览器不能精确定位';
+    const hit = BACKEND ? await roughPlace().catch(() => null) : null;
+    if (hit) {
+      this.set(hit.ll, true, hit.zoom);
+      if (fromPick) this.endPick(); else this.open();
+      this.err(`${lead}，先按网络大致放在「${hit.name}」：把图钉拖到准确的地方，或者点「重新选」在地图上点一下`);
+      return;
+    }
+    say(`${lead}${why === 'denied' ? '（可以在浏览器设置里允许定位）' : ''}，请直接在地图上点一下`);
+  },
+  // 照片：最多 3 张，先在手机上压小（长边 1600 像素的 JPEG + 一张小图），再跟留言一起交
+  wirePhotos(f) {
+    const box = f.querySelector('[data-photos]'); if (!box) return;
+    const g = this.data; if (!g.photos) g.photos = [];
+    const draw = () => {
+      box.innerHTML = g.photos.map((p, i) => `<div class="g-ph"><img src="${p.thumb}" alt="第 ${i + 1} 张照片"><button type="button" data-rm="${i}" aria-label="删掉这张">${ICONS.close}</button></div>`).join('')
+        + (g.photos.length < 3 ? `<label class="g-ph-add">${ICONS.street}<span>加照片</span><input type="file" accept="image/*" ${g.photos.length < 2 ? 'multiple' : ''} data-file></label>` : '');
+      box.querySelectorAll('[data-rm]').forEach((b) => b.addEventListener('click', () => { g.photos.splice(+b.dataset.rm, 1); draw(); }));
+      const inp = box.querySelector('[data-file]');
+      if (inp) inp.addEventListener('change', async () => {
+        const files = [...inp.files].slice(0, 3 - g.photos.length); if (!files.length) return;
+        this.err('正在处理照片…');
+        for (const file of files) {
+          try { g.photos.push(await shrinkPhoto(file)); } catch (e) { this.err(e.message); draw(); return; }
+        }
+        this.err(''); draw();
+      });
+    };
+    draw();
+  },
   startPick() {
     this.picking = true; $('#detail').hidden = true; document.body.classList.add('guest-picking'); GuestFab.sync();
     let bar = $('#guestPick');
     if (!bar) { bar = document.createElement('div'); bar.id = 'guestPick'; bar.className = 'pick-bar glass'; bar.setAttribute('role', 'status'); document.body.appendChild(bar); }
-    bar.innerHTML = '<b>选留言的位置</b><span>在地图上点一下；想选别的城市或国家，先缩小地图</span><button type="button" class="g-btn ghost" data-cancel>取消</button>';
+    bar.innerHTML = '<b>选留言的位置</b><span>在地图上点一下；想选别的城市或国家，先缩小地图</span><div class="pb-act"><button type="button" class="g-btn" data-here>用我现在的位置</button><button type="button" class="g-btn ghost" data-cancel>取消</button></div><p class="pb-msg" data-pmsg role="alert"></p>';
     bar.hidden = false; bar.querySelector('[data-cancel]').onclick = () => this.endPick();
+    bar.querySelector('[data-here]').onclick = () => this.locate((t) => { const m = bar.querySelector('[data-pmsg]'); if (m) m.textContent = t; }, true);
     if (map) map.getCanvas().style.cursor = 'crosshair';
   },
   endPick() { this.picking = false; document.body.classList.remove('guest-picking'); const bar = $('#guestPick'); if (bar) bar.hidden = true; if (map) map.getCanvas().style.cursor = ''; this.open(); },
   picked(ll) { this.set([+ll.lng.toFixed(5), +ll.lat.toFixed(5)]); this.endPick(); },
-  set(p, fly) { this.data.lnglat = p; this.showMarker(); if (fly && map) map.flyTo({ center: p, zoom: Math.max(map.getZoom(), 12), essential: true }); },
+  set(p, fly, zoom) { this.data.lnglat = p; this.showMarker(); if (fly && map) map.flyTo({ center: p, zoom: zoom || Math.max(map.getZoom(), 12), essential: true }); },
   showMarker() {
     if (!map || !this.data.lnglat) return;
     if (!this.mk) {
@@ -2549,17 +2620,47 @@ const GuestForm = {
     if (!g.lnglat) return this.err('还没选位置：点「在地图上点一下」');
     const btn = f.querySelector('[type=submit]'); btn.disabled = true; this.err('');
     try {
-      const r = await fetch('/api/diary/guest', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...g, website: f.website.value }) });
+      if (g.photos.length) this.err('正在上传照片…');
+      const r = await fetch('/api/diary/guest', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...g, photos: g.photos.map((p) => ({ src: p.src, thumb: p.thumb, ar: p.ar })), website: f.website.value }) });
       const j = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(j.error || '没提交成功，稍后再试');
       try { localStorage.setItem('bh-guest-name', g.name); } catch (e) { /* storage blocked */ }
       Stats.send('open', { m: 'guest', i: 'new', t: '提交留言' });
-      this.clearMarker(); this.data = { name: g.name, text: '', place: '', lnglat: null };
+      this.clearMarker(); this.data = { name: g.name, text: '', place: '', lnglat: null, photos: [] };
       $('#detail .detail-scroll').innerHTML = `<div class="d-body g-done" style="padding-top:28px"><div class="g-badge big">${ICONS.guest}</div><h2 class="d-title">收到啦，谢谢你！</h2><p class="g-tip">审核通过后，你的留言就会出现在地图上你选的位置。过几天回来看看吧。</p><button class="btn-guest" type="button" data-close-guest>好的</button></div>`;
       $('#detail [data-close-guest]').addEventListener('click', closeDetail);
     } catch (e) { this.err(e.message); btn.disabled = false; }
   },
 };
+// 把手机里的照片压成 JPEG：长边 max 像素；太大就再压一次。回 { src, thumb, ar }（都是 data: 地址）
+function shrinkPhoto(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('这张图片读不出来（有些手机的 HEIC 照片要先转成 JPG）')); };
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const W = img.naturalWidth, H = img.naturalHeight;
+      const enc = (max, q) => { const k = Math.min(1, max / Math.max(W, H)), c = document.createElement('canvas'); c.width = Math.max(1, Math.round(W * k)); c.height = Math.max(1, Math.round(H * k)); const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0, c.width, c.height); return c.toDataURL('image/jpeg', q); };
+      let src = enc(1600, 0.82); if (src.length > 2.6e6) src = enc(1280, 0.72); if (src.length > 2.6e6) src = enc(1024, 0.65);
+      resolve({ src, thumb: enc(480, 0.74), ar: +(W / H).toFixed(3) });
+    };
+    img.src = url;
+  });
+}
+// 「用我现在的位置」拿不到精确定位时：问服务器按网络猜的国家 / 省 / 市，在地图上找到对应的点
+let worldPts = null;
+async function roughPlace() {
+  const r = await fetch('/api/diary/where', { cache: 'no-store' }); if (!r.ok) return null;
+  const w = await r.json(); if (!w || !w.country) return null;
+  const gba = SITE.cities.find((c) => c.center && [w.city, w.prov].some((n) => n && (c.name === n || n.startsWith(c.name))));
+  if (gba) return { ll: gba.center, zoom: 11.5, name: gba.name };
+  if (!worldPts) { const j = await (await fetch(U('map/world.json'))).json(); worldPts = j.features.filter((f) => f.geometry.type === 'Point'); }
+  const find = (k, n) => n && worldPts.find((f) => f.properties.k === k && f.properties.n === n);
+  const f = find('city', w.city) || find('plabel', w.prov) || find('city', w.country) || find('clabel', w.country);
+  if (!f) return null;
+  const k = f.properties.k;
+  return { ll: f.geometry.coordinates, zoom: k === 'city' ? 10 : k === 'plabel' ? 6.5 : 5, name: f.properties.n };
+}
 // 后台「在地图上选位置」：打开 网址/#pick-diary（或 #pick-food、#pick-street），在地图上点一下，位置存进本机，后台页面自动收到。
 // 后面可以带 @经度,纬度,缩放：地图直接从那里开始（外地的照片、改已经选过的位置时用）
 const PickMode = {
@@ -5843,7 +5944,7 @@ function pinEl(type, item, loc) {
     el.setAttribute('aria-label', `扫街：${item.title}`);
   } else if (type === 'guest') {
     el.className = 'pin pin-guest';
-    el.innerHTML = `<span class="pin-in"><span class="pb"><i>${ICONS.guest}</i><span class="lbl"><b>${esc(item.name)}</b>${esc(item.text.length > 14 ? item.text.slice(0, 14) + '…' : item.text)}</span></span><span class="pin-tail"></span></span>`;
+    el.innerHTML = `<span class="pin-in"><span class="pb"><i>${ICONS.guest}</i><span class="lbl"><b>${esc(item.name)}</b>${esc(item.text.length > 14 ? item.text.slice(0, 14) + '…' : item.text)}${(item.photos || []).length ? ICONS.street : ''}</span></span><span class="pin-tail"></span></span>`;
     el.setAttribute('aria-label', `${item.name} 的留言：${item.text}`);
   } else if (type === 'landmark') {
     el.className = 'pin pin-mark';
@@ -6292,6 +6393,10 @@ function openDetail(type, id, opts = {}) {
   d.querySelectorAll('[data-go]').forEach((b) => b.addEventListener('click', () => openDetail(type, b.dataset.go)));
   d.querySelector('[data-fly]')?.addEventListener('click', () => flyToItem(item, true));
   d.querySelector('[data-guest-new]')?.addEventListener('click', () => GuestForm.open());
+  if (type === 'guest' && item.photos) {
+    const tiles = [...d.querySelectorAll('[data-gpic] img')];
+    d.querySelectorAll('[data-gpic]').forEach((b) => b.addEventListener('click', () => openViewer(item.photos.map((p) => ({ src: p.src })), +b.dataset.gpic, tiles)));
+  }
   if (type === 'landmark') d.querySelector('.d-hero img')?.addEventListener('error', (e) => { e.target.src = blueprintArt(item); e.target.nextElementSibling?.remove(); }, { once: true });
   d.querySelectorAll('[data-loc]').forEach((b) => b.addEventListener('click', () => flyToItem({ lnglat: item.locs[+b.dataset.loc].p }, true)));
   d.querySelectorAll('[data-copy]').forEach((b) => b.addEventListener('click', () => {
@@ -6463,6 +6568,7 @@ function detailHTML(type, it) {
     return `<div class="d-body g-detail" style="padding-top:22px">
       <div class="d-kicker"><span class="g-badge">${ICONS.guest}访客留言</span>${it.date ? `<span class="mono">${esc(it.date)}</span>` : ''}${it.place ? `<span>${esc(it.place)}</span>` : ''}</div>
       <p class="g-text">${esc(it.text)}</p>
+      ${(it.photos || []).length ? `<div class="g-pics n${Math.min(it.photos.length, 3)}">${it.photos.map((ph, k) => `<button type="button" class="g-pic" data-gpic="${k}" style="--ar:${+ph.ar || 1.333}" aria-label="看第 ${k + 1} 张照片"><img src="${esc(ph.thumb || ph.src)}" alt="" loading="lazy"></button>`).join('')}</div>` : ''}
       <p class="g-from">—— ${esc(it.name)}</p>
       <button class="btn-guest" type="button" data-guest-new>${ICONS.guest}我也要留一句</button>
       ${navRow(SITE.guest, it)}</div>`;
@@ -8045,7 +8151,7 @@ const Metro = {
     const pad = mq.matches ? { top: 110, bottom: 60, left: 0, right: 0 } : { top: 60, bottom: 20, left: 270, right: 0 };
     if (far) { this.noAuto = true; this.fitSystem(S, 1200); } else map.easeTo({ padding: pad, duration: reduceMotion ? 0 : 900, essential: true });
     await this.anim(this.p, 1, 900);
-    this.on = true; this.busy = false; this.acc = 0; this.place();
+    this.on = true; this.busy = false; this.acc = 0; this.place(); GuestFab.sync(); if (typeof HowTo !== 'undefined') HowTo.hide();
     this.wasNight = Night.on; if (!Night.on) Night.set(true, false);
     document.body.classList.add('sunk'); $('#sub').hidden = false; $('#sub').classList.remove('leaving');
     document.querySelectorAll('.nav-btn').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mod === 'metro')));
@@ -8059,7 +8165,7 @@ const Metro = {
     if (!this.wasNight) Night.set(false, false);
     map.easeTo({ padding: hudPadding(), duration: reduceMotion ? 0 : 700, essential: true });
     await this.anim(1, 0, 700);
-    $('#sub').hidden = true; this.on = false; this.busy = false; this.acc = 0;
+    $('#sub').hidden = true; this.on = false; this.busy = false; this.acc = 0; setTimeout(() => GuestFab.sync(), 0);
     document.querySelectorAll('.nav-btn').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mod === state.module)));
     map.getCanvas().style.cursor = '';
   },
@@ -8492,6 +8598,7 @@ const Metro = {
     h.innerHTML = `<span>线路 <small>点一条只看它</small></span>${ICONS.down}`;
     h.addEventListener('click', () => { const min = list.classList.toggle('min'); h.setAttribute('aria-expanded', String(!min)); });
     list.appendChild(h);
+    const wrap = document.createElement('div'); wrap.className = 'sub-line-wrap'; list.appendChild(wrap);
     for (const line of this.lines) {
       if (!line.sys.includes(this.cur)) continue;
       const b = document.createElement('button');
@@ -8500,8 +8607,9 @@ const Metro = {
       const ends = line.ends || (line.svc.length > 1 && line.id === '14' ? '含知识城支线' : svc.loop ? '环线' : `${svc.a} ⇄ ${svc.b}${line.svc.length > 1 ? ' 等' : ''}`);
       b.innerHTML = `<i style="background:${line.vis}"></i><b>${line.name}</b><small>${ends}${soon ? ` · ${soon.what}${soon.soon.replace(/^\d+\s*/, '')}开通` : ''}</small>`;
       b.addEventListener('click', () => this.highlight(line));
-      list.appendChild(b);
+      wrap.appendChild(b);
     }
+    requestAnimationFrame(() => list.querySelector('.sub-sys [aria-pressed="true"]')?.scrollIntoView({ block: 'nearest', inline: 'center' }));
     const S = this.sysNow(), mine = this.lines.filter((l) => l.sys.includes(S.id)), nMetro = mine.filter((l) => l.kind !== 'tram').length, nTram = mine.length - nMetro;
     const here = this.stations.filter((st) => st.lines.some((l) => l.sys.includes(S.id))), nSt = here.filter((st) => !st.soon).length, nSoon = here.length - nSt;
     $('#subStat').textContent = `${S.name} · ${nMetro} 条线路${nTram ? ` · ${S.tl || '有轨电车'} ${nTram} 条` : ''} · ${nSt} 座车站${nSoon ? ` · ${nSoon} 座新站年底开通` : ''}`;
