@@ -866,6 +866,28 @@ body.guest-picking .maplibregl-marker:not(.guest-mk),body.guest-picking .maplibr
 .pf-head h2{margin:0;font-family:var(--f-display);font-weight:900;font-size:26px;letter-spacing:.02em;line-height:1.2}
 .pf-head p{margin:2px 0 0;font-family:var(--f-mono);font-size:12px;color:var(--ink-3);letter-spacing:.06em}
 .pf-sec h3{margin:0 0 8px;font-size:11px;font-weight:500;letter-spacing:.16em;color:var(--ink-3)}
+.pf-about{padding:14px;border-radius:16px;background:var(--ice-2)}
+.pf-about h4{margin:14px 0 8px;font-size:11px;font-weight:500;letter-spacing:.12em;color:var(--ink-3)}
+.pf-facts{display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px 14px;margin:0;font-size:13px;align-items:baseline}
+.pf-facts dt{color:var(--ink-2)}
+.pf-facts dd{margin:0;color:var(--ink);font-size:13px;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;word-break:break-all}
+.pf-facts small{font-family:var(--f-body);font-size:11.5px;color:var(--blue);background:var(--ice);padding:1px 7px;border-radius:999px}
+.pf-stack{display:flex;flex-wrap:wrap;gap:6px}
+.pf-stack span{display:inline-flex;align-items:baseline;gap:5px;padding:4px 9px;border-radius:9px;background:var(--white);border:1px solid var(--line);font-size:11.5px;color:var(--ink-3)}
+.pf-stack b{font-weight:600;color:var(--ink);font-size:12px}
+.pf-log{list-style:none;margin:0;padding:0 0 0 14px;border-left:2px solid var(--line);display:flex;flex-direction:column;gap:10px}
+.pf-log li{position:relative;display:flex;flex-direction:column;gap:2px;font-size:13px;line-height:1.55;color:var(--ink-2)}
+.pf-log li[hidden]{display:none}
+.pf-log li::before{content:"";position:absolute;left:-20px;top:5px;width:10px;height:10px;border-radius:50%;background:var(--white);box-shadow:inset 0 0 0 2px var(--blue)}
+.pf-log li:first-child::before{background:var(--blue)}
+.pf-log time{font-size:11.5px;color:var(--blue);letter-spacing:.04em}
+.pf-log-more{margin-top:10px;width:100%;padding:8px;border-radius:10px;border:1px solid var(--line);background:var(--white);color:var(--blue);font:inherit;font-size:13px;cursor:pointer}
+.pf-log-more:hover{border-color:var(--blue)}
+.pf-pv-lead{margin:0 0 10px;font-size:13.5px;line-height:1.6;color:var(--ink);font-weight:600}
+.pf-privacy ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
+.pf-privacy li{display:flex;flex-direction:column;gap:2px;font-size:13px;line-height:1.6;color:var(--ink-2)}
+.pf-privacy li b{font-size:12.5px;font-weight:600;color:var(--ink)}
+.pf-pv-date{margin:12px 0 0;font-size:11px;color:var(--ink-3);letter-spacing:.04em}
 .pf-bio{margin:0;font-size:16px}
 .pf-mail{display:flex;flex-direction:column;gap:8px;margin-top:-6px}
 .pf-m{border-radius:12px;background:var(--ice-2);overflow:hidden}
@@ -1493,6 +1515,46 @@ const SITE = {
     { name: "Vinson's Blog", url: 'https://vinsonblog.cn/', desc: 'Vinson 的个人博客 · 保持好奇，探索世界', avatar: 'photos/friends/vinson.webp' },
     { name: '城市与地铁', url: 'https://city-and-metro.pages.dev/', avatar: 'photos/friends/citymetro.webp', shape: 'app' },
   ],
+  // 地图说明（个人介绍最下面）：制作时间、版本、用到的工具和数据、更新记录（新的写在最上面）
+  //   版本号 = 第几次更新，构建时自动填（tools/build.py 按 GitHub 仓库的提交次数算）
+  about: {
+    start: '2026-10-19', live: '2026-10-22', url: 'www.howardleong.work',
+    stack: [['MapLibre GL', '地图引擎'], ['three.js', '3D 建模'], ['OpenStreetMap', '街道和楼房'], ['Natural Earth', '全国和世界底图'], ['SRTM', '地形'], ['Open-Meteo', '天气'], ['astronomy-engine', '星空和天象'], ['DeepSeek', '榕忆聊天'], ['腾讯云 · nginx', '服务器']],
+    log: [
+      ['2026-11-17', '手机版优化：留言可以带照片、拿不到定位时按网络大致定位；榕忆更省 token；扫街加上大阪、汕头、洛阳、开封、东莞虎门、粤海关、白云山；加上这份地图说明'],
+      ['2026-11-16', '新增留言板；地球之外加「天象速报」；背景音乐增加到 128 首；日记改名「地图日志」，可以置顶；个人介绍加上邮箱和私信'],
+      ['2026-11-15', '网站后台上线：访问统计、写日志、管理吃饭地图和扫街照片；打开网站时弹出操作提示'],
+      ['2026-11-14', '接上域名 www.howardleong.work；服务器用更新包一键更新'],
+      ['2026-11-13', '港珠澳大桥、深中通道 3D 模型；打开网页默认显示扫街地图'],
+      ['2026-11-12', '飞行地图：大湾区机场的航班模拟；扫街加上北京、上海、苏州、福州、悉尼、墨尔本、武汉、南京、长沙、台北、杭州'],
+      ['2026-11-11', '地图可以缩小到全国、全世界；外地扫街一座城市一组照片；榕忆会看日期和天气、能放歌；大湾区更多地标建模'],
+      ['2026-11-05', '萌宠改为「榕忆」：在榕树小院浇水养成，抓到以后可以聊天'],
+      ['2026-11-04', '江海船只按真实航线模拟；火车、船只卡片显示经停和进度；扫街加珠海、新会'],
+      ['2026-11-03', '吃饭地图：知名店铺配上店标'],
+      ['2026-11-02', '部署到自己的服务器'],
+      ['2026-11-01', '「城市之下」扩展到大湾区六座城市的地铁；高铁城际在地图上跑；实时天气'],
+      ['2026-10-31', '海水变蓝；地图扩展到整个粤港澳大湾区；深圳超高层建模'],
+      ['2026-10-30', '扫街卡片改成画廊式；香港扫街 11 处'],
+      ['2026-10-28', '「城市之下」：广州地铁线网和模拟列车；地图扩展到佛山、东莞、深圳、香港'],
+      ['2026-10-27', '地图往北扩到白云机场，三座航站楼建模'],
+      ['2026-10-25', '更多地标 3D 建模；萌宠啵铃登场；加上背景音乐'],
+      ['2026-10-23', '广州塔、珠江新城、猎德大桥等 3D 建模；夜间模式、纯享模式、键盘漫游'],
+      ['2026-10-22', '第一次上线：吃饭地图、扫街地图、友情链接'],
+      ['2026-10-19', '开始制作：广州底图，标出出生地点和办公地点'],
+    ],
+  },
+  // 隐私声明（个人介绍最下面，地图说明后面）：写的都要和网站实际做法一致，改了后台记录什么就要跟着改
+  privacy: {
+    updated: '2026-11-17',
+    items: [
+      ['私信', '只有我能在后台看到，不会公开，也不会转给任何人。你留下的联系方式只用来回复你。'],
+      ['留言板', '留言审核通过后会显示在你选的位置上（昵称、内容和照片），所有人都能看到，所以请不要在留言里写电话、住址这类个人信息。不会显示也不会保存你的 IP 地址。'],
+      ['访问统计', '只记录大致来自哪个省市、用的什么设备、看了哪些板块，用来了解网站怎么被使用。不保存 IP 地址，也不知道你是谁。'],
+      ['榕忆聊天', '你发给榕忆的话会交给 AI 服务（DeepSeek）来生成回复，网站不保存聊天内容。'],
+      ['保存在你浏览器里的', '榕忆小院的进度、留言昵称、夜间模式等设置只存在你自己的浏览器里，清除浏览器数据就会删掉。'],
+      ['删除', '想删掉自己发过的留言或私信，用上面的邮箱联系我就行。'],
+    ],
+  },
   cities: [
     { id: 'gz', name: '广州', en: 'GUANGZHOU', center: [113.29, 23.118], zoom: 12.6, ready: true },
     { id: 'fs', name: '佛山', en: 'FOSHAN', center: [113.13, 23.0], zoom: 12.2, ready: true },
@@ -2744,6 +2806,8 @@ function renderProfile() {
       <div class="pf-sec"><h3>喜欢</h3><div class="chips">${o.interests.map((i) => `<span class="chip">${esc(i)}</span>`).join('')}</div></div>
       <div class="pf-sec"><h3>在别处找到我</h3><div class="pf-links">${SITE.socials.map((s) => `<a href="${esc(s.url)}" target="_blank" rel="noopener">${sIcon(s)}${esc(s.label)}</a>`).join('')}</div></div>
       <div class="pf-sec"><h3>友情链接</h3>${friendRows}</div>
+      ${aboutHTML()}
+      ${privacyHTML()}
     </div>`;
   // 邮箱：直接点 mailto 在没设默认邮件程序的电脑上没反应，所以点一下先复制地址，再给几种写信方式
   $('#profileDrawer').querySelectorAll('.pf-m').forEach((box) => {
@@ -2757,7 +2821,49 @@ function renderProfile() {
     menu.querySelector('[data-copy]').addEventListener('click', () => copyText(addr, `已复制 ${addr}`));
     menu.querySelector('[data-qq]').addEventListener('click', () => copyText(addr, '地址已复制：QQ 邮箱打开后点「写信」，在收件人里粘贴就行', 6000));
   });
+  wireAbout($('#profileDrawer'));
   DMForm.render();
+}
+// 地图说明：制作时间、版本、上线天数（按今天算）、用到的工具和数据、更新记录（先显示最近 4 条）
+const BUILD = { no: +'155' || 0, date: '2026-11-17' };
+function aboutHTML() {
+  const a = SITE.about; if (!a) return '';
+  const dot = (d) => d.replace(/-/g, '.');
+  const day = (d) => Math.floor(new Date(d + 'T00:00:00+08:00').getTime() / 864e5);
+  const today = Math.floor((Date.now() + 8 * 3600e3) / 864e5);
+  const live = today - day(a.live) + 1, last = /^\d{4}-\d{2}-\d{2}$/.test(BUILD.date) ? BUILD.date : a.log[0][0];
+  const SHOW = 4, rows = a.log.map(([d, t], i) => `<li${i >= SHOW ? ' class="more" hidden' : ''}><time class="mono">${dot(d)}</time><span>${esc(t)}</span></li>`).join('');
+  return `<div class="pf-sec pf-about"><h3>地图说明</h3>
+      <dl class="pf-facts">
+        <dt>开始制作</dt><dd class="mono">${dot(a.start)}</dd>
+        <dt>第一次上线</dt><dd class="mono">${dot(a.live)}<small>已上线 ${live} 天</small></dd>
+        <dt>最近更新</dt><dd class="mono">${dot(last)}${BUILD.no ? `<small>第 ${BUILD.no} 版</small>` : ''}</dd>
+        <dt>网址</dt><dd class="mono">${esc(a.url)}</dd>
+      </dl>
+      <h4>用到的工具和数据</h4>
+      <div class="pf-stack">${a.stack.map(([n, w]) => `<span><b>${esc(n)}</b>${esc(w)}</span>`).join('')}</div>
+      <h4>更新记录</h4>
+      <ol class="pf-log">${rows}</ol>
+      ${a.log.length > SHOW ? `<button type="button" class="pf-log-more" aria-expanded="false">查看全部 ${a.log.length} 条</button>` : ''}
+    </div>`;
+}
+// 隐私声明
+function privacyHTML() {
+  const v = SITE.privacy; if (!v) return '';
+  return `<div class="pf-sec pf-about pf-privacy"><h3>隐私声明</h3>
+      <p class="pf-pv-lead">私信和你的个人信息不会被公开，我会好好保护每一位访客的隐私。</p>
+      <ul>${v.items.map(([k, t]) => `<li><b>${esc(k)}</b><span>${esc(t)}</span></li>`).join('')}</ul>
+      <p class="pf-pv-date mono">更新于 ${v.updated.replace(/-/g, '.')}</p>
+    </div>`;
+}
+function wireAbout(root) {
+  const b = root.querySelector('.pf-log-more'); if (!b) return;
+  const n = root.querySelectorAll('.pf-log li').length;
+  b.addEventListener('click', () => {
+    const open = b.getAttribute('aria-expanded') !== 'true';
+    root.querySelectorAll('.pf-log li.more').forEach((li) => { li.hidden = !open; });
+    b.setAttribute('aria-expanded', String(open)); b.textContent = open ? '收起' : `查看全部 ${n} 条`;
+  });
 }
 function copyText(t, msg, ms) {
   const done = () => toast(msg, ms);
