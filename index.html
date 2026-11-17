@@ -6854,6 +6854,7 @@ function renderDiaryPop() {
 }
 
 /* ===================================================================== BGM */
+['touchend', 'click'].forEach((ev) => addEventListener(ev, () => { if (typeof Player !== 'undefined') Player.unlock(); }, { once: true, capture: true, passive: true }));
 const Player = {
   idx: -1, playing: false, ctx: null, master: null, nodes: [], timer: null, audio: null, vol: 0.6,
   by: (() => { try { const v = localStorage.getItem('bh-music-by') || ''; return SITE.music.some((m) => songBy(m) === v) ? v : ''; } catch (e) { return ''; } })(),   // 只听这位歌手（'' = 全部）
@@ -6895,21 +6896,46 @@ const Player = {
     if (this.ctx && this.ctx.state === 'running') this.ctx.suspend();
     this.playing = false; this.sync();
   },
+  // 手机浏览器（微信、iPhone 尤其严格）只让「手指点下去那一刻」开始的声音播放；榕忆回话要等网络，等到了再放就会被拦。
+  // 所以在点发送（或第一次碰页面）的那一下，先用一小段静音把播放器「解锁」，之后什么时候放歌都行。
+  SILENT: 'data:audio/wav;base64,UklGRrQBAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YZABAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA',
+  makeAudio() {
+    if (this.audio) return this.audio;
+    const a = this.audio = new Audio(); a.preload = 'auto'; a.setAttribute('playsinline', ''); a.setAttribute('webkit-playsinline', '');
+    a.addEventListener('ended', () => { if (a.src !== this.SILENT) this.next(); });
+    const tick = () => { const pr = $('#mProg'); if (!pr || $('#musicPop').hidden || a.src === this.SILENT) return; if (a.duration) pr.value = Math.round(a.currentTime / a.duration * 1000); $('#mCur').textContent = fmtT(a.currentTime); $('#mDur').textContent = fmtT(a.duration || 0); };
+    a.addEventListener('timeupdate', tick); a.addEventListener('loadedmetadata', tick);
+    return a;
+  },
+  unlock() {
+    if (this.unlocked || this.unlocking) return;
+    if (this.ctx && this.ctx.state === 'suspended' && !this.playing) this.ctx.resume().then(() => { if (!this.playing) this.ctx.suspend(); }).catch(() => {});
+    const a = this.makeAudio();
+    if (this.playing) { this.unlocked = true; return; }
+    const had = a.getAttribute('src');
+    this.unlocking = true; a.muted = true;
+    if (!had) a.src = this.SILENT;
+    const done = (ok) => {
+      this.unlocking = false; if (ok) this.unlocked = true;
+      if (a.src === this.SILENT) { a.pause(); a.removeAttribute('src'); a.load(); } else if (!this.playing) a.pause();
+      a.muted = false;
+    };
+    try { const p = a.play(); if (p && p.then) p.then(() => done(true), () => done(false)); else done(true); } catch (e) { done(false); }
+  },
   play(i) {
     const t = SITE.music[i]; if (!t) return;
     if (!t.synth && !t.src) { toast('这一首还没有添加：把歌曲文件放到网站目录，在 SITE.music 里写上 src。'); return; }
     this.stop(); this.idx = i;
     if (t.synth) { this.startSynth(t.synth); }
     else {
-      if (!this.audio) {
-        this.audio = new Audio(); this.audio.preload = 'auto';
-        this.audio.addEventListener('ended', () => this.next());
-        const tick = () => { const a = this.audio; const pr = $('#mProg'); if (!pr || $('#musicPop').hidden) return; if (a.duration) pr.value = Math.round(a.currentTime / a.duration * 1000); $('#mCur').textContent = fmtT(a.currentTime); $('#mDur').textContent = fmtT(a.duration || 0); };
-        this.audio.addEventListener('timeupdate', tick); this.audio.addEventListener('loadedmetadata', tick);
-      }
+      this.makeAudio();
       if (!this.audio.src.endsWith(t.src)) this.audio.src = U(t.src);
-      this.audio.volume = this.vol;
-      this.audio.play().catch(() => toast('这首歌没能播放，请检查文件地址。'));
+      this.audio.volume = this.vol; this.audio.muted = false;
+      this.audio.play().catch((e) => {
+        if (this.idx !== i) return;
+        this.playing = false; this.sync();
+        toast(e && e.name === 'NotAllowedError' ? '手机浏览器拦下了自动播放：点一下顶部的 BGM 就能听' : '这首歌没能播放，请稍后再试');
+      });
     }
     this.playing = true; this.sync();
   },
@@ -10739,7 +10765,7 @@ const PetChat = {
     el.querySelector('[data-av]').src = Pet.img('avatar');
     el.querySelector('[data-x]').addEventListener('click', () => this.toggle(false));
     el.querySelector('[data-home]').addEventListener('click', () => { this.toggle(false); Pet.open('home'); });
-    el.querySelector('form').addEventListener('submit', (e) => { e.preventDefault(); const i = el.querySelector('input'); const t = i.value; i.value = ''; this.send(t); });
+    el.querySelector('form').addEventListener('submit', (e) => { e.preventDefault(); Player.unlock(); const i = el.querySelector('input'); const t = i.value; i.value = ''; this.send(t); });
     el.addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.stopPropagation(); this.toggle(false); } });
   },
   isOpen() { return !!this.el && !this.el.hidden; },
